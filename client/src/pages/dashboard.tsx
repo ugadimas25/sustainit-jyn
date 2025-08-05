@@ -2,13 +2,61 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, TrendingUp, BarChart3 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, TrendingUp, BarChart3, X } from "lucide-react";
+import { useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { ComplianceChart } from "@/components/charts/compliance-chart";
 import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
 
+// Sample plot data for the modals
+const samplePlotData = {
+  highRisk: [
+    { plotNumber: "HR001", business: "PT Sinar Mas Agro", village: "Kampung Baru", district: "Riau Timur", coordinates: "1.234, 103.567", area: "45.2" },
+    { plotNumber: "HR002", business: "PT Wilmar International", village: "Desa Makmur", district: "Jambi Selatan", coordinates: "1.456, 103.789", area: "67.8" },
+    { plotNumber: "HR003", business: "PT Astra Agro Lestari", village: "Sumber Jaya", district: "Kalimantan Tengah", coordinates: "0.987, 114.123", area: "23.4" },
+    { plotNumber: "HR004", business: "PT IOI Corporation", village: "Tanjung Harapan", district: "Sumatra Utara", coordinates: "2.345, 99.456", area: "89.1" },
+    { plotNumber: "HR005", business: "PT Musim Mas", village: "Bangun Rejo", district: "Riau Tengah", coordinates: "0.567, 102.234", area: "34.5" }
+  ],
+  mediumRisk: [
+    { plotNumber: "MR001", business: "Smallholder Cooperatives", village: "Desa Sejahtera", district: "Jambi Utara", coordinates: "1.789, 103.012", area: "12.3" },
+    { plotNumber: "MR002", business: "PT Sinar Mas Agro", village: "Kampung Damai", district: "Riau Selatan", coordinates: "0.234, 102.789", area: "56.7" },
+    { plotNumber: "MR003", business: "PT Wilmar International", village: "Suka Maju", district: "Sumatra Selatan", coordinates: "2.123, 104.567", area: "78.9" },
+    { plotNumber: "MR004", business: "PT Astra Agro Lestari", village: "Berkat Jaya", district: "Kalimantan Barat", coordinates: "1.567, 109.234", area: "43.2" },
+    { plotNumber: "MR005", business: "PT IOI Corporation", village: "Harapan Baru", district: "Sumatra Barat", coordinates: "0.890, 100.456", area: "21.8" }
+  ],
+  deforested: [
+    { plotNumber: "DF001", business: "PT Sinar Mas Agro", village: "Rimba Hilang", district: "Riau Timur", coordinates: "1.345, 103.678", area: "15.6" },
+    { plotNumber: "DF002", business: "PT Wilmar International", village: "Hutan Baru", district: "Jambi Tengah", coordinates: "1.567, 103.890", area: "28.4" },
+    { plotNumber: "DF003", business: "Smallholder Cooperatives", village: "Desa Terbuka", district: "Sumatra Tengah", coordinates: "0.678, 101.234", area: "9.7" }
+  ],
+  noPermit: [
+    { plotNumber: "NP001", business: "PT Musim Mas", village: "Tanah Terlarang", district: "Kalimantan Tengah", coordinates: "0.456, 114.567", area: "32.1" },
+    { plotNumber: "NP002", business: "PT IOI Corporation", village: "Zona Lindung", district: "Sumatra Utara", coordinates: "2.789, 99.123", area: "18.9" },
+    { plotNumber: "NP003", business: "PT Astra Agro Lestari", village: "Kawasan Khusus", district: "Riau Tengah", coordinates: "1.012, 102.567", area: "41.3" }
+  ]
+};
+
 export default function Dashboard() {
+  const [selectedModal, setSelectedModal] = useState<string | null>(null);
+  
+  // Function to get modal title and data based on selected modal
+  const getModalData = (modalType: string) => {
+    switch (modalType) {
+      case 'highRisk':
+        return { title: 'Total High Risk Plots', data: samplePlotData.highRisk };
+      case 'mediumRisk':
+        return { title: 'Total Medium Risk Plots', data: samplePlotData.mediumRisk };
+      case 'deforested':
+        return { title: 'Deforested Plots (after 31 Dec 2020)', data: samplePlotData.deforested };
+      case 'noPermit':
+        return { title: 'Plots in No Permitted Area for Farming', data: samplePlotData.noPermit };
+      default:
+        return { title: '', data: [] };
+    }
+  };
+  
   const { data: metrics, isLoading } = useQuery({
     queryKey: ["/api/dashboard/metrics"],
   });
@@ -112,7 +160,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border border-gray-200">
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('highRisk')}>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="text-gray-400">
@@ -124,7 +172,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border border-gray-200">
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('mediumRisk')}>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="text-gray-400">
@@ -137,7 +185,7 @@ export default function Dashboard() {
               </Card>
 
               {/* Row 2 - Deforestation and Compliance */}
-              <Card className="bg-white border border-gray-200">
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('deforested')}>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="text-gray-400">
@@ -149,7 +197,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border border-gray-200">
+              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('noPermit')}>
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div className="text-gray-400">
@@ -368,6 +416,70 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      {/* Modal for Plot Details */}
+      {selectedModal && (
+        <Dialog open={!!selectedModal} onOpenChange={() => setSelectedModal(null)}>
+          <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex justify-between items-center">
+                {getModalData(selectedModal).title}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setSelectedModal(null)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="mt-4">
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Plot Number</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Business Association</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Village</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">District</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Coordinates</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Area (Ha)</th>
+                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Polygon</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getModalData(selectedModal).data.map((plot, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="border border-gray-300 px-4 py-3 text-sm font-medium text-blue-600">{plot.plotNumber}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-sm">{plot.business}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-sm">{plot.village}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-sm">{plot.district}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-sm font-mono">{plot.coordinates}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-sm text-right">{plot.area}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-sm">
+                          <div className="w-12 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded border border-green-700 relative">
+                            <div className="absolute inset-1 border border-green-300 rounded-sm opacity-60"></div>
+                            <div className="absolute top-1 left-1 w-1 h-1 bg-green-200 rounded-full"></div>
+                            <div className="absolute bottom-1 right-1 w-1 h-1 bg-green-800 rounded-full"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {getModalData(selectedModal).data.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No plots found for this category.
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
