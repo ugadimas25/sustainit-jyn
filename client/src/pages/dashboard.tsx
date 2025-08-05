@@ -166,6 +166,7 @@ export default function Dashboard() {
                     <div className="text-gray-400">
                       <AlertTriangle className="w-5 h-5" />
                     </div>
+                    <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total high risk plot</p>
                   <p className="text-3xl font-bold text-gray-900">35</p>
@@ -178,6 +179,7 @@ export default function Dashboard() {
                     <div className="text-gray-400">
                       <Clock className="w-5 h-5" />
                     </div>
+                    <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total medium risk plot</p>
                   <p className="text-3xl font-bold text-gray-900">912</p>
@@ -191,6 +193,7 @@ export default function Dashboard() {
                     <div className="text-gray-400">
                       <XCircle className="w-5 h-5" />
                     </div>
+                    <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Deforested plot (after 31 Dec 2020)</p>
                   <p className="text-3xl font-bold text-gray-900">35</p>
@@ -203,6 +206,7 @@ export default function Dashboard() {
                     <div className="text-gray-400">
                       <XCircle className="w-5 h-5" />
                     </div>
+                    <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Plots in no permitted area for farming</p>
                   <p className="text-3xl font-bold text-gray-900">0</p>
