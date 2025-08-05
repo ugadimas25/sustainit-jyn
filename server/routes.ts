@@ -352,6 +352,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Satellite Imagery endpoints
+  app.get("/api/satellite-images", isAuthenticated, async (req, res) => {
+    try {
+      // Mock satellite imagery data for now - in production this would fetch from actual satellite providers
+      const sampleImages = [
+        {
+          id: "sat_001",
+          plotId: "plot_001",
+          plotNumber: "HR001",
+          captureDate: "2024-01-15",
+          coordinates: { lat: -2.234, lng: 111.456 },
+          imageUrl: "/api/satellite-images/sat_001_full.jpg",
+          thumbnailUrl: "/api/satellite-images/sat_001_thumb.jpg",
+          satellite: "Sentinel-2",
+          resolution: "10m",
+          cloudCover: 5,
+          deforestationRisk: 'high',
+          vegetationIndex: 0.72,
+          changeDetected: true
+        },
+        {
+          id: "sat_002",
+          plotId: "plot_002",
+          plotNumber: "MR005",
+          captureDate: "2024-01-14",
+          coordinates: { lat: -1.789, lng: 112.123 },
+          imageUrl: "/api/satellite-images/sat_002_full.jpg",
+          thumbnailUrl: "/api/satellite-images/sat_002_thumb.jpg",
+          satellite: "Landsat-8",
+          resolution: "30m",
+          cloudCover: 12,
+          deforestationRisk: 'medium',
+          vegetationIndex: 0.68,
+          changeDetected: false
+        },
+        {
+          id: "sat_003",
+          plotId: "plot_003",
+          plotNumber: "DF003",
+          captureDate: "2024-01-13",
+          coordinates: { lat: -0.567, lng: 110.789 },
+          imageUrl: "/api/satellite-images/sat_003_full.jpg",
+          thumbnailUrl: "/api/satellite-images/sat_003_thumb.jpg",
+          satellite: "Sentinel-2",
+          resolution: "10m",
+          cloudCover: 8,
+          deforestationRisk: 'high',
+          vegetationIndex: 0.45,
+          changeDetected: true
+        },
+        {
+          id: "sat_004",
+          plotId: "plot_004",
+          plotNumber: "LR010",
+          captureDate: "2024-01-12",
+          coordinates: { lat: -1.234, lng: 113.567 },
+          imageUrl: "/api/satellite-images/sat_004_full.jpg",
+          thumbnailUrl: "/api/satellite-images/sat_004_thumb.jpg",
+          satellite: "Planet",
+          resolution: "3m",
+          cloudCover: 2,
+          deforestationRisk: 'low',
+          vegetationIndex: 0.85,
+          changeDetected: false
+        }
+      ];
+
+      res.json(sampleImages);
+    } catch (error) {
+      console.error("Error fetching satellite images:", error);
+      res.status(500).json({ error: "Failed to fetch satellite images" });
+    }
+  });
+
+  app.get("/api/satellite-images/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      // Mock single image lookup - in production would fetch from database
+      res.json({ 
+        message: `Satellite image ${id} details would be served here`,
+        imageId: id
+      });
+    } catch (error) {
+      console.error("Error fetching satellite image:", error);
+      res.status(500).json({ error: "Failed to fetch satellite image" });
+    }
+  });
+
+  // Endpoint to serve satellite image files (placeholder for integration with satellite providers)
+  app.get("/api/satellite-images/:id/:type", (req, res) => {
+    const { id, type } = req.params;
+    // In production, this would integrate with satellite imagery providers like:
+    // - Google Earth Engine
+    // - Planet Labs
+    // - Sentinel Hub
+    // - Landsat (via USGS)
+    res.status(200).json({ 
+      message: `Satellite image ${id} (${type}) would be served here`,
+      imageUrl: `/placeholder-satellite-${id}-${type}.jpg`
+    });
+  });
+
   // Surveys API
   app.get("/api/surveys", isAuthenticated, async (req, res) => {
     try {

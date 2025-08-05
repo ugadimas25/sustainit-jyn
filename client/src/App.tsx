@@ -13,6 +13,7 @@ import LegalityAssessment from "@/pages/legality-assessment";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import SupplyChain from "@/pages/supply-chain";
 import DDSReports from "@/pages/dds-reports";
+import SatelliteImagery from "@/pages/satellite-imagery";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <ProtectedRoute path="/legality" component={LegalityAssessment} />
       <ProtectedRoute path="/monitoring" component={DeforestationMonitoring} />
       <ProtectedRoute path="/supply-chain" component={SupplyChain} />
+      <ProtectedRoute path="/satellite" component={SatelliteImagery} />
       <ProtectedRoute path="/reports" component={DDSReports} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
