@@ -57,7 +57,20 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium bg-green-600 text-white px-3 py-1 rounded">MIS Platform</span>
+              <Select defaultValue="all-units">
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select Business Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all-units">All Business Units</SelectItem>
+                  <SelectItem value="plantation-north">Plantation North</SelectItem>
+                  <SelectItem value="plantation-south">Plantation South</SelectItem>
+                  <SelectItem value="plantation-central">Plantation Central</SelectItem>
+                  <SelectItem value="mill-operations">Mill Operations</SelectItem>
+                  <SelectItem value="smallholder-program">Smallholder Program</SelectItem>
+                  <SelectItem value="estate-management">Estate Management</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
