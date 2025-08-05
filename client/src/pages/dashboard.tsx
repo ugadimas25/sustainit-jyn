@@ -6,7 +6,7 @@ import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, Check } f
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { ComplianceChart } from "@/components/charts/compliance-chart";
-import kpnLogoPath from "@assets/kpn logo_1754365801347.jpg";
+import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
 
 export default function Dashboard() {
   const { data: metrics, isLoading } = useQuery({
@@ -45,7 +45,7 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center mb-4">
                 <img 
-                  src={kpnLogoPath} 
+                  src={kpnLogoDataUrl} 
                   alt="KPN Corp Plantation Division Logo" 
                   className="h-12 w-auto mr-4"
                   data-testid="img-kpn-logo"

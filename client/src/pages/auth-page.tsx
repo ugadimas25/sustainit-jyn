@@ -8,7 +8,7 @@ import { Leaf, Shield, Satellite, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { insertUserSchema } from "@shared/schema";
 import { Redirect } from "wouter";
-import kpnLogoPath from "@assets/kpn logo_1754365801347.jpg";
+import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -55,7 +55,7 @@ export default function AuthPage() {
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
           <div className="w-20 h-20 bg-white bg-opacity-10 rounded-xl flex items-center justify-center mb-8 p-3">
             <img 
-              src={kpnLogoPath} 
+              src={kpnLogoDataUrl} 
               alt="KPN Corp Plantation Division Logo" 
               className="w-full h-full object-contain"
               data-testid="img-kpn-logo-auth"
