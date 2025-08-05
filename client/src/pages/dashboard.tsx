@@ -249,6 +249,105 @@ export default function Dashboard() {
             </Card>
           </div>
 
+          {/* EUDR Compliance by Supplier Table */}
+          <div className="mb-8">
+            <Card className="border-neutral-border">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">EUDR Compliance by Supplier</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 font-medium text-gray-900">Supplier Name</th>
+                        <th className="text-right py-3 px-4 font-medium text-gray-900">Total Plots</th>
+                        <th className="text-right py-3 px-4 font-medium text-gray-900">Compliant</th>
+                        <th className="text-right py-3 px-4 font-medium text-gray-900">Low Risk</th>
+                        <th className="text-right py-3 px-4 font-medium text-gray-900">Medium Risk</th>
+                        <th className="text-right py-3 px-4 font-medium text-gray-900">High Risk</th>
+                        <th className="text-right py-3 px-4 font-medium text-gray-900">Area (Ha)</th>
+                        <th className="text-right py-3 px-4 font-medium text-gray-900">Compliance %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">PT Sinar Mas Agro</td>
+                        <td className="py-3 px-4 text-right">2,847</td>
+                        <td className="py-3 px-4 text-right text-green-600">2,765</td>
+                        <td className="py-3 px-4 text-right">2,765</td>
+                        <td className="py-3 px-4 text-right">67</td>
+                        <td className="py-3 px-4 text-right text-red-600">15</td>
+                        <td className="py-3 px-4 text-right">1,423</td>
+                        <td className="py-3 px-4 text-right text-green-600 font-semibold">97.1%</td>
+                      </tr>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">PT Astra Agro Lestari</td>
+                        <td className="py-3 px-4 text-right">3,256</td>
+                        <td className="py-3 px-4 text-right text-green-600">3,198</td>
+                        <td className="py-3 px-4 text-right">3,198</td>
+                        <td className="py-3 px-4 text-right">45</td>
+                        <td className="py-3 px-4 text-right text-red-600">13</td>
+                        <td className="py-3 px-4 text-right">1,628</td>
+                        <td className="py-3 px-4 text-right text-green-600 font-semibold">98.2%</td>
+                      </tr>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">PT Wilmar International</td>
+                        <td className="py-3 px-4 text-right">2,134</td>
+                        <td className="py-3 px-4 text-right text-green-600">2,067</td>
+                        <td className="py-3 px-4 text-right">2,067</td>
+                        <td className="py-3 px-4 text-right">59</td>
+                        <td className="py-3 px-4 text-right text-red-600">8</td>
+                        <td className="py-3 px-4 text-right">1,067</td>
+                        <td className="py-3 px-4 text-right text-green-600 font-semibold">96.9%</td>
+                      </tr>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">PT IOI Corporation</td>
+                        <td className="py-3 px-4 text-right">1,892</td>
+                        <td className="py-3 px-4 text-right text-green-600">1,834</td>
+                        <td className="py-3 px-4 text-right">1,834</td>
+                        <td className="py-3 px-4 text-right">58</td>
+                        <td className="py-3 px-4 text-right text-red-600">0</td>
+                        <td className="py-3 px-4 text-right">946</td>
+                        <td className="py-3 px-4 text-right text-green-600 font-semibold">96.9%</td>
+                      </tr>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">PT Musim Mas</td>
+                        <td className="py-3 px-4 text-right">1,567</td>
+                        <td className="py-3 px-4 text-right text-green-600">1,498</td>
+                        <td className="py-3 px-4 text-right">1,498</td>
+                        <td className="py-3 px-4 text-right">69</td>
+                        <td className="py-3 px-4 text-right text-red-600">0</td>
+                        <td className="py-3 px-4 text-right">784</td>
+                        <td className="py-3 px-4 text-right text-green-600 font-semibold">95.6%</td>
+                      </tr>
+                      <tr className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">Smallholder Cooperatives</td>
+                        <td className="py-3 px-4 text-right">2,318</td>
+                        <td className="py-3 px-4 text-right text-green-600">1,905</td>
+                        <td className="py-3 px-4 text-right">1,905</td>
+                        <td className="py-3 px-4 text-right">413</td>
+                        <td className="py-3 px-4 text-right text-red-600">0</td>
+                        <td className="py-3 px-4 text-right">1,159</td>
+                        <td className="py-3 px-4 text-right text-orange-600 font-semibold">82.2%</td>
+                      </tr>
+                      <tr className="bg-gray-50 font-semibold">
+                        <td className="py-3 px-4">Total</td>
+                        <td className="py-3 px-4 text-right">14,014</td>
+                        <td className="py-3 px-4 text-right text-green-600">13,267</td>
+                        <td className="py-3 px-4 text-right">13,267</td>
+                        <td className="py-3 px-4 text-right">711</td>
+                        <td className="py-3 px-4 text-right text-red-600">36</td>
+                        <td className="py-3 px-4 text-right">7,007</td>
+                        <td className="py-3 px-4 text-right text-green-600">94.7%</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Actions */}
           <div className="flex items-center space-x-3">
             <Select defaultValue="all-regions">
