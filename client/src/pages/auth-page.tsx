@@ -53,16 +53,13 @@ export default function AuthPage() {
           />
         </div>
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          <div className="mb-8">
+          <div className="w-20 h-20 bg-white bg-opacity-10 rounded-xl flex items-center justify-center mb-8 p-3">
             <img 
               src={kpnLogoPath} 
               alt="KPN Corp Plantation Division Logo" 
-              className="h-16 w-auto mb-4"
+              className="w-full h-full object-contain"
               data-testid="img-kpn-logo-auth"
             />
-          </div>
-          <div className="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mb-8">
-            <Leaf className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold mb-4">KPN EUDR Platform</h1>
           <p className="text-xl mb-8 text-green-100">
