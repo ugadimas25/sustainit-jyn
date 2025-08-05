@@ -41,7 +41,7 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar />
         <main className="flex-1 overflow-y-auto p-6">
-          {/* Header with EUDR Compliance v3.0 */}
+          {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <div>
               <div className="flex items-center mb-4">
@@ -52,16 +52,11 @@ export default function Dashboard() {
                   data-testid="img-kpn-logo"
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-800">EUDR Compliance v3.0</h1>
-                  <p className="text-gray-600 text-sm">Additional Dashboard / EUDR Compliance v3.0</p>
+                  <h1 className="text-2xl font-bold text-gray-800">EUDR Compliance</h1>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">Supply Chain Management</p>
-                <p className="text-xs text-gray-500">Administrator - System User</p>
-              </div>
               <span className="text-sm font-medium bg-green-600 text-white px-3 py-1 rounded">MIS Platform</span>
             </div>
           </div>
