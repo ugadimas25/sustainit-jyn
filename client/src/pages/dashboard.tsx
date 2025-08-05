@@ -170,7 +170,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha)</p>
-                  <p className="text-3xl font-bold text-gray-900">7,141.02</p>
+                  <p className="text-3xl font-bold text-gray-900">7,141</p>
                 </CardContent>
               </Card>
 
@@ -182,7 +182,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha) for low risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">6,532.68</p>
+                  <p className="text-3xl font-bold text-gray-900">6,533</p>
                 </CardContent>
               </Card>
 
