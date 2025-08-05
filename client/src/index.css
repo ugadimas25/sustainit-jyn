@@ -1,0 +1,289 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+
+  /* KPN EUDR Platform Custom Colors */
+  --forest: hsl(142, 36%, 28%);
+  --forest-light: hsl(142, 49%, 53%);
+  --forest-dark: hsl(142, 43%, 20%);
+  --alert: hsl(14, 100%, 59%);
+  --warning: hsl(39, 100%, 50%);
+  --critical: hsl(4, 90%, 58%);
+  --professional: hsl(207, 90%, 54%);
+  --neutral-bg: hsl(0, 0%, 98%);
+  --neutral-border: hsl(0, 0%, 88%);
+}
+
+@layer utilities {
+  .border-critical {
+    border-color: hsl(var(--critical));
+  }
+  .border-forest-light {
+    border-color: hsl(var(--forest-light));
+  }
+  .border-warning {
+    border-color: hsl(var(--warning));
+  }
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+
+  /* Dark mode KPN colors */
+  --forest: hsl(142, 36%, 35%);
+  --forest-light: hsl(142, 49%, 60%);
+  --forest-dark: hsl(142, 43%, 15%);
+  --alert: hsl(14, 100%, 65%);
+  --warning: hsl(39, 100%, 60%);
+  --critical: hsl(4, 90%, 65%);
+  --professional: hsl(207, 90%, 60%);
+  --neutral-bg: hsl(240, 10%, 5%);
+  --neutral-border: hsl(240, 3.7%, 20%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  /* Custom utility classes for KPN EUDR Platform */
+  .bg-forest {
+    background-color: var(--forest);
+  }
+
+  .bg-forest-light {
+    background-color: var(--forest-light);
+  }
+
+  .bg-forest-dark {
+    background-color: var(--forest-dark);
+  }
+
+  .bg-alert {
+    background-color: var(--alert);
+  }
+
+  .bg-warning {
+    background-color: var(--warning);
+  }
+
+  .bg-critical {
+    background-color: var(--critical);
+  }
+
+  .bg-professional {
+    background-color: var(--professional);
+  }
+
+  .bg-neutral-bg {
+    background-color: var(--neutral-bg);
+  }
+
+  .text-forest {
+    color: var(--forest);
+  }
+
+  .text-forest-light {
+    color: var(--forest-light);
+  }
+
+  .text-forest-dark {
+    color: var(--forest-dark);
+  }
+
+  .text-alert {
+    color: var(--alert);
+  }
+
+  .text-warning {
+    color: var(--warning);
+  }
+
+  .text-critical {
+    color: var(--critical);
+  }
+
+  .text-professional {
+    color: var(--professional);
+  }
+
+  .border-neutral-border {
+    border-color: var(--neutral-border);
+  }
+
+  .hover\:bg-forest-dark:hover {
+    background-color: var(--forest-dark);
+  }
+
+  .hover\:text-forest:hover {
+    color: var(--forest);
+  }
+
+  /* Component-specific styles */
+  .compliance-chart-container {
+    @apply bg-white p-4 rounded-lg border border-neutral-border;
+  }
+
+  .alert-item {
+    @apply flex items-center p-4 border rounded-lg transition-colors duration-200;
+  }
+
+  .alert-item.critical {
+    @apply bg-critical bg-opacity-5 border-critical border-opacity-20;
+  }
+
+  .alert-item.warning {
+    @apply bg-warning bg-opacity-5 border-warning border-opacity-20;
+  }
+
+  .alert-item.resolved {
+    @apply bg-forest-light bg-opacity-5 border-forest-light border-opacity-20;
+  }
+
+  /* Map-specific styles */
+  .leaflet-container {
+    height: 100%;
+    width: 100%;
+  }
+
+  .plot-polygon.compliant {
+    fill: var(--forest-light);
+    fill-opacity: 0.3;
+    stroke: var(--forest-light);
+    stroke-width: 2;
+  }
+
+  .plot-polygon.at-risk {
+    fill: var(--warning);
+    fill-opacity: 0.3;
+    stroke: var(--warning);
+    stroke-width: 2;
+  }
+
+  .plot-polygon.critical {
+    fill: var(--critical);
+    fill-opacity: 0.3;
+    stroke: var(--critical);
+    stroke-width: 2;
+  }
+
+  .plot-polygon.pending {
+    fill: #9ca3af;
+    fill-opacity: 0.3;
+    stroke: #9ca3af;
+    stroke-width: 2;
+  }
+
+  /* Form and input enhancements */
+  .form-field-error {
+    @apply text-critical text-sm mt-1;
+  }
+
+  .status-badge.compliant {
+    @apply bg-forest-light text-white;
+  }
+
+  .status-badge.at-risk {
+    @apply bg-warning text-white;
+  }
+
+  .status-badge.critical {
+    @apply bg-critical text-white;
+  }
+
+  .status-badge.pending {
+    @apply bg-gray-400 text-white;
+  }
+
+  /* Animation utilities */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Scrollbar styling */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--neutral-bg);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--neutral-border);
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--forest);
+  }
+}
