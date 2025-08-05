@@ -59,10 +59,10 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">Demo Management Coffee</p>
-                <p className="text-xs text-gray-500">Administrator - Kudeungo Sugata</p>
+                <p className="text-sm font-medium text-gray-900">Supply Chain Management</p>
+                <p className="text-xs text-gray-500">Administrator - System User</p>
               </div>
-              <span className="text-sm font-medium bg-green-600 text-white px-3 py-1 rounded">MIS Kolttrace</span>
+              <span className="text-sm font-medium bg-green-600 text-white px-3 py-1 rounded">MIS Platform</span>
             </div>
           </div>
 
