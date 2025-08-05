@@ -6,6 +6,7 @@ import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, Check } f
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { ComplianceChart } from "@/components/charts/compliance-chart";
+import kpnLogoPath from "@assets/kpn logo_1754365801347.jpg";
 
 export default function Dashboard() {
   const { data: metrics, isLoading } = useQuery({
@@ -42,8 +43,18 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">EUDR Compliance Dashboard</h1>
-              <p className="text-gray-600 mt-1">Monitor supply chain compliance and deforestation risk</p>
+              <div className="flex items-center mb-4">
+                <img 
+                  src={kpnLogoPath} 
+                  alt="KPN Corp Plantation Division Logo" 
+                  className="h-12 w-auto mr-4"
+                  data-testid="img-kpn-logo"
+                />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">EUDR Compliance Dashboard</h1>
+                  <p className="text-gray-600 mt-1">Monitor supply chain compliance and deforestation risk</p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-3">
               <Select defaultValue="all-regions">
