@@ -1,11 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, Check } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, CheckCircle, AlertTriangle, XCircle, Clock, BarChart3 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
-import { TopBar } from "@/components/layout/top-bar";
-import { ComplianceChart } from "@/components/charts/compliance-chart";
 import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
 
 export default function Dashboard() {
@@ -31,222 +27,260 @@ export default function Dashboard() {
     );
   }
 
-  const complianceRate = (metrics?.compliantPlots && metrics?.totalPlots) ? ((metrics.compliantPlots / metrics.totalPlots) * 100).toFixed(1) : '0';
-  const atRiskRate = (metrics?.atRiskPlots && metrics?.totalPlots) ? ((metrics.atRiskPlots / metrics.totalPlots) * 100).toFixed(1) : '0';
-  const criticalRate = (metrics?.criticalPlots && metrics?.totalPlots) ? ((metrics.criticalPlots / metrics.totalPlots) * 100).toFixed(1) : '0';
-
   return (
-    <div className="flex h-screen bg-neutral-bg">
+    <div className="flex h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <div className="flex items-center mb-4">
-                <img 
-                  src={kpnLogoDataUrl} 
-                  alt="KPN Corp Plantation Division Logo" 
-                  className="h-12 w-auto mr-4"
-                  data-testid="img-kpn-logo"
-                />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800">EUDR Compliance Dashboard</h1>
-                  <p className="text-gray-600 mt-1">Monitor supply chain compliance and deforestation risk</p>
+        {/* Header */}
+        <div className="bg-white border-b">
+          <div className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <div className="flex items-center mb-2">
+                  <h1 className="text-2xl font-bold text-gray-900">EUDR Compliance v3.0</h1>
+                </div>
+                <p className="text-sm text-gray-500">Additional Dashboard / EUDR Compliance v3.0</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">Demo Management Coffee</p>
+                  <p className="text-xs text-gray-500">Administrator - Kudeungo Sugata</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <img 
+                    src={kpnLogoDataUrl} 
+                    alt="KPN Corp Logo" 
+                    className="h-8 w-8 rounded"
+                    data-testid="img-kpn-logo"
+                  />
+                  <span className="text-sm font-medium bg-green-600 text-white px-3 py-1 rounded">MIS Kolttrace</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Select defaultValue="all-regions">
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-regions">All Regions</SelectItem>
-                  <SelectItem value="sumatra">Sumatra</SelectItem>
-                  <SelectItem value="kalimantan">Kalimantan</SelectItem>
-                  <SelectItem value="sulawesi">Sulawesi</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button className="bg-professional text-white hover:bg-blue-700" data-testid="button-export">
-                <Download className="w-4 h-4 mr-2" />
-                Export Report
-              </Button>
+
+            {/* Navigation Tabs */}
+            <div className="flex space-x-8 mt-6 border-b">
+              <button className="pb-3 text-sm font-medium border-b-2 border-green-600 text-green-600">
+                Summary
+              </button>
+              <button className="pb-3 text-sm font-medium text-gray-500 hover:text-gray-700">
+                Supply Chain Linkages
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Key Metrics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="border-neutral-border">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Plots</p>
-                    <p className="text-2xl font-bold text-gray-800" data-testid="text-total-plots">
-                      {metrics?.totalPlots || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-professional bg-opacity-10 rounded-lg flex items-center justify-center">
-                    <MapPin className="text-professional text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-forest-light">+12%</span>
-                  <span className="text-gray-600 ml-1">vs last month</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-neutral-border">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Compliant Plots</p>
-                    <p className="text-2xl font-bold text-gray-800" data-testid="text-compliant-plots">
-                      {metrics?.compliantPlots || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-forest-light bg-opacity-10 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="text-forest-light text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-forest-light">{complianceRate}%</span>
-                  <span className="text-gray-600 ml-1">compliance rate</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-neutral-border">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">At Risk Plots</p>
-                    <p className="text-2xl font-bold text-gray-800" data-testid="text-atrisk-plots">
-                      {metrics?.atRiskPlots || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-warning bg-opacity-10 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="text-warning text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-warning">{atRiskRate}%</span>
-                  <span className="text-gray-600 ml-1">require attention</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-neutral-border">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Critical Issues</p>
-                    <p className="text-2xl font-bold text-gray-800" data-testid="text-critical-plots">
-                      {metrics?.criticalPlots || 0}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-critical bg-opacity-10 rounded-lg flex items-center justify-center">
-                    <XCircle className="text-critical text-xl" />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center text-sm">
-                  <span className="text-critical">{criticalRate}%</span>
-                  <span className="text-gray-600 ml-1">immediate action</span>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          {/* Plot Section Header */}
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900">Plot</h2>
           </div>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <Card className="border-neutral-border">
-              <CardHeader>
-                <CardTitle>Compliance Trends</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ComplianceChart />
-              </CardContent>
+          {/* Plot Statistics Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {/* Row 1 - Plot counts */}
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total plot mapped with polygon</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-plots">
+                    14,014
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <MapPin className="w-5 h-5" />
+                </div>
+              </div>
             </Card>
 
-            <Card className="border-neutral-border">
-              <CardHeader>
-                <CardTitle>Risk Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64 flex items-center justify-center text-gray-500">
-                  Risk distribution chart will be displayed here
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total low risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    13,067
+                  </p>
                 </div>
-              </CardContent>
+                <div className="text-gray-400">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total high risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    35
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total medium risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    912
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <Clock className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Row 2 - Deforestation and permits */}
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Deforested plot (after 31 Dec 2020)</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    35
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <XCircle className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Plots in no permitted area for farming</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    0
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <XCircle className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <div className="col-span-2"></div>
+
+            {/* Row 3 - Polygon areas */}
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total polygon area (Ha)</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    7,141.02
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <MapPin className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total polygon area (Ha) for low risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    6,532.68
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total polygon area (Ha) for high risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    22.29
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total polygon area (Ha) for medium risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    586.05
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <Clock className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            {/* Row 4 - Production data */}
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total plot production (Kg)</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    4,664,776.47
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total plot production (Kg) for low risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    4,369,798.97
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total plot production (Kg) for high risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    12,365.18
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="bg-white p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Total plot production (Kg) for medium risk plot</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    282,612.32
+                  </p>
+                </div>
+                <div className="text-gray-400">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+              </div>
             </Card>
           </div>
-
-          {/* Recent Alerts */}
-          <Card className="border-neutral-border">
-            <CardHeader>
-              <CardTitle>Recent Alerts</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {alerts && Array.isArray(alerts) && alerts.length > 0 ? (
-                <div className="space-y-4">
-                  {alerts.map((alert: any) => (
-                    <div 
-                      key={alert.id} 
-                      className={`flex items-center p-4 border rounded-lg ${
-                        alert.severity === 'critical' ? 'bg-critical bg-opacity-5 border-critical border-opacity-20' :
-                        alert.severity === 'high' ? 'bg-warning bg-opacity-5 border-warning border-opacity-20' :
-                        'bg-forest-light bg-opacity-5 border-forest-light border-opacity-20'
-                      }`}
-                      data-testid={`alert-${alert.id}`}
-                    >
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        alert.severity === 'critical' ? 'bg-critical bg-opacity-10' :
-                        alert.severity === 'high' ? 'bg-warning bg-opacity-10' :
-                        'bg-forest-light bg-opacity-10'
-                      }`}>
-                        {alert.status === 'resolved' ? (
-                          <Check className={`w-5 h-5 text-forest-light`} />
-                        ) : alert.severity === 'critical' ? (
-                          <XCircle className={`w-5 h-5 text-critical`} />
-                        ) : (
-                          <Clock className={`w-5 h-5 text-warning`} />
-                        )}
-                      </div>
-                      <div className="ml-4 flex-1">
-                        <p className="font-medium text-gray-800">
-                          {alert.alertSource} alert for Plot {alert.plotId}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {alert.areaLost ? `${alert.areaLost} hectares affected` : 'Monitoring alert triggered'}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(alert.alertDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className={`${
-                          alert.severity === 'critical' ? 'text-critical hover:text-red-700' :
-                          alert.severity === 'high' ? 'text-warning hover:text-yellow-700' :
-                          'text-forest-light hover:text-green-700'
-                        }`}
-                        data-testid={`button-investigate-${alert.id}`}
-                      >
-                        {alert.status === 'resolved' ? 'View Report' : 'Investigate'}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <CheckCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No recent alerts</p>
-                  <p className="text-sm text-gray-500">All plots are currently compliant</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </main>
       </div>
     </div>
