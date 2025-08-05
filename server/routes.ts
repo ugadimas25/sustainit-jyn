@@ -4,10 +4,44 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { storage } from "./storage";
 import { insertPlotSchema, insertSupplierSchema, insertDocumentSchema, insertDeliverySchema, insertShipmentSchema, insertDDSReportSchema, insertSurveySchema, insertSurveyResponseSchema } from "@shared/schema";
 import { z } from "zod";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+async function initializeDefaultUser() {
+  try {
+    // Check if any users exist
+    const existingUser = await storage.getUserByUsername("kpneudr");
+    if (!existingUser) {
+      // Create default user
+      const hashedPassword = await hashPassword("kpneudr");
+      await storage.createUser({
+        username: "kpneudr",
+        password: hashedPassword,
+        role: "admin",
+        name: "KPN EUDR Administrator",
+        email: "admin@kpn.com"
+      });
+      console.log("✓ Default user 'kpneudr' created successfully");
+    }
+  } catch (error) {
+    console.error("Error initializing default user:", error);
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
+
+  // Initialize default user if none exists
+  await initializeDefaultUser();
 
   // Dashboard API
   app.get("/api/dashboard/metrics", isAuthenticated, async (req, res) => {
