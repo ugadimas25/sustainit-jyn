@@ -161,11 +161,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              {/* Empty cards for spacing */}
-              <div></div>
-              <div></div>
-
-              {/* Row 3 - Polygon Areas */}
+              {/* Row 2 continued - Polygon Areas */}
               <Card className="bg-white border border-gray-200">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
