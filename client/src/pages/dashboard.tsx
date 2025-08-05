@@ -190,78 +190,7 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <AlertTriangle className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha) for high risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">22.29</p>
-                </CardContent>
-              </Card>
 
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <Clock className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha) for medium risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">586.05</p>
-                </CardContent>
-              </Card>
-
-              {/* Row 4 - Production Data */}
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <BarChart3 className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total plot production (Kg)</p>
-                  <p className="text-3xl font-bold text-gray-900">4,664,776.47</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <BarChart3 className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total plot production (Kg) for low risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">4,369,798.97</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <BarChart3 className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total plot production (Kg) for high risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">12,365.18</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <BarChart3 className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total plot production (Kg) for medium risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">282,612.32</p>
-                </CardContent>
-              </Card>
             </div>
           </div>
 
