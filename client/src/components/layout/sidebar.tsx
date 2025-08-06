@@ -19,7 +19,6 @@ const navigation = [
   { name: 'Plot Mapping', href: '/mapping', icon: Map, testId: 'nav-mapping' },
   { name: 'Legality Assessment', href: '/legality', icon: Shield, testId: 'nav-legality' },
   { name: 'Deforestation Monitor', href: '/monitoring', icon: Satellite, testId: 'nav-monitoring' },
-  { name: 'Satellite Imagery', href: '/satellite', icon: Camera, testId: 'nav-satellite' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
 ];

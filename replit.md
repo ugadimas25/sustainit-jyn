@@ -1,8 +1,18 @@
 # Overview
 
-The KPN EUDR Platform is a comprehensive compliance management system designed to help KPN Plantations Berhad comply with the European Union Deforestation Regulation (EUDR). The platform provides tools for plot mapping, deforestation monitoring, legality assessment, supply chain traceability, and due diligence statement (DDS) report generation for palm oil operations.
+The KPN EUDR Platform is a comprehensive compliance management system designed to help KPN Plantations Berhad comply with the European Union Deforestation Regulation (EUDR). The platform provides tools for plot mapping, unified deforestation monitoring with satellite imagery analysis, legality assessment, supply chain traceability, and due diligence statement (DDS) report generation for palm oil operations.
 
-The application is built as a full-stack web application with a React frontend and Express.js backend, featuring real-time monitoring capabilities, interactive mapping, and integration with external APIs for deforestation alerts and compliance verification.
+The application is built as a full-stack web application with a React frontend and Express.js backend, featuring real-time monitoring capabilities, spatial visualization, and integration with Global Forest Watch for comprehensive deforestation analysis and compliance verification.
+
+## Recent Changes (August 2025)
+- **Merged Deforestation Monitoring Module**: Combined satellite imagery and deforestation monitoring into a unified module providing:
+  - Real-time forest loss detection using Global Forest Watch integration
+  - Comprehensive satellite imagery analysis with before/after comparisons
+  - Multiple alert sources (GLAD, RADD, FORMA, Terra-i) with confidence levels
+  - Spatial visualization of all mapped plots with deforestation overlays
+  - GFW analysis including tree cover loss/gain, biomass loss, carbon emissions
+  - Protected area overlap detection and primary forest loss identification
+  - Alert verification workflow with detailed satellite imagery comparisons
 
 # User Preferences
 

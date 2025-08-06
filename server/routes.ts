@@ -454,6 +454,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Deforestation Alerts API (merged satellite imagery and monitoring with GFW integration)
+  app.get("/api/deforestation-alerts", isAuthenticated, async (req, res) => {
+    try {
+      // Mock deforestation alert data with GFW integration
+      const mockAlertData = [
+        {
+          id: "alert_001",
+          plotId: "plot_002",
+          plotNumber: "KPN-002",
+          coordinates: [-1.789, 112.123],
+          alertDate: "2024-01-14",
+          confidenceLevel: "high",
+          severity: "critical",
+          forestLossArea: 12.5,
+          alertSource: "GLAD",
+          supplierName: "PT Wilmar International",
+          businessUnit: "Plantation South",
+          village: "Desa Sejahtera",
+          district: "Jambi Selatan",
+          verificationStatus: "verified",
+          gfwAnalysis: {
+            treeCoverLoss: 12.5,
+            treeCoverGain: 0.2,
+            biomassLoss: 420,
+            carbonEmissions: 1680,
+            protectedAreaOverlap: false,
+            primaryForestLoss: true
+          },
+          satelliteImagery: {
+            beforeImage: "/api/satellite-images/before_002.jpg",
+            afterImage: "/api/satellite-images/after_002.jpg",
+            captureDate: "2024-01-15",
+            resolution: "10m",
+            cloudCover: 15
+          }
+        },
+        {
+          id: "alert_002",
+          plotId: "plot_005",
+          plotNumber: "KPN-005",
+          coordinates: [-2.567, 111.234],
+          alertDate: "2024-01-11",
+          confidenceLevel: "high",
+          severity: "high",
+          forestLossArea: 8.3,
+          alertSource: "RADD",
+          supplierName: "PT Musim Mas Group",
+          businessUnit: "Estate Management",
+          village: "Desa Maju",
+          district: "Riau Selatan",
+          verificationStatus: "under-review",
+          gfwAnalysis: {
+            treeCoverLoss: 8.3,
+            treeCoverGain: 0.0,
+            biomassLoss: 280,
+            carbonEmissions: 1120,
+            protectedAreaOverlap: true,
+            primaryForestLoss: true
+          },
+          satelliteImagery: {
+            beforeImage: "/api/satellite-images/before_005.jpg",
+            afterImage: "/api/satellite-images/after_005.jpg",
+            captureDate: "2024-01-12",
+            resolution: "10m",
+            cloudCover: 8
+          }
+        },
+        {
+          id: "alert_003",
+          plotId: "plot_003",
+          plotNumber: "KPN-003",
+          coordinates: [-0.567, 110.789],
+          alertDate: "2024-01-10",
+          confidenceLevel: "medium",
+          severity: "medium",
+          forestLossArea: 3.2,
+          alertSource: "FORMA",
+          supplierName: "PT Astra Agro Lestari",
+          businessUnit: "Plantation Central",
+          village: "Desa Berkah",
+          district: "Sumatra Utara",
+          verificationStatus: "pending",
+          gfwAnalysis: {
+            treeCoverLoss: 3.2,
+            treeCoverGain: 0.1,
+            biomassLoss: 110,
+            carbonEmissions: 440,
+            protectedAreaOverlap: false,
+            primaryForestLoss: false
+          },
+          satelliteImagery: {
+            beforeImage: "/api/satellite-images/before_003.jpg",
+            afterImage: "/api/satellite-images/after_003.jpg",
+            captureDate: "2024-01-11",
+            resolution: "30m",
+            cloudCover: 25
+          }
+        }
+      ];
+      
+      res.json(mockAlertData);
+    } catch (error) {
+      console.error("Error fetching deforestation alerts:", error);
+      res.status(500).json({ error: "Failed to fetch deforestation alerts" });
+    }
+  });
+
+  // Update alert verification status
+  app.patch("/api/deforestation-alerts/:id/verify", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { verificationStatus, notes } = req.body;
+      
+      // In production, update the alert in the database
+      res.json({ 
+        message: `Alert ${id} verification status updated to ${verificationStatus}`,
+        alertId: id,
+        verificationStatus,
+        notes,
+        updatedBy: req.user?.id,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error updating alert verification:", error);
+      res.status(500).json({ error: "Failed to update alert verification" });
+    }
+  });
+
   // Surveys API
   app.get("/api/surveys", isAuthenticated, async (req, res) => {
     try {
