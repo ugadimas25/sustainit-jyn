@@ -5,14 +5,18 @@ The KPN EUDR Platform is a comprehensive compliance management system designed t
 The application is built as a full-stack web application with a React frontend and Express.js backend, featuring real-time monitoring capabilities, spatial visualization, and integration with Global Forest Watch for comprehensive deforestation analysis and compliance verification.
 
 ## Recent Changes (August 2025)
-- **Merged Deforestation Monitoring Module**: Combined satellite imagery and deforestation monitoring into a unified module providing:
-  - Real-time forest loss detection using Global Forest Watch integration
+- **Unified EUDR Monitoring Module**: Merged country map and deforestation monitoring into a comprehensive module providing:
+  - Interactive spatial map with polygon plot visualization across Indonesia
+  - Real-time deforestation alert monitoring with Global Forest Watch integration
   - Comprehensive satellite imagery analysis with before/after comparisons
   - Multiple alert sources (GLAD, RADD, FORMA, Terra-i) with confidence levels
-  - Spatial visualization of all mapped plots with deforestation overlays
+  - Layer analysis system (WDPA protected areas, KLHK legal status, GFW deforestation)
+  - Advanced filtering by business entity, province, district, village, severity, and source
+  - Unified plot and alert details panels with compliance status and risk assessment
+  - Tabbed interface switching between spatial map, deforestation alerts, and satellite imagery
   - GFW analysis including tree cover loss/gain, biomass loss, carbon emissions
   - Protected area overlap detection and primary forest loss identification
-  - Alert verification workflow with detailed satellite imagery comparisons
+  - Alert verification workflow with detailed compliance tracking
 
 # User Preferences
 

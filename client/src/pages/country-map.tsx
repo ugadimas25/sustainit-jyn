@@ -128,10 +128,10 @@ const mockPlots: Plot[] = [
 export default function CountryMap() {
   const [selectedPlot, setSelectedPlot] = useState<Plot | null>(null);
   const [filters, setFilters] = useState({
-    businessEntity: '',
-    province: '',
-    district: '',
-    village: ''
+    businessEntity: 'all',
+    province: 'all',
+    district: 'all',
+    village: 'all'
   });
   
   const [layers, setLayers] = useState<LayerConfig[]>([
@@ -148,10 +148,10 @@ export default function CountryMap() {
   });
 
   const filteredPlots = plots.filter(plot => {
-    return (!filters.businessEntity || plot.businessEntity === filters.businessEntity) &&
-           (!filters.province || plot.province === filters.province) &&
-           (!filters.district || plot.district === filters.district) &&
-           (!filters.village || plot.village === filters.village);
+    return (filters.businessEntity === 'all' || !filters.businessEntity || plot.businessEntity === filters.businessEntity) &&
+           (filters.province === 'all' || !filters.province || plot.province === filters.province) &&
+           (filters.district === 'all' || !filters.district || plot.district === filters.district) &&
+           (filters.village === 'all' || !filters.village || plot.village === filters.village);
   });
 
   const uniqueValues = {
@@ -229,7 +229,7 @@ export default function CountryMap() {
                     <SelectValue placeholder="All entities" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All entities</SelectItem>
+                    <SelectItem value="all">All entities</SelectItem>
                     {uniqueValues.businessEntities.map(entity => (
                       <SelectItem key={entity} value={entity}>{entity}</SelectItem>
                     ))}
@@ -245,7 +245,7 @@ export default function CountryMap() {
                     <SelectValue placeholder="All provinces" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All provinces</SelectItem>
+                    <SelectItem value="all">All provinces</SelectItem>
                     {uniqueValues.provinces.map(province => (
                       <SelectItem key={province} value={province}>{province}</SelectItem>
                     ))}
@@ -261,7 +261,7 @@ export default function CountryMap() {
                     <SelectValue placeholder="All districts" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All districts</SelectItem>
+                    <SelectItem value="all">All districts</SelectItem>
                     {uniqueValues.districts.map(district => (
                       <SelectItem key={district} value={district}>{district}</SelectItem>
                     ))}
@@ -277,7 +277,7 @@ export default function CountryMap() {
                     <SelectValue placeholder="All villages" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All villages</SelectItem>
+                    <SelectItem value="all">All villages</SelectItem>
                     {uniqueValues.villages.map(village => (
                       <SelectItem key={village} value={village}>{village}</SelectItem>
                     ))}
@@ -288,7 +288,7 @@ export default function CountryMap() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => setFilters({ businessEntity: '', province: '', district: '', village: '' })}
+                onClick={() => setFilters({ businessEntity: 'all', province: 'all', district: 'all', village: 'all' })}
                 data-testid="button-clear-filters"
               >
                 Clear Filters

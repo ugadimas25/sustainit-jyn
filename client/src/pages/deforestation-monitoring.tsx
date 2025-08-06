@@ -162,10 +162,10 @@ export default function DeforestationMonitoring() {
   const [dateRange, setDateRange] = useState("30");
   const [selectedAlert, setSelectedAlert] = useState<DeforestationAlert | null>(null);
 
-  // Fetch deforestation alerts from API
+  // Fetch deforestation alerts from API with real-time updates
   const { data: alerts = [], isLoading, error, refetch } = useQuery({
     queryKey: ["/api/deforestation-alerts"],
-    queryFn: () => Promise.resolve(sampleDeforestationData) // Use sample data for now
+    refetchInterval: 30000 // Refresh every 30 seconds for real-time monitoring
   });
 
   // Filter alerts based on search and filters
