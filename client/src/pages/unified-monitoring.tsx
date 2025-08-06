@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { VerificationPanel } from "@/components/verification-panel";
 import { ApiTestPanel } from "@/components/api-test-panel";
+import { Sidebar } from "@/components/layout/sidebar";
+import { TopBar } from "@/components/layout/top-bar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -190,10 +192,14 @@ export default function UnifiedMonitoring() {
   };
 
   return (
-    <div className="h-screen flex bg-background">
-      {/* Left Sidebar - Controls */}
-      <div className="w-80 border-r bg-card p-4 overflow-y-auto">
-        <div className="space-y-6">
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
+        <TopBar />
+        <div className="flex flex-1 bg-background">
+          {/* Left Sidebar - Controls */}
+          <div className="w-80 border-r bg-card p-4 overflow-y-auto">
+            <div className="space-y-6">
           {/* Header */}
           <div>
             <h1 className="text-xl font-bold flex items-center gap-2" data-testid="title-unified-monitoring">
@@ -396,7 +402,8 @@ export default function UnifiedMonitoring() {
 
           {/* API Integration Test Panel */}
           <ApiTestPanel />
-        </div>
+            </div>
+          </div>
       </div>
 
       {/* Main Content Area */}
@@ -778,6 +785,7 @@ export default function UnifiedMonitoring() {
               )}
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
