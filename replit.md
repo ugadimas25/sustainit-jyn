@@ -18,6 +18,15 @@ The application is built as a full-stack web application with a React frontend a
   - Protected area overlap detection and primary forest loss identification
   - Alert verification workflow with detailed compliance tracking
 
+- **Real WDPA and GFW API Integration**: Implemented live legality verification and deforestation monitoring:
+  - World Database of Protected Areas (WDPA) integration for real-time protected area verification
+  - Global Forest Watch (GFW) API integration for live deforestation alerts and forest analysis
+  - Comprehensive verification system combining WDPA legality checks with GFW forest monitoring
+  - Real-time plot verification with combined EUDR compliance assessment
+  - API fallback system providing mock data when API keys are unavailable
+  - Test panel for verifying WDPA and GFW API connectivity and data quality
+  - Enhanced plot data with Indonesian coordinates for authentic verification testing
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

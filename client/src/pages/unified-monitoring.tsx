@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { VerificationPanel } from "@/components/verification-panel";
+import { ApiTestPanel } from "@/components/api-test-panel";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -391,6 +393,9 @@ export default function UnifiedMonitoring() {
               </div>
             </CardContent>
           </Card>
+
+          {/* API Integration Test Panel */}
+          <ApiTestPanel />
         </div>
       </div>
 
@@ -565,7 +570,7 @@ export default function UnifiedMonitoring() {
 
           {/* Details Panel */}
           {(selectedPlot || selectedAlert) && (
-            <div className="w-96 border-l bg-card p-4 overflow-y-auto">
+            <div className="w-96 border-l bg-card p-4 overflow-y-auto space-y-4">
               {selectedPlot && (
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
@@ -652,6 +657,14 @@ export default function UnifiedMonitoring() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Real-time Verification Panel */}
+                  <VerificationPanel 
+                    plot={selectedPlot} 
+                    onVerificationComplete={(result) => {
+                      console.log('Verification completed:', result);
+                    }}
+                  />
                 </div>
               )}
 

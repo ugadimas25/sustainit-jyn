@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth, isAuthenticated } from "./auth";
 import { storage } from "./storage";
+import { WDPAService } from "./lib/wdpa-service";
+import { GFWService } from "./lib/gfw-service";
 import { insertPlotSchema, insertSupplierSchema, insertDocumentSchema, insertDeliverySchema, insertShipmentSchema, insertDDSReportSchema, insertSurveySchema, insertSurveyResponseSchema } from "@shared/schema";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
@@ -454,6 +456,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Initialize API services
+  const wdpaService = new WDPAService();
+  const gfwService = new GFWService();
+
+  // Real-time WDPA Protected Area Verification API
+  app.post("/api/wdpa/verify-coordinates", isAuthenticated, async (req, res) => {
+    try {
+      const { coordinates } = req.body;
+      
+      if (!coordinates) {
+        return res.status(400).json({ error: "Coordinates are required" });
+      }
+
+      const verificationResult = await wdpaService.checkProtectedAreaOverlap(coordinates);
+      res.json(verificationResult);
+    } catch (error) {
+      console.error("WDPA verification error:", error);
+      res.status(500).json({ 
+        error: "Protected area verification failed",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get protected area details
+  app.get("/api/wdpa/protected-area/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const protectedArea = await wdpaService.getProtectedAreaDetails(id);
+      
+      if (!protectedArea) {
+        return res.status(404).json({ error: "Protected area not found" });
+      }
+      
+      res.json(protectedArea);
+    } catch (error) {
+      console.error("WDPA details error:", error);
+      res.status(500).json({ 
+        error: "Failed to get protected area details",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Search protected areas by region
+  app.get("/api/wdpa/search", isAuthenticated, async (req, res) => {
+    try {
+      const { country, province } = req.query;
+      
+      if (!country) {
+        return res.status(400).json({ error: "Country parameter is required" });
+      }
+      
+      const protectedAreas = await wdpaService.searchProtectedAreasByRegion(
+        country as string, 
+        province as string
+      );
+      res.json(protectedAreas);
+    } catch (error) {
+      console.error("WDPA search error:", error);
+      res.status(500).json({ 
+        error: "Protected area search failed",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Real-time GFW Forest Analysis API
+  app.post("/api/gfw/forest-analysis", isAuthenticated, async (req, res) => {
+    try {
+      const { coordinates, year } = req.body;
+      
+      if (!coordinates) {
+        return res.status(400).json({ error: "Coordinates are required" });
+      }
+
+      const analysisResult = await gfwService.getForestAnalysis(coordinates, year);
+      res.json(analysisResult);
+    } catch (error) {
+      console.error("GFW forest analysis error:", error);
+      res.status(500).json({ 
+        error: "Forest analysis failed",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get GLAD deforestation alerts
+  app.post("/api/gfw/glad-alerts", isAuthenticated, async (req, res) => {
+    try {
+      const { coordinates, startDate, endDate } = req.body;
+      
+      if (!coordinates) {
+        return res.status(400).json({ error: "Coordinates are required" });
+      }
+
+      const alerts = await gfwService.getGLADAlerts(coordinates, startDate, endDate);
+      res.json(alerts);
+    } catch (error) {
+      console.error("GFW GLAD alerts error:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch GLAD alerts",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Enhanced plot verification combining WDPA and GFW data
+  app.post("/api/plots/comprehensive-verification", isAuthenticated, async (req, res) => {
+    try {
+      const { plotId, coordinates } = req.body;
+      
+      if (!plotId || !coordinates) {
+        return res.status(400).json({ error: "Plot ID and coordinates are required" });
+      }
+
+      // Run WDPA and GFW analysis in parallel
+      const [wdpaResult, gfwResult] = await Promise.all([
+        wdpaService.checkProtectedAreaOverlap(coordinates),
+        gfwService.getForestAnalysis(coordinates)
+      ]);
+
+      // Determine overall compliance status
+      let complianceStatus = 'compliant';
+      const risks: string[] = [];
+
+      if (wdpaResult.legalStatus === 'prohibited') {
+        complianceStatus = 'high-risk';
+        risks.push('Located in strictly protected area');
+      } else if (wdpaResult.legalStatus === 'restricted') {
+        complianceStatus = gfwResult.alertsCount > 0 ? 'high-risk' : 'medium-risk';
+        risks.push('Located in protected/restricted area');
+      }
+
+      if (gfwResult.alertsCount > 0) {
+        if (complianceStatus === 'compliant') complianceStatus = 'medium-risk';
+        risks.push(`${gfwResult.alertsCount} deforestation alert(s) detected`);
+      }
+
+      if (gfwResult.primaryForestLoss) {
+        complianceStatus = 'high-risk';
+        risks.push('Primary forest loss detected');
+      }
+
+      if (gfwResult.protectedAreaOverlap) {
+        risks.push('Deforestation detected in protected areas');
+      }
+
+      const verificationResult = {
+        plotId,
+        verificationDate: new Date().toISOString(),
+        complianceStatus,
+        risks,
+        wdpaAnalysis: wdpaResult,
+        gfwAnalysis: gfwResult,
+        eudrCompliant: complianceStatus === 'compliant',
+        recommendedActions: risks.length > 0 ? [
+          'Immediate field verification required',
+          'Contact local forestry authorities',
+          'Provide additional documentation'
+        ] : ['Continue monitoring']
+      };
+
+      res.json(verificationResult);
+    } catch (error) {
+      console.error("Comprehensive verification error:", error);
+      res.status(500).json({ 
+        error: "Comprehensive verification failed",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Deforestation Alerts API (merged satellite imagery and monitoring with GFW integration)
   app.get("/api/deforestation-alerts", isAuthenticated, async (req, res) => {
     try {
@@ -628,17 +803,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const plots = await storage.getAllPlots();
       const enhancedPlots = plots.map((plot, index) => ({
         ...plot,
-        // Mock geospatial data for visualization - replace with actual coordinates from database
-        polygon: [
-          [101.2345 + (index * 0.1), 0.1234 + (index * 0.05)], 
-          [101.2400 + (index * 0.1), 0.1234 + (index * 0.05)], 
-          [101.2400 + (index * 0.1), 0.1300 + (index * 0.05)], 
-          [101.2345 + (index * 0.1), 0.1300 + (index * 0.05)]
+        // Indonesian coordinates for real WDPA and GFW verification testing
+        polygon: index === 0 ? [
+          [110.123, -1.456], [110.134, -1.456], [110.134, -1.467], [110.123, -1.467], [110.123, -1.456]
+        ] : index === 1 ? [
+          [112.789, -1.234], [112.801, -1.234], [112.801, -1.245], [112.789, -1.245], [112.789, -1.234]
+        ] : [
+          [113.456, -0.678], [113.467, -0.678], [113.467, -0.689], [113.456, -0.689], [113.456, -0.678]
         ],
+        coordinates: index === 0 ? { lat: -1.456, lng: 110.123 } : 
+                    index === 1 ? { lat: -1.234, lng: 112.789 } : 
+                    { lat: -0.678, lng: 113.456 },
         businessEntity: plot.supplierId || 'KPN Plantations',
-        province: index % 3 === 0 ? 'Riau' : index % 3 === 1 ? 'Sumatra Utara' : 'Kalimantan Barat',
-        district: index % 3 === 0 ? 'Pelalawan' : index % 3 === 1 ? 'Labuhan Batu' : 'Pontianak', 
-        village: index % 3 === 0 ? 'Pangkalan Kerinci' : index % 3 === 1 ? 'Sei Balai' : 'Sungai Raya',
+        province: index === 0 ? 'Kalimantan Timur' : index === 1 ? 'Sumatra Selatan' : 'Kalimantan Barat',
+        district: index === 0 ? 'Kutai Kartanegara' : index === 1 ? 'Musi Banyuasin' : 'Sanggau',
+        village: index === 0 ? 'Desa Makmur' : index === 1 ? 'Desa Berkah' : 'Desa Sejahtera',
         complianceStatus: plot.status === 'compliant' ? 'compliant' : 
                          plot.deforestationRisk === 'high' ? 'high-risk' :
                          plot.deforestationRisk === 'medium' ? 'medium-risk' : 'low-risk',
