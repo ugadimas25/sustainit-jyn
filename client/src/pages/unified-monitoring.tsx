@@ -198,7 +198,7 @@ export default function UnifiedMonitoring() {
         <TopBar />
         <div className="flex flex-1 bg-background">
           {/* Left Sidebar - Controls */}
-          <div className="w-80 border-r bg-card p-4 overflow-y-auto">
+          <div className="w-64 border-r bg-card p-4 overflow-y-auto">
             <div className="space-y-6">
           {/* Header */}
           <div>

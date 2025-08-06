@@ -27,6 +27,11 @@ The application is built as a full-stack web application with a React frontend a
   - Test panel for verifying WDPA and GFW API connectivity and data quality
   - Enhanced plot data with Indonesian coordinates for authentic verification testing
 
+- **Navigation Consistency Update**: Enhanced EUDR monitoring module layout:
+  - Added Sidebar and TopBar components for consistent navigation across modules
+  - Adjusted monitoring panel width to match navigation proportions (w-64)
+  - Maintained all functionality while improving visual consistency with other modules
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
