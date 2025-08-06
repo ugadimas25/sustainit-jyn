@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { VerificationPanel } from "@/components/verification-panel";
 import { ApiTestPanel } from "@/components/api-test-panel";
+import { AIAssistantPanel } from "@/components/ai-assistant-panel";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,8 @@ import {
   Shield,
   FileText,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bot
 } from "lucide-react";
 
 interface Plot {
@@ -117,6 +119,7 @@ export default function UnifiedMonitoring() {
   const [searchTerm, setSearchTerm] = useState('');
   const [analysisType, setAnalysisType] = useState('EUDR');
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
   
   const [layers, setLayers] = useState<LayerConfig[]>([
     { id: 'wdpa', name: 'WDPA Protected Areas', description: 'World Database on Protected Areas', visible: false, color: '#22c55e' },
@@ -441,11 +444,23 @@ export default function UnifiedMonitoring() {
                 Satellite Imagery
               </TabsTrigger>
             </TabsList>
+            
+            {/* AI Assistant Toggle */}
+            <Button
+              variant={isAIPanelOpen ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsAIPanelOpen(!isAIPanelOpen)}
+              className="ml-auto"
+              data-testid="button-toggle-ai"
+            >
+              <Bot className="h-4 w-4 mr-2" />
+              AI Assistant
+            </Button>
           </Tabs>
         </div>
 
         <div className="flex-1 flex">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className={isAIPanelOpen ? "flex-1" : "flex-1"}>
           <div className="hidden">
             <TabsList>
               <TabsTrigger value="map">Map</TabsTrigger>
@@ -804,6 +819,19 @@ export default function UnifiedMonitoring() {
           )}
         </div>
         </div>
+        
+        {/* AI Assistant Panel */}
+        {isAIPanelOpen && (
+          <div className="w-80 border-l bg-background">
+            <AIAssistantPanel
+              plotData={filteredPlots}
+              alertData={filteredAlerts}
+              selectedPlot={selectedPlot}
+              selectedAlert={selectedAlert}
+              filters={filters}
+            />
+          </div>
+        )}
         </div>
       </div>
     </div>

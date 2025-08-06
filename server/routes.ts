@@ -4,6 +4,7 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { storage } from "./storage";
 import { WDPAService } from "./lib/wdpa-service";
 import { GFWService } from "./lib/gfw-service";
+import { openaiService } from "./lib/openai-service";
 import { insertPlotSchema, insertSupplierSchema, insertDocumentSchema, insertDeliverySchema, insertShipmentSchema, insertDDSReportSchema, insertSurveySchema, insertSurveyResponseSchema } from "@shared/schema";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
@@ -896,6 +897,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching layer data:", error);
       res.status(500).json({ error: "Failed to fetch layer data" });
+    }
+  });
+
+  // AI Analysis endpoints
+  app.post("/api/ai/analyze", isAuthenticated, async (req, res) => {
+    try {
+      const { query, plotData, alertData, context } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ error: "Query is required" });
+      }
+
+      const analysis = await openaiService.analyzeEUDRData({
+        query,
+        plotData: plotData || [],
+        alertData: alertData || [],
+        context: context || {}
+      });
+
+      res.json(analysis);
+    } catch (error) {
+      console.error("AI analysis error:", error);
+      res.status(500).json({ error: "Failed to analyze data with AI" });
+    }
+  });
+
+  app.post("/api/ai/summary", isAuthenticated, async (req, res) => {
+    try {
+      const { plotData, alertData } = req.body;
+      
+      const summary = await openaiService.generateEUDRSummary(
+        plotData || [],
+        alertData || []
+      );
+
+      res.json(summary);
+    } catch (error) {
+      console.error("AI summary error:", error);
+      res.status(500).json({ error: "Failed to generate AI summary" });
     }
   });
 
