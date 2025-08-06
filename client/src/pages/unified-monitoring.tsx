@@ -416,6 +416,14 @@ export default function UnifiedMonitoring() {
         </div>
 
         <div className="flex-1 flex">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+          <div className="hidden">
+            <TabsList>
+              <TabsTrigger value="map">Map</TabsTrigger>
+              <TabsTrigger value="alerts">Alerts</TabsTrigger>
+              <TabsTrigger value="satellite">Satellite</TabsTrigger>
+            </TabsList>
+          </div>
           <div className="flex-1">
             <TabsContent value="map" className="h-full m-0">
               <div className="h-full bg-slate-100 dark:bg-slate-800 relative">
@@ -553,6 +561,7 @@ export default function UnifiedMonitoring() {
               </div>
             </TabsContent>
           </div>
+        </Tabs>
 
           {/* Details Panel */}
           {(selectedPlot || selectedAlert) && (
