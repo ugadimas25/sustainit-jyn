@@ -31,7 +31,9 @@ import {
   BarChart3,
   Globe,
   Shield,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 interface Plot {
@@ -114,6 +116,7 @@ export default function UnifiedMonitoring() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [analysisType, setAnalysisType] = useState('EUDR');
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   
   const [layers, setLayers] = useState<LayerConfig[]>([
     { id: 'wdpa', name: 'WDPA Protected Areas', description: 'World Database on Protected Areas', visible: false, color: '#22c55e' },
@@ -197,8 +200,22 @@ export default function UnifiedMonitoring() {
       <div className="flex-1 flex flex-col">
         <TopBar />
         <div className="flex flex-1 bg-background">
+          {/* Toggle Button */}
+          <div className="flex">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
+              className="h-8 w-8 p-0 m-2 border"
+              data-testid="button-toggle-panel"
+            >
+              {isPanelCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+          </div>
+
           {/* Left Sidebar - Controls */}
-          <div className="w-64 border-r bg-card p-4 overflow-y-auto">
+          {!isPanelCollapsed && (
+            <div className="w-64 border-r bg-card p-4 overflow-y-auto">
             <div className="space-y-6">
           {/* Header */}
           <div>
@@ -403,11 +420,11 @@ export default function UnifiedMonitoring() {
           {/* API Integration Test Panel */}
           <ApiTestPanel />
             </div>
-          </div>
-      </div>
+            </div>
+          )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col">
         <div className="border-b p-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
@@ -785,6 +802,7 @@ export default function UnifiedMonitoring() {
               )}
             </div>
           )}
+        </div>
         </div>
         </div>
       </div>
