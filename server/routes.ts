@@ -622,6 +622,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Country Map - Plot data with geospatial information
+  app.get("/api/country-map/plots", isAuthenticated, async (req, res) => {
+    try {
+      const plots = await storage.getAllPlots();
+      const enhancedPlots = plots.map((plot, index) => ({
+        ...plot,
+        // Mock geospatial data for visualization - replace with actual coordinates from database
+        polygon: [
+          [101.2345 + (index * 0.1), 0.1234 + (index * 0.05)], 
+          [101.2400 + (index * 0.1), 0.1234 + (index * 0.05)], 
+          [101.2400 + (index * 0.1), 0.1300 + (index * 0.05)], 
+          [101.2345 + (index * 0.1), 0.1300 + (index * 0.05)]
+        ],
+        businessEntity: plot.supplierId || 'KPN Plantations',
+        province: index % 3 === 0 ? 'Riau' : index % 3 === 1 ? 'Sumatra Utara' : 'Kalimantan Barat',
+        district: index % 3 === 0 ? 'Pelalawan' : index % 3 === 1 ? 'Labuhan Batu' : 'Pontianak', 
+        village: index % 3 === 0 ? 'Pangkalan Kerinci' : index % 3 === 1 ? 'Sei Balai' : 'Sungai Raya',
+        complianceStatus: plot.status === 'compliant' ? 'compliant' : 
+                         plot.deforestationRisk === 'high' ? 'high-risk' :
+                         plot.deforestationRisk === 'medium' ? 'medium-risk' : 'low-risk',
+        risks: plot.deforestationRisk === 'high' ? ['Deforestation detected', 'Located in protected area'] :
+               plot.deforestationRisk === 'medium' ? ['Permit expiring soon'] : [],
+        permitStatus: plot.deforestationRisk === 'high' ? 'Expired' : 
+                     plot.deforestationRisk === 'medium' ? 'Expiring Soon' : 'Valid',
+        permitExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        isInProtectedArea: plot.deforestationRisk === 'high',
+        deforestationDetected: plot.deforestationRisk === 'high',
+        treecoverLoss: plot.deforestationRisk === 'high' ? 15 : plot.deforestationRisk === 'medium' ? 5 : 0,
+        lastVerified: new Date().toISOString().split('T')[0],
+        plantingDate: plot.createdAt.toISOString().split('T')[0]
+      }));
+      res.json(enhancedPlots);
+    } catch (error) {
+      console.error("Error fetching country map plots:", error);
+      res.status(500).json({ error: "Failed to fetch country map plots" });
+    }
+  });
+
+  // Layer data for WDPA, KLHK, GFW analysis
+  app.get("/api/country-map/layers/:layerType", isAuthenticated, async (req, res) => {
+    try {
+      const { layerType } = req.params;
+      
+      const layerData = {
+        wdpa: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              properties: { name: 'Leuser National Park', status: 'Strict Protection', category: 'National Park' },
+              geometry: { type: 'Polygon', coordinates: [[[97.0, 3.0], [98.5, 3.0], [98.5, 4.5], [97.0, 4.5], [97.0, 3.0]]] }
+            },
+            {
+              type: 'Feature',
+              properties: { name: 'Tesso Nilo National Park', status: 'Protected Area', category: 'National Park' },
+              geometry: { type: 'Polygon', coordinates: [[[101.8, 0.0], [102.2, 0.0], [102.2, 0.4], [101.8, 0.4], [101.8, 0.0]]] }
+            }
+          ]
+        },
+        klhk: {
+          type: 'FeatureCollection', 
+          features: [
+            {
+              type: 'Feature',
+              properties: { legalStatus: 'Production Forest', permit: 'Valid', category: 'HPH' },
+              geometry: { type: 'Polygon', coordinates: [[[99.0, 2.0], [99.5, 2.0], [99.5, 2.5], [99.0, 2.5], [99.0, 2.0]]] }
+            },
+            {
+              type: 'Feature',
+              properties: { legalStatus: 'Convertible Production Forest', permit: 'Valid', category: 'HPK' },
+              geometry: { type: 'Polygon', coordinates: [[[101.0, 0.5], [101.5, 0.5], [101.5, 1.0], [101.0, 1.0], [101.0, 0.5]]] }
+            }
+          ]
+        },
+        gfw: {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature', 
+              properties: { forestLoss: 12, year: 2024, confidence: 'High', source: 'GLAD' },
+              geometry: { type: 'Polygon', coordinates: [[[109.0, -0.5], [109.5, -0.5], [109.5, 0.0], [109.0, 0.0], [109.0, -0.5]]] }
+            },
+            {
+              type: 'Feature',
+              properties: { forestLoss: 8, year: 2024, confidence: 'Medium', source: 'RADD' },
+              geometry: { type: 'Polygon', coordinates: [[[102.0, 1.0], [102.3, 1.0], [102.3, 1.3], [102.0, 1.3], [102.0, 1.0]]] }
+            }
+          ]
+        }
+      };
+
+      res.json(layerData[layerType as keyof typeof layerData] || { type: 'FeatureCollection', features: [] });
+    } catch (error) {
+      console.error("Error fetching layer data:", error);
+      res.status(500).json({ error: "Failed to fetch layer data" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

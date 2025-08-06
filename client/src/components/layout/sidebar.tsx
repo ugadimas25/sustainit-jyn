@@ -10,12 +10,14 @@ import {
   Camera,
   Leaf,
   LogOut,
-  User
+  User,
+  Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3, testId: 'nav-dashboard' },
+  { name: 'Country Map', href: '/country-map', icon: Globe, testId: 'nav-country-map' },
   { name: 'Plot Mapping', href: '/mapping', icon: Map, testId: 'nav-mapping' },
   { name: 'Legality Assessment', href: '/legality', icon: Shield, testId: 'nav-legality' },
   { name: 'Deforestation Monitor', href: '/monitoring', icon: Satellite, testId: 'nav-monitoring' },
