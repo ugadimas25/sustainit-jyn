@@ -12,6 +12,7 @@ import PlotMapping from "@/pages/plot-mapping";
 import LegalityAssessment from "@/pages/legality-assessment";
 import UnifiedMonitoring from "@/pages/unified-monitoring";
 import SupplyChain from "@/pages/supply-chain";
+import SupplyChainAnalytics from "@/pages/supply-chain-analytics";
 import DDSReports from "@/pages/dds-reports";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <ProtectedRoute path="/mapping" component={PlotMapping} />
       <ProtectedRoute path="/legality" component={LegalityAssessment} />
       <ProtectedRoute path="/supply-chain" component={SupplyChain} />
+      <ProtectedRoute path="/analytics" component={SupplyChainAnalytics} />
       <ProtectedRoute path="/reports" component={DDSReports} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />

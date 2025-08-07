@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { WDPAService } from "./lib/wdpa-service";
 import { GFWService } from "./lib/gfw-service";
 import { openaiService } from "./lib/openai-service";
+import { complianceScoringService } from "./lib/compliance-scoring";
 import { insertPlotSchema, insertSupplierSchema, insertDocumentSchema, insertDeliverySchema, insertShipmentSchema, insertDDSReportSchema, insertSurveySchema, insertSurveyResponseSchema } from "@shared/schema";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
@@ -897,6 +898,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching layer data:", error);
       res.status(500).json({ error: "Failed to fetch layer data" });
+    }
+  });
+
+  // Supply Chain Analytics endpoints
+  app.get("/api/supply-chain/analytics", isAuthenticated, async (req, res) => {
+    try {
+      const { range = '6months' } = req.query;
+      
+      // Get suppliers data
+      const suppliers = await storage.getAllSuppliers();
+      
+      // Generate predictive analytics
+      const analytics = await complianceScoringService.generatePredictiveAnalytics(suppliers);
+      
+      // Generate AI insights
+      const insights = await complianceScoringService.generateAIInsights(analytics);
+      
+      res.json({
+        suppliers: analytics,
+        insights,
+        timeRange: range
+      });
+    } catch (error) {
+      console.error("Supply chain analytics error:", error);
+      res.status(500).json({ error: "Failed to generate supply chain analytics" });
+    }
+  });
+
+  app.get("/api/suppliers/:id/compliance-score", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const supplier = await storage.getSupplier(id);
+      
+      if (!supplier) {
+        return res.status(404).json({ error: "Supplier not found" });
+      }
+      
+      // Calculate compliance metrics for this supplier
+      const plots = await storage.getPlotsBySupplier(id);
+      const metrics = {
+        plotCount: plots.length,
+        deforestationAlerts: 0, // Would be fetched from monitoring system
+        protectedAreaViolations: 0,
+        documentationScore: Math.floor(Math.random() * 40) + 60, // Mock score
+        certificationStatus: 'none',
+        recentViolations: Math.floor(Math.random() * 3),
+        supplierRating: 3.5 + (Math.random() * 1.5),
+        traceabilityScore: Math.floor(Math.random() * 30) + 70
+      };
+      
+      const score = complianceScoringService.calculateComplianceScore(metrics);
+      
+      res.json(score);
+    } catch (error) {
+      console.error("Compliance score error:", error);
+      res.status(500).json({ error: "Failed to calculate compliance score" });
     }
   });
 

@@ -11,7 +11,8 @@ import {
   Leaf,
   LogOut,
   User,
-  Globe
+  Globe,
+  Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Plot Mapping', href: '/mapping', icon: Map, testId: 'nav-mapping' },
   { name: 'Legality Assessment', href: '/legality', icon: Shield, testId: 'nav-legality' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
+  { name: 'Analytics', href: '/analytics', icon: Brain, testId: 'nav-analytics' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
 ];
 
