@@ -9,6 +9,7 @@ import { useState } from "react";
 import { insertUserSchema } from "@shared/schema";
 import { Redirect } from "wouter";
 import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
+import plantationBgImage from "@assets/6194adcbbd9b6_1754556162332.jpg";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
@@ -45,10 +46,10 @@ export default function AuthPage() {
     <div className="min-h-screen flex">
       {/* Hero Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-forest to-forest-dark relative">
-        <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-0 opacity-30">
           <img 
-            src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080" 
-            alt="Palm oil plantation landscape" 
+            src={plantationBgImage} 
+            alt="Palm oil plantation with dirt road through green palm trees" 
             className="w-full h-full object-cover"
           />
         </div>
