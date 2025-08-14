@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AIAssistant } from "@/components/ai-assistant";
 import { 
   Users, 
   Search, 
@@ -770,9 +771,20 @@ export default function LegalityAssessmentPage() {
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
               <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Edit className="h-5 w-5 text-blue-600" />
-                    Edit Farmer Information - {editingFarmer?.farmerName}
+                  <DialogTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Edit className="h-5 w-5 text-blue-600" />
+                      Edit Farmer Information - {editingFarmer?.farmerName}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <AIAssistant 
+                        farmerData={editingFarmer} 
+                        onApplySuggestion={(field, value) => {
+                          console.log('Apply suggestion:', field, value);
+                          // TODO: Update farmer data with AI suggestion
+                        }}
+                      />
+                    </div>
                   </DialogTitle>
                 </DialogHeader>
 
@@ -1206,18 +1218,23 @@ export default function LegalityAssessmentPage() {
                   </Tabs>
                 )}
 
-                <DialogFooter className="gap-2">
-                  <div className="flex items-center gap-2">
-                    <Label>Data Status:</Label>
-                    <Select value={editingFarmer?.dataStatus}>
-                      <SelectTrigger className="w-40" data-testid="select-data-status">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="not-completed">Not Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <DialogFooter className="gap-2 border-t pt-4 mt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label>Data Status:</Label>
+                      <Select value={editingFarmer?.dataStatus}>
+                        <SelectTrigger className="w-40" data-testid="select-data-status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="not-completed">Not Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="text-sm text-gray-500 border-l pl-4">
+                      Use AI assistance to auto-complete missing information and validate EUDR compliance
+                    </div>
                   </div>
                   <div className="flex-1" />
                   <Button variant="outline" onClick={() => setShowEditDialog(false)} data-testid="button-cancel-edit">

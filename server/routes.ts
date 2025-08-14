@@ -1163,6 +1163,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-powered document completion endpoints
+  app.post('/api/ai/suggest-completions', isAuthenticated, async (req, res) => {
+    try {
+      const { aiCompletionService } = await import('./lib/ai-completion');
+      const partialData = req.body;
+      
+      const suggestions = await aiCompletionService.suggestCompletions(partialData);
+      res.json({ suggestions });
+    } catch (error) {
+      console.error('Error generating AI completions:', error);
+      res.status(500).json({ error: 'Failed to generate completions' });
+    }
+  });
+
+  app.post('/api/ai/validate-document', isAuthenticated, async (req, res) => {
+    try {
+      const { aiCompletionService } = await import('./lib/ai-completion');
+      const farmerData = req.body;
+      
+      const validation = await aiCompletionService.validateDocument(farmerData);
+      res.json(validation);
+    } catch (error) {
+      console.error('Error validating document:', error);
+      res.status(500).json({ error: 'Failed to validate document' });
+    }
+  });
+
+  app.post('/api/ai/compliance-summary', isAuthenticated, async (req, res) => {
+    try {
+      const { aiCompletionService } = await import('./lib/ai-completion');
+      const farmerData = req.body;
+      
+      const summary = await aiCompletionService.generateComplianceSummary(farmerData);
+      res.json(summary);
+    } catch (error) {
+      console.error('Error generating compliance summary:', error);
+      res.status(500).json({ error: 'Failed to generate compliance summary' });
+    }
+  });
+
+  app.post('/api/ai/field-suggestions', isAuthenticated, async (req, res) => {
+    try {
+      const { aiCompletionService } = await import('./lib/ai-completion');
+      const { fieldName, currentValue, context } = req.body;
+      
+      const suggestions = await aiCompletionService.getFieldSuggestions(fieldName, currentValue, context);
+      res.json({ suggestions });
+    } catch (error) {
+      console.error('Error getting field suggestions:', error);
+      res.status(500).json({ error: 'Failed to get field suggestions' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
