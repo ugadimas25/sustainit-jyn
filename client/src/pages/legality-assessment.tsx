@@ -498,18 +498,42 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             A. FARMER IDENTITY
                           </h3>
-                          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                            <div><strong>Name:</strong> {selectedFarmer.farmerName}</div>
-                            <div><strong>National ID (KTP):</strong> {selectedFarmer.nationalId}</div>
-                            <div><strong>Place & Date of Birth:</strong> {selectedFarmer.birthPlaceDate}</div>
-                            <div><strong>Sex:</strong> {selectedFarmer.sex}</div>
-                            <div><strong>Education:</strong> {selectedFarmer.education}</div>
-                            <div><strong>Province:</strong> {selectedFarmer.province}</div>
-                            <div><strong>Regency/City:</strong> {selectedFarmer.regencyCity}</div>
-                            <div><strong>District:</strong> {selectedFarmer.district}</div>
-                            <div className="col-span-2"><strong>Village:</strong> {selectedFarmer.village}</div>
-                            <div className="col-span-2"><strong>Address:</strong> {selectedFarmer.farmerAddress}</div>
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <tbody>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Name:</td>
+                                <td className="border border-black p-2">{selectedFarmer.farmerName}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">National ID (KTP):</td>
+                                <td className="border border-black p-2">{selectedFarmer.nationalId}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Place & Date of Birth:</td>
+                                <td className="border border-black p-2">{selectedFarmer.birthPlaceDate}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Sex:</td>
+                                <td className="border border-black p-2">{selectedFarmer.sex}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Education:</td>
+                                <td className="border border-black p-2">{selectedFarmer.education}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Province:</td>
+                                <td className="border border-black p-2">{selectedFarmer.province}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Regency/City:</td>
+                                <td className="border border-black p-2">{selectedFarmer.regencyCity}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">District:</td>
+                                <td className="border border-black p-2">{selectedFarmer.district}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Village:</td>
+                                <td className="border border-black p-2 col-span-3" colSpan={3}>{selectedFarmer.village}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Address:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.farmerAddress}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* Farm/Plot Information Section */}
@@ -517,25 +541,62 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             B. FARM/PLOT INFORMATION
                           </h3>
-                          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                            <div><strong>Farm/Plot Number:</strong> {selectedFarmer.farmPlotNumber}</div>
-                            <div><strong>Land Tenure:</strong> {selectedFarmer.landTenure}</div>
-                            <div><strong>Land Document:</strong> {selectedFarmer.landDocumentNumber}</div>
-                            <div><strong>Land Area:</strong> {selectedFarmer.landAreaPerDocument?.toLocaleString()} m²</div>
-                            <div><strong>Cropping Pattern:</strong> {selectedFarmer.croppingPattern}</div>
-                            <div><strong>Main Commodity:</strong> {selectedFarmer.mainCommodity}</div>
-                            <div className="col-span-2"><strong>Other Commodities:</strong> {selectedFarmer.otherCommodities || 'None'}</div>
-                            <div><strong>Planted Area:</strong> {selectedFarmer.plantedArea?.toLocaleString()} m²</div>
-                            <div><strong>Year Planted:</strong> {selectedFarmer.yearPlanted}</div>
-                            <div><strong>Year Replanted:</strong> {selectedFarmer.yearReplanted || 'N/A'}</div>
-                            <div><strong>Standing Trees:</strong> {selectedFarmer.standingTrees?.toLocaleString()}</div>
-                            <div><strong>Annual Production:</strong> {selectedFarmer.annualProduction} tons</div>
-                            <div><strong>Productivity:</strong> {selectedFarmer.productivity} tons/ha</div>
-                            <div><strong>Seed Source:</strong> {selectedFarmer.seedSource}</div>
-                            <div><strong>Land Type:</strong> {selectedFarmer.landType}</div>
-                            <div><strong>Fertilizer Type:</strong> {selectedFarmer.fertilizerType}</div>
-                            <div><strong>Sales Partner:</strong> {selectedFarmer.salesPartner}</div>
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <tbody>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Farm/Plot Number:</td>
+                                <td className="border border-black p-2">{selectedFarmer.farmPlotNumber}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Land Tenure:</td>
+                                <td className="border border-black p-2">{selectedFarmer.landTenure}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Land Document:</td>
+                                <td className="border border-black p-2">{selectedFarmer.landDocumentNumber}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Land Area:</td>
+                                <td className="border border-black p-2">{selectedFarmer.landAreaPerDocument?.toLocaleString()} m²</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Cropping Pattern:</td>
+                                <td className="border border-black p-2">{selectedFarmer.croppingPattern}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Main Commodity:</td>
+                                <td className="border border-black p-2">{selectedFarmer.mainCommodity}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Other Commodities:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.otherCommodities || 'None'}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Planted Area:</td>
+                                <td className="border border-black p-2">{selectedFarmer.plantedArea?.toLocaleString()} m²</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Year Planted:</td>
+                                <td className="border border-black p-2">{selectedFarmer.yearPlanted}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Year Replanted:</td>
+                                <td className="border border-black p-2">{selectedFarmer.yearReplanted || 'N/A'}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Standing Trees:</td>
+                                <td className="border border-black p-2">{selectedFarmer.standingTrees?.toLocaleString()}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Annual Production:</td>
+                                <td className="border border-black p-2">{selectedFarmer.annualProduction} tons</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Productivity:</td>
+                                <td className="border border-black p-2">{selectedFarmer.productivity} tons/ha</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Seed Source:</td>
+                                <td className="border border-black p-2">{selectedFarmer.seedSource}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Land Type:</td>
+                                <td className="border border-black p-2">{selectedFarmer.landType}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Fertilizer Type:</td>
+                                <td className="border border-black p-2">{selectedFarmer.fertilizerType}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Sales Partner:</td>
+                                <td className="border border-black p-2">{selectedFarmer.salesPartner}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* Organization Information Section */}
@@ -543,12 +604,24 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             C. FARMER ORGANIZATION INFORMATION
                           </h3>
-                          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                            <div><strong>Organization Name:</strong> {selectedFarmer.organizationName}</div>
-                            <div><strong>SIMLUHTAN Group Number:</strong> {selectedFarmer.groupNumber}</div>
-                            <div className="col-span-2"><strong>Organization Commodities:</strong> {selectedFarmer.organizationCommodities}</div>
-                            <div className="col-span-2"><strong>Organization Address:</strong> {selectedFarmer.organizationAddress}</div>
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <tbody>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Organization Name:</td>
+                                <td className="border border-black p-2">{selectedFarmer.organizationName}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">SIMLUHTAN Group Number:</td>
+                                <td className="border border-black p-2">{selectedFarmer.groupNumber}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Organization Commodities:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.organizationCommodities}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Organization Address:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.organizationAddress}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* Farm Location Section */}
@@ -556,13 +629,24 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             D. FARM LOCATION (GPS COORDINATES)
                           </h3>
-                          <div className="grid grid-cols-2 gap-4">
-                            {selectedFarmer.coordinates?.map((coord, index) => (
-                              <div key={index}>
-                                <strong>Point {index + 1}:</strong> Longitude: {coord.longitude}, Latitude: {coord.latitude}
-                              </div>
-                            ))}
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <thead>
+                              <tr>
+                                <th className="border border-black p-2 font-bold bg-gray-100">Point</th>
+                                <th className="border border-black p-2 font-bold bg-gray-100">Longitude</th>
+                                <th className="border border-black p-2 font-bold bg-gray-100">Latitude</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selectedFarmer.coordinates?.map((coord, index) => (
+                                <tr key={index}>
+                                  <td className="border border-black p-2 font-bold bg-gray-50">Point {index + 1}</td>
+                                  <td className="border border-black p-2">{coord.longitude}</td>
+                                  <td className="border border-black p-2">{coord.latitude}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* Certification Statement */}
@@ -628,18 +712,42 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             A. IDENTITAS PEKEBUN
                           </h3>
-                          <div className="space-y-2">
-                            <div><strong>Nama:</strong> {selectedFarmer.farmerName}</div>
-                            <div><strong>No. KTP:</strong> {selectedFarmer.nationalId}</div>
-                            <div><strong>Tempat tanggal lahir:</strong> {selectedFarmer.birthPlaceDate}</div>
-                            <div><strong>Jenis kelamin:</strong> {selectedFarmer.sex === 'Male' ? 'Laki-laki' : 'Perempuan'}</div>
-                            <div><strong>Pendidikan:</strong> {selectedFarmer.education}</div>
-                            <div><strong>Provinsi:</strong> {selectedFarmer.province}</div>
-                            <div><strong>Kabupaten/Kota:</strong> {selectedFarmer.regencyCity}</div>
-                            <div><strong>Kecamatan:</strong> {selectedFarmer.district}</div>
-                            <div><strong>Desa/Kelurahan:</strong> {selectedFarmer.village}</div>
-                            <div><strong>Alamat Pekebun:</strong> {selectedFarmer.farmerAddress}</div>
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <tbody>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Nama:</td>
+                                <td className="border border-black p-2">{selectedFarmer.farmerName}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">No. KTP:</td>
+                                <td className="border border-black p-2">{selectedFarmer.nationalId}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Tempat tanggal lahir:</td>
+                                <td className="border border-black p-2">{selectedFarmer.birthPlaceDate}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Jenis kelamin:</td>
+                                <td className="border border-black p-2">{selectedFarmer.sex === 'Male' ? 'Laki-laki' : 'Perempuan'}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Pendidikan:</td>
+                                <td className="border border-black p-2">{selectedFarmer.education}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Provinsi:</td>
+                                <td className="border border-black p-2">{selectedFarmer.province}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Kabupaten/Kota:</td>
+                                <td className="border border-black p-2">{selectedFarmer.regencyCity}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Kecamatan:</td>
+                                <td className="border border-black p-2">{selectedFarmer.district}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Desa/Kelurahan:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.village}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Alamat Pekebun:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.farmerAddress}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* B. Keterangan Kebun */}
@@ -647,37 +755,74 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             B. KETERANGAN KEBUN
                           </h3>
-                          <div className="space-y-2">
-                            <div><strong>Kebun Ke-:</strong> {selectedFarmer.farmPlotNumber}</div>
-                            <div><strong>Status lahan yang diusahakan:</strong> {selectedFarmer.landTenure}</div>
-                            <div><strong>Nomor/dokumen lahan yang diusahakan:</strong> {selectedFarmer.landDocumentNumber}</div>
-                            <div><strong>Luas lahan berdasarkan Dokumen (m²):</strong> {selectedFarmer.landAreaPerDocument?.toLocaleString()}</div>
-                            <div><strong>Pola tanam:</strong> {selectedFarmer.croppingPattern === 'Monoculture' ? 'Monokultur' : 'Polikultur'}</div>
-                            <div><strong>Komoditas Utama:</strong> {selectedFarmer.mainCommodity}</div>
-                            <div><strong>Komoditas Lainnya:</strong> {selectedFarmer.otherCommodities || 'Tidak ada'}</div>
-                            <div><strong>Luas areal tertanam (m²):</strong> {selectedFarmer.plantedArea?.toLocaleString()}</div>
-                            <div><strong>Tahun tanam:</strong> {selectedFarmer.yearPlanted}</div>
-                            <div><strong>Tahun tanam sebelum peremajaan:</strong> {selectedFarmer.yearReplanted || 'Tidak ada'}</div>
-                            <div><strong>Jumlah tegakan pohon:</strong> {selectedFarmer.standingTrees?.toLocaleString()}</div>
-                            <div><strong>Produksi per tahun (ton):</strong> {selectedFarmer.annualProduction}</div>
-                            <div><strong>Produktivitas (Ton/Ha):</strong> {selectedFarmer.productivity}</div>
-                            <div><strong>Asal benih:</strong> {
-                              selectedFarmer.seedSource === 'Certified seed' ? 'Benih bersertifikat' :
-                              selectedFarmer.seedSource === 'Non-certified seed' ? 'Benih tidak bersertifikat' :
-                              'Tidak Tahu'
-                            }</div>
-                            <div><strong>Jenis lahan:</strong> {selectedFarmer.landType === 'Mineral soil' ? 'Lahan Mineral' : 'Lahan Basa (Pasang Surut, Gambut)'}</div>
-                            <div><strong>Jenis Pupuk:</strong> {
-                              selectedFarmer.fertilizerType === 'Organic' ? 'Organik' :
-                              selectedFarmer.fertilizerType === 'Inorganic' ? 'Non Organik' :
-                              'Campuran'
-                            }</div>
-                            <div><strong>Mitra penjualan:</strong> {
-                              selectedFarmer.salesPartner === 'Cooperative' ? 'Koperasi' :
-                              selectedFarmer.salesPartner === 'Processing company' ? 'Perusahaan Pengolahan' :
-                              'Lainnya'
-                            }</div>
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <tbody>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Kebun Ke-:</td>
+                                <td className="border border-black p-2">{selectedFarmer.farmPlotNumber}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Status lahan yang diusahakan:</td>
+                                <td className="border border-black p-2">{selectedFarmer.landTenure}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Nomor/dokumen lahan yang diusahakan:</td>
+                                <td className="border border-black p-2">{selectedFarmer.landDocumentNumber}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Luas lahan berdasarkan Dokumen (m²):</td>
+                                <td className="border border-black p-2">{selectedFarmer.landAreaPerDocument?.toLocaleString()}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Pola tanam:</td>
+                                <td className="border border-black p-2">{selectedFarmer.croppingPattern === 'Monoculture' ? 'Monokultur' : 'Polikultur'}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Komoditas Utama:</td>
+                                <td className="border border-black p-2">{selectedFarmer.mainCommodity}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Komoditas Lainnya:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.otherCommodities || 'Tidak ada'}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Luas areal tertanam (m²):</td>
+                                <td className="border border-black p-2">{selectedFarmer.plantedArea?.toLocaleString()}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Tahun tanam:</td>
+                                <td className="border border-black p-2">{selectedFarmer.yearPlanted}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Tahun tanam sebelum peremajaan:</td>
+                                <td className="border border-black p-2">{selectedFarmer.yearReplanted || 'Tidak ada'}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Jumlah tegakan pohon:</td>
+                                <td className="border border-black p-2">{selectedFarmer.standingTrees?.toLocaleString()}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Produksi per tahun (ton):</td>
+                                <td className="border border-black p-2">{selectedFarmer.annualProduction}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Produktivitas (Ton/Ha):</td>
+                                <td className="border border-black p-2">{selectedFarmer.productivity}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Asal benih:</td>
+                                <td className="border border-black p-2">{
+                                  selectedFarmer.seedSource === 'Certified seed' ? 'Benih bersertifikat' :
+                                  selectedFarmer.seedSource === 'Non-certified seed' ? 'Benih tidak bersertifikat' :
+                                  'Tidak Tahu'
+                                }</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Jenis lahan:</td>
+                                <td className="border border-black p-2">{selectedFarmer.landType === 'Mineral soil' ? 'Lahan Mineral' : 'Lahan Basa (Pasang Surut, Gambut)'}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Jenis Pupuk:</td>
+                                <td className="border border-black p-2">{
+                                  selectedFarmer.fertilizerType === 'Organic' ? 'Organik' :
+                                  selectedFarmer.fertilizerType === 'Inorganic' ? 'Non Organik' :
+                                  'Campuran'
+                                }</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Mitra penjualan:</td>
+                                <td className="border border-black p-2">{
+                                  selectedFarmer.salesPartner === 'Cooperative' ? 'Koperasi' :
+                                  selectedFarmer.salesPartner === 'Processing company' ? 'Perusahaan Pengolahan' :
+                                  'Lainnya'
+                                }</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* C. Keterangan Kelembagaan Tani */}
@@ -685,12 +830,24 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             C. KETERANGAN KELEMBAGAAN TANI
                           </h3>
-                          <div className="space-y-2">
-                            <div><strong>Nama kelembagaan tani:</strong> {selectedFarmer.organizationName}</div>
-                            <div><strong>Nomor kelompok dalam SIMLUHTAN:</strong> {selectedFarmer.groupNumber}</div>
-                            <div><strong>Komoditas kelembagaan tani:</strong> {selectedFarmer.organizationCommodities}</div>
-                            <div><strong>Alamat kelembagaan tani:</strong> {selectedFarmer.organizationAddress}</div>
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <tbody>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Nama kelembagaan tani:</td>
+                                <td className="border border-black p-2">{selectedFarmer.organizationName}</td>
+                                <td className="border border-black p-2 font-bold bg-gray-50 w-1/4">Nomor kelompok dalam SIMLUHTAN:</td>
+                                <td className="border border-black p-2">{selectedFarmer.groupNumber}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Komoditas kelembagaan tani:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.organizationCommodities}</td>
+                              </tr>
+                              <tr>
+                                <td className="border border-black p-2 font-bold bg-gray-50">Alamat kelembagaan tani:</td>
+                                <td className="border border-black p-2" colSpan={3}>{selectedFarmer.organizationAddress}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* D. Lokasi Kebun */}
@@ -698,14 +855,24 @@ export default function LegalityAssessmentPage() {
                           <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
                             D. LOKASI KEBUN
                           </h3>
-                          <div className="space-y-1">
-                            <p><strong>Titik Koordinat</strong></p>
-                            {selectedFarmer.coordinates?.map((coord, index) => (
-                              <div key={index}>
-                                <strong>Titik {index + 1}:</strong> (Long) {coord.longitude} (Lat) {coord.latitude}
-                              </div>
-                            ))}
-                          </div>
+                          <table className="w-full border-collapse border-2 border-black">
+                            <thead>
+                              <tr>
+                                <th className="border border-black p-2 font-bold bg-gray-100">Titik</th>
+                                <th className="border border-black p-2 font-bold bg-gray-100">Longitude</th>
+                                <th className="border border-black p-2 font-bold bg-gray-100">Latitude</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selectedFarmer.coordinates?.map((coord, index) => (
+                                <tr key={index}>
+                                  <td className="border border-black p-2 font-bold bg-gray-50">Titik {index + 1}</td>
+                                  <td className="border border-black p-2">{coord.longitude}</td>
+                                  <td className="border border-black p-2">{coord.latitude}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
 
                         {/* Pernyataan Sertifikasi */}
