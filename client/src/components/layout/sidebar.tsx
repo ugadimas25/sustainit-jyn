@@ -2,30 +2,21 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { 
   BarChart3, 
-  Map, 
   Shield, 
   Satellite, 
   Link, 
   FileText, 
-  Camera,
   Leaf,
   LogOut,
-  User,
-  Globe,
-  Brain,
-  GitBranch
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3, testId: 'nav-dashboard' },
-  { name: 'EUDR Monitoring', href: '/monitoring', icon: Satellite, testId: 'nav-monitoring' },
-  { name: 'Plot Mapping', href: '/mapping', icon: Map, testId: 'nav-mapping' },
+  { name: 'Deforestation Monitoring', href: '/deforestation-monitoring', icon: Satellite, testId: 'nav-deforestation-monitoring' },
   { name: 'Legality Assessment', href: '/legality', icon: Shield, testId: 'nav-legality' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
-  { name: 'Supply Chain Workflow', href: '/supply-chain-workflow', icon: GitBranch, testId: 'nav-supply-chain-workflow' },
-  { name: 'Traceability', href: '/traceability', icon: GitBranch, testId: 'nav-traceability' },
-  { name: 'Analytics', href: '/analytics', icon: Brain, testId: 'nav-analytics' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
 ];
 

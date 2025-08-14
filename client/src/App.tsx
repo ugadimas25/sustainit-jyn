@@ -11,23 +11,17 @@ import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
 import LegalityAssessment from "@/pages/legality-assessment";
 import UnifiedMonitoring from "@/pages/unified-monitoring";
-import SupplyChain from "@/pages/supply-chain";
-import SupplyChainTraceability from "@/pages/supply-chain-traceability";
-import SupplyChainWorkflow from "@/pages/supply-chain-workflow";
-import SupplyChainAnalytics from "@/pages/supply-chain-analytics";
+import UnifiedSupplyChain from "@/pages/unified-supply-chain";
+import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import DDSReports from "@/pages/dds-reports";
 
 function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={Dashboard} />
-      <ProtectedRoute path="/monitoring" component={UnifiedMonitoring} />
-      <ProtectedRoute path="/mapping" component={PlotMapping} />
+      <ProtectedRoute path="/deforestation-monitoring" component={DeforestationMonitoring} />
       <ProtectedRoute path="/legality" component={LegalityAssessment} />
-      <ProtectedRoute path="/supply-chain" component={SupplyChain} />
-      <ProtectedRoute path="/supply-chain-workflow" component={SupplyChainWorkflow} />
-      <ProtectedRoute path="/traceability" component={SupplyChainTraceability} />
-      <ProtectedRoute path="/analytics" component={SupplyChainAnalytics} />
+      <ProtectedRoute path="/supply-chain" component={UnifiedSupplyChain} />
       <ProtectedRoute path="/reports" component={DDSReports} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />

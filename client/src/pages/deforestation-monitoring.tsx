@@ -1,350 +1,679 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Sidebar } from "@/components/layout/sidebar";
-import { TopBar } from "@/components/layout/top-bar";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
-  Satellite, 
-  AlertTriangle, 
-  MapPin, 
-  Search, 
-  Download, 
-  Eye, 
-  Calendar,
-  TreePine,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Layers,
-  Filter,
-  RefreshCw
+  Satellite, Map, AlertTriangle, Shield, Plus, Search, Filter,
+  MapPin, Globe, Camera, Layers, Calendar, TrendingDown,
+  Activity, Eye, Target, CheckCircle2, Clock
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+
+interface Plot {
+  id: string;
+  plotId: string;
+  name: string;
+  location: string;
+  coordinates: { lat: number; lng: number };
+  area: number;
+  status: 'compliant' | 'at-risk' | 'non-compliant';
+  lastMonitored: string;
+  supplier: string;
+  certification: string[];
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+}
 
 interface DeforestationAlert {
   id: string;
   plotId: string;
-  plotNumber: string;
-  coordinates: [number, number];
+  plotName: string;
   alertDate: string;
-  confidenceLevel: 'high' | 'medium' | 'low';
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  forestLossArea: number; // hectares
-  alertSource: 'GLAD' | 'RADD' | 'FORMA' | 'Terra-i';
-  supplierName: string;
-  businessUnit: string;
-  village: string;
-  district: string;
-  verificationStatus: 'verified' | 'under-review' | 'false-positive' | 'pending';
-  gfwAnalysis: {
-    treeCoverLoss: number;
-    treeCoverGain: number;
-    biomassLoss: number;
-    carbonEmissions: number;
-    protectedAreaOverlap: boolean;
-    primaryForestLoss: boolean;
-  };
-  satelliteImagery: {
-    beforeImage: string;
-    afterImage: string;
-    captureDate: string;
-    resolution: string;
-    cloudCover: number;
-  };
+  alertType: 'GLAD' | 'RADD' | 'FORMA' | 'Terra-i';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  confidence: number;
+  area: number;
+  status: 'new' | 'investigating' | 'resolved' | 'false-positive';
+  coordinates: { lat: number; lng: number };
 }
 
-// Sample deforestation data with GFW integration
-const sampleDeforestationData: DeforestationAlert[] = [
-  {
-    id: "alert_001",
-    plotId: "plot_002",
-    plotNumber: "KPN-002",
-    coordinates: [-1.789, 112.123],
-    alertDate: "2024-01-14",
-    confidenceLevel: "high",
-    severity: "critical",
-    forestLossArea: 12.5,
-    alertSource: "GLAD",
-    supplierName: "PT Wilmar International",
-    businessUnit: "Plantation South",
-    village: "Desa Sejahtera",
-    district: "Jambi Selatan",
-    verificationStatus: "verified",
-    gfwAnalysis: {
-      treeCoverLoss: 12.5,
-      treeCoverGain: 0.2,
-      biomassLoss: 420,
-      carbonEmissions: 1680,
-      protectedAreaOverlap: false,
-      primaryForestLoss: true
-    },
-    satelliteImagery: {
-      beforeImage: "/api/satellite-images/before_002.jpg",
-      afterImage: "/api/satellite-images/after_002.jpg",
-      captureDate: "2024-01-15",
-      resolution: "10m",
-      cloudCover: 15
-    }
-  },
-  {
-    id: "alert_002",
-    plotId: "plot_005",
-    plotNumber: "KPN-005",
-    coordinates: [-2.567, 111.234],
-    alertDate: "2024-01-11",
-    confidenceLevel: "high",
-    severity: "high",
-    forestLossArea: 8.3,
-    alertSource: "RADD",
-    supplierName: "PT Musim Mas Group",
-    businessUnit: "Estate Management",
-    village: "Desa Maju",
-    district: "Riau Selatan",
-    verificationStatus: "under-review",
-    gfwAnalysis: {
-      treeCoverLoss: 8.3,
-      treeCoverGain: 0.0,
-      biomassLoss: 280,
-      carbonEmissions: 1120,
-      protectedAreaOverlap: true,
-      primaryForestLoss: true
-    },
-    satelliteImagery: {
-      beforeImage: "/api/satellite-images/before_005.jpg",
-      afterImage: "/api/satellite-images/after_005.jpg",
-      captureDate: "2024-01-12",
-      resolution: "10m",
-      cloudCover: 8
-    }
-  },
-  {
-    id: "alert_003",
-    plotId: "plot_003",
-    plotNumber: "KPN-003",
-    coordinates: [-0.567, 110.789],
-    alertDate: "2024-01-10",
-    confidenceLevel: "medium",
-    severity: "medium",
-    forestLossArea: 3.2,
-    alertSource: "FORMA",
-    supplierName: "PT Astra Agro Lestari",
-    businessUnit: "Plantation Central",
-    village: "Desa Berkah",
-    district: "Sumatra Utara",
-    verificationStatus: "pending",
-    gfwAnalysis: {
-      treeCoverLoss: 3.2,
-      treeCoverGain: 0.1,
-      biomassLoss: 110,
-      carbonEmissions: 440,
-      protectedAreaOverlap: false,
-      primaryForestLoss: false
-    },
-    satelliteImagery: {
-      beforeImage: "/api/satellite-images/before_003.jpg",
-      afterImage: "/api/satellite-images/after_003.jpg",
-      captureDate: "2024-01-11",
-      resolution: "30m",
-      cloudCover: 25
-    }
-  }
-];
+interface ProtectedArea {
+  id: string;
+  name: string;
+  type: 'National Park' | 'Wildlife Reserve' | 'Forest Reserve' | 'Indigenous Land';
+  status: 'Active' | 'Proposed';
+  area: number;
+  coordinates: { lat: number; lng: number };
+}
+
+interface MonitoringLayer {
+  id: string;
+  name: string;
+  type: 'deforestation' | 'protected-areas' | 'legal-status' | 'fire-alerts';
+  source: 'GFW' | 'WDPA' | 'KLHK' | 'Internal';
+  isActive: boolean;
+  lastUpdated: string;
+}
 
 export default function DeforestationMonitoring() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [severityFilter, setSeverityFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sourceFilter, setSourceFilter] = useState("all");
-  const [dateRange, setDateRange] = useState("30");
+  const [activeTab, setActiveTab] = useState("overview");
+  const [selectedPlot, setSelectedPlot] = useState<Plot | null>(null);
   const [selectedAlert, setSelectedAlert] = useState<DeforestationAlert | null>(null);
+  const [showPlotForm, setShowPlotForm] = useState(false);
+  const [filterProvince, setFilterProvince] = useState("");
+  const [filterRiskLevel, setFilterRiskLevel] = useState("");
+  const [filterAlertType, setFilterAlertType] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeLayers, setActiveLayers] = useState<string[]>(['deforestation', 'protected-areas']);
+  const { toast } = useToast();
 
-  // Fetch deforestation alerts from API with real-time updates
-  const { data: alerts = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["/api/deforestation-alerts"],
-    refetchInterval: 30000 // Refresh every 30 seconds for real-time monitoring
-  });
-
-  // Filter alerts based on search and filters
-  const filteredAlerts = alerts.filter((alert: DeforestationAlert) => {
-    const matchesSearch = searchQuery === "" || 
-      alert.plotNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      alert.supplierName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      alert.village.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesSeverity = severityFilter === "all" || alert.severity === severityFilter;
-    const matchesStatus = statusFilter === "all" || alert.verificationStatus === statusFilter;
-    const matchesSource = sourceFilter === "all" || alert.alertSource === sourceFilter;
-    
-    return matchesSearch && matchesSeverity && matchesStatus && matchesSource;
-  });
-
-  // Helper functions for status badges
-  const getSeverityBadge = (severity: string) => {
-    const baseClasses = "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full";
-    switch (severity) {
-      case 'critical': return <Badge className={`${baseClasses} bg-red-100 text-red-800`}><AlertTriangle className="w-3 h-3" />Critical</Badge>;
-      case 'high': return <Badge className={`${baseClasses} bg-orange-100 text-orange-800`}><AlertTriangle className="w-3 h-3" />High</Badge>;
-      case 'medium': return <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800`}><AlertTriangle className="w-3 h-3" />Medium</Badge>;
-      case 'low': return <Badge className={`${baseClasses} bg-blue-100 text-blue-800`}><AlertTriangle className="w-3 h-3" />Low</Badge>;
-      default: return <Badge className={`${baseClasses} bg-gray-100 text-gray-800`}>Unknown</Badge>;
+  // Mock data - replace with actual API calls
+  const mockPlots: Plot[] = [
+    {
+      id: "plot-001",
+      plotId: "PLT-RIAU-001",
+      name: "Palm Plot A - Riau",
+      location: "Riau Province, Indonesia",
+      coordinates: { lat: 0.2933, lng: 101.7068 },
+      area: 45.2,
+      status: "compliant",
+      lastMonitored: "2024-08-14",
+      supplier: "Riau Growers Cooperative",
+      certification: ["RSPO", "MSPO"],
+      riskLevel: "low"
+    },
+    {
+      id: "plot-002", 
+      plotId: "PLT-SUMATRA-002",
+      name: "Small Holder Plot B - Sumatra",
+      location: "North Sumatra, Indonesia",
+      coordinates: { lat: 3.5952, lng: 98.6722 },
+      area: 12.8,
+      status: "at-risk",
+      lastMonitored: "2024-08-13",
+      supplier: "Sumatra Smallholders Union",
+      certification: ["RSPO"],
+      riskLevel: "medium"
+    },
+    {
+      id: "plot-003",
+      plotId: "PLT-KALIMANTAN-003", 
+      name: "Estate Plot C - Kalimantan",
+      location: "Central Kalimantan, Indonesia",
+      coordinates: { lat: -2.2118, lng: 113.9213 },
+      area: 156.7,
+      status: "non-compliant",
+      lastMonitored: "2024-08-12",
+      supplier: "Kalimantan Palm Estates",
+      certification: [],
+      riskLevel: "high"
     }
+  ];
+
+  const mockAlerts: DeforestationAlert[] = [
+    {
+      id: "alert-001",
+      plotId: "plot-003",
+      plotName: "Estate Plot C - Kalimantan",
+      alertDate: "2024-08-14",
+      alertType: "GLAD",
+      severity: "high",
+      confidence: 87,
+      area: 2.3,
+      status: "new",
+      coordinates: { lat: -2.2118, lng: 113.9213 }
+    },
+    {
+      id: "alert-002",
+      plotId: "plot-002",
+      plotName: "Small Holder Plot B - Sumatra", 
+      alertDate: "2024-08-13",
+      alertType: "RADD",
+      severity: "medium",
+      confidence: 72,
+      area: 0.8,
+      status: "investigating",
+      coordinates: { lat: 3.5952, lng: 98.6722 }
+    }
+  ];
+
+  const mockProtectedAreas: ProtectedArea[] = [
+    {
+      id: "pa-001",
+      name: "Leuser National Park",
+      type: "National Park",
+      status: "Active",
+      area: 7927,
+      coordinates: { lat: 3.7000, lng: 97.6500 }
+    },
+    {
+      id: "pa-002", 
+      name: "Tesso Nilo National Park",
+      type: "National Park",
+      status: "Active",
+      area: 835,
+      coordinates: { lat: 0.2500, lng: 101.8500 }
+    }
+  ];
+
+  const mockLayers: MonitoringLayer[] = [
+    { id: 'deforestation', name: 'Deforestation Alerts', type: 'deforestation', source: 'GFW', isActive: true, lastUpdated: '2024-08-14' },
+    { id: 'protected-areas', name: 'Protected Areas', type: 'protected-areas', source: 'WDPA', isActive: true, lastUpdated: '2024-08-01' },
+    { id: 'legal-status', name: 'Legal Forest Status', type: 'legal-status', source: 'KLHK', isActive: false, lastUpdated: '2024-07-28' },
+    { id: 'fire-alerts', name: 'Fire Alerts', type: 'fire-alerts', source: 'GFW', isActive: false, lastUpdated: '2024-08-14' }
+  ];
+
+  const plots = mockPlots;
+  const alerts = mockAlerts;
+  const protectedAreas = mockProtectedAreas;
+  const layers = mockLayers;
+
+  const toggleLayer = (layerId: string) => {
+    setActiveLayers(prev => 
+      prev.includes(layerId) 
+        ? prev.filter(id => id !== layerId)
+        : [...prev, layerId]
+    );
   };
 
-  const getVerificationBadge = (status: string) => {
-    const baseClasses = "inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full";
+  const filteredPlots = plots.filter(plot => {
+    const matchesSearch = searchTerm === "" || 
+      plot.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plot.plotId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plot.supplier.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesProvince = filterProvince === "" || plot.location.includes(filterProvince);
+    const matchesRisk = filterRiskLevel === "" || plot.riskLevel === filterRiskLevel;
+    
+    return matchesSearch && matchesProvince && matchesRisk;
+  });
+
+  const filteredAlerts = alerts.filter(alert => {
+    const matchesType = filterAlertType === "" || alert.alertType === filterAlertType;
+    return matchesType;
+  });
+
+  const handlePlotSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    // Add plot creation logic here
+    toast({ title: "Plot added successfully!" });
+    setShowPlotForm(false);
+  };
+
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case 'verified': return <Badge className={`${baseClasses} bg-red-100 text-red-800`}><XCircle className="w-3 h-3" />Verified Loss</Badge>;
-      case 'under-review': return <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800`}><Clock className="w-3 h-3" />Under Review</Badge>;
-      case 'false-positive': return <Badge className={`${baseClasses} bg-green-100 text-green-800`}><CheckCircle className="w-3 h-3" />False Positive</Badge>;
-      case 'pending': return <Badge className={`${baseClasses} bg-gray-100 text-gray-800`}><Clock className="w-3 h-3" />Pending</Badge>;
-      default: return <Badge className={`${baseClasses} bg-gray-100 text-gray-800`}>Unknown</Badge>;
+      case 'compliant': return 'bg-green-500';
+      case 'at-risk': return 'bg-yellow-500';
+      case 'non-compliant': return 'bg-red-500';
+      default: return 'bg-gray-500';
     }
   };
 
-  const getConfidenceBadge = (confidence: string) => {
-    const baseClasses = "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full";
-    switch (confidence) {
-      case 'high': return <Badge className={`${baseClasses} bg-green-100 text-green-800`}>High Confidence</Badge>;
-      case 'medium': return <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Medium Confidence</Badge>;
-      case 'low': return <Badge className={`${baseClasses} bg-orange-100 text-orange-800`}>Low Confidence</Badge>;
-      default: return <Badge className={`${baseClasses} bg-gray-100 text-gray-800`}>Unknown</Badge>;
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'low': return 'bg-blue-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'high': return 'bg-orange-500';
+      case 'critical': return 'bg-red-500';
+      default: return 'bg-gray-500';
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen bg-neutral-bg">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-forest mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading deforestation alerts...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-screen bg-neutral-bg">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <p className="text-lg font-medium mb-2">Error Loading Alerts</p>
-            <p className="text-gray-600 mb-4">Failed to load deforestation monitoring data</p>
-            <Button onClick={() => refetch()} className="bg-forest text-white hover:bg-green-700">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Retry
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="flex h-screen bg-neutral-bg">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
-        
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                  <TreePine className="w-6 h-6 text-green-600" />
-                  Deforestation Monitoring
-                </h1>
-                <p className="text-gray-600 mt-1">Real-time forest loss detection using Global Forest Watch and satellite imagery</p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Button onClick={() => refetch()} variant="outline" data-testid="button-refresh">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh Data
-                </Button>
-                <Button className="bg-forest text-white hover:bg-green-700" data-testid="button-export">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Report
-                </Button>
-              </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Deforestation Monitoring
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Integrated EUDR monitoring with satellite imagery analysis and plot mapping
+          </p>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview" data-testid="tab-overview">
+              <Globe className="h-4 w-4 mr-2" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="plots" data-testid="tab-plots">
+              <Map className="h-4 w-4 mr-2" />
+              Plot Mapping
+            </TabsTrigger>
+            <TabsTrigger value="alerts" data-testid="tab-alerts">
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Deforestation Alerts
+            </TabsTrigger>
+            <TabsTrigger value="monitoring" data-testid="tab-monitoring">
+              <Satellite className="h-4 w-4 mr-2" />
+              Live Monitoring
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <Map className="h-8 w-8 text-blue-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Plots</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{plots.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-8 w-8 text-orange-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Alerts</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{alerts.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <CheckCircle2 className="h-8 w-8 text-green-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Compliant Plots</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {plots.filter(p => p.status === 'compliant').length}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <Shield className="h-8 w-8 text-purple-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Protected Areas</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{protectedAreas.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Filters */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="w-5 h-5" />
-                  Filter & Search Alerts
-                </CardTitle>
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Interactive Spatial Map</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg h-96 flex items-center justify-center">
+                    <div className="text-center">
+                      <Globe className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-lg font-medium text-gray-600 dark:text-gray-300">Interactive Map View</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                        Satellite imagery with plot polygons and deforestation alerts
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                        {layers.map(layer => (
+                          <Button
+                            key={layer.id}
+                            variant={activeLayers.includes(layer.id) ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => toggleLayer(layer.id)}
+                            data-testid={`layer-${layer.id}`}
+                          >
+                            <Layers className="h-3 w-3 mr-1" />
+                            {layer.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Alerts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-80 overflow-y-auto">
+                    {alerts.length === 0 ? (
+                      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                        No recent deforestation alerts
+                      </p>
+                    ) : (
+                      alerts.map(alert => (
+                        <div key={alert.id} className="border rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium text-sm">{alert.plotName}</h4>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${getSeverityColor(alert.severity)}`} />
+                              <Badge variant="outline" className="text-xs">
+                                {alert.alertType}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                            <div>Date: {new Date(alert.alertDate).toLocaleDateString()}</div>
+                            <div>Area: {alert.area} ha • Confidence: {alert.confidence}%</div>
+                            <div className="flex items-center gap-1">
+                              Status: 
+                              <Badge 
+                                variant={alert.status === 'new' ? 'destructive' : 
+                                        alert.status === 'investigating' ? 'secondary' : 'default'}
+                                className="text-xs"
+                              >
+                                {alert.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Plot Mapping Tab */}
+          <TabsContent value="plots" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Map className="h-5 w-5" />
+                    Plot Management
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                    Manage farm plot polygons with GPS coordinates and compliance monitoring
+                  </p>
+                </div>
+                <Dialog open={showPlotForm} onOpenChange={setShowPlotForm}>
+                  <DialogTrigger asChild>
+                    <Button data-testid="button-add-plot">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Plot
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Add New Plot</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handlePlotSubmit} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="plotId">Plot ID *</Label>
+                          <Input id="plotId" name="plotId" required placeholder="PLT-REGION-001" data-testid="input-plot-id" />
+                        </div>
+                        <div>
+                          <Label htmlFor="plotName">Plot Name *</Label>
+                          <Input id="plotName" name="plotName" required placeholder="Plot name" data-testid="input-plot-name" />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="location">Location *</Label>
+                        <Input id="location" name="location" required placeholder="Province, Indonesia" data-testid="input-location" />
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="latitude">Latitude *</Label>
+                          <Input id="latitude" name="latitude" type="number" step="any" required data-testid="input-latitude" />
+                        </div>
+                        <div>
+                          <Label htmlFor="longitude">Longitude *</Label>
+                          <Input id="longitude" name="longitude" type="number" step="any" required data-testid="input-longitude" />
+                        </div>
+                        <div>
+                          <Label htmlFor="area">Area (hectares) *</Label>
+                          <Input id="area" name="area" type="number" step="0.1" required data-testid="input-area" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="supplier">Supplier *</Label>
+                          <Input id="supplier" name="supplier" required placeholder="Supplier name" data-testid="input-supplier" />
+                        </div>
+                        <div>
+                          <Label htmlFor="certification">Certifications</Label>
+                          <Input id="certification" name="certification" placeholder="RSPO, MSPO" data-testid="input-certification" />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button type="button" variant="outline" onClick={() => setShowPlotForm(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" data-testid="button-submit-plot">
+                          Add Plot
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Search Alerts
-                    </label>
-                    <Input
-                      placeholder="Plot, supplier, location..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      data-testid="input-search-alerts"
-                    />
+                {/* Filters */}
+                <div className="flex flex-wrap gap-4 mb-6">
+                  <div className="flex-1 min-w-48">
+                    <Label htmlFor="search">Search</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="search"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search plots, suppliers..."
+                        className="pl-10"
+                        data-testid="input-search-plots"
+                      />
+                    </div>
                   </div>
-                  
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Severity Level
-                    </label>
-                    <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                      <SelectTrigger data-testid="select-severity">
-                        <SelectValue placeholder="All Severities" />
+                    <Label htmlFor="filterProvince">Province</Label>
+                    <Select value={filterProvince} onValueChange={setFilterProvince}>
+                      <SelectTrigger className="w-40" data-testid="select-province">
+                        <SelectValue placeholder="All provinces" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Severities</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="">All Provinces</SelectItem>
+                        <SelectItem value="Riau">Riau</SelectItem>
+                        <SelectItem value="Sumatra">North Sumatra</SelectItem>
+                        <SelectItem value="Kalimantan">Central Kalimantan</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="filterRisk">Risk Level</Label>
+                    <Select value={filterRiskLevel} onValueChange={setFilterRiskLevel}>
+                      <SelectTrigger className="w-36" data-testid="select-risk-level">
+                        <SelectValue placeholder="All levels" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Levels</SelectItem>
                         <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="critical">Critical</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
+                {/* Plots Grid */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredPlots.map(plot => (
+                    <Card 
+                      key={plot.id} 
+                      className={`cursor-pointer transition-all hover:shadow-md ${
+                        selectedPlot?.id === plot.id ? 'ring-2 ring-blue-500' : ''
+                      }`}
+                      onClick={() => setSelectedPlot(plot)}
+                      data-testid={`plot-card-${plot.id}`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-sm">{plot.name}</h4>
+                          <div className={`w-3 h-3 rounded-full ${getStatusColor(plot.status)}`} />
+                        </div>
+                        <p className="text-xs text-gray-500 mb-2">{plot.plotId}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 mb-3">{plot.location}</p>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                          <div>
+                            <span className="text-gray-500">Area:</span>
+                            <p className="font-medium">{plot.area} ha</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Risk:</span>
+                            <p className="font-medium capitalize">{plot.riskLevel}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="text-xs text-gray-500 mb-2">
+                          Last monitored: {new Date(plot.lastMonitored).toLocaleDateString()}
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-1">
+                          {plot.certification.map(cert => (
+                            <Badge key={cert} variant="secondary" className="text-xs">
+                              {cert}
+                            </Badge>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Plot Details Sidebar */}
+                {selectedPlot && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle>Plot Details - {selectedPlot.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium mb-2">Basic Information</h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Plot ID:</span>
+                                <span>{selectedPlot.plotId}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Area:</span>
+                                <span>{selectedPlot.area} hectares</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Location:</span>
+                                <span>{selectedPlot.location}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Supplier:</span>
+                                <span>{selectedPlot.supplier}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-medium mb-2">Coordinates</h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Latitude:</span>
+                                <span>{selectedPlot.coordinates.lat.toFixed(4)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Longitude:</span>
+                                <span>{selectedPlot.coordinates.lng.toFixed(4)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium mb-2">Compliance Status</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <div className={`w-3 h-3 rounded-full ${getStatusColor(selectedPlot.status)}`} />
+                                <span className="capitalize">{selectedPlot.status}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600 dark:text-gray-300">Risk Level:</span>
+                                <Badge 
+                                  variant={selectedPlot.riskLevel === 'low' ? 'default' : 
+                                          selectedPlot.riskLevel === 'medium' ? 'secondary' : 'destructive'}
+                                >
+                                  {selectedPlot.riskLevel.toUpperCase()}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-medium mb-2">Certifications</h4>
+                            <div className="flex flex-wrap gap-1">
+                              {selectedPlot.certification.length > 0 ? (
+                                selectedPlot.certification.map(cert => (
+                                  <Badge key={cert} variant="outline" className="text-xs">
+                                    {cert}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-sm text-gray-500">No certifications</span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-medium mb-2">Monitoring</h4>
+                            <div className="text-sm text-gray-600 dark:text-gray-300">
+                              Last monitored: {new Date(selectedPlot.lastMonitored).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Deforestation Alerts Tab */}
+          <TabsContent value="alerts" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Deforestation Alerts
+                </CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Real-time deforestation alerts from multiple satellite sources
+                </p>
+              </CardHeader>
+              <CardContent>
+                {/* Alert Filters */}
+                <div className="flex flex-wrap gap-4 mb-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Verification Status
-                    </label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger data-testid="select-status">
-                        <SelectValue placeholder="All Statuses" />
+                    <Label htmlFor="filterAlertType">Alert Source</Label>
+                    <Select value={filterAlertType} onValueChange={setFilterAlertType}>
+                      <SelectTrigger className="w-36" data-testid="select-alert-type">
+                        <SelectValue placeholder="All sources" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="verified">Verified Loss</SelectItem>
-                        <SelectItem value="under-review">Under Review</SelectItem>
-                        <SelectItem value="false-positive">False Positive</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Alert Source
-                    </label>
-                    <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                      <SelectTrigger data-testid="select-source">
-                        <SelectValue placeholder="All Sources" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Sources</SelectItem>
+                        <SelectItem value="">All Sources</SelectItem>
                         <SelectItem value="GLAD">GLAD</SelectItem>
                         <SelectItem value="RADD">RADD</SelectItem>
                         <SelectItem value="FORMA">FORMA</SelectItem>
@@ -352,317 +681,251 @@ export default function DeforestationMonitoring() {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date Range
-                    </label>
-                    <Select value={dateRange} onValueChange={setDateRange}>
-                      <SelectTrigger data-testid="select-date-range">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="7">Last 7 days</SelectItem>
-                        <SelectItem value="30">Last 30 days</SelectItem>
-                        <SelectItem value="90">Last 90 days</SelectItem>
-                        <SelectItem value="365">Last year</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
+
+                {/* Alerts Grid */}
+                <div className="space-y-4">
+                  {filteredAlerts.length === 0 ? (
+                    <div className="text-center py-8">
+                      <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                        No Deforestation Alerts
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No recent deforestation alerts detected for monitored areas.
+                      </p>
+                    </div>
+                  ) : (
+                    filteredAlerts.map(alert => (
+                      <Card 
+                        key={alert.id}
+                        className={`cursor-pointer transition-all hover:shadow-md ${
+                          selectedAlert?.id === alert.id ? 'ring-2 ring-orange-500' : ''
+                        }`}
+                        onClick={() => setSelectedAlert(alert)}
+                        data-testid={`alert-card-${alert.id}`}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{alert.plotName}</h4>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-3 h-3 rounded-full ${getSeverityColor(alert.severity)}`} />
+                              <Badge variant="outline">
+                                {alert.alertType}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-500">Date:</span>
+                              <p className="font-medium">{new Date(alert.alertDate).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Area:</span>
+                              <p className="font-medium">{alert.area} hectares</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Confidence:</span>
+                              <p className="font-medium">{alert.confidence}%</p>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Status:</span>
+                              <Badge 
+                                variant={alert.status === 'new' ? 'destructive' : 
+                                        alert.status === 'investigating' ? 'secondary' : 'default'}
+                                className="text-xs"
+                              >
+                                {alert.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </div>
+
+                {/* Alert Details */}
+                {selectedAlert && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle>Alert Details - {selectedAlert.plotName}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium mb-2">Alert Information</h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Alert Date:</span>
+                                <span>{new Date(selectedAlert.alertDate).toLocaleDateString()}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Source:</span>
+                                <span>{selectedAlert.alertType}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Severity:</span>
+                                <Badge variant={selectedAlert.severity === 'high' ? 'destructive' : 'secondary'}>
+                                  {selectedAlert.severity.toUpperCase()}
+                                </Badge>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Confidence:</span>
+                                <span>{selectedAlert.confidence}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Affected Area:</span>
+                                <span>{selectedAlert.area} hectares</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium mb-2">Location</h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Latitude:</span>
+                                <span>{selectedAlert.coordinates.lat.toFixed(4)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-300">Longitude:</span>
+                                <span>{selectedAlert.coordinates.lng.toFixed(4)}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-medium mb-2">Actions</h4>
+                            <div className="space-y-2">
+                              <Button size="sm" className="w-full">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View on Map
+                              </Button>
+                              <Button size="sm" variant="outline" className="w-full">
+                                <Camera className="h-4 w-4 mr-2" />
+                                View Satellite Imagery
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </CardContent>
             </Card>
+          </TabsContent>
 
-            {/* Summary Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Total Alerts</p>
-                      <p className="text-2xl font-bold text-gray-900">{filteredAlerts.length}</p>
-                    </div>
-                    <AlertTriangle className="w-8 h-8 text-orange-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Verified Loss</p>
-                      <p className="text-2xl font-bold text-red-600">
-                        {filteredAlerts.filter(alert => alert.verificationStatus === 'verified').length}
-                      </p>
-                    </div>
-                    <XCircle className="w-8 h-8 text-red-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Under Review</p>
-                      <p className="text-2xl font-bold text-yellow-600">
-                        {filteredAlerts.filter(alert => alert.verificationStatus === 'under-review').length}
-                      </p>
-                    </div>
-                    <Clock className="w-8 h-8 text-yellow-500" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Forest Loss</p>
-                      <p className="text-2xl font-bold text-red-600">
-                        {filteredAlerts.reduce((sum, alert) => sum + alert.forestLossArea, 0).toFixed(1)} Ha
-                      </p>
-                    </div>
-                    <TreePine className="w-8 h-8 text-red-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Alerts Table */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Satellite className="w-5 h-5" />
-                  Deforestation Alerts ({filteredAlerts.length} alerts)
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" data-testid="button-map-view">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Map View
-                  </Button>
-                  <Button variant="outline" size="sm" data-testid="button-satellite-view">
-                    <Satellite className="w-4 h-4 mr-2" />
-                    Satellite View
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Alert Details</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Plot Information</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Forest Loss Analysis</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">GFW Analysis</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Verification</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-sm">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredAlerts.map((alert) => (
-                      <tr key={alert.id} className="hover:bg-gray-50">
-                        <td className="border border-gray-300 px-4 py-3 text-sm">
-                          <div className="space-y-2">
-                            <div className="font-medium text-blue-600">{alert.id}</div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(alert.alertDate).toLocaleDateString()}
+          {/* Live Monitoring Tab */}
+          <TabsContent value="monitoring" className="space-y-6">
+            <div className="grid lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Satellite className="h-5 w-5" />
+                      Live Satellite Monitoring
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg h-96 flex items-center justify-center">
+                      <div className="text-center">
+                        <Satellite className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-lg font-medium text-gray-600 dark:text-gray-300">Live Satellite Feed</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                          Real-time monitoring with before/after imagery analysis
+                        </p>
+                        <div className="mt-4 space-y-2">
+                          <div className="flex items-center justify-center gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-green-500 rounded-full" />
+                              <span>Active Monitoring</span>
                             </div>
-                            <div className="flex flex-col gap-1">
-                              {getSeverityBadge(alert.severity)}
-                              {getConfidenceBadge(alert.confidenceLevel)}
-                            </div>
-                            <div className="text-xs bg-gray-100 px-2 py-1 rounded">
-                              {alert.alertSource}
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                              <span>GFW Integration</span>
                             </div>
                           </div>
-                        </td>
-                        <td className="border border-gray-300 px-4 py-3 text-sm">
-                          <div>
-                            <div className="font-medium">{alert.plotNumber}</div>
-                            <div className="text-gray-600">{alert.supplierName}</div>
-                            <div className="text-gray-500 text-xs">{alert.businessUnit}</div>
-                            <div className="text-gray-500 text-xs">{alert.village}, {alert.district}</div>
-                            <div className="text-gray-400 text-xs font-mono">
-                              {alert.coordinates[0].toFixed(3)}, {alert.coordinates[1].toFixed(3)}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-4 py-3 text-sm">
-                          <div className="space-y-1">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Area Lost:</span>
-                              <span className="font-medium text-red-600">{alert.forestLossArea} ha</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Biomass:</span>
-                              <span className="font-medium">{alert.gfwAnalysis.biomassLoss} t</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">CO₂:</span>
-                              <span className="font-medium">{alert.gfwAnalysis.carbonEmissions} t</span>
-                            </div>
-                            {alert.gfwAnalysis.primaryForestLoss && (
-                              <div className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
-                                Primary Forest Loss
-                              </div>
-                            )}
-                            {alert.gfwAnalysis.protectedAreaOverlap && (
-                              <div className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                                Protected Area
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-4 py-3 text-sm">
-                          <div className="space-y-1">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Tree Loss:</span>
-                              <span className="font-medium">{alert.gfwAnalysis.treeCoverLoss} ha</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Tree Gain:</span>
-                              <span className="font-medium text-green-600">{alert.gfwAnalysis.treeCoverGain} ha</span>
-                            </div>
-                            <div className="text-xs text-gray-500 mt-2">
-                              Source: Global Forest Watch
-                            </div>
-                          </div>
-                        </td>
-                        <td className="border border-gray-300 px-4 py-3 text-sm">
-                          {getVerificationBadge(alert.verificationStatus)}
-                        </td>
-                        <td className="border border-gray-300 px-4 py-3 text-sm">
-                          <div className="flex flex-col gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => setSelectedAlert(alert)}
-                              data-testid={`button-view-${alert.id}`}
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              View Details
-                            </Button>
-                            <Button size="sm" variant="outline" data-testid={`button-satellite-${alert.id}`}>
-                              <Satellite className="w-4 h-4 mr-1" />
-                              Imagery
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {filteredAlerts.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <TreePine className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg font-medium mb-2">No deforestation alerts found</p>
-                  <p>Try adjusting your search criteria or filters</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Alert Detail Modal would go here */}
-          {selectedAlert && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold">Alert Details: {selectedAlert.id}</h3>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setSelectedAlert(null)}
-                    data-testid="button-close-modal"
-                  >
-                    ✕
-                  </Button>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-3">Satellite Imagery Comparison</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">Before (Reference)</p>
-                        <div className="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
-                          <Satellite className="w-12 h-12 text-gray-400" />
-                          <span className="ml-2 text-gray-500">Before Image</span>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-2">After (Alert Date)</p>
-                        <div className="w-full h-48 bg-gray-200 rounded flex items-center justify-center">
-                          <Satellite className="w-12 h-12 text-gray-400" />
-                          <span className="ml-2 text-gray-500">After Image</span>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-3">Global Forest Watch Analysis</h4>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Layers className="h-5 w-5" />
+                      Monitoring Layers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
                     <div className="space-y-3">
-                      <div className="p-4 bg-gray-50 rounded">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-600">Tree Cover Loss:</span>
-                            <span className="font-medium ml-2">{selectedAlert.gfwAnalysis.treeCoverLoss} ha</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Biomass Loss:</span>
-                            <span className="font-medium ml-2">{selectedAlert.gfwAnalysis.biomassLoss} tonnes</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Carbon Emissions:</span>
-                            <span className="font-medium ml-2">{selectedAlert.gfwAnalysis.carbonEmissions} t CO₂</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Tree Cover Gain:</span>
-                            <span className="font-medium ml-2 text-green-600">{selectedAlert.gfwAnalysis.treeCoverGain} ha</span>
-                          </div>
-                        </div>
-                        
-                        <Separator className="my-3" />
-                        
-                        <div className="space-y-2">
-                          {selectedAlert.gfwAnalysis.primaryForestLoss && (
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                              <span className="text-sm">Primary forest loss detected</span>
+                      {layers.map(layer => (
+                        <div key={layer.id} className="flex items-center justify-between p-2 border rounded">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant={activeLayers.includes(layer.id) ? "default" : "outline"}
+                              onClick={() => toggleLayer(layer.id)}
+                              data-testid={`toggle-layer-${layer.id}`}
+                            >
+                              {activeLayers.includes(layer.id) ? <Eye className="h-3 w-3" /> : <Eye className="h-3 w-3 opacity-50" />}
+                            </Button>
+                            <div>
+                              <p className="text-sm font-medium">{layer.name}</p>
+                              <p className="text-xs text-gray-500">{layer.source}</p>
                             </div>
-                          )}
-                          {selectedAlert.gfwAnalysis.protectedAreaOverlap && (
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                              <span className="text-sm">Overlaps with protected area</span>
-                            </div>
-                          )}
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {new Date(layer.lastUpdated).toLocaleDateString()}
+                          </Badge>
                         </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Monitoring Statistics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Coverage Area:</span>
+                        <span className="font-medium">
+                          {plots.reduce((sum, plot) => sum + plot.area, 0).toFixed(1)} ha
+                        </span>
                       </div>
-                      
-                      <div className="flex gap-2">
-                        <Button className="flex-1 bg-green-600 text-white hover:bg-green-700">
-                          Mark as False Positive
-                        </Button>
-                        <Button className="flex-1 bg-red-600 text-white hover:bg-red-700">
-                          Verify Deforestation
-                        </Button>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Active Plots:</span>
+                        <span className="font-medium">{plots.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Alert Frequency:</span>
+                        <span className="font-medium">Daily</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Last Update:</span>
+                        <span className="font-medium">
+                          {new Date().toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-          )}
-        </main>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
