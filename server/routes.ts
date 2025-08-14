@@ -957,6 +957,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Farmer data endpoints
+  app.get("/api/farmers", isAuthenticated, async (req, res) => {
+    try {
+      // Mock farmer data based on the detailed structure required
+      const mockFarmers = [
+        {
+          id: "farmer_001",
+          respondentSerialNumber: "RESP-001-2024",
+          dataCollectionOfficer: "Ahmad Susanto",
+          
+          // A. Farmer Identity
+          farmerName: "Budi Hartono",
+          nationalId: "3271234567890123",
+          birthPlaceDate: "Jakarta, 15/08/1975",
+          sex: "Male" as const,
+          education: "Senior secondary (SMA)" as const,
+          province: "West Java",
+          regencyCity: "Bogor Regency",
+          district: "Cibinong",
+          village: "Pakansari",
+          farmerAddress: "Jl. Raya Cibinong No. 45, RT 03/RW 05, Pakansari, Cibinong",
+          
+          // B. Farm/Plot Information
+          farmPlotNumber: "PLOT-001",
+          landTenure: "SHM (freehold title)" as const,
+          landDocumentNumber: "SHM-12345/2020",
+          landAreaPerDocument: 25000,
+          croppingPattern: "Monoculture" as const,
+          mainCommodity: "Palm Oil",
+          otherCommodities: "",
+          plantedArea: 22000,
+          yearPlanted: "2018",
+          yearReplanted: "",
+          standingTrees: 880,
+          annualProduction: 45,
+          productivity: 20,
+          seedSource: "Certified seed" as const,
+          landType: "Mineral soil" as const,
+          fertilizerType: "Mixed" as const,
+          salesPartner: "Processing company" as const,
+          
+          // C. Farmer Organization Information
+          organizationName: "Koperasi Tani Sejahtera",
+          groupNumber: "SIMLUHTAN-12345",
+          organizationCommodities: "Palm Oil, Coconut",
+          organizationAddress: "Jl. Cooperative No. 10, Cibinong, Bogor",
+          
+          // D. Farm Location
+          coordinates: [
+            { longitude: "106.8456", latitude: "-6.4825" },
+            { longitude: "106.8478", latitude: "-6.4825" },
+            { longitude: "106.8478", latitude: "-6.4845" },
+            { longitude: "106.8456", latitude: "-6.4845" }
+          ]
+        },
+        {
+          id: "farmer_002",
+          respondentSerialNumber: "RESP-002-2024",
+          dataCollectionOfficer: "Siti Nurhaliza",
+          
+          // A. Farmer Identity
+          farmerName: "Dewi Sartika",
+          nationalId: "3271234567890124",
+          birthPlaceDate: "Bandung, 22/03/1982",
+          sex: "Female" as const,
+          education: "Junior secondary (SMP)" as const,
+          province: "West Java",
+          regencyCity: "Sukabumi Regency",
+          district: "Parungkuda",
+          village: "Ciburial",
+          farmerAddress: "Kampung Babakan RT 02/RW 03, Ciburial, Parungkuda",
+          
+          // B. Farm/Plot Information
+          farmPlotNumber: "PLOT-002",
+          landTenure: "Girik/SKT/SKGR/Management Right" as const,
+          landDocumentNumber: "SKGR-67890/2019",
+          landAreaPerDocument: 15000,
+          croppingPattern: "Polyculture" as const,
+          mainCommodity: "Palm Oil",
+          otherCommodities: "Coconut, Rubber",
+          plantedArea: 12000,
+          yearPlanted: "2017",
+          yearReplanted: "2023",
+          standingTrees: 480,
+          annualProduction: 28,
+          productivity: 23,
+          seedSource: "Non-certified seed" as const,
+          landType: "Wetland (tidal/peat)" as const,
+          fertilizerType: "Organic" as const,
+          salesPartner: "Cooperative" as const,
+          
+          // C. Farmer Organization Information
+          organizationName: "Gapoktan Sukamaju",
+          groupNumber: "SIMLUHTAN-67890",
+          organizationCommodities: "Palm Oil, Rubber, Coconut",
+          organizationAddress: "Desa Ciburial, Kecamatan Parungkuda, Sukabumi",
+          
+          // D. Farm Location
+          coordinates: [
+            { longitude: "106.7234", latitude: "-6.8912" },
+            { longitude: "106.7256", latitude: "-6.8912" },
+            { longitude: "106.7256", latitude: "-6.8932" },
+            { longitude: "106.7234", latitude: "-6.8932" }
+          ]
+        },
+        {
+          id: "farmer_003",
+          respondentSerialNumber: "RESP-003-2024",
+          dataCollectionOfficer: "Eko Prasetyo",
+          
+          // A. Farmer Identity
+          farmerName: "Agus Setiawan",
+          nationalId: "3271234567890125",
+          birthPlaceDate: "Yogyakarta, 10/12/1970",
+          sex: "Male" as const,
+          education: "Primary school (SD)" as const,
+          province: "Central Java",
+          regencyCity: "Cilacap Regency",
+          district: "Kawunganten",
+          village: "Kalibenda",
+          farmerAddress: "Dusun Krajan RT 01/RW 02, Kalibenda, Kawunganten",
+          
+          // B. Farm/Plot Information
+          farmPlotNumber: "PLOT-003",
+          landTenure: "Communal/customary land" as const,
+          landDocumentNumber: "CUSTOMARY-001/2018",
+          landAreaPerDocument: 35000,
+          croppingPattern: "Monoculture" as const,
+          mainCommodity: "Palm Oil",
+          otherCommodities: "",
+          plantedArea: 30000,
+          yearPlanted: "2015",
+          yearReplanted: "",
+          standingTrees: 1200,
+          annualProduction: 62,
+          productivity: 21,
+          seedSource: "Certified seed" as const,
+          landType: "Mineral soil" as const,
+          fertilizerType: "Inorganic" as const,
+          salesPartner: "Processing company" as const,
+          
+          // C. Farmer Organization Information
+          organizationName: "Kelompok Tani Maju Bersama",
+          groupNumber: "SIMLUHTAN-11223",
+          organizationCommodities: "Palm Oil",
+          organizationAddress: "Balai Desa Kalibenda, Kawunganten, Cilacap",
+          
+          // D. Farm Location
+          coordinates: [
+            { longitude: "108.7890", latitude: "-7.5432" },
+            { longitude: "108.7920", latitude: "-7.5432" },
+            { longitude: "108.7920", latitude: "-7.5460" },
+            { longitude: "108.7890", latitude: "-7.5460" }
+          ]
+        }
+      ];
+
+      res.json(mockFarmers);
+    } catch (error) {
+      console.error("Farmers data error:", error);
+      res.status(500).json({ error: "Failed to fetch farmers data" });
+    }
+  });
+
   // AI Analysis endpoints
   app.post("/api/ai/analyze", isAuthenticated, async (req, res) => {
     try {
