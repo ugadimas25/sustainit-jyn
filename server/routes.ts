@@ -1,11 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import express from 'express';
 import { setupAuth, isAuthenticated } from "./auth";
 import { storage } from "./storage";
 import { WDPAService } from "./lib/wdpa-service";
 import { GFWService } from "./lib/gfw-service";
 import { openaiService } from "./lib/openai-service";
 import { complianceScoringService } from "./lib/compliance-scoring";
+import { typeDefs } from './lib/graphql-schema';
+import { resolvers } from './lib/graphql-resolvers';
 import { insertPlotSchema, insertSupplierSchema, insertDocumentSchema, insertDeliverySchema, insertShipmentSchema, insertDDSReportSchema, insertSurveySchema, insertSurveyResponseSchema } from "@shared/schema";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
@@ -41,11 +44,215 @@ async function initializeDefaultUser() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Create HTTP server
+  const httpServer = createServer(app);
+
   // Setup authentication
   await setupAuth(app);
 
   // Initialize default user if none exists
   await initializeDefaultUser();
+
+  // GraphQL endpoint (simplified for now)
+  app.post('/api/graphql', isAuthenticated, async (req, res) => {
+    try {
+      // Import services dynamically to avoid circular dependencies
+      const { lineageService } = await import('./lib/lineage-service');
+      const { chainOfCustodyService } = await import('./lib/chain-of-custody-service');
+      const { massBalanceService } = await import('./lib/mass-balance-service');
+      
+      const { query, variables, operationName } = req.body;
+      
+      // Simple GraphQL endpoint for testing
+      if (query.includes('traceForward') || query.includes('traceBackward') || query.includes('getFullLineage')) {
+        const entityId = variables?.entityId;
+        const entityType = variables?.entityType;
+        
+        // Mock lineage data for testing
+        const mockLineageResult = {
+          entityId,
+          entityType,
+          depth: 4,
+          totalNodes: 8,
+          nodes: [
+            {
+              id: 'plot-1',
+              type: 'plot',
+              name: 'Palm Plot A - Riau',
+              data: { level: 0, area: '5.2 hectares', farmer: 'Budi Santoso' },
+              coordinates: { latitude: -0.5021, longitude: 101.4967 },
+              riskLevel: 'low',
+              certifications: ['RSPO', 'ISPO'],
+              distance: 0
+            },
+            {
+              id: 'collection-1',
+              type: 'facility',
+              name: 'Collection Center A',
+              data: { level: 1, facilityType: 'collection_center', capacity: '1000 tonnes/day' },
+              coordinates: { latitude: -0.5105, longitude: 101.5123 },
+              riskLevel: 'low',
+              certifications: ['RSPO', 'ISCC'],
+              distance: 2.1
+            },
+            {
+              id: 'mill-1',
+              type: 'facility',
+              name: 'Central Palm Mill',
+              data: { level: 2, facilityType: 'mill', capacity: '200 tonnes/hour' },
+              coordinates: { latitude: -0.5234, longitude: 101.5456 },
+              riskLevel: 'medium',
+              certifications: ['RSPO', 'ISCC', 'SFC'],
+              distance: 8.7
+            },
+            {
+              id: 'refinery-1',
+              type: 'facility',
+              name: 'Oil Refinery Complex',
+              data: { level: 3, facilityType: 'refinery', capacity: '500 tonnes/day' },
+              coordinates: { latitude: -0.5567, longitude: 101.6234 },
+              riskLevel: 'low',
+              certifications: ['RSPO', 'ISCC', 'RTRS'],
+              distance: 15.3
+            },
+            {
+              id: 'shipment-1',
+              type: 'shipment',
+              name: 'Export Shipment EXP-001',
+              data: { level: 4, destination: 'Rotterdam', vessel: 'MV Palm Carrier' },
+              coordinates: { latitude: -0.6123, longitude: 101.7456 },
+              riskLevel: 'low',
+              certifications: ['RSPO', 'EUDR'],
+              distance: 25.8
+            }
+          ],
+          edges: [
+            { source: 'plot-1', target: 'collection-1', type: 'delivery', quantity: 50.5, date: '2024-08-10' },
+            { source: 'collection-1', target: 'mill-1', type: 'processing', quantity: 48.2, date: '2024-08-11' },
+            { source: 'mill-1', target: 'refinery-1', type: 'transformation', quantity: 22.1, date: '2024-08-12' },
+            { source: 'refinery-1', target: 'shipment-1', type: 'shipment', quantity: 21.8, date: '2024-08-13' }
+          ],
+          riskAssessment: {
+            overallRisk: 'low',
+            riskFactors: [
+              {
+                type: 'Efficiency Variance',
+                severity: 'medium',
+                description: 'Mill processing efficiency below target at 45.8%',
+                entityId: 'mill-1'
+              }
+            ],
+            compliance: {
+              eudrCompliant: true,
+              rspoCompliant: true,
+              issues: []
+            }
+          }
+        };
+        
+        const operation = query.includes('traceForward') ? 'traceForward' : 
+                         query.includes('traceBackward') ? 'traceBackward' : 'getFullLineage';
+        res.json({ data: { [operation]: mockLineageResult } });
+      } else if (query.includes('getCustodyChains')) {
+        // Mock data for testing
+        const mockChains = [
+          {
+            id: '1',
+            chainId: 'CHAIN-001',
+            sourcePlot: { id: 'plot-1', name: 'Plot A - Riau' },
+            sourceFacility: { id: 'facility-1', name: 'Collection Center A', facilityType: 'collection_center' },
+            destinationFacility: { id: 'facility-2', name: 'Mill Central', facilityType: 'mill' },
+            productType: 'FFB',
+            totalQuantity: 2500.5,
+            remainingQuantity: 1200.0,
+            status: 'active',
+            qualityGrade: 'Grade A',
+            batchNumber: 'BATCH-001',
+            harvestDate: '2024-08-10',
+            expiryDate: '2024-08-20'
+          },
+          {
+            id: '2',
+            chainId: 'CHAIN-002',
+            sourcePlot: { id: 'plot-2', name: 'Plot B - Sumatra' },
+            sourceFacility: { id: 'facility-3', name: 'Processing Center B', facilityType: 'processing_center' },
+            destinationFacility: { id: 'facility-4', name: 'Port Facility', facilityType: 'port' },
+            productType: 'CPO',
+            totalQuantity: 1800.0,
+            remainingQuantity: 1800.0,
+            status: 'pending',
+            qualityGrade: 'Grade B',
+            batchNumber: 'BATCH-002',
+            harvestDate: '2024-08-12',
+            expiryDate: '2024-09-12'
+          }
+        ];
+        res.json({ data: { getCustodyChains: mockChains } });
+      } else if (query.includes('getFacilities')) {
+        // Mock facilities data
+        const mockFacilities = [
+          {
+            id: 'facility-1',
+            name: 'Collection Center A',
+            facilityType: 'collection_center',
+            location: { latitude: -0.5, longitude: 101.5 },
+            certifications: ['RSPO', 'ISCC']
+          },
+          {
+            id: 'facility-2',
+            name: 'Mill Central',
+            facilityType: 'mill',
+            location: { latitude: -0.6, longitude: 101.6 },
+            certifications: ['RSPO', 'ISCC', 'SFC']
+          }
+        ];
+        res.json({ data: { getFacilities: mockFacilities } });
+      } else if (query.includes('getCustodyEvents')) {
+        // Mock events data
+        const mockEvents = [
+          {
+            id: '1',
+            eventType: 'creation',
+            eventTime: '2024-08-10T08:00:00Z',
+            businessStep: 'harvesting',
+            disposition: 'active',
+            quantity: 2500.5,
+            uom: 'kg',
+            facility: { name: 'Collection Center A', facilityType: 'collection_center' },
+            recordedBy: { name: 'Farmer John' }
+          },
+          {
+            id: '2',
+            eventType: 'transportation',
+            eventTime: '2024-08-10T14:00:00Z',
+            businessStep: 'shipping',
+            disposition: 'active',
+            quantity: 2500.5,
+            uom: 'kg',
+            facility: { name: 'Mill Central', facilityType: 'mill' },
+            recordedBy: { name: 'Driver Ahmad' }
+          }
+        ];
+        res.json({ data: { getCustodyEvents: mockEvents } });
+      } else if (query.includes('validateMassBalance')) {
+        // Mock mass balance validation
+        const mockValidation = {
+          isValid: true,
+          totalInput: 2500.5,
+          totalOutput: 2450.0,
+          totalWaste: 50.5,
+          efficiency: 98.0,
+          discrepancies: []
+        };
+        res.json({ data: { validateMassBalance: mockValidation } });
+      } else {
+        res.status(400).json({ error: 'Unsupported GraphQL operation' });
+      }
+    } catch (error) {
+      console.error('GraphQL error:', error);
+      res.status(500).json({ error: 'GraphQL execution failed' });
+    }
+  });
 
   // Dashboard API
   app.get("/api/dashboard/metrics", isAuthenticated, async (req, res) => {
@@ -1216,6 +1423,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
   return httpServer;
 }

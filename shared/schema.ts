@@ -159,6 +159,108 @@ export const surveyResponses = pgTable("survey_responses", {
   completedAt: timestamp("completed_at").defaultNow().notNull(),
 });
 
+// Enhanced Chain of Custody Tables - EPCIS Style Events
+export const custodyEvents = pgTable("custody_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: text("event_type").notNull(), // creation, aggregation, transformation, observation, transaction
+  eventTime: timestamp("event_time").defaultNow().notNull(),
+  eventTimeZone: text("event_time_zone").default("UTC"),
+  businessStep: text("business_step").notNull(), // harvesting, processing, shipping, receiving
+  disposition: text("disposition").notNull(), // in_progress, completed, transit, active
+  sourceObjectId: varchar("source_object_id"), // reference to lot, delivery, etc.
+  destinationObjectId: varchar("destination_object_id"),
+  quantity: decimal("quantity", { precision: 10, scale: 4 }),
+  uom: text("uom").default("KG"), // unit of measure
+  location: jsonb("location"), // GPS coordinates
+  locationId: varchar("location_id"), // facility reference
+  userData: jsonb("user_data"), // additional custom data
+  recordedBy: varchar("recorded_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const facilities = pgTable("facilities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  facilityId: text("facility_id").notNull().unique(), // FAC-001
+  name: text("name").notNull(),
+  facilityType: text("facility_type").notNull(), // farm, collection_point, mill, refinery, port
+  address: text("address"),
+  coordinates: jsonb("coordinates"), // GPS location
+  parentFacilityId: varchar("parent_facility_id"),
+  managerId: varchar("manager_id").references(() => users.id),
+  capacity: decimal("capacity", { precision: 10, scale: 2 }),
+  operationalStatus: text("operational_status").default("active"), // active, inactive, maintenance
+  certifications: jsonb("certifications"), // RSPO, ISCC, etc.
+  riskLevel: text("risk_level").default("low"), // low, medium, high, critical
+  lastAuditDate: timestamp("last_audit_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const custodyChains = pgTable("custody_chains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chainId: text("chain_id").notNull().unique(), // CHAIN-001
+  sourcePlotId: varchar("source_plot_id").references(() => plots.id),
+  sourceFacilityId: varchar("source_facility_id").references(() => facilities.id),
+  destinationFacilityId: varchar("destination_facility_id").references(() => facilities.id),
+  productType: text("product_type").notNull(), // FFB, CPO, PKO, etc.
+  totalQuantity: decimal("total_quantity", { precision: 10, scale: 4 }),
+  remainingQuantity: decimal("remaining_quantity", { precision: 10, scale: 4 }),
+  status: text("status").default("active"), // active, completed, split, merged
+  qualityGrade: text("quality_grade"), // A, B, C
+  batchNumber: text("batch_number"),
+  harvestDate: timestamp("harvest_date"),
+  expiryDate: timestamp("expiry_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const massBalanceEvents = pgTable("mass_balance_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventType: text("event_type").notNull(), // split, merge, transformation
+  parentChainId: varchar("parent_chain_id").references(() => custodyChains.id),
+  childChainIds: jsonb("child_chain_ids"), // array of chain IDs for splits
+  inputQuantity: decimal("input_quantity", { precision: 10, scale: 4 }),
+  outputQuantity: decimal("output_quantity", { precision: 10, scale: 4 }),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 4 }), // for transformations
+  wasteQuantity: decimal("waste_quantity", { precision: 10, scale: 4 }),
+  processLocation: varchar("process_location").references(() => facilities.id),
+  processDate: timestamp("process_date").defaultNow().notNull(),
+  processedBy: varchar("processed_by").references(() => users.id),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const supplierTiers = pgTable("supplier_tiers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  supplierId: varchar("supplier_id").references(() => suppliers.id).notNull(),
+  tierLevel: integer("tier_level").notNull(), // 1, 2, 3, etc.
+  parentSupplierId: varchar("parent_supplier_id").references(() => suppliers.id),
+  relationshipType: text("relationship_type").notNull(), // direct, indirect, service_provider
+  annualVolume: decimal("annual_volume", { precision: 10, scale: 2 }),
+  contractStartDate: timestamp("contract_start_date"),
+  contractEndDate: timestamp("contract_end_date"),
+  performanceScore: decimal("performance_score", { precision: 3, scale: 2 }), // 0-100
+  riskRating: text("risk_rating").default("low"), // low, medium, high, critical
+  lastAssessmentDate: timestamp("last_assessment_date"),
+  distanceFromMill: decimal("distance_from_mill", { precision: 8, scale: 2 }), // km
+  transportRoute: jsonb("transport_route"), // GPS waypoints
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const lineageReports = pgTable("lineage_reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reportId: text("report_id").notNull().unique(), // LIN-2024-001
+  reportType: text("report_type").notNull(), // forward_trace, backward_trace, full_lineage
+  targetEntityId: varchar("target_entity_id").notNull(), // shipment, lot, or chain ID
+  targetEntityType: text("target_entity_type").notNull(), // shipment, production_lot, custody_chain
+  lineageData: jsonb("lineage_data").notNull(), // complete trace results
+  generationParameters: jsonb("generation_parameters"), // filters, date ranges, etc.
+  totalNodes: integer("total_nodes"), // number of entities in trace
+  totalLevels: integer("total_levels"), // depth of trace
+  generatedBy: varchar("generated_by").references(() => users.id).notNull(),
+  generatedAt: timestamp("generated_at").defaultNow().notNull(),
+  exportFormat: text("export_format").default("json"), // json, xml, pdf, csv
+  status: text("status").default("completed"), // generating, completed, failed
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   managedMills: many(mills),
@@ -246,6 +348,91 @@ export const ddsReportsRelations = relations(ddsReports, ({ one }) => ({
   }),
 }));
 
+// New relations for enhanced chain of custody
+export const facilitiesRelations = relations(facilities, ({ one, many }) => ({
+  manager: one(users, {
+    fields: [facilities.managerId],
+    references: [users.id],
+  }),
+  parentFacility: one(facilities, {
+    fields: [facilities.parentFacilityId],
+    references: [facilities.id],
+  }),
+  childFacilities: many(facilities, {
+    relationName: "parent_child_facilities"
+  }),
+  sourceCustodyChains: many(custodyChains, {
+    relationName: "source_facility_chains"
+  }),
+  destinationCustodyChains: many(custodyChains, {
+    relationName: "destination_facility_chains"
+  }),
+  custodyEvents: many(custodyEvents),
+  massBalanceEvents: many(massBalanceEvents),
+}));
+
+export const custodyEventsRelations = relations(custodyEvents, ({ one }) => ({
+  recordedBy: one(users, {
+    fields: [custodyEvents.recordedBy],
+    references: [users.id],
+  }),
+  location: one(facilities, {
+    fields: [custodyEvents.locationId],
+    references: [facilities.id],
+  }),
+}));
+
+export const custodyChainRelations = relations(custodyChains, ({ one, many }) => ({
+  sourcePlot: one(plots, {
+    fields: [custodyChains.sourcePlotId],
+    references: [plots.id],
+  }),
+  sourceFacility: one(facilities, {
+    fields: [custodyChains.sourceFacilityId],
+    references: [facilities.id],
+    relationName: "source_facility_chains"
+  }),
+  destinationFacility: one(facilities, {
+    fields: [custodyChains.destinationFacilityId],
+    references: [facilities.id],
+    relationName: "destination_facility_chains"
+  }),
+  massBalanceEvents: many(massBalanceEvents),
+}));
+
+export const massBalanceEventsRelations = relations(massBalanceEvents, ({ one }) => ({
+  parentChain: one(custodyChains, {
+    fields: [massBalanceEvents.parentChainId],
+    references: [custodyChains.id],
+  }),
+  processLocation: one(facilities, {
+    fields: [massBalanceEvents.processLocation],
+    references: [facilities.id],
+  }),
+  processedBy: one(users, {
+    fields: [massBalanceEvents.processedBy],
+    references: [users.id],
+  }),
+}));
+
+export const supplierTiersRelations = relations(supplierTiers, ({ one }) => ({
+  supplier: one(suppliers, {
+    fields: [supplierTiers.supplierId],
+    references: [suppliers.id],
+  }),
+  parentSupplier: one(suppliers, {
+    fields: [supplierTiers.parentSupplierId],
+    references: [suppliers.id],
+  }),
+}));
+
+export const lineageReportsRelations = relations(lineageReports, ({ one }) => ({
+  generatedBy: one(users, {
+    fields: [lineageReports.generatedBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -311,6 +498,37 @@ export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).om
   completedAt: true,
 });
 
+// New insert schemas for enhanced chain of custody
+export const insertFacilitySchema = createInsertSchema(facilities).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCustodyEventSchema = createInsertSchema(custodyEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCustodyChainSchema = createInsertSchema(custodyChains).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMassBalanceEventSchema = createInsertSchema(massBalanceEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSupplierTierSchema = createInsertSchema(supplierTiers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertLineageReportSchema = createInsertSchema(lineageReports).omit({
+  id: true,
+  generatedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -347,3 +565,22 @@ export type Survey = typeof surveys.$inferSelect;
 
 export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
 export type SurveyResponse = typeof surveyResponses.$inferSelect;
+
+// New types for enhanced chain of custody
+export type InsertFacility = z.infer<typeof insertFacilitySchema>;
+export type Facility = typeof facilities.$inferSelect;
+
+export type InsertCustodyEvent = z.infer<typeof insertCustodyEventSchema>;
+export type CustodyEvent = typeof custodyEvents.$inferSelect;
+
+export type InsertCustodyChain = z.infer<typeof insertCustodyChainSchema>;
+export type CustodyChain = typeof custodyChains.$inferSelect;
+
+export type InsertMassBalanceEvent = z.infer<typeof insertMassBalanceEventSchema>;
+export type MassBalanceEvent = typeof massBalanceEvents.$inferSelect;
+
+export type InsertSupplierTier = z.infer<typeof insertSupplierTierSchema>;
+export type SupplierTier = typeof supplierTiers.$inferSelect;
+
+export type InsertLineageReport = z.infer<typeof insertLineageReportSchema>;
+export type LineageReport = typeof lineageReports.$inferSelect;

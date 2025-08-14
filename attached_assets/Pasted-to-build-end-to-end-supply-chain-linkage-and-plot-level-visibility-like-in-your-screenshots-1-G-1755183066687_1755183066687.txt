@@ -1,0 +1,167 @@
+to build end-to-end supply-chain linkage and plot-level visibility (like in your screenshots).
+
+1) Goals (what the feature must do)
+Show a buyer where a product came from, from direct supplier → facilities → growers/plots, on a map + a tiered list.
+
+Support transformations/splits/merges of lots (e.g., mill blending) and keep mass, units, and dates consistent end-to-end.
+
+Let users filter by date range, tier, company, product, geography, radius and overlay risk layers (deforestation alerts, fires, grievances, certifications).
+
+Provide a shareable “chain of custody” report for a selected shipment/lot or supplier.
+
+2) Data model (canonical schema)
+Use a graph-friendly model (Postgres + PostGIS for geo; a graph layer like Neo4j or adjacency tables in Postgres).
+
+Core entities
+
+Party (company/org): id, name, type (grower, mill, trader, manufacturer), parent_id.
+
+Facility (site): id, party_id, type (plot, mill, warehouse, port), geometry (POINT or POLYGON), address, country, certs[], risk_flags[].
+
+Commodity (code, name, uom_base).
+
+Lot (aka batch/asset): id, commodity_id, qty, uom, grade, attributes(jsonb), owner_facility_id, produced_at (ts).
+
+Event (event sourcing): id, type {TRANSFER|TRANSFORM|AGGREGATE|DISAGGREGATE}, occurred_at, biz_step, read_point_facility_id, ilmd(jsonb).
+
+EventInput (edge): event_id, lot_id, qty, uom.
+
+EventOutput (edge): event_id, new_lot_id, qty, uom.
+
+Shipment (movement abstraction): id, from_facility_id, to_facility_id, depart_at, arrive_at, mode, docs[].
+
+SupplierLink (relationships): from_party_id, to_party_id, tier (1 = direct, 2+ = indirect), relationship_type.
+
+Plot (if separate from Facility): plot_id, facility_id (grower), polygon (POLYGON), area_ha, crop, planting_year.
+
+ExternalLayer (risk/cert overlays): id, source, geometry, attrs.
+
+Keys & standards
+
+Use GS1 EPCIS 2.0 concepts for events and ILMD (Instance/Lot Master Data).
+
+All geo stored as EPSG:4326; area in hectares is computed via PostGIS.
+
+3) Ingestion & entity resolution
+Accept CSV/API/EDI from suppliers. Map to canonical schema with an ETL (dbt/Airflow).
+
+Facility matching: deterministic on IDs; fallback to fuzzy (name+address+coords) with confidence_score.
+
+Unit handling: normalize to base UOM; store original and normalized.
+
+Geometry validation: polygons must be valid and closed; compute centroid, area_ha.
+
+Precompute distance buckets (≤10/25/50 km) between plots and mills for “In Range” badges.
+
+4) Lineage logic (how we keep the chain)
+Every movement/transformation is an Event; lineage is built by traversing EventInput → EventOutput.
+
+Support many→one (blending) and one→many (splits).
+
+Maintain mass balance: Σinputs (normalized) = Σoutputs ± loss_factor.
+
+For any Lot or Shipment, compute upstream graph (all ancestors) with:
+
+node: facility/plot, party, qty contribution, date
+
+edge: event type, qty flow
+
+Store materialized lineage tables for fast reads (e.g., lot_lineage_node, lot_lineage_edge per lot/day).
+
+5) Risk & compliance overlays (map layers)
+Toggleable layers: RADD/GLAD deforestation, VIIRS fires, protected areas/peat, grievances, certification status (RSPO, etc.).
+
+Nightly job intersects each plot polygon with risk layers and stores: risk_alerts_ha, alerts_last_30d, distance_to_alert_km.
+
+6) API design (GraphQL recommended)
+Key queries
+
+graphql
+Copy
+Edit
+# Supplier tiers for a buyer
+query SupplierNetwork($buyerId: ID!, $tierMax: Int, $commodity: ID, $since: Date) {
+  suppliers(buyerId:$buyerId, tierMax:$tierMax, commodity:$commodity, since:$since) {
+    party { id name type }
+    facilities { id name type lat lon inRangeKm badges }
+    tier
+    metrics { shipments count lots count totalQty }
+  }
+}
+
+# Lineage for a shipment or lot
+query LotLineage($lotId: ID!) {
+  lot(id:$lotId) {
+    id commodity { name } qty uom
+    lineage {
+      nodes { id kind name partyName lat lon qtyContribution uom date }
+      edges { fromId toId eventType date }
+      completenessScore
+    }
+  }
+}
+Key endpoints (REST alternative)
+
+GET /suppliers?tierMax=&commodity=&since=
+
+GET /lots/{id}/lineage
+
+GET /facilities/{id}/plots
+
+GET /risk/summary?facilityId=
+
+7) Front-end (React + Mapbox/Deck.gl)
+Split view: left = tiered supplier/plot list with badges; right = map.
+
+Filters: date range, tier, company, commodity, radius, certification, risk flags.
+
+Map layers: facilities (icons), plots (polygons), risk overlays, distance rings (10/25/50 km).
+
+Selection behavior: clicking a supplier/lot highlights path on map and expands a lineage drawer (lot → facility → plot nodes).
+
+Badges: “Direct Ownership”, “In Range (10/25/50 km)”, “RADD Alerts”, “Certified”.
+
+Export: “Download lineage report (PDF/CSV/GeoJSON)” for selected lot/shipment.
+
+8) Calculations & badges
+In-Range: ST_DistanceSphere(mill.point, plot.centroid) bucketed to 10/25/50 km.
+
+Risk score (0–100): weighted sum of recent alerts (ha, recency), proximity, grievance count, uncertified status.
+
+Lineage completeness: % of mass covered by traceable upstream nodes over a time window.
+
+9) Security & multi-tenant
+Tenant scoping on all queries (tenant_id column).
+
+Row-level security in DB or at service layer.
+
+Data-sharing controls per partner (who can see plots vs only facilities).
+
+10) Performance & ops
+Precompute lineage and range buckets nightly; cache hot queries.
+
+Pagination (server-side) for lists; vector tiles for polygons.
+
+Observability: data quality dashboards (orphan lots, mass-balance breaks, unmapped facilities).
+
+11) Acceptance criteria (MVP)
+For a given buyer and date range, user sees Tier-1 to Tier-3 suppliers in a list and on a map; each supplier shows facility count, grievances, in-range badge, cert status.
+
+Selecting a lot/shipment renders a lineage tree with correct splits/merges and qty contributions, and highlights all source plots on the map.
+
+Toggling RADD alerts shows intersected areas and counts on affected plots.
+
+Export produces a PDF/CSV lineage report including nodes, edges, quantities, coordinates, and risk summary.
+
+Distances (10/25/50 km) and mass balance are correct within defined tolerances.
+
+12) Tech stack suggestion
+DB: Postgres 15 + PostGIS; optional Neo4j for lineage queries at scale.
+
+ETL: dbt + Airflow (or Dagster).
+
+API: Node/TypeScript (NestJS) with GraphQL; Redis cache.
+
+Map: Mapbox GL JS or Deck.gl; vector tiles via tippecanoe/tileserver-gl.
+
+PDF: Puppeteer/Playwright to render a print view.

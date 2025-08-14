@@ -26,6 +26,18 @@ import type {
   InsertSurvey,
   SurveyResponse,
   InsertSurveyResponse,
+  Facility,
+  InsertFacility,
+  CustodyChain,
+  InsertCustodyChain,
+  CustodyEvent,
+  InsertCustodyEvent,
+  MassBalanceEvent,
+  InsertMassBalanceEvent,
+  SupplierTier,
+  InsertSupplierTier,
+  LineageReport,
+  InsertLineageReport,
 } from "@shared/schema";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -110,6 +122,44 @@ export interface IStorage {
 
   // Dashboard metrics
   getDashboardMetrics(): Promise<any>;
+
+  // Enhanced Chain of Custody methods
+  getFacility(id: string): Promise<Facility | undefined>;
+  getFacilities(type?: string): Promise<Facility[]>;
+  createFacility(facility: InsertFacility): Promise<Facility>;
+  updateFacility(id: string, facility: Partial<InsertFacility>): Promise<Facility>;
+  getFacilityHierarchy(rootId: string): Promise<any>;
+
+  getCustodyChain(id: string): Promise<CustodyChain | undefined>;
+  getCustodyChains(status?: string, productType?: string): Promise<CustodyChain[]>;
+  createCustodyChain(chain: InsertCustodyChain): Promise<CustodyChain>;
+  updateCustodyChain(id: string, chain: Partial<InsertCustodyChain>): Promise<CustodyChain>;
+
+  getCustodyEvent(id: string): Promise<CustodyEvent | undefined>;
+  getCustodyEvents(chainId?: string, facilityId?: string, limit?: number): Promise<CustodyEvent[]>;
+  getCustodyEventsByChain(chainId: string): Promise<CustodyEvent[]>;
+  createCustodyEvent(event: InsertCustodyEvent): Promise<CustodyEvent>;
+
+  getMassBalanceEvent(id: string): Promise<MassBalanceEvent | undefined>;
+  getMassBalanceEvents(chainId?: string, facilityId?: string): Promise<MassBalanceEvent[]>;
+  getMassBalanceEventsByChain(chainId: string, timeRange?: any): Promise<MassBalanceEvent[]>;
+  getMassBalanceEventsByParentChain(chainId: string): Promise<MassBalanceEvent[]>;
+  getMassBalanceEventsByChildChain(chainId: string): Promise<MassBalanceEvent[]>;
+  getMassBalanceEventsByFacility(facilityId: string, timeRange?: any): Promise<MassBalanceEvent[]>;
+  createMassBalanceEvent(event: InsertMassBalanceEvent): Promise<MassBalanceEvent>;
+
+  getSupplierTiers(millId?: string): Promise<SupplierTier[]>;
+  getSuppliersByDistance(lat: number, lng: number, radiusKm: number): Promise<any[]>;
+  createSupplierTier(tier: InsertSupplierTier): Promise<SupplierTier>;
+
+  getLineageReport(id: string): Promise<LineageReport | undefined>;
+  createLineageReport(report: InsertLineageReport): Promise<LineageReport>;
+
+  // Additional helper methods
+  getLotDeliveriesByDelivery(deliveryId: string): Promise<any[]>;
+  getLotDeliveriesByLot(lotId: string): Promise<any[]>;
+  getShipmentLotsByLot(lotId: string): Promise<any[]>;
+  getShipmentLotsByShipment(shipmentId: string): Promise<any[]>;
 
   sessionStore: any;
 }
@@ -440,6 +490,236 @@ export class DatabaseStorage implements IStorage {
       criticalPlots: criticalPlots[0].count,
       recentAlerts: recentAlerts[0].count,
     };
+  }
+
+  // Enhanced Chain of Custody implementations
+  async getFacility(id: string): Promise<Facility | undefined> {
+    const [facility] = await db.select().from(schema.facilities).where(eq(schema.facilities.id, id));
+    return facility || undefined;
+  }
+
+  async getFacilities(type?: string): Promise<Facility[]> {
+    if (type) {
+      return await db.select().from(schema.facilities).where(eq(schema.facilities.facilityType, type));
+    }
+    return await db.select().from(schema.facilities).orderBy(desc(schema.facilities.createdAt));
+  }
+
+  async createFacility(insertFacility: InsertFacility): Promise<Facility> {
+    const [facility] = await db.insert(schema.facilities).values(insertFacility).returning();
+    return facility;
+  }
+
+  async updateFacility(id: string, facility: Partial<InsertFacility>): Promise<Facility> {
+    const [updated] = await db.update(schema.facilities).set(facility).where(eq(schema.facilities.id, id)).returning();
+    return updated;
+  }
+
+  async getFacilityHierarchy(rootId: string): Promise<any> {
+    // Recursive CTE to get facility hierarchy
+    const hierarchy = await db.execute(sql`
+      WITH RECURSIVE facility_tree AS (
+        SELECT id, facility_id, name, facility_type, parent_facility_id, 0 as level
+        FROM facilities 
+        WHERE id = ${rootId}
+        
+        UNION ALL
+        
+        SELECT f.id, f.facility_id, f.name, f.facility_type, f.parent_facility_id, ft.level + 1
+        FROM facilities f
+        JOIN facility_tree ft ON f.parent_facility_id = ft.id
+      )
+      SELECT * FROM facility_tree ORDER BY level, name
+    `);
+    
+    return hierarchy.rows;
+  }
+
+  async getCustodyChain(id: string): Promise<CustodyChain | undefined> {
+    const [chain] = await db.select().from(schema.custodyChains).where(eq(schema.custodyChains.id, id));
+    return chain || undefined;
+  }
+
+  async getCustodyChains(status?: string, productType?: string): Promise<CustodyChain[]> {
+    let query = db.select().from(schema.custodyChains);
+    
+    if (status && productType) {
+      query = query.where(and(eq(schema.custodyChains.status, status), eq(schema.custodyChains.productType, productType)));
+    } else if (status) {
+      query = query.where(eq(schema.custodyChains.status, status));
+    } else if (productType) {
+      query = query.where(eq(schema.custodyChains.productType, productType));
+    }
+    
+    return await query.orderBy(desc(schema.custodyChains.createdAt));
+  }
+
+  async createCustodyChain(insertChain: InsertCustodyChain): Promise<CustodyChain> {
+    const [chain] = await db.insert(schema.custodyChains).values(insertChain).returning();
+    return chain;
+  }
+
+  async updateCustodyChain(id: string, chain: Partial<InsertCustodyChain>): Promise<CustodyChain> {
+    const [updated] = await db.update(schema.custodyChains).set(chain).where(eq(schema.custodyChains.id, id)).returning();
+    return updated;
+  }
+
+  async getCustodyEvent(id: string): Promise<CustodyEvent | undefined> {
+    const [event] = await db.select().from(schema.custodyEvents).where(eq(schema.custodyEvents.id, id));
+    return event || undefined;
+  }
+
+  async getCustodyEvents(chainId?: string, facilityId?: string, limit: number = 100): Promise<CustodyEvent[]> {
+    let query = db.select().from(schema.custodyEvents);
+    
+    if (chainId && facilityId) {
+      query = query.where(and(eq(schema.custodyEvents.sourceObjectId, chainId), eq(schema.custodyEvents.locationId, facilityId)));
+    } else if (chainId) {
+      query = query.where(eq(schema.custodyEvents.sourceObjectId, chainId));
+    } else if (facilityId) {
+      query = query.where(eq(schema.custodyEvents.locationId, facilityId));
+    }
+    
+    return await query.orderBy(desc(schema.custodyEvents.eventTime)).limit(limit);
+  }
+
+  async getCustodyEventsByChain(chainId: string): Promise<CustodyEvent[]> {
+    return await db.select().from(schema.custodyEvents)
+      .where(eq(schema.custodyEvents.sourceObjectId, chainId))
+      .orderBy(schema.custodyEvents.eventTime);
+  }
+
+  async createCustodyEvent(insertEvent: InsertCustodyEvent): Promise<CustodyEvent> {
+    const [event] = await db.insert(schema.custodyEvents).values(insertEvent).returning();
+    return event;
+  }
+
+  async getMassBalanceEvent(id: string): Promise<MassBalanceEvent | undefined> {
+    const [event] = await db.select().from(schema.massBalanceEvents).where(eq(schema.massBalanceEvents.id, id));
+    return event || undefined;
+  }
+
+  async getMassBalanceEvents(chainId?: string, facilityId?: string): Promise<MassBalanceEvent[]> {
+    let query = db.select().from(schema.massBalanceEvents);
+    
+    if (chainId && facilityId) {
+      query = query.where(and(eq(schema.massBalanceEvents.parentChainId, chainId), eq(schema.massBalanceEvents.processLocation, facilityId)));
+    } else if (chainId) {
+      query = query.where(eq(schema.massBalanceEvents.parentChainId, chainId));
+    } else if (facilityId) {
+      query = query.where(eq(schema.massBalanceEvents.processLocation, facilityId));
+    }
+    
+    return await query.orderBy(desc(schema.massBalanceEvents.processDate));
+  }
+
+  async getMassBalanceEventsByChain(chainId: string, timeRange?: any): Promise<MassBalanceEvent[]> {
+    let query = db.select().from(schema.massBalanceEvents).where(eq(schema.massBalanceEvents.parentChainId, chainId));
+    
+    if (timeRange) {
+      query = query.where(and(
+        eq(schema.massBalanceEvents.parentChainId, chainId),
+        sql`${schema.massBalanceEvents.processDate} >= ${timeRange.start}`,
+        sql`${schema.massBalanceEvents.processDate} <= ${timeRange.end}`
+      ));
+    }
+    
+    return await query.orderBy(schema.massBalanceEvents.processDate);
+  }
+
+  async getMassBalanceEventsByParentChain(chainId: string): Promise<MassBalanceEvent[]> {
+    return await db.select().from(schema.massBalanceEvents)
+      .where(eq(schema.massBalanceEvents.parentChainId, chainId))
+      .orderBy(schema.massBalanceEvents.processDate);
+  }
+
+  async getMassBalanceEventsByChildChain(chainId: string): Promise<MassBalanceEvent[]> {
+    return await db.select().from(schema.massBalanceEvents)
+      .where(sql`${schema.massBalanceEvents.childChainIds} ? ${chainId}`)
+      .orderBy(schema.massBalanceEvents.processDate);
+  }
+
+  async getMassBalanceEventsByFacility(facilityId: string, timeRange?: any): Promise<MassBalanceEvent[]> {
+    let query = db.select().from(schema.massBalanceEvents).where(eq(schema.massBalanceEvents.processLocation, facilityId));
+    
+    if (timeRange) {
+      query = query.where(and(
+        eq(schema.massBalanceEvents.processLocation, facilityId),
+        sql`${schema.massBalanceEvents.processDate} >= ${timeRange.start}`,
+        sql`${schema.massBalanceEvents.processDate} <= ${timeRange.end}`
+      ));
+    }
+    
+    return await query.orderBy(schema.massBalanceEvents.processDate);
+  }
+
+  async createMassBalanceEvent(insertEvent: InsertMassBalanceEvent): Promise<MassBalanceEvent> {
+    const [event] = await db.insert(schema.massBalanceEvents).values(insertEvent).returning();
+    return event;
+  }
+
+  async getSupplierTiers(millId?: string): Promise<SupplierTier[]> {
+    if (millId) {
+      // Get suppliers within reasonable distance of the mill
+      const mill = await this.getMill(millId);
+      if (!mill) return [];
+      
+      return await db.select().from(schema.supplierTiers)
+        .where(sql`${schema.supplierTiers.distanceFromMill} < 500`) // 500km radius
+        .orderBy(schema.supplierTiers.tierLevel, schema.supplierTiers.distanceFromMill);
+    }
+    
+    return await db.select().from(schema.supplierTiers)
+      .orderBy(schema.supplierTiers.tierLevel, schema.supplierTiers.performanceScore);
+  }
+
+  async getSuppliersByDistance(lat: number, lng: number, radiusKm: number): Promise<any[]> {
+    // Calculate suppliers within distance using Haversine formula
+    const suppliersWithDistance = await db.execute(sql`
+      SELECT s.*, p.coordinates,
+        (6371 * acos(cos(radians(${lat})) * cos(radians((p.coordinates->>'latitude')::float)) * 
+        cos(radians((p.coordinates->>'longitude')::float) - radians(${lng})) + 
+        sin(radians(${lat})) * sin(radians((p.coordinates->>'latitude')::float)))) AS distance
+      FROM suppliers s
+      JOIN plots p ON s.id = p.supplier_id
+      WHERE p.coordinates IS NOT NULL
+      HAVING distance <= ${radiusKm}
+      ORDER BY distance
+    `);
+    
+    return suppliersWithDistance.rows;
+  }
+
+  async createSupplierTier(insertTier: InsertSupplierTier): Promise<SupplierTier> {
+    const [tier] = await db.insert(schema.supplierTiers).values(insertTier).returning();
+    return tier;
+  }
+
+  async getLineageReport(id: string): Promise<LineageReport | undefined> {
+    const [report] = await db.select().from(schema.lineageReports).where(eq(schema.lineageReports.id, id));
+    return report || undefined;
+  }
+
+  async createLineageReport(insertReport: InsertLineageReport): Promise<LineageReport> {
+    const [report] = await db.insert(schema.lineageReports).values(insertReport).returning();
+    return report;
+  }
+
+  // Helper methods for lineage tracking
+  async getLotDeliveriesByDelivery(deliveryId: string): Promise<any[]> {
+    return await db.select().from(schema.lotDeliveries).where(eq(schema.lotDeliveries.deliveryId, deliveryId));
+  }
+
+  async getLotDeliveriesByLot(lotId: string): Promise<any[]> {
+    return await db.select().from(schema.lotDeliveries).where(eq(schema.lotDeliveries.lotId, lotId));
+  }
+
+  async getShipmentLotsByLot(lotId: string): Promise<any[]> {
+    return await db.select().from(schema.shipmentLots).where(eq(schema.shipmentLots.lotId, lotId));
+  }
+
+  async getShipmentLotsByShipment(shipmentId: string): Promise<any[]> {
+    return await db.select().from(schema.shipmentLots).where(eq(schema.shipmentLots.shipmentId, shipmentId));
   }
 }
 
