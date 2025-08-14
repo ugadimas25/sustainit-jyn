@@ -966,6 +966,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: "farmer_001",
           respondentSerialNumber: "RESP-001-2024",
           dataCollectionOfficer: "Ahmad Susanto",
+          dataStatus: "completed" as const,
           
           // A. Farmer Identity
           farmerName: "Budi Hartono",
@@ -1016,6 +1017,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: "farmer_002",
           respondentSerialNumber: "RESP-002-2024",
           dataCollectionOfficer: "Siti Nurhaliza",
+          dataStatus: "not-completed" as const,
           
           // A. Farmer Identity
           farmerName: "Dewi Sartika",
@@ -1066,6 +1068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: "farmer_003",
           respondentSerialNumber: "RESP-003-2024",
           dataCollectionOfficer: "Eko Prasetyo",
+          dataStatus: "completed" as const,
           
           // A. Farmer Identity
           farmerName: "Agus Setiawan",
