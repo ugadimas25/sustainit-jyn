@@ -19,6 +19,7 @@ import {
   insertSupplierSchema,
   insertSupplierWorkflowLinkSchema,
   insertWorkflowShipmentSchema,
+  insertDdsReportSchema,
   insertMillSchema
 } from "@shared/schema";
 import { z } from "zod";
@@ -761,6 +762,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(mockTraceability);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch traceability data" });
+    }
+  });
+
+  // DDS Reports routes
+  app.get('/api/dds-reports', isAuthenticated, async (req, res) => {
+    try {
+      const reports = await storage.getDdsReports();
+      res.json(reports);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch DDS reports' });
+    }
+  });
+
+  app.get('/api/dds-reports/:id', isAuthenticated, async (req, res) => {
+    try {
+      const report = await storage.getDdsReportById(req.params.id);
+      if (report) {
+        res.json(report);
+      } else {
+        res.status(404).json({ error: 'DDS report not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch DDS report' });
+    }
+  });
+
+  app.post('/api/dds-reports', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertDdsReportSchema.parse(req.body);
+      const newReport = await storage.createDdsReport(validatedData);
+      res.status(201).json(newReport);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid DDS report data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create DDS report' });
+      }
+    }
+  });
+
+  app.put('/api/dds-reports/:id', isAuthenticated, async (req, res) => {
+    try {
+      const updates = req.body;
+      const updatedReport = await storage.updateDdsReport(req.params.id, updates);
+      if (updatedReport) {
+        res.json(updatedReport);
+      } else {
+        res.status(404).json({ error: 'DDS report not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update DDS report' });
+    }
+  });
+
+  // DDS Report PDF generation
+  app.post('/api/dds-reports/:id/pdf', isAuthenticated, async (req, res) => {
+    try {
+      const report = await storage.getDdsReportById(req.params.id);
+      if (!report) {
+        return res.status(404).json({ error: 'DDS report not found' });
+      }
+
+      // Mock PDF generation - in real implementation, use a PDF library
+      const pdfPath = `/pdfs/dds-${report.id}.pdf`;
+      
+      // Update report with PDF path
+      await storage.updateDdsReport(req.params.id, {
+        pdfDocumentPath: pdfPath,
+        status: 'generated'
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'PDF generated successfully',
+        pdfPath 
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      res.status(500).json({ error: 'Failed to generate PDF' });
+    }
+  });
+
+  // DDS Report EU Trace submission
+  app.post('/api/dds-reports/:id/submit', isAuthenticated, async (req, res) => {
+    try {
+      const report = await storage.getDdsReportById(req.params.id);
+      if (!report) {
+        return res.status(404).json({ error: 'DDS report not found' });
+      }
+
+      // Mock EU Trace submission - in real implementation, integrate with EU Trace API
+      const euTraceRef = `EU-TRACE-${Date.now()}-${report.id.slice(0, 8)}`;
+      
+      // Update report with submission details
+      await storage.updateDdsReport(req.params.id, {
+        euTraceReference: euTraceRef,
+        submissionDate: new Date(),
+        status: 'submitted'
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'DDS report submitted to EU Trace system',
+        euTraceReference: euTraceRef 
+      });
+    } catch (error) {
+      console.error('Error submitting to EU Trace:', error);
+      res.status(500).json({ error: 'Failed to submit to EU Trace' });
     }
   });
 

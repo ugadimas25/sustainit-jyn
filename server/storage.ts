@@ -15,6 +15,7 @@ import {
   suppliers, type Supplier, type InsertSupplier,
   supplierWorkflowLinks, type SupplierWorkflowLink, type InsertSupplierWorkflowLink,
   workflowShipments, type WorkflowShipment, type InsertWorkflowShipment,
+  ddsReports, type DdsReport, type InsertDdsReport,
   mills, type Mill, type InsertMill
 } from "@shared/schema";
 import { db } from "./db";
@@ -97,6 +98,16 @@ export interface IStorage {
   // Legacy support
   getSuppliers(): Promise<Supplier[]>;
   getMills(): Promise<Mill[]>;
+
+  // Workflow shipment management
+  getWorkflowShipments(): Promise<WorkflowShipment[]>;
+  createWorkflowShipment(insertWorkflowShipment: InsertWorkflowShipment): Promise<WorkflowShipment>;
+
+  // DDS Reports management
+  getDdsReports(): Promise<DdsReport[]>;
+  getDdsReportById(id: string): Promise<DdsReport | undefined>;
+  createDdsReport(insertDdsReport: InsertDdsReport): Promise<DdsReport>;
+  updateDdsReport(id: string, updates: Partial<DdsReport>): Promise<DdsReport | undefined>;
 }
 
 // Database implementation of IStorage
@@ -477,6 +488,33 @@ export class DatabaseStorage implements IStorage {
 
   async getMills(): Promise<Mill[]> {
     return await db.select().from(mills).orderBy(mills.name);
+  }
+
+  // DDS Reports management
+  async getDdsReports(): Promise<DdsReport[]> {
+    return await db.select().from(ddsReports).orderBy(desc(ddsReports.createdAt));
+  }
+
+  async getDdsReportById(id: string): Promise<DdsReport | undefined> {
+    const [report] = await db.select().from(ddsReports).where(eq(ddsReports.id, id));
+    return report || undefined;
+  }
+
+  async createDdsReport(insertDdsReport: InsertDdsReport): Promise<DdsReport> {
+    const [report] = await db
+      .insert(ddsReports)
+      .values(insertDdsReport)
+      .returning();
+    return report;
+  }
+
+  async updateDdsReport(id: string, updates: Partial<DdsReport>): Promise<DdsReport | undefined> {
+    const [updatedReport] = await db
+      .update(ddsReports)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(ddsReports.id, id))
+      .returning();
+    return updatedReport || undefined;
   }
 }
 

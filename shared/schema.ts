@@ -402,6 +402,71 @@ export const massBalanceRecordsRelations = relations(massBalanceRecords, ({ one 
   }),
 }));
 
+// DDS (Due Diligence Statement) Reports
+export const ddsReports = pgTable("dds_reports", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  shipmentId: text("shipment_id").references(() => shipments.id),
+  
+  // Operator details
+  operatorLegalName: text("operator_legal_name").notNull(),
+  operatorAddress: text("operator_address").notNull(),
+  eoriNumber: text("eori_number"),
+  
+  // Product details
+  hsCode: text("hs_code").notNull(),
+  productDescription: text("product_description").notNull(),
+  scientificName: text("scientific_name"),
+  netMassKg: decimal("net_mass_kg", { precision: 10, scale: 3 }).notNull(),
+  supplementaryUnit: text("supplementary_unit"),
+  supplementaryQuantity: decimal("supplementary_quantity", { precision: 10, scale: 3 }),
+  
+  // Origin & geolocation
+  countryOfProduction: text("country_of_production").notNull(),
+  plotGeolocations: text("plot_geolocations").array(),
+  establishmentGeolocations: text("establishment_geolocations").array(),
+  
+  // Reference to prior DDS
+  priorDdsReference: text("prior_dds_reference"),
+  
+  // Declaration and signature
+  operatorDeclaration: text("operator_declaration").notNull(),
+  signedBy: text("signed_by").notNull(),
+  signedDate: timestamp("signed_date").notNull(),
+  signatoryFunction: text("signatory_function").notNull(),
+  digitalSignature: text("digital_signature"),
+  
+  // Status and processing
+  status: text("status").notNull().default("draft"),
+  submissionDate: timestamp("submission_date"),
+  euTraceReference: text("eu_trace_reference"),
+  pdfDocumentPath: text("pdf_document_path"),
+  
+  // Cross-module integration
+  deforestationRiskLevel: text("deforestation_risk_level"),
+  legalityStatus: text("legality_status"),
+  complianceScore: decimal("compliance_score", { precision: 5, scale: 2 }),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export const ddsReportsRelations = relations(ddsReports, ({ one }) => ({
+  shipment: one(shipments, {
+    fields: [ddsReports.shipmentId],
+    references: [shipments.id],
+  }),
+}));
+
+// Add DDS schema exports
+export const insertDdsReportSchema = createInsertSchema(ddsReports).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type DdsReport = typeof ddsReports.$inferSelect;
+export type InsertDdsReport = z.infer<typeof insertDdsReportSchema>;
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
