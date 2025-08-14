@@ -1,725 +1,405 @@
-import { eq, desc, and, sql } from "drizzle-orm";
-import { db } from "./db";
-import * as schema from "@shared/schema";
-import type {
-  User,
-  InsertUser,
-  Supplier,
-  InsertSupplier,
-  Plot,
-  InsertPlot,
-  Document,
-  InsertDocument,
-  DeforestationAlert,
-  InsertDeforestationAlert,
-  Mill,
-  InsertMill,
-  Delivery,
-  InsertDelivery,
-  ProductionLot,
-  InsertProductionLot,
-  Shipment,
-  InsertShipment,
-  DDSReport,
-  InsertDDSReport,
-  Survey,
-  InsertSurvey,
-  SurveyResponse,
-  InsertSurveyResponse,
-  Facility,
-  InsertFacility,
-  CustodyChain,
-  InsertCustodyChain,
-  CustodyEvent,
-  InsertCustodyEvent,
-  MassBalanceEvent,
-  InsertMassBalanceEvent,
-  SupplierTier,
-  InsertSupplierTier,
-  LineageReport,
-  InsertLineageReport,
+import { 
+  users, type User, type InsertUser,
+  commodities, type Commodity, type InsertCommodity,
+  parties, type Party, type InsertParty,
+  facilities, type Facility, type InsertFacility,
+  lots, type Lot, type InsertLot,
+  events, type Event, type InsertEvent,
+  eventInputs, type EventInput, type InsertEventInput,
+  eventOutputs, type EventOutput, type InsertEventOutput,
+  shipments, type Shipment, type InsertShipment,
+  supplierLinks, type SupplierLink, type InsertSupplierLink,
+  plots, type Plot, type InsertPlot,
+  custodyChains, type CustodyChain, type InsertCustodyChain,
+  massBalanceRecords, type MassBalanceRecord, type InsertMassBalanceRecord,
+  suppliers, type Supplier, type InsertSupplier,
+  mills, type Mill, type InsertMill
 } from "@shared/schema";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import { db } from "./db";
+import { eq, desc, and, or, sql } from "drizzle-orm";
 
-const PostgresSessionStore = connectPg(session);
-
+// Enhanced IStorage interface for EPCIS-compliant traceability
 export interface IStorage {
-  // Users
+  // User management
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(insertUser: InsertUser): Promise<User>;
 
-  // Suppliers
-  getSupplier(id: string): Promise<Supplier | undefined>;
-  getAllSuppliers(): Promise<Supplier[]>;
-  createSupplier(supplier: InsertSupplier): Promise<Supplier>;
-  updateSupplier(id: string, supplier: Partial<InsertSupplier>): Promise<Supplier>;
+  // Commodity management
+  getCommodities(): Promise<Commodity[]>;
+  getCommodity(id: string): Promise<Commodity | undefined>;
+  createCommodity(insertCommodity: InsertCommodity): Promise<Commodity>;
 
-  // Plots
-  getPlot(id: string): Promise<Plot | undefined>;
-  getPlotByPlotId(plotId: string): Promise<Plot | undefined>;
-  getAllPlots(): Promise<Plot[]>;
-  getPlotsBySupplier(supplierId: string): Promise<Plot[]>;
-  createPlot(plot: InsertPlot): Promise<Plot>;
-  updatePlot(id: string, plot: Partial<InsertPlot>): Promise<Plot>;
-  getPlotsWithAlerts(): Promise<any[]>;
+  // Party management (companies/organizations)
+  getParties(): Promise<Party[]>;
+  getParty(id: string): Promise<Party | undefined>;
+  createParty(insertParty: InsertParty): Promise<Party>;
+  updateParty(id: string, updates: Partial<Party>): Promise<Party>;
 
-  // Documents
-  getDocument(id: string): Promise<Document | undefined>;
-  getDocumentsByPlot(plotId: string): Promise<Document[]>;
-  getDocumentsBySupplier(supplierId: string): Promise<Document[]>;
-  createDocument(document: InsertDocument): Promise<Document>;
-  updateDocument(id: string, document: Partial<InsertDocument>): Promise<Document>;
-
-  // Deforestation Alerts
-  getAlert(id: string): Promise<DeforestationAlert | undefined>;
-  getAlertsByPlot(plotId: string): Promise<DeforestationAlert[]>;
-  getRecentAlerts(limit?: number): Promise<DeforestationAlert[]>;
-  createAlert(alert: InsertDeforestationAlert): Promise<DeforestationAlert>;
-  updateAlert(id: string, alert: Partial<InsertDeforestationAlert>): Promise<DeforestationAlert>;
-
-  // Mills
-  getMill(id: string): Promise<Mill | undefined>;
-  getAllMills(): Promise<Mill[]>;
-  createMill(mill: InsertMill): Promise<Mill>;
-
-  // Deliveries
-  getDelivery(id: string): Promise<Delivery | undefined>;
-  getDeliveriesByPlot(plotId: string): Promise<Delivery[]>;
-  getDeliveriesByMill(millId: string): Promise<Delivery[]>;
-  createDelivery(delivery: InsertDelivery): Promise<Delivery>;
-
-  // Production Lots
-  getProductionLot(id: string): Promise<ProductionLot | undefined>;
-  getProductionLotsByMill(millId: string): Promise<ProductionLot[]>;
-  createProductionLot(lot: InsertProductionLot): Promise<ProductionLot>;
-
-  // Shipments
-  getShipment(id: string): Promise<Shipment | undefined>;
-  getAllShipments(): Promise<Shipment[]>;
-  getShipmentByShipmentId(shipmentId: string): Promise<Shipment | undefined>;
-  createShipment(shipment: InsertShipment): Promise<Shipment>;
-  getShipmentTraceability(shipmentId: string): Promise<any>;
-
-  // DDS Reports
-  getDDSReport(id: string): Promise<DDSReport | undefined>;
-  getAllDDSReports(): Promise<DDSReport[]>;
-  getDDSReportsByShipment(shipmentId: string): Promise<DDSReport[]>;
-  createDDSReport(report: InsertDDSReport): Promise<DDSReport>;
-  updateDDSReport(id: string, report: Partial<InsertDDSReport>): Promise<DDSReport>;
-
-  // Surveys
-  getSurvey(id: string): Promise<Survey | undefined>;
-  getAllSurveys(): Promise<Survey[]>;
-  createSurvey(survey: InsertSurvey): Promise<Survey>;
-
-  // Survey Responses
-  getSurveyResponse(id: string): Promise<SurveyResponse | undefined>;
-  getSurveyResponsesByPlot(plotId: string): Promise<SurveyResponse[]>;
-  createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
-
-  // Dashboard metrics
-  getDashboardMetrics(): Promise<any>;
-
-  // Enhanced Chain of Custody methods
+  // Facility management (physical locations)
+  getFacilities(): Promise<Facility[]>;
   getFacility(id: string): Promise<Facility | undefined>;
-  getFacilities(type?: string): Promise<Facility[]>;
-  createFacility(facility: InsertFacility): Promise<Facility>;
-  updateFacility(id: string, facility: Partial<InsertFacility>): Promise<Facility>;
-  getFacilityHierarchy(rootId: string): Promise<any>;
+  getFacilitiesByType(type: string): Promise<Facility[]>;
+  createFacility(insertFacility: InsertFacility): Promise<Facility>;
+  updateFacility(id: string, updates: Partial<Facility>): Promise<Facility>;
 
+  // Lot management (batches/assets)
+  getLots(): Promise<Lot[]>;
+  getLot(id: string): Promise<Lot | undefined>;
+  getLotsByFacility(facilityId: string): Promise<Lot[]>;
+  createLot(insertLot: InsertLot): Promise<Lot>;
+  updateLot(id: string, updates: Partial<Lot>): Promise<Lot>;
+
+  // EPCIS Event management
+  getEvents(): Promise<Event[]>;
+  getEvent(id: string): Promise<Event | undefined>;
+  getEventsByFacility(facilityId: string): Promise<Event[]>;
+  createEvent(insertEvent: InsertEvent): Promise<Event>;
+
+  // Event Input/Output management
+  getEventInputs(eventId: string): Promise<EventInput[]>;
+  getEventOutputs(eventId: string): Promise<EventOutput[]>;
+  createEventInput(insertEventInput: InsertEventInput): Promise<EventInput>;
+  createEventOutput(insertEventOutput: InsertEventOutput): Promise<EventOutput>;
+
+  // Shipment management
+  getShipments(): Promise<Shipment[]>;
+  getShipment(id: string): Promise<Shipment | undefined>;
+  createShipment(insertShipment: InsertShipment): Promise<Shipment>;
+  updateShipment(id: string, updates: Partial<Shipment>): Promise<Shipment>;
+
+  // Supply chain relationship management
+  getSupplierLinks(): Promise<SupplierLink[]>;
+  getSupplierLinksByParty(partyId: string): Promise<SupplierLink[]>;
+  createSupplierLink(insertSupplierLink: InsertSupplierLink): Promise<SupplierLink>;
+
+  // Plot management
+  getPlots(): Promise<Plot[]>;
+  getPlot(id: string): Promise<Plot | undefined>;
+  getPlotsByFacility(facilityId: string): Promise<Plot[]>;
+  createPlot(insertPlot: InsertPlot): Promise<Plot>;
+
+  // Custody chain management
+  getCustodyChains(): Promise<CustodyChain[]>;
   getCustodyChain(id: string): Promise<CustodyChain | undefined>;
-  getCustodyChains(status?: string, productType?: string): Promise<CustodyChain[]>;
-  createCustodyChain(chain: InsertCustodyChain): Promise<CustodyChain>;
-  updateCustodyChain(id: string, chain: Partial<InsertCustodyChain>): Promise<CustodyChain>;
+  getCustodyChainsByStatus(status: string): Promise<CustodyChain[]>;
+  createCustodyChain(insertCustodyChain: InsertCustodyChain): Promise<CustodyChain>;
+  updateCustodyChain(id: string, updates: Partial<CustodyChain>): Promise<CustodyChain>;
 
-  getCustodyEvent(id: string): Promise<CustodyEvent | undefined>;
-  getCustodyEvents(chainId?: string, facilityId?: string, limit?: number): Promise<CustodyEvent[]>;
-  getCustodyEventsByChain(chainId: string): Promise<CustodyEvent[]>;
-  createCustodyEvent(event: InsertCustodyEvent): Promise<CustodyEvent>;
+  // Mass balance management
+  getMassBalanceRecords(): Promise<MassBalanceRecord[]>;
+  getMassBalanceRecord(id: string): Promise<MassBalanceRecord | undefined>;
+  getMassBalanceRecordsByFacility(facilityId: string): Promise<MassBalanceRecord[]>;
+  createMassBalanceRecord(insertRecord: InsertMassBalanceRecord): Promise<MassBalanceRecord>;
 
-  getMassBalanceEvent(id: string): Promise<MassBalanceEvent | undefined>;
-  getMassBalanceEvents(chainId?: string, facilityId?: string): Promise<MassBalanceEvent[]>;
-  getMassBalanceEventsByChain(chainId: string, timeRange?: any): Promise<MassBalanceEvent[]>;
-  getMassBalanceEventsByParentChain(chainId: string): Promise<MassBalanceEvent[]>;
-  getMassBalanceEventsByChildChain(chainId: string): Promise<MassBalanceEvent[]>;
-  getMassBalanceEventsByFacility(facilityId: string, timeRange?: any): Promise<MassBalanceEvent[]>;
-  createMassBalanceEvent(event: InsertMassBalanceEvent): Promise<MassBalanceEvent>;
-
-  getSupplierTiers(millId?: string): Promise<SupplierTier[]>;
-  getSuppliersByDistance(lat: number, lng: number, radiusKm: number): Promise<any[]>;
-  createSupplierTier(tier: InsertSupplierTier): Promise<SupplierTier>;
-
-  getLineageReport(id: string): Promise<LineageReport | undefined>;
-  createLineageReport(report: InsertLineageReport): Promise<LineageReport>;
-
-  // Additional helper methods
-  getLotDeliveriesByDelivery(deliveryId: string): Promise<any[]>;
-  getLotDeliveriesByLot(lotId: string): Promise<any[]>;
-  getShipmentLotsByLot(lotId: string): Promise<any[]>;
-  getShipmentLotsByShipment(shipmentId: string): Promise<any[]>;
-
-  sessionStore: any;
+  // Legacy support
+  getSuppliers(): Promise<Supplier[]>;
+  getMills(): Promise<Mill[]>;
 }
 
+// Database implementation of IStorage
 export class DatabaseStorage implements IStorage {
-  sessionStore: any;
-
-  constructor() {
-    this.sessionStore = new PostgresSessionStore({ pool, createTableIfMissing: true });
-  }
-
-  // Users
+  // User management
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(schema.users).where(eq(schema.users.id, id));
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(schema.users).where(eq(schema.users.username, username));
+    const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(schema.users).values(insertUser).returning();
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
-  // Suppliers
-  async getSupplier(id: string): Promise<Supplier | undefined> {
-    const [supplier] = await db.select().from(schema.suppliers).where(eq(schema.suppliers.id, id));
-    return supplier || undefined;
+  // Commodity management
+  async getCommodities(): Promise<Commodity[]> {
+    return await db.select().from(commodities).orderBy(commodities.name);
   }
 
-  async getAllSuppliers(): Promise<Supplier[]> {
-    return await db.select().from(schema.suppliers).orderBy(desc(schema.suppliers.createdAt));
+  async getCommodity(id: string): Promise<Commodity | undefined> {
+    const [commodity] = await db.select().from(commodities).where(eq(commodities.id, id));
+    return commodity || undefined;
   }
 
-  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
-    const [supplier] = await db.insert(schema.suppliers).values(insertSupplier).returning();
-    return supplier;
+  async createCommodity(insertCommodity: InsertCommodity): Promise<Commodity> {
+    const [commodity] = await db
+      .insert(commodities)
+      .values(insertCommodity)
+      .returning();
+    return commodity;
   }
 
-  async updateSupplier(id: string, supplier: Partial<InsertSupplier>): Promise<Supplier> {
-    const [updated] = await db.update(schema.suppliers).set(supplier).where(eq(schema.suppliers.id, id)).returning();
-    return updated;
+  // Party management
+  async getParties(): Promise<Party[]> {
+    return await db.select().from(parties).orderBy(parties.name);
   }
 
-  // Plots
-  async getPlot(id: string): Promise<Plot | undefined> {
-    const [plot] = await db.select().from(schema.plots).where(eq(schema.plots.id, id));
-    return plot || undefined;
+  async getParty(id: string): Promise<Party | undefined> {
+    const [party] = await db.select().from(parties).where(eq(parties.id, id));
+    return party || undefined;
   }
 
-  async getPlotByPlotId(plotId: string): Promise<Plot | undefined> {
-    const [plot] = await db.select().from(schema.plots).where(eq(schema.plots.plotId, plotId));
-    return plot || undefined;
+  async createParty(insertParty: InsertParty): Promise<Party> {
+    const [party] = await db
+      .insert(parties)
+      .values(insertParty)
+      .returning();
+    return party;
   }
 
-  async getAllPlots(): Promise<Plot[]> {
-    return await db.select().from(schema.plots).orderBy(desc(schema.plots.createdAt));
+  async updateParty(id: string, updates: Partial<Party>): Promise<Party> {
+    const [party] = await db
+      .update(parties)
+      .set(updates)
+      .where(eq(parties.id, id))
+      .returning();
+    return party;
   }
 
-  async getPlotsBySupplier(supplierId: string): Promise<Plot[]> {
-    return await db.select().from(schema.plots).where(eq(schema.plots.supplierId, supplierId));
+  // Facility management
+  async getFacilities(): Promise<Facility[]> {
+    return await db.select().from(facilities).orderBy(facilities.name);
   }
 
-  async createPlot(insertPlot: InsertPlot): Promise<Plot> {
-    const [plot] = await db.insert(schema.plots).values(insertPlot).returning();
-    return plot;
+  async getFacility(id: string): Promise<Facility | undefined> {
+    const [facility] = await db.select().from(facilities).where(eq(facilities.id, id));
+    return facility || undefined;
   }
 
-  async updatePlot(id: string, plot: Partial<InsertPlot>): Promise<Plot> {
-    const [updated] = await db.update(schema.plots).set(plot).where(eq(schema.plots.id, id)).returning();
-    return updated;
+  async getFacilitiesByType(type: string): Promise<Facility[]> {
+    return await db.select().from(facilities).where(eq(facilities.type, type));
   }
 
-  async getPlotsWithAlerts(): Promise<any[]> {
-    return await db
-      .select({
-        plot: schema.plots,
-        supplier: schema.suppliers,
-        alertCount: sql<number>`count(${schema.deforestationAlerts.id})`,
-      })
-      .from(schema.plots)
-      .leftJoin(schema.suppliers, eq(schema.plots.supplierId, schema.suppliers.id))
-      .leftJoin(schema.deforestationAlerts, eq(schema.plots.id, schema.deforestationAlerts.plotId))
-      .groupBy(schema.plots.id, schema.suppliers.id);
+  async createFacility(insertFacility: InsertFacility): Promise<Facility> {
+    const [facility] = await db
+      .insert(facilities)
+      .values(insertFacility)
+      .returning();
+    return facility;
   }
 
-  // Documents
-  async getDocument(id: string): Promise<Document | undefined> {
-    const [document] = await db.select().from(schema.documents).where(eq(schema.documents.id, id));
-    return document || undefined;
+  async updateFacility(id: string, updates: Partial<Facility>): Promise<Facility> {
+    const [facility] = await db
+      .update(facilities)
+      .set(updates)
+      .where(eq(facilities.id, id))
+      .returning();
+    return facility;
   }
 
-  async getDocumentsByPlot(plotId: string): Promise<Document[]> {
-    return await db.select().from(schema.documents).where(eq(schema.documents.plotId, plotId));
+  // Lot management
+  async getLots(): Promise<Lot[]> {
+    return await db.select().from(lots).orderBy(desc(lots.createdAt));
   }
 
-  async getDocumentsBySupplier(supplierId: string): Promise<Document[]> {
-    return await db.select().from(schema.documents).where(eq(schema.documents.supplierId, supplierId));
-  }
-
-  async createDocument(insertDocument: InsertDocument): Promise<Document> {
-    const [document] = await db.insert(schema.documents).values(insertDocument).returning();
-    return document;
-  }
-
-  async updateDocument(id: string, document: Partial<InsertDocument>): Promise<Document> {
-    const [updated] = await db.update(schema.documents).set(document).where(eq(schema.documents.id, id)).returning();
-    return updated;
-  }
-
-  // Deforestation Alerts
-  async getAlert(id: string): Promise<DeforestationAlert | undefined> {
-    const [alert] = await db.select().from(schema.deforestationAlerts).where(eq(schema.deforestationAlerts.id, id));
-    return alert || undefined;
-  }
-
-  async getAlertsByPlot(plotId: string): Promise<DeforestationAlert[]> {
-    return await db.select().from(schema.deforestationAlerts).where(eq(schema.deforestationAlerts.plotId, plotId));
-  }
-
-  async getRecentAlerts(limit: number = 10): Promise<DeforestationAlert[]> {
-    return await db
-      .select()
-      .from(schema.deforestationAlerts)
-      .orderBy(desc(schema.deforestationAlerts.alertDate))
-      .limit(limit);
-  }
-
-  async createAlert(insertAlert: InsertDeforestationAlert): Promise<DeforestationAlert> {
-    const [alert] = await db.insert(schema.deforestationAlerts).values(insertAlert).returning();
-    return alert;
-  }
-
-  async updateAlert(id: string, alert: Partial<InsertDeforestationAlert>): Promise<DeforestationAlert> {
-    const [updated] = await db.update(schema.deforestationAlerts).set(alert).where(eq(schema.deforestationAlerts.id, id)).returning();
-    return updated;
-  }
-
-  // Mills
-  async getMill(id: string): Promise<Mill | undefined> {
-    const [mill] = await db.select().from(schema.mills).where(eq(schema.mills.id, id));
-    return mill || undefined;
-  }
-
-  async getAllMills(): Promise<Mill[]> {
-    return await db.select().from(schema.mills).orderBy(desc(schema.mills.createdAt));
-  }
-
-  async createMill(insertMill: InsertMill): Promise<Mill> {
-    const [mill] = await db.insert(schema.mills).values(insertMill).returning();
-    return mill;
-  }
-
-  // Deliveries
-  async getDelivery(id: string): Promise<Delivery | undefined> {
-    const [delivery] = await db.select().from(schema.deliveries).where(eq(schema.deliveries.id, id));
-    return delivery || undefined;
-  }
-
-  async getDeliveriesByPlot(plotId: string): Promise<Delivery[]> {
-    return await db.select().from(schema.deliveries).where(eq(schema.deliveries.plotId, plotId));
-  }
-
-  async getDeliveriesByMill(millId: string): Promise<Delivery[]> {
-    return await db.select().from(schema.deliveries).where(eq(schema.deliveries.millId, millId));
-  }
-
-  async createDelivery(insertDelivery: InsertDelivery): Promise<Delivery> {
-    const [delivery] = await db.insert(schema.deliveries).values(insertDelivery).returning();
-    return delivery;
-  }
-
-  // Production Lots
-  async getProductionLot(id: string): Promise<ProductionLot | undefined> {
-    const [lot] = await db.select().from(schema.productionLots).where(eq(schema.productionLots.id, id));
+  async getLot(id: string): Promise<Lot | undefined> {
+    const [lot] = await db.select().from(lots).where(eq(lots.id, id));
     return lot || undefined;
   }
 
-  async getProductionLotsByMill(millId: string): Promise<ProductionLot[]> {
-    return await db.select().from(schema.productionLots).where(eq(schema.productionLots.millId, millId));
+  async getLotsByFacility(facilityId: string): Promise<Lot[]> {
+    return await db.select().from(lots).where(eq(lots.ownerFacilityId, facilityId));
   }
 
-  async createProductionLot(insertLot: InsertProductionLot): Promise<ProductionLot> {
-    const [lot] = await db.insert(schema.productionLots).values(insertLot).returning();
+  async createLot(insertLot: InsertLot): Promise<Lot> {
+    const [lot] = await db
+      .insert(lots)
+      .values(insertLot)
+      .returning();
     return lot;
   }
 
-  // Shipments
+  async updateLot(id: string, updates: Partial<Lot>): Promise<Lot> {
+    const [lot] = await db
+      .update(lots)
+      .set(updates)
+      .where(eq(lots.id, id))
+      .returning();
+    return lot;
+  }
+
+  // EPCIS Event management
+  async getEvents(): Promise<Event[]> {
+    return await db.select().from(events).orderBy(desc(events.occurredAt));
+  }
+
+  async getEvent(id: string): Promise<Event | undefined> {
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+    return event || undefined;
+  }
+
+  async getEventsByFacility(facilityId: string): Promise<Event[]> {
+    return await db.select().from(events).where(eq(events.readPointFacilityId, facilityId));
+  }
+
+  async createEvent(insertEvent: InsertEvent): Promise<Event> {
+    const [event] = await db
+      .insert(events)
+      .values(insertEvent)
+      .returning();
+    return event;
+  }
+
+  // Event Input/Output management
+  async getEventInputs(eventId: string): Promise<EventInput[]> {
+    return await db.select().from(eventInputs).where(eq(eventInputs.eventId, eventId));
+  }
+
+  async getEventOutputs(eventId: string): Promise<EventOutput[]> {
+    return await db.select().from(eventOutputs).where(eq(eventOutputs.eventId, eventId));
+  }
+
+  async createEventInput(insertEventInput: InsertEventInput): Promise<EventInput> {
+    const [input] = await db
+      .insert(eventInputs)
+      .values(insertEventInput)
+      .returning();
+    return input;
+  }
+
+  async createEventOutput(insertEventOutput: InsertEventOutput): Promise<EventOutput> {
+    const [output] = await db
+      .insert(eventOutputs)
+      .values(insertEventOutput)
+      .returning();
+    return output;
+  }
+
+  // Shipment management
+  async getShipments(): Promise<Shipment[]> {
+    return await db.select().from(shipments).orderBy(desc(shipments.createdAt));
+  }
+
   async getShipment(id: string): Promise<Shipment | undefined> {
-    const [shipment] = await db.select().from(schema.shipments).where(eq(schema.shipments.id, id));
-    return shipment || undefined;
-  }
-
-  async getAllShipments(): Promise<Shipment[]> {
-    return await db.select().from(schema.shipments).orderBy(desc(schema.shipments.createdAt));
-  }
-
-  async getShipmentByShipmentId(shipmentId: string): Promise<Shipment | undefined> {
-    const [shipment] = await db.select().from(schema.shipments).where(eq(schema.shipments.shipmentId, shipmentId));
+    const [shipment] = await db.select().from(shipments).where(eq(shipments.id, id));
     return shipment || undefined;
   }
 
   async createShipment(insertShipment: InsertShipment): Promise<Shipment> {
-    const [shipment] = await db.insert(schema.shipments).values(insertShipment).returning();
+    const [shipment] = await db
+      .insert(shipments)
+      .values(insertShipment)
+      .returning();
     return shipment;
   }
 
-  async getShipmentTraceability(shipmentId: string): Promise<any> {
-    // Complex query to get full traceability from shipment to plots
-    const shipment = await this.getShipmentByShipmentId(shipmentId);
-    if (!shipment) return null;
-
-    // Get shipment lots
-    const shipmentLots = await db
-      .select({
-        shipmentLot: schema.shipmentLots,
-        productionLot: schema.productionLots,
-        mill: schema.mills,
-      })
-      .from(schema.shipmentLots)
-      .leftJoin(schema.productionLots, eq(schema.shipmentLots.lotId, schema.productionLots.id))
-      .leftJoin(schema.mills, eq(schema.productionLots.millId, schema.mills.id))
-      .where(eq(schema.shipmentLots.shipmentId, shipment.id));
-
-    // Get source plots for each lot
-    const sourcePlots = [];
-    for (const shipmentLot of shipmentLots) {
-      if (!shipmentLot.productionLot) continue;
-      
-      const lotDeliveries = await db
-        .select({
-          delivery: schema.deliveries,
-          plot: schema.plots,
-          supplier: schema.suppliers,
-        })
-        .from(schema.lotDeliveries)
-        .leftJoin(schema.deliveries, eq(schema.lotDeliveries.deliveryId, schema.deliveries.id))
-        .leftJoin(schema.plots, eq(schema.deliveries.plotId, schema.plots.id))
-        .leftJoin(schema.suppliers, eq(schema.plots.supplierId, schema.suppliers.id))
-        .where(eq(schema.lotDeliveries.lotId, shipmentLot.productionLot.id));
-
-      sourcePlots.push(...lotDeliveries);
-    }
-
-    return {
-      shipment,
-      shipmentLots,
-      sourcePlots,
-    };
+  async updateShipment(id: string, updates: Partial<Shipment>): Promise<Shipment> {
+    const [shipment] = await db
+      .update(shipments)
+      .set(updates)
+      .where(eq(shipments.id, id))
+      .returning();
+    return shipment;
   }
 
-  // DDS Reports
-  async getDDSReport(id: string): Promise<DDSReport | undefined> {
-    const [report] = await db.select().from(schema.ddsReports).where(eq(schema.ddsReports.id, id));
-    return report || undefined;
+  // Supply chain relationship management
+  async getSupplierLinks(): Promise<SupplierLink[]> {
+    return await db.select().from(supplierLinks).orderBy(supplierLinks.tier);
   }
 
-  async getAllDDSReports(): Promise<DDSReport[]> {
-    return await db.select().from(schema.ddsReports).orderBy(desc(schema.ddsReports.createdAt));
+  async getSupplierLinksByParty(partyId: string): Promise<SupplierLink[]> {
+    return await db.select().from(supplierLinks).where(
+      or(eq(supplierLinks.fromPartyId, partyId), eq(supplierLinks.toPartyId, partyId))
+    );
   }
 
-  async getDDSReportsByShipment(shipmentId: string): Promise<DDSReport[]> {
-    return await db.select().from(schema.ddsReports).where(eq(schema.ddsReports.shipmentId, shipmentId));
+  async createSupplierLink(insertSupplierLink: InsertSupplierLink): Promise<SupplierLink> {
+    const [link] = await db
+      .insert(supplierLinks)
+      .values(insertSupplierLink)
+      .returning();
+    return link;
   }
 
-  async createDDSReport(insertReport: InsertDDSReport): Promise<DDSReport> {
-    const [report] = await db.insert(schema.ddsReports).values(insertReport).returning();
-    return report;
+  // Plot management
+  async getPlots(): Promise<Plot[]> {
+    return await db.select().from(plots).orderBy(plots.plotId);
   }
 
-  async updateDDSReport(id: string, report: Partial<InsertDDSReport>): Promise<DDSReport> {
-    const [updated] = await db.update(schema.ddsReports).set(report).where(eq(schema.ddsReports.id, id)).returning();
-    return updated;
+  async getPlot(id: string): Promise<Plot | undefined> {
+    const [plot] = await db.select().from(plots).where(eq(plots.id, id));
+    return plot || undefined;
   }
 
-  // Surveys
-  async getSurvey(id: string): Promise<Survey | undefined> {
-    const [survey] = await db.select().from(schema.surveys).where(eq(schema.surveys.id, id));
-    return survey || undefined;
+  async getPlotsByFacility(facilityId: string): Promise<Plot[]> {
+    return await db.select().from(plots).where(eq(plots.facilityId, facilityId));
   }
 
-  async getAllSurveys(): Promise<Survey[]> {
-    return await db.select().from(schema.surveys).orderBy(desc(schema.surveys.createdAt));
+  async createPlot(insertPlot: InsertPlot): Promise<Plot> {
+    const [plot] = await db
+      .insert(plots)
+      .values(insertPlot)
+      .returning();
+    return plot;
   }
 
-  async createSurvey(insertSurvey: InsertSurvey): Promise<Survey> {
-    const [survey] = await db.insert(schema.surveys).values(insertSurvey).returning();
-    return survey;
-  }
-
-  // Survey Responses
-  async getSurveyResponse(id: string): Promise<SurveyResponse | undefined> {
-    const [response] = await db.select().from(schema.surveyResponses).where(eq(schema.surveyResponses.id, id));
-    return response || undefined;
-  }
-
-  async getSurveyResponsesByPlot(plotId: string): Promise<SurveyResponse[]> {
-    return await db.select().from(schema.surveyResponses).where(eq(schema.surveyResponses.plotId, plotId));
-  }
-
-  async createSurveyResponse(insertResponse: InsertSurveyResponse): Promise<SurveyResponse> {
-    const [response] = await db.insert(schema.surveyResponses).values(insertResponse).returning();
-    return response;
-  }
-
-  // Dashboard metrics
-  async getDashboardMetrics(): Promise<any> {
-    const totalPlots = await db.select({ count: sql<number>`count(*)` }).from(schema.plots);
-    const compliantPlots = await db.select({ count: sql<number>`count(*)` }).from(schema.plots).where(eq(schema.plots.status, 'compliant'));
-    const atRiskPlots = await db.select({ count: sql<number>`count(*)` }).from(schema.plots).where(eq(schema.plots.status, 'at_risk'));
-    const criticalPlots = await db.select({ count: sql<number>`count(*)` }).from(schema.plots).where(eq(schema.plots.status, 'critical'));
-    
-    const recentAlerts = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(schema.deforestationAlerts)
-      .where(and(
-        eq(schema.deforestationAlerts.status, 'active'),
-        sql`${schema.deforestationAlerts.alertDate} >= current_date - interval '30 days'`
-      ));
-
-    return {
-      totalPlots: totalPlots[0].count,
-      compliantPlots: compliantPlots[0].count,
-      atRiskPlots: atRiskPlots[0].count,
-      criticalPlots: criticalPlots[0].count,
-      recentAlerts: recentAlerts[0].count,
-    };
-  }
-
-  // Enhanced Chain of Custody implementations
-  async getFacility(id: string): Promise<Facility | undefined> {
-    const [facility] = await db.select().from(schema.facilities).where(eq(schema.facilities.id, id));
-    return facility || undefined;
-  }
-
-  async getFacilities(type?: string): Promise<Facility[]> {
-    if (type) {
-      return await db.select().from(schema.facilities).where(eq(schema.facilities.facilityType, type));
-    }
-    return await db.select().from(schema.facilities).orderBy(desc(schema.facilities.createdAt));
-  }
-
-  async createFacility(insertFacility: InsertFacility): Promise<Facility> {
-    const [facility] = await db.insert(schema.facilities).values(insertFacility).returning();
-    return facility;
-  }
-
-  async updateFacility(id: string, facility: Partial<InsertFacility>): Promise<Facility> {
-    const [updated] = await db.update(schema.facilities).set(facility).where(eq(schema.facilities.id, id)).returning();
-    return updated;
-  }
-
-  async getFacilityHierarchy(rootId: string): Promise<any> {
-    // Recursive CTE to get facility hierarchy
-    const hierarchy = await db.execute(sql`
-      WITH RECURSIVE facility_tree AS (
-        SELECT id, facility_id, name, facility_type, parent_facility_id, 0 as level
-        FROM facilities 
-        WHERE id = ${rootId}
-        
-        UNION ALL
-        
-        SELECT f.id, f.facility_id, f.name, f.facility_type, f.parent_facility_id, ft.level + 1
-        FROM facilities f
-        JOIN facility_tree ft ON f.parent_facility_id = ft.id
-      )
-      SELECT * FROM facility_tree ORDER BY level, name
-    `);
-    
-    return hierarchy.rows;
+  // Custody chain management
+  async getCustodyChains(): Promise<CustodyChain[]> {
+    return await db.select().from(custodyChains).orderBy(desc(custodyChains.createdAt));
   }
 
   async getCustodyChain(id: string): Promise<CustodyChain | undefined> {
-    const [chain] = await db.select().from(schema.custodyChains).where(eq(schema.custodyChains.id, id));
+    const [chain] = await db.select().from(custodyChains).where(eq(custodyChains.id, id));
     return chain || undefined;
   }
 
-  async getCustodyChains(status?: string, productType?: string): Promise<CustodyChain[]> {
-    let query = db.select().from(schema.custodyChains);
-    
-    if (status && productType) {
-      query = query.where(and(eq(schema.custodyChains.status, status), eq(schema.custodyChains.productType, productType)));
-    } else if (status) {
-      query = query.where(eq(schema.custodyChains.status, status));
-    } else if (productType) {
-      query = query.where(eq(schema.custodyChains.productType, productType));
-    }
-    
-    return await query.orderBy(desc(schema.custodyChains.createdAt));
+  async getCustodyChainsByStatus(status: string): Promise<CustodyChain[]> {
+    return await db.select().from(custodyChains).where(eq(custodyChains.status, status));
   }
 
-  async createCustodyChain(insertChain: InsertCustodyChain): Promise<CustodyChain> {
-    const [chain] = await db.insert(schema.custodyChains).values(insertChain).returning();
+  async createCustodyChain(insertCustodyChain: InsertCustodyChain): Promise<CustodyChain> {
+    const [chain] = await db
+      .insert(custodyChains)
+      .values(insertCustodyChain)
+      .returning();
     return chain;
   }
 
-  async updateCustodyChain(id: string, chain: Partial<InsertCustodyChain>): Promise<CustodyChain> {
-    const [updated] = await db.update(schema.custodyChains).set(chain).where(eq(schema.custodyChains.id, id)).returning();
-    return updated;
+  async updateCustodyChain(id: string, updates: Partial<CustodyChain>): Promise<CustodyChain> {
+    const [chain] = await db
+      .update(custodyChains)
+      .set(updates)
+      .where(eq(custodyChains.id, id))
+      .returning();
+    return chain;
   }
 
-  async getCustodyEvent(id: string): Promise<CustodyEvent | undefined> {
-    const [event] = await db.select().from(schema.custodyEvents).where(eq(schema.custodyEvents.id, id));
-    return event || undefined;
+  // Mass balance management
+  async getMassBalanceRecords(): Promise<MassBalanceRecord[]> {
+    return await db.select().from(massBalanceRecords).orderBy(desc(massBalanceRecords.createdAt));
   }
 
-  async getCustodyEvents(chainId?: string, facilityId?: string, limit: number = 100): Promise<CustodyEvent[]> {
-    let query = db.select().from(schema.custodyEvents);
-    
-    if (chainId && facilityId) {
-      query = query.where(and(eq(schema.custodyEvents.sourceObjectId, chainId), eq(schema.custodyEvents.locationId, facilityId)));
-    } else if (chainId) {
-      query = query.where(eq(schema.custodyEvents.sourceObjectId, chainId));
-    } else if (facilityId) {
-      query = query.where(eq(schema.custodyEvents.locationId, facilityId));
-    }
-    
-    return await query.orderBy(desc(schema.custodyEvents.eventTime)).limit(limit);
+  async getMassBalanceRecord(id: string): Promise<MassBalanceRecord | undefined> {
+    const [record] = await db.select().from(massBalanceRecords).where(eq(massBalanceRecords.id, id));
+    return record || undefined;
   }
 
-  async getCustodyEventsByChain(chainId: string): Promise<CustodyEvent[]> {
-    return await db.select().from(schema.custodyEvents)
-      .where(eq(schema.custodyEvents.sourceObjectId, chainId))
-      .orderBy(schema.custodyEvents.eventTime);
+  async getMassBalanceRecordsByFacility(facilityId: string): Promise<MassBalanceRecord[]> {
+    return await db.select().from(massBalanceRecords).where(eq(massBalanceRecords.facilityId, facilityId));
   }
 
-  async createCustodyEvent(insertEvent: InsertCustodyEvent): Promise<CustodyEvent> {
-    const [event] = await db.insert(schema.custodyEvents).values(insertEvent).returning();
-    return event;
+  async createMassBalanceRecord(insertRecord: InsertMassBalanceRecord): Promise<MassBalanceRecord> {
+    const [record] = await db
+      .insert(massBalanceRecords)
+      .values(insertRecord)
+      .returning();
+    return record;
   }
 
-  async getMassBalanceEvent(id: string): Promise<MassBalanceEvent | undefined> {
-    const [event] = await db.select().from(schema.massBalanceEvents).where(eq(schema.massBalanceEvents.id, id));
-    return event || undefined;
+  // Legacy support
+  async getSuppliers(): Promise<Supplier[]> {
+    return await db.select().from(suppliers).orderBy(suppliers.name);
   }
 
-  async getMassBalanceEvents(chainId?: string, facilityId?: string): Promise<MassBalanceEvent[]> {
-    let query = db.select().from(schema.massBalanceEvents);
-    
-    if (chainId && facilityId) {
-      query = query.where(and(eq(schema.massBalanceEvents.parentChainId, chainId), eq(schema.massBalanceEvents.processLocation, facilityId)));
-    } else if (chainId) {
-      query = query.where(eq(schema.massBalanceEvents.parentChainId, chainId));
-    } else if (facilityId) {
-      query = query.where(eq(schema.massBalanceEvents.processLocation, facilityId));
-    }
-    
-    return await query.orderBy(desc(schema.massBalanceEvents.processDate));
-  }
-
-  async getMassBalanceEventsByChain(chainId: string, timeRange?: any): Promise<MassBalanceEvent[]> {
-    let query = db.select().from(schema.massBalanceEvents).where(eq(schema.massBalanceEvents.parentChainId, chainId));
-    
-    if (timeRange) {
-      query = query.where(and(
-        eq(schema.massBalanceEvents.parentChainId, chainId),
-        sql`${schema.massBalanceEvents.processDate} >= ${timeRange.start}`,
-        sql`${schema.massBalanceEvents.processDate} <= ${timeRange.end}`
-      ));
-    }
-    
-    return await query.orderBy(schema.massBalanceEvents.processDate);
-  }
-
-  async getMassBalanceEventsByParentChain(chainId: string): Promise<MassBalanceEvent[]> {
-    return await db.select().from(schema.massBalanceEvents)
-      .where(eq(schema.massBalanceEvents.parentChainId, chainId))
-      .orderBy(schema.massBalanceEvents.processDate);
-  }
-
-  async getMassBalanceEventsByChildChain(chainId: string): Promise<MassBalanceEvent[]> {
-    return await db.select().from(schema.massBalanceEvents)
-      .where(sql`${schema.massBalanceEvents.childChainIds} ? ${chainId}`)
-      .orderBy(schema.massBalanceEvents.processDate);
-  }
-
-  async getMassBalanceEventsByFacility(facilityId: string, timeRange?: any): Promise<MassBalanceEvent[]> {
-    let query = db.select().from(schema.massBalanceEvents).where(eq(schema.massBalanceEvents.processLocation, facilityId));
-    
-    if (timeRange) {
-      query = query.where(and(
-        eq(schema.massBalanceEvents.processLocation, facilityId),
-        sql`${schema.massBalanceEvents.processDate} >= ${timeRange.start}`,
-        sql`${schema.massBalanceEvents.processDate} <= ${timeRange.end}`
-      ));
-    }
-    
-    return await query.orderBy(schema.massBalanceEvents.processDate);
-  }
-
-  async createMassBalanceEvent(insertEvent: InsertMassBalanceEvent): Promise<MassBalanceEvent> {
-    const [event] = await db.insert(schema.massBalanceEvents).values(insertEvent).returning();
-    return event;
-  }
-
-  async getSupplierTiers(millId?: string): Promise<SupplierTier[]> {
-    if (millId) {
-      // Get suppliers within reasonable distance of the mill
-      const mill = await this.getMill(millId);
-      if (!mill) return [];
-      
-      return await db.select().from(schema.supplierTiers)
-        .where(sql`${schema.supplierTiers.distanceFromMill} < 500`) // 500km radius
-        .orderBy(schema.supplierTiers.tierLevel, schema.supplierTiers.distanceFromMill);
-    }
-    
-    return await db.select().from(schema.supplierTiers)
-      .orderBy(schema.supplierTiers.tierLevel, schema.supplierTiers.performanceScore);
-  }
-
-  async getSuppliersByDistance(lat: number, lng: number, radiusKm: number): Promise<any[]> {
-    // Calculate suppliers within distance using Haversine formula
-    const suppliersWithDistance = await db.execute(sql`
-      SELECT s.*, p.coordinates,
-        (6371 * acos(cos(radians(${lat})) * cos(radians((p.coordinates->>'latitude')::float)) * 
-        cos(radians((p.coordinates->>'longitude')::float) - radians(${lng})) + 
-        sin(radians(${lat})) * sin(radians((p.coordinates->>'latitude')::float)))) AS distance
-      FROM suppliers s
-      JOIN plots p ON s.id = p.supplier_id
-      WHERE p.coordinates IS NOT NULL
-      HAVING distance <= ${radiusKm}
-      ORDER BY distance
-    `);
-    
-    return suppliersWithDistance.rows;
-  }
-
-  async createSupplierTier(insertTier: InsertSupplierTier): Promise<SupplierTier> {
-    const [tier] = await db.insert(schema.supplierTiers).values(insertTier).returning();
-    return tier;
-  }
-
-  async getLineageReport(id: string): Promise<LineageReport | undefined> {
-    const [report] = await db.select().from(schema.lineageReports).where(eq(schema.lineageReports.id, id));
-    return report || undefined;
-  }
-
-  async createLineageReport(insertReport: InsertLineageReport): Promise<LineageReport> {
-    const [report] = await db.insert(schema.lineageReports).values(insertReport).returning();
-    return report;
-  }
-
-  // Helper methods for lineage tracking
-  async getLotDeliveriesByDelivery(deliveryId: string): Promise<any[]> {
-    return await db.select().from(schema.lotDeliveries).where(eq(schema.lotDeliveries.deliveryId, deliveryId));
-  }
-
-  async getLotDeliveriesByLot(lotId: string): Promise<any[]> {
-    return await db.select().from(schema.lotDeliveries).where(eq(schema.lotDeliveries.lotId, lotId));
-  }
-
-  async getShipmentLotsByLot(lotId: string): Promise<any[]> {
-    return await db.select().from(schema.shipmentLots).where(eq(schema.shipmentLots.lotId, lotId));
-  }
-
-  async getShipmentLotsByShipment(shipmentId: string): Promise<any[]> {
-    return await db.select().from(schema.shipmentLots).where(eq(schema.shipmentLots.shipmentId, shipmentId));
+  async getMills(): Promise<Mill[]> {
+    return await db.select().from(mills).orderBy(mills.name);
   }
 }
 

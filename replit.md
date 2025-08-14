@@ -1,59 +1,54 @@
 # Overview
 
-The KPN EUDR Platform is a comprehensive compliance management system designed to help KPN Plantations Berhad comply with the European Union Deforestation Regulation (EUDR). The platform provides tools for plot mapping, unified deforestation monitoring with satellite imagery analysis, legality assessment, supply chain traceability, and due diligence statement (DDS) report generation for palm oil operations.
+The KPN EUDR Platform has evolved into a comprehensive supply chain traceability and compliance management system. Originally designed for KPN Plantations Berhad's EUDR compliance, it now features a complete GS1 EPCIS 2.0-compliant traceability platform providing end-to-end provenance tracking from plots to shipments with interactive visualization, mass balance validation, and risk analytics.
 
-The application is built as a full-stack web application with a React frontend and Express.js backend, featuring real-time monitoring capabilities, spatial visualization, and integration with Global Forest Watch for comprehensive deforestation analysis and compliance verification.
+The platform combines advanced traceability technology with AI-powered compliance monitoring, featuring real-time supply chain mapping, comprehensive risk assessment, and shareable chain-of-custody reports for regulatory compliance and transparency.
 
 ## Recent Changes (August 2025)
-- **Enhanced Supply Chain Analytics with Predictive Compliance Scoring**: Implemented comprehensive AI-powered analytics:
-  - Advanced predictive compliance scoring algorithm evaluating deforestation risk, protected area violations, documentation quality, and supplier performance
-  - Real-time risk level classification (low, medium, high, critical) with confidence scoring
-  - AI-powered insights using ChatGPT integration for intelligent recommendations and automated compliance summaries
-  - Interactive dashboard with score distribution charts, historical trend analysis, and risk factor identification
-  - Tabbed interface for overview, supplier scores, trends, and risk factors with time range filtering
-  - Contributing factors analysis with trend indicators and next review scheduling based on risk levels
+- **Complete GS1 EPCIS 2.0-Compliant Traceability Platform**: Built comprehensive supply chain traceability system:
+  - Complete database restructuring with EPCIS 2.0 specification compliance (Party, Facility, Commodity, Lot, Event, EventInput/Output, Shipment, SupplierLink, Plot, ExternalLayer)
+  - PostGIS integration with EPSG:4326 coordinate system and hectare area calculations for spatial data
+  - Event sourcing architecture with TRANSFER|TRANSFORM|AGGREGATE|DISAGGREGATE operations
+  - Comprehensive storage services with full CRUD operations for all EPCIS entities
+  - Interactive supply chain visualization with node-based mapping and flow diagrams
+  - Real-time mass balance validation with efficiency tracking and conversion rate analysis
+  - Advanced risk assessment with AI-powered compliance scoring and factor identification
+  - GraphQL API for complex traceability queries (forward/backward tracing, full lineage)
+  - Chain-of-custody management with lot tracking and quality grade monitoring
+  - Facility management with capacity monitoring, certification tracking, and risk classification
+  - Shareable traceability reports with export functionality and regulatory compliance formatting
+  - Five-tab interface: Overview, Supply Chain Map, Chain of Custody, Facilities, Risk Analytics
+  - Sample data integration with realistic Indonesian palm oil supply chain examples
 
-- **Farmer & Plot Information Management**: Replaced legality assessment with comprehensive farmer data collection:
-  - Detailed farmer identity information including national ID, education, demographics, and addresses
-  - Comprehensive farm/plot information with land tenure, cropping patterns, production data, and commodity details
-  - Farmer organization information with group numbers and cooperative details
-  - GPS coordinates collection with four-point polygon mapping for precise plot location
-  - Advanced filtering and search capabilities by province, education level, and commodity type
-  - Complete data table with all EUDR-required farmer and plot information fields
-  - Export functionality and CRUD operations for farmer data management
-  - Data Status column with "Completed"/"Not Completed" states and clickable interface for completed records
-  - CULTIVATION REGISTRATION CERTIFICATE (STDB) popup with official Indonesian government document format
-  - Bilingual certificate support (English and Bahasa Indonesia) with authentic Indonesian formatting
-  - Official compliance statements and Ministry of Agriculture signatures for legal documentation
-  - Comprehensive edit dialog with tabbed interface for completing farmer information across all data sections
-  - Form validation and data completion workflow for EUDR compliance requirements
+- **Enhanced Database Architecture**: Migrated to EPCIS 2.0 standards:
+  - PostgreSQL + PostGIS for geo-spatial data with proper coordinate system support
+  - Event sourcing for complete audit trail and transaction history
+  - Mass balance tracking with automatic validation and efficiency calculations
+  - Graph-friendly data model for complex supply chain relationship queries
+  - Comprehensive entity relationships supporting multi-tier supplier networks
 
-- **Unified EUDR Monitoring Module**: Merged country map and deforestation monitoring into a comprehensive module providing:
-  - Interactive spatial map with polygon plot visualization across Indonesia
-  - Real-time deforestation alert monitoring with Global Forest Watch integration
-  - Comprehensive satellite imagery analysis with before/after comparisons
-  - Multiple alert sources (GLAD, RADD, FORMA, Terra-i) with confidence levels
-  - Layer analysis system (WDPA protected areas, KLHK legal status, GFW deforestation)
-  - Advanced filtering by business entity, province, district, village, severity, and source
+- **Interactive Visualization Platform**: Advanced supply chain mapping:
+  - Node-based supply chain visualization with level-based flow diagrams
+  - Interactive node selection with detailed facility and lot information panels
+  - Risk level color coding and certification badge display
+  - Distance calculations and efficiency metrics per supply chain tier
+  - Geospatial coordinate display with latitude/longitude precision
+  - Mass balance flow visualization with input/output quantity tracking
 
-- **Real WDPA and GFW API Integration**: Implemented live legality verification and deforestation monitoring:
-  - World Database of Protected Areas (WDPA) integration for real-time protected area verification
-  - Global Forest Watch (GFW) API integration for live deforestation alerts and forest analysis
-  - Comprehensive verification system combining WDPA legality checks with GFW forest monitoring
-  - API fallback system providing mock data when API keys are unavailable
+- **Comprehensive Risk Analytics**: AI-powered compliance monitoring:
+  - Overall risk assessment with severity classification (low, medium, high, critical)
+  - Compliance score calculation with EUDR and RSPO verification
+  - Mass balance validation with efficiency thresholds and conversion rate analysis
+  - Risk factor identification with mitigation recommendations
+  - Supply chain depth analysis with total node counting
+  - Facility efficiency benchmarking and performance monitoring
 
-- **AI-Powered Legal Document Auto-Completion Assistant**: Implemented comprehensive OpenAI GPT-4o integration:
-  - Intelligent field completion suggestions based on Indonesian agricultural practices and EUDR requirements
-  - Real-time document validation with completeness scoring and missing field identification
-  - EUDR compliance analysis with risk assessment (low, medium, high, critical) and actionable recommendations
-  - Smart field suggestions with confidence scoring and reasoning explanations
-  - Context-aware completions considering regional farming patterns, land tenure, and cultivation standards
-  - Three-tab assistant interface: Auto-Completions, Document Validation, and Compliance Summary
-  - Integrated into farmer edit dialog with seamless workflow for data completion and verification
-
-- **Authentication and Visual Enhancements**: 
-  - Integrated authentic palm oil plantation background image for login page
-  - Enhanced visual consistency across all modules with improved navigation layout
+- **Legacy Module Integration**: Maintained backward compatibility:
+  - Preserved existing farmer & plot information management system
+  - Continued EUDR monitoring with satellite imagery analysis
+  - Maintained AI-powered legal document auto-completion assistant
+  - Integrated authentication and visual consistency across all modules
+  - Preserved real WDPA and GFW API integration for deforestation monitoring
 
 # User Preferences
 
@@ -77,16 +72,22 @@ Preferred communication style: Simple, everyday language.
 - **API Design**: RESTful API endpoints with comprehensive error handling and logging
 
 ## Database Schema
-- **Database**: PostgreSQL (configured for Neon Database with serverless connection pooling)
-- **Schema Management**: Drizzle migrations with shared schema definitions
-- **Key Entities**:
-  - Users (authentication and role management)
-  - Suppliers (palm oil suppliers and smallholders)
-  - Plots (farm plot polygons with geospatial coordinates)
-  - Documents (compliance documentation and file storage)
-  - Deforestation Alerts (monitoring data from external APIs)
-  - Supply Chain (mills, deliveries, production lots, shipments)
-  - Surveys and Reports (legality assessments and DDS reports)
+- **Database**: PostgreSQL with PostGIS extension (configured for Neon Database with serverless connection pooling)
+- **Schema Management**: Drizzle migrations with EPCIS 2.0-compliant shared schema definitions
+- **Core EPCIS Entities**:
+  - **Commodities**: Product definitions (CPO, FFB) with UOM and categories
+  - **Parties**: Companies and organizations in the supply chain with certification tracking
+  - **Facilities**: Physical locations (collection centers, mills, refineries, ports) with geospatial coordinates
+  - **Lots**: Product batches with mass balance tracking and quality grades
+  - **Events**: EPCIS business events (TRANSFER, TRANSFORM, AGGREGATE, DISAGGREGATE) with timestamps
+  - **Event Inputs/Outputs**: Detailed lot transformations with quantity and quality tracking
+  - **Shipments**: Transportation events with origin/destination facility mapping
+  - **Supplier Links**: Multi-tier supplier relationships with tier classification
+  - **Plots**: Farm plots with PostGIS polygon geometry and area calculations in hectares
+  - **Custody Chains**: End-to-end traceability chains with status and compliance scoring
+  - **Mass Balance Records**: Validation records with efficiency metrics and conversion rates
+- **Legacy Entities**: 
+  - Users, Suppliers, Mills, Documents, Deforestation Alerts, Surveys, Reports (maintained for backward compatibility)
 
 ## External Dependencies
 

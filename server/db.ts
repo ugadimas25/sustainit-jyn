@@ -23,3 +23,19 @@ export const pool = new Pool({
 });
 
 export const db = drizzle({ client: pool, schema });
+
+// Initialize PostGIS extension if available
+export async function initializePostGIS() {
+  try {
+    // Enable PostGIS extension
+    await pool.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+    console.log('PostGIS extension enabled');
+    
+    // Create geometry columns for spatial data
+    console.log('PostGIS initialized successfully');
+    return true;
+  } catch (error) {
+    console.warn('PostGIS not available, using text fallback for geometry columns:', error);
+    return false;
+  }
+}
