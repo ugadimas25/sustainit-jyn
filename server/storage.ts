@@ -13,6 +13,8 @@ import {
   custodyChains, type CustodyChain, type InsertCustodyChain,
   massBalanceRecords, type MassBalanceRecord, type InsertMassBalanceRecord,
   suppliers, type Supplier, type InsertSupplier,
+  supplierWorkflowLinks, type SupplierWorkflowLink, type InsertSupplierWorkflowLink,
+  workflowShipments, type WorkflowShipment, type InsertWorkflowShipment,
   mills, type Mill, type InsertMill
 } from "@shared/schema";
 import { db } from "./db";
@@ -393,9 +395,84 @@ export class DatabaseStorage implements IStorage {
     return record;
   }
 
-  // Legacy support
+  // Enhanced supplier methods for workflow
   async getSuppliers(): Promise<Supplier[]> {
-    return await db.select().from(suppliers).orderBy(suppliers.name);
+    return await db.select().from(suppliers).orderBy(suppliers.companyName);
+  }
+
+  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
+    // Set name field for backward compatibility
+    const supplierData = {
+      ...insertSupplier,
+      name: insertSupplier.companyName,
+      supplierType: insertSupplier.businessType,
+    };
+    const [supplier] = await db.insert(suppliers).values(supplierData).returning();
+    return supplier;
+  }
+
+  async updateSupplier(id: string, updates: Partial<InsertSupplier>): Promise<Supplier | undefined> {
+    const [supplier] = await db
+      .update(suppliers)
+      .set(updates)
+      .where(eq(suppliers.id, id))
+      .returning();
+    return supplier;
+  }
+
+  async deleteSupplier(id: string): Promise<boolean> {
+    const result = await db.delete(suppliers).where(eq(suppliers.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Supplier workflow link methods
+  async getSupplierWorkflowLinks(): Promise<SupplierWorkflowLink[]> {
+    return await db.select().from(supplierWorkflowLinks);
+  }
+
+  async createSupplierWorkflowLink(insertLink: InsertSupplierWorkflowLink): Promise<SupplierWorkflowLink> {
+    // Calculate tiers based on parent/child relationship
+    const parentSupplier = await db.select().from(suppliers).where(eq(suppliers.id, insertLink.parentSupplierId)).limit(1);
+    const childSupplier = await db.select().from(suppliers).where(eq(suppliers.id, insertLink.childSupplierId)).limit(1);
+    
+    const parentTier = parentSupplier[0]?.tier || 1;
+    const childTier = childSupplier[0]?.tier || 1;
+
+    const [link] = await db.insert(supplierWorkflowLinks).values({
+      ...insertLink,
+      parentTier,
+      childTier,
+    }).returning();
+    return link;
+  }
+
+  async deleteSupplierWorkflowLink(id: string): Promise<boolean> {
+    const result = await db.delete(supplierWorkflowLinks).where(eq(supplierWorkflowLinks.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Workflow shipment methods
+  async getWorkflowShipments(): Promise<WorkflowShipment[]> {
+    return await db.select().from(workflowShipments);
+  }
+
+  async createWorkflowShipment(insertShipment: InsertWorkflowShipment): Promise<WorkflowShipment> {
+    const [shipment] = await db.insert(workflowShipments).values(insertShipment).returning();
+    return shipment;
+  }
+
+  async updateWorkflowShipment(id: string, updates: Partial<InsertWorkflowShipment>): Promise<WorkflowShipment | undefined> {
+    const [shipment] = await db
+      .update(workflowShipments)
+      .set(updates)
+      .where(eq(workflowShipments.id, id))
+      .returning();
+    return shipment;
+  }
+
+  async deleteWorkflowShipment(id: string): Promise<boolean> {
+    const result = await db.delete(workflowShipments).where(eq(workflowShipments.id, id));
+    return result.rowCount > 0;
   }
 
   async getMills(): Promise<Mill[]> {

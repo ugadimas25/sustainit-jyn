@@ -17,6 +17,8 @@ import {
   insertSupplierLinkSchema,
   insertPlotSchema,
   insertSupplierSchema,
+  insertSupplierWorkflowLinkSchema,
+  insertWorkflowShipmentSchema,
   insertMillSchema
 } from "@shared/schema";
 import { z } from "zod";
@@ -521,12 +523,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Legacy support routes
+  // Suppliers endpoints for workflow
   app.get("/api/suppliers", isAuthenticated, async (req, res) => {
     try {
       const suppliers = await storage.getSuppliers();
       res.json(suppliers);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch suppliers" });
+    }
+  });
+
+  app.post("/api/suppliers", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertSupplierSchema.parse(req.body);
+      const supplier = await storage.createSupplier(validatedData);
+      res.status(201).json(supplier);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid supplier data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create supplier" });
+      }
+    }
+  });
+
+  app.put("/api/suppliers/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertSupplierSchema.partial().parse(req.body);
+      const supplier = await storage.updateSupplier(id, validatedData);
+      if (!supplier) {
+        res.status(404).json({ error: "Supplier not found" });
+      } else {
+        res.json(supplier);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid supplier data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to update supplier" });
+      }
+    }
+  });
+
+  app.delete("/api/suppliers/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteSupplier(id);
+      if (!deleted) {
+        res.status(404).json({ error: "Supplier not found" });
+      } else {
+        res.status(204).send();
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete supplier" });
+    }
+  });
+
+  // Supplier links endpoints
+  app.get("/api/supplier-links", isAuthenticated, async (req, res) => {
+    try {
+      const links = await storage.getSupplierWorkflowLinks();
+      res.json(links);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch supplier links" });
+    }
+  });
+
+  app.post("/api/supplier-links", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertSupplierWorkflowLinkSchema.parse(req.body);
+      const link = await storage.createSupplierWorkflowLink(validatedData);
+      res.status(201).json(link);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid link data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create supplier link" });
+      }
+    }
+  });
+
+  app.delete("/api/supplier-links/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteSupplierWorkflowLink(id);
+      if (!deleted) {
+        res.status(404).json({ error: "Supplier link not found" });
+      } else {
+        res.status(204).send();
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete supplier link" });
+    }
+  });
+
+  // Workflow shipments endpoints
+  app.get("/api/shipments", isAuthenticated, async (req, res) => {
+    try {
+      const shipments = await storage.getWorkflowShipments();
+      res.json(shipments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch shipments" });
+    }
+  });
+
+  app.post("/api/shipments", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertWorkflowShipmentSchema.parse(req.body);
+      const shipment = await storage.createWorkflowShipment(validatedData);
+      res.status(201).json(shipment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid shipment data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create shipment" });
+      }
+    }
+  });
+
+  app.put("/api/shipments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertWorkflowShipmentSchema.partial().parse(req.body);
+      const shipment = await storage.updateWorkflowShipment(id, validatedData);
+      if (!shipment) {
+        res.status(404).json({ error: "Shipment not found" });
+      } else {
+        res.json(shipment);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid shipment data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to update shipment" });
+      }
+    }
+  });
+
+  app.delete("/api/shipments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteWorkflowShipment(id);
+      if (!deleted) {
+        res.status(404).json({ error: "Shipment not found" });
+      } else {
+        res.status(204).send();
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete shipment" });
     }
   });
 

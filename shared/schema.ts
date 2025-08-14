@@ -215,15 +215,49 @@ export const massBalanceRecords = pgTable("mass_balance_records", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Legacy suppliers table for backwards compatibility
+// Enhanced suppliers table for workflow management
 export const suppliers = pgTable("suppliers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
+  companyName: text("company_name").notNull(),
+  registrationNumber: text("registration_number"),
+  name: text("name").notNull(), // kept for backwards compatibility
   contactPerson: text("contact_person"),
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
-  supplierType: text("supplier_type").notNull(),
+  businessType: text("business_type").notNull(),
+  supplierType: text("supplier_type").notNull(), // kept for backwards compatibility
+  tier: integer("tier").default(1), // 1, 2, 3, 4 for tier-based linkage
+  legalityStatus: text("legality_status").default("pending"), // verified, pending, non-compliant
+  legalityScore: integer("legality_score"), // 0-100
+  certifications: jsonb("certifications").$type<string[]>().default([]),
+  linkedSuppliers: jsonb("linked_suppliers").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// New supplier workflow links table for tier-based relationships
+export const supplierWorkflowLinks = pgTable("supplier_workflow_links", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  parentSupplierId: varchar("parent_supplier_id").references(() => suppliers.id).notNull(),
+  childSupplierId: varchar("child_supplier_id").references(() => suppliers.id).notNull(),
+  parentTier: integer("parent_tier").notNull(),
+  childTier: integer("child_tier").notNull(),
+  linkType: text("link_type").notNull(), // direct-supplier, indirect-supplier, service-provider
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Simplified shipments table for workflow tracking
+export const workflowShipments = pgTable("workflow_shipments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  supplierId: varchar("supplier_id").references(() => suppliers.id).notNull(),
+  productType: text("product_type").notNull(),
+  quantity: decimal("quantity", { precision: 12, scale: 3 }).notNull(),
+  unit: text("unit").notNull(),
+  shipmentDate: timestamp("shipment_date").notNull(),
+  destination: text("destination").notNull(),
+  batchNumber: text("batch_number").notNull(),
+  qualityGrade: text("quality_grade").notNull(),
+  status: text("status").default("pending"), // pending, in-transit, delivered
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -397,8 +431,6 @@ export type CustodyChain = typeof custodyChains.$inferSelect;
 export type InsertCustodyChain = typeof custodyChains.$inferInsert;
 export type MassBalanceRecord = typeof massBalanceRecords.$inferSelect;
 export type InsertMassBalanceRecord = typeof massBalanceRecords.$inferInsert;
-export type Supplier = typeof suppliers.$inferSelect;
-export type InsertSupplier = typeof suppliers.$inferInsert;
 export type Mill = typeof mills.$inferSelect;
 export type InsertMill = typeof mills.$inferInsert;
 
@@ -418,4 +450,12 @@ export const insertExternalLayerSchema = createInsertSchema(externalLayers);
 export const insertCustodyChainSchema = createInsertSchema(custodyChains);
 export const insertMassBalanceRecordSchema = createInsertSchema(massBalanceRecords);
 export const insertSupplierSchema = createInsertSchema(suppliers);
+export const insertSupplierWorkflowLinkSchema = createInsertSchema(supplierWorkflowLinks);
+export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments);
 export const insertMillSchema = createInsertSchema(mills);
+
+// Export types for workflow entities (supplement to existing Supplier types)
+export type SupplierWorkflowLink = typeof supplierWorkflowLinks.$inferSelect;
+export type InsertSupplierWorkflowLink = z.infer<typeof insertSupplierWorkflowLinkSchema>;
+export type WorkflowShipment = typeof workflowShipments.$inferSelect;
+export type InsertWorkflowShipment = z.infer<typeof insertWorkflowShipmentSchema>;
