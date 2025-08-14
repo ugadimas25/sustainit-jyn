@@ -6,9 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, 
   Search, 
@@ -83,6 +86,8 @@ export default function LegalityAssessmentPage() {
   const [selectedFarmer, setSelectedFarmer] = useState<FarmerData | null>(null);
   const [showSTDBDialog, setShowSTDBDialog] = useState(false);
   const [certificateLanguage, setCertificateLanguage] = useState<'en' | 'id'>('en');
+  const [editingFarmer, setEditingFarmer] = useState<FarmerData | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Fetch farmer data
   const { data: farmers, isLoading, refetch } = useQuery<FarmerData[]>({
@@ -397,6 +402,10 @@ export default function LegalityAssessmentPage() {
                                 <Button
                                   variant="outline"
                                   size="sm"
+                                  onClick={() => {
+                                    setEditingFarmer(farmer);
+                                    setShowEditDialog(true);
+                                  }}
                                   data-testid={`button-edit-${farmer.id}`}
                                 >
                                   <Edit className="h-3 w-3" />
@@ -754,6 +763,470 @@ export default function LegalityAssessmentPage() {
                     {certificateLanguage === 'en' ? 'Close' : 'Tutup'}
                   </Button>
                 </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Farmer Dialog */}
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+              <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Edit className="h-5 w-5 text-blue-600" />
+                    Edit Farmer Information - {editingFarmer?.farmerName}
+                  </DialogTitle>
+                </DialogHeader>
+
+                {editingFarmer && (
+                  <Tabs defaultValue="identity" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="identity">A. Farmer Identity</TabsTrigger>
+                      <TabsTrigger value="farm">B. Farm Information</TabsTrigger>
+                      <TabsTrigger value="organization">C. Organization</TabsTrigger>
+                      <TabsTrigger value="location">D. GPS Location</TabsTrigger>
+                    </TabsList>
+
+                    {/* A. Farmer Identity Tab */}
+                    <TabsContent value="identity" className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="respondentSerial">Respondent Serial Number</Label>
+                          <Input
+                            id="respondentSerial"
+                            value={editingFarmer.respondentSerialNumber}
+                            placeholder="e.g., RESP-001-2024"
+                            data-testid="input-respondent-serial"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="dataOfficer">Data Collection Officer</Label>
+                          <Input
+                            id="dataOfficer"
+                            value={editingFarmer.dataCollectionOfficer}
+                            placeholder="e.g., Ahmad Susanto"
+                            data-testid="input-data-officer"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="farmerName">Farmer Name *</Label>
+                          <Input
+                            id="farmerName"
+                            value={editingFarmer.farmerName}
+                            placeholder="Full name of farmer"
+                            data-testid="input-farmer-name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="nationalId">National ID (KTP) *</Label>
+                          <Input
+                            id="nationalId"
+                            value={editingFarmer.nationalId}
+                            placeholder="16-digit KTP number"
+                            data-testid="input-national-id"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="birthPlace">Place & Date of Birth</Label>
+                          <Input
+                            id="birthPlace"
+                            value={editingFarmer.birthPlaceDate}
+                            placeholder="e.g., Jakarta, 15/08/1980"
+                            data-testid="input-birth-place"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="sex">Sex</Label>
+                          <Select value={editingFarmer.sex}>
+                            <SelectTrigger data-testid="select-sex">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="education">Education Level</Label>
+                          <Select value={editingFarmer.education}>
+                            <SelectTrigger data-testid="select-education">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="None">None</SelectItem>
+                              <SelectItem value="Primary school (SD)">Primary school (SD)</SelectItem>
+                              <SelectItem value="Junior secondary (SMP)">Junior secondary (SMP)</SelectItem>
+                              <SelectItem value="Senior secondary (SMA)">Senior secondary (SMA)</SelectItem>
+                              <SelectItem value="Diploma/Associate degree">Diploma/Associate degree</SelectItem>
+                              <SelectItem value="Bachelor (D4/S1)">Bachelor (D4/S1)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="province">Province *</Label>
+                          <Input
+                            id="province"
+                            value={editingFarmer.province}
+                            placeholder="e.g., West Java"
+                            data-testid="input-province"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="regencyCity">Regency/City</Label>
+                          <Input
+                            id="regencyCity"
+                            value={editingFarmer.regencyCity}
+                            placeholder="e.g., Bogor"
+                            data-testid="input-regency"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="district">District</Label>
+                          <Input
+                            id="district"
+                            value={editingFarmer.district}
+                            placeholder="e.g., Ciawi"
+                            data-testid="input-district"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="village">Village</Label>
+                          <Input
+                            id="village"
+                            value={editingFarmer.village}
+                            placeholder="e.g., Bendungan"
+                            data-testid="input-village"
+                          />
+                        </div>
+                        <div className="col-span-2 space-y-2">
+                          <Label htmlFor="address">Complete Address</Label>
+                          <Textarea
+                            id="address"
+                            value={editingFarmer.farmerAddress}
+                            placeholder="Complete residential address"
+                            rows={3}
+                            data-testid="textarea-address"
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    {/* B. Farm Information Tab */}
+                    <TabsContent value="farm" className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="farmPlot">Farm/Plot Number</Label>
+                          <Input
+                            id="farmPlot"
+                            value={editingFarmer.farmPlotNumber}
+                            placeholder="e.g., PLOT-001"
+                            data-testid="input-farm-plot"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landTenure">Land Tenure *</Label>
+                          <Select value={editingFarmer.landTenure}>
+                            <SelectTrigger data-testid="select-land-tenure">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="SHM (freehold title)">SHM (freehold title)</SelectItem>
+                              <SelectItem value="Girik/SKT/SKGR/Management Right">Girik/SKT/SKGR/Management Right</SelectItem>
+                              <SelectItem value="Communal/customary land">Communal/customary land</SelectItem>
+                              <SelectItem value="Other legal arrangement">Other legal arrangement</SelectItem>
+                              <SelectItem value="Forest Production/Social Use Area">Forest Production/Social Use Area</SelectItem>
+                              <SelectItem value="Protected/Conservation Forest Area">Protected/Conservation Forest Area</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landDocument">Land Document Number</Label>
+                          <Input
+                            id="landDocument"
+                            value={editingFarmer.landDocumentNumber}
+                            placeholder="Document reference number"
+                            data-testid="input-land-document"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landArea">Land Area per Document (m²)</Label>
+                          <Input
+                            id="landArea"
+                            type="number"
+                            value={editingFarmer.landAreaPerDocument}
+                            placeholder="Area in square meters"
+                            data-testid="input-land-area"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="croppingPattern">Cropping Pattern</Label>
+                          <Select value={editingFarmer.croppingPattern}>
+                            <SelectTrigger data-testid="select-cropping-pattern">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Monoculture">Monoculture</SelectItem>
+                              <SelectItem value="Polyculture">Polyculture</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="mainCommodity">Main Commodity *</Label>
+                          <Input
+                            id="mainCommodity"
+                            value={editingFarmer.mainCommodity}
+                            placeholder="e.g., Oil Palm"
+                            data-testid="input-main-commodity"
+                          />
+                        </div>
+                        <div className="col-span-2 space-y-2">
+                          <Label htmlFor="otherCommodities">Other Commodities</Label>
+                          <Input
+                            id="otherCommodities"
+                            value={editingFarmer.otherCommodities || ''}
+                            placeholder="Additional crops (if any)"
+                            data-testid="input-other-commodities"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="plantedArea">Planted Area (m²)</Label>
+                          <Input
+                            id="plantedArea"
+                            type="number"
+                            value={editingFarmer.plantedArea}
+                            placeholder="Cultivation area"
+                            data-testid="input-planted-area"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="yearPlanted">Year Planted</Label>
+                          <Input
+                            id="yearPlanted"
+                            value={editingFarmer.yearPlanted}
+                            placeholder="e.g., 2015"
+                            data-testid="input-year-planted"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="yearReplanted">Year Replanted (if applicable)</Label>
+                          <Input
+                            id="yearReplanted"
+                            value={editingFarmer.yearReplanted || ''}
+                            placeholder="Year of replanting"
+                            data-testid="input-year-replanted"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="standingTrees">Number of Standing Trees</Label>
+                          <Input
+                            id="standingTrees"
+                            type="number"
+                            value={editingFarmer.standingTrees}
+                            placeholder="Total tree count"
+                            data-testid="input-standing-trees"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="annualProduction">Annual Production (tons)</Label>
+                          <Input
+                            id="annualProduction"
+                            type="number"
+                            step="0.01"
+                            value={editingFarmer.annualProduction}
+                            placeholder="Yearly output"
+                            data-testid="input-annual-production"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="productivity">Productivity (tons/ha)</Label>
+                          <Input
+                            id="productivity"
+                            type="number"
+                            step="0.01"
+                            value={editingFarmer.productivity}
+                            placeholder="Output per hectare"
+                            data-testid="input-productivity"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="seedSource">Seed Source</Label>
+                          <Select value={editingFarmer.seedSource}>
+                            <SelectTrigger data-testid="select-seed-source">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Certified seed">Certified seed</SelectItem>
+                              <SelectItem value="Non-certified seed">Non-certified seed</SelectItem>
+                              <SelectItem value="Don't know">Don't know</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landType">Land Type</Label>
+                          <Select value={editingFarmer.landType}>
+                            <SelectTrigger data-testid="select-land-type">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Mineral soil">Mineral soil</SelectItem>
+                              <SelectItem value="Wetland (tidal/peat)">Wetland (tidal/peat)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="fertilizerType">Fertilizer Type</Label>
+                          <Select value={editingFarmer.fertilizerType}>
+                            <SelectTrigger data-testid="select-fertilizer">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Organic">Organic</SelectItem>
+                              <SelectItem value="Inorganic">Inorganic</SelectItem>
+                              <SelectItem value="Mixed">Mixed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="salesPartner">Sales Partner</Label>
+                          <Select value={editingFarmer.salesPartner}>
+                            <SelectTrigger data-testid="select-sales-partner">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Cooperative">Cooperative</SelectItem>
+                              <SelectItem value="Processing company">Processing company</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    {/* C. Organization Information Tab */}
+                    <TabsContent value="organization" className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="organizationName">Organization Name</Label>
+                          <Input
+                            id="organizationName"
+                            value={editingFarmer.organizationName}
+                            placeholder="Farmer group or cooperative name"
+                            data-testid="input-organization-name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="groupNumber">SIMLUHTAN Group Number</Label>
+                          <Input
+                            id="groupNumber"
+                            value={editingFarmer.groupNumber}
+                            placeholder="e.g., GRP-001-2024"
+                            data-testid="input-group-number"
+                          />
+                        </div>
+                        <div className="col-span-2 space-y-2">
+                          <Label htmlFor="orgCommodities">Organization Commodities</Label>
+                          <Input
+                            id="orgCommodities"
+                            value={editingFarmer.organizationCommodities}
+                            placeholder="Commodities handled by organization"
+                            data-testid="input-org-commodities"
+                          />
+                        </div>
+                        <div className="col-span-2 space-y-2">
+                          <Label htmlFor="orgAddress">Organization Address</Label>
+                          <Textarea
+                            id="orgAddress"
+                            value={editingFarmer.organizationAddress}
+                            placeholder="Complete organization address"
+                            rows={3}
+                            data-testid="textarea-org-address"
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    {/* D. GPS Location Tab */}
+                    <TabsContent value="location" className="space-y-4">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">GPS Coordinates (Polygon Points)</h3>
+                          <Badge variant="outline">Minimum 4 points required</Badge>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Enter at least 4 GPS coordinate points to form a polygon representing the plot boundaries.
+                        </p>
+                        
+                        <div className="grid gap-4">
+                          {editingFarmer.coordinates?.map((coord, index) => (
+                            <div key={index} className="grid grid-cols-3 gap-4 p-4 border rounded-lg">
+                              <div className="flex items-center">
+                                <Label className="font-medium">Point {index + 1}</Label>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`longitude-${index}`}>Longitude</Label>
+                                <Input
+                                  id={`longitude-${index}`}
+                                  value={coord.longitude}
+                                  placeholder="e.g., 106.8456"
+                                  data-testid={`input-longitude-${index}`}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`latitude-${index}`}>Latitude</Label>
+                                <Input
+                                  id={`latitude-${index}`}
+                                  value={coord.latitude}
+                                  placeholder="e.g., -6.4823"
+                                  data-testid={`input-latitude-${index}`}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid="button-add-coordinate"
+                            >
+                              <Plus className="h-4 w-4 mr-1" />
+                              Add Coordinate Point
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              data-testid="button-validate-polygon"
+                            >
+                              <MapPin className="h-4 w-4 mr-1" />
+                              Validate Polygon
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                )}
+
+                <DialogFooter className="gap-2">
+                  <div className="flex items-center gap-2">
+                    <Label>Data Status:</Label>
+                    <Select value={editingFarmer?.dataStatus}>
+                      <SelectTrigger className="w-40" data-testid="select-data-status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="not-completed">Not Completed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1" />
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)} data-testid="button-cancel-edit">
+                    Cancel
+                  </Button>
+                  <Button data-testid="button-save-farmer">
+                    Save Changes
+                  </Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>

@@ -25,6 +25,8 @@ The application is built as a full-stack web application with a React frontend a
   - CULTIVATION REGISTRATION CERTIFICATE (STDB) popup with official Indonesian government document format
   - Bilingual certificate support (English and Bahasa Indonesia) with authentic Indonesian formatting
   - Official compliance statements and Ministry of Agriculture signatures for legal documentation
+  - Comprehensive edit dialog with tabbed interface for completing farmer information across all data sections
+  - Form validation and data completion workflow for EUDR compliance requirements
 
 - **Unified EUDR Monitoring Module**: Merged country map and deforestation monitoring into a comprehensive module providing:
   - Interactive spatial map with polygon plot visualization across Indonesia
