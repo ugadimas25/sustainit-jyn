@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import ComplianceProgressTracker from "@/components/compliance-progress-tracker";
 
 interface Supplier {
   id: string;
@@ -70,7 +71,7 @@ interface TraceabilityNode {
 }
 
 export default function UnifiedSupplyChain() {
-  const [activeTab, setActiveTab] = useState("workflow");
+  const [activeTab, setActiveTab] = useState("progress");
   const [selectedSupplier, setSelectedSupplier] = useState<string>("");
   const [showSupplierForm, setShowSupplierForm] = useState(false);
   const [showLinkForm, setShowLinkForm] = useState(false);
@@ -512,7 +513,11 @@ export default function UnifiedSupplyChain() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="progress" data-testid="tab-progress">
+              <Target className="h-4 w-4 mr-2" />
+              Progress
+            </TabsTrigger>
             <TabsTrigger value="workflow" data-testid="tab-workflow">
               <Building className="h-4 w-4 mr-2" />
               Workflow
@@ -530,6 +535,37 @@ export default function UnifiedSupplyChain() {
               Reports
             </TabsTrigger>
           </TabsList>
+
+          {/* Progress Tab */}
+          <TabsContent value="progress" className="space-y-6">
+            <ComplianceProgressTracker 
+              suppliers={suppliers}
+              supplierLinks={supplierLinks}
+              shipments={shipments}
+              onStepClick={(stepId) => {
+                // Navigate to appropriate tab based on step
+                switch (stepId) {
+                  case 'supplier-registration':
+                    setActiveTab('workflow');
+                    break;
+                  case 'tier-linkage':
+                    setActiveTab('workflow');
+                    break;
+                  case 'shipment-tracking':
+                    setActiveTab('workflow');
+                    break;
+                  case 'compliance-verification':
+                    setActiveTab('analytics');
+                    break;
+                  case 'documentation-export':
+                    setActiveTab('reports');
+                    break;
+                  default:
+                    setActiveTab('workflow');
+                }
+              }}
+            />
+          </TabsContent>
 
           {/* Workflow Tab */}
           <TabsContent value="workflow" className="space-y-6">
