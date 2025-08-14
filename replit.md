@@ -21,6 +21,10 @@ The application is built as a full-stack web application with a React frontend a
   - Advanced filtering and search capabilities by province, education level, and commodity type
   - Complete data table with all EUDR-required farmer and plot information fields
   - Export functionality and CRUD operations for farmer data management
+  - Data Status column with "Completed"/"Not Completed" states and clickable interface for completed records
+  - CULTIVATION REGISTRATION CERTIFICATE (STDB) popup with official Indonesian government document format
+  - Bilingual certificate support (English and Bahasa Indonesia) with authentic Indonesian formatting
+  - Official compliance statements and Ministry of Agriculture signatures for legal documentation
 
 - **Unified EUDR Monitoring Module**: Merged country map and deforestation monitoring into a comprehensive module providing:
   - Interactive spatial map with polygon plot visualization across Indonesia

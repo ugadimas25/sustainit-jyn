@@ -21,7 +21,8 @@ import {
   CheckCircle,
   XCircle,
   FileText,
-  X
+  X,
+  Languages
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -81,6 +82,7 @@ export default function LegalityAssessmentPage() {
   const [selectedEducation, setSelectedEducation] = useState<string>('all');
   const [selectedFarmer, setSelectedFarmer] = useState<FarmerData | null>(null);
   const [showSTDBDialog, setShowSTDBDialog] = useState(false);
+  const [certificateLanguage, setCertificateLanguage] = useState<'en' | 'id'>('en');
 
   // Fetch farmer data
   const { data: farmers, isLoading, refetch } = useQuery<FarmerData[]>({
@@ -430,156 +432,326 @@ export default function LegalityAssessmentPage() {
                 <DialogHeader className="flex flex-row items-center justify-between">
                   <DialogTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-blue-600" />
-                    CULTIVATION REGISTRATION CERTIFICATE (STDB)
+                    {certificateLanguage === 'en' ? 'CULTIVATION REGISTRATION CERTIFICATE (STDB)' : 'SURAT TANDA DAFTAR BUDIDAYA (STDB)'}
                   </DialogTitle>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setShowSTDBDialog(false)}
-                    data-testid="button-close-stdb"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg">
+                      <Button 
+                        variant={certificateLanguage === 'en' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setCertificateLanguage('en')}
+                        data-testid="button-lang-en"
+                        className="px-2 py-1 text-xs"
+                      >
+                        EN
+                      </Button>
+                      <Button 
+                        variant={certificateLanguage === 'id' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setCertificateLanguage('id')}
+                        data-testid="button-lang-id"
+                        className="px-2 py-1 text-xs"
+                      >
+                        ID
+                      </Button>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowSTDBDialog(false)}
+                      data-testid="button-close-stdb"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </DialogHeader>
                 
                 {selectedFarmer && (
                   <div className="bg-white p-8 border border-gray-200 rounded-lg font-mono text-sm leading-relaxed">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                      <h1 className="text-xl font-bold mb-2">REPUBLIC OF INDONESIA</h1>
-                      <h2 className="text-lg font-bold mb-2">MINISTRY OF AGRICULTURE</h2>
-                      <h3 className="text-lg font-bold mb-4 underline">CULTIVATION REGISTRATION CERTIFICATE</h3>
-                      <h4 className="text-base font-bold">(SURAT TANDA DAFTAR BUDIDAYA - STDB)</h4>
-                      <div className="mt-4 text-sm">
-                        <p>Certificate No: STDB/{selectedFarmer.respondentSerialNumber}/2024</p>
-                        <p>Registration Date: {new Date().toLocaleDateString('en-GB')}</p>
-                      </div>
-                    </div>
-
-                    {/* Farmer Identity Section */}
-                    <div className="mb-6">
-                      <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
-                        A. FARMER IDENTITY
-                      </h3>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                        <div><strong>Name:</strong> {selectedFarmer.farmerName}</div>
-                        <div><strong>National ID (KTP):</strong> {selectedFarmer.nationalId}</div>
-                        <div><strong>Place & Date of Birth:</strong> {selectedFarmer.birthPlaceDate}</div>
-                        <div><strong>Sex:</strong> {selectedFarmer.sex}</div>
-                        <div><strong>Education:</strong> {selectedFarmer.education}</div>
-                        <div><strong>Province:</strong> {selectedFarmer.province}</div>
-                        <div><strong>Regency/City:</strong> {selectedFarmer.regencyCity}</div>
-                        <div><strong>District:</strong> {selectedFarmer.district}</div>
-                        <div className="col-span-2"><strong>Village:</strong> {selectedFarmer.village}</div>
-                        <div className="col-span-2"><strong>Address:</strong> {selectedFarmer.farmerAddress}</div>
-                      </div>
-                    </div>
-
-                    {/* Farm/Plot Information Section */}
-                    <div className="mb-6">
-                      <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
-                        B. FARM/PLOT INFORMATION
-                      </h3>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                        <div><strong>Farm/Plot Number:</strong> {selectedFarmer.farmPlotNumber}</div>
-                        <div><strong>Land Tenure:</strong> {selectedFarmer.landTenure}</div>
-                        <div><strong>Land Document:</strong> {selectedFarmer.landDocumentNumber}</div>
-                        <div><strong>Land Area:</strong> {selectedFarmer.landAreaPerDocument?.toLocaleString()} m²</div>
-                        <div><strong>Cropping Pattern:</strong> {selectedFarmer.croppingPattern}</div>
-                        <div><strong>Main Commodity:</strong> {selectedFarmer.mainCommodity}</div>
-                        <div className="col-span-2"><strong>Other Commodities:</strong> {selectedFarmer.otherCommodities || 'None'}</div>
-                        <div><strong>Planted Area:</strong> {selectedFarmer.plantedArea?.toLocaleString()} m²</div>
-                        <div><strong>Year Planted:</strong> {selectedFarmer.yearPlanted}</div>
-                        <div><strong>Year Replanted:</strong> {selectedFarmer.yearReplanted || 'N/A'}</div>
-                        <div><strong>Standing Trees:</strong> {selectedFarmer.standingTrees?.toLocaleString()}</div>
-                        <div><strong>Annual Production:</strong> {selectedFarmer.annualProduction} tons</div>
-                        <div><strong>Productivity:</strong> {selectedFarmer.productivity} tons/ha</div>
-                        <div><strong>Seed Source:</strong> {selectedFarmer.seedSource}</div>
-                        <div><strong>Land Type:</strong> {selectedFarmer.landType}</div>
-                        <div><strong>Fertilizer Type:</strong> {selectedFarmer.fertilizerType}</div>
-                        <div><strong>Sales Partner:</strong> {selectedFarmer.salesPartner}</div>
-                      </div>
-                    </div>
-
-                    {/* Organization Information Section */}
-                    <div className="mb-6">
-                      <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
-                        C. FARMER ORGANIZATION INFORMATION
-                      </h3>
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                        <div><strong>Organization Name:</strong> {selectedFarmer.organizationName}</div>
-                        <div><strong>SIMLUHTAN Group Number:</strong> {selectedFarmer.groupNumber}</div>
-                        <div className="col-span-2"><strong>Organization Commodities:</strong> {selectedFarmer.organizationCommodities}</div>
-                        <div className="col-span-2"><strong>Organization Address:</strong> {selectedFarmer.organizationAddress}</div>
-                      </div>
-                    </div>
-
-                    {/* Farm Location Section */}
-                    <div className="mb-8">
-                      <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
-                        D. FARM LOCATION (GPS COORDINATES)
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        {selectedFarmer.coordinates?.map((coord, index) => (
-                          <div key={index}>
-                            <strong>Point {index + 1}:</strong> Longitude: {coord.longitude}, Latitude: {coord.latitude}
+                    {certificateLanguage === 'en' ? (
+                      // English Version
+                      <>
+                        {/* Header */}
+                        <div className="text-center mb-8">
+                          <h1 className="text-xl font-bold mb-2">REPUBLIC OF INDONESIA</h1>
+                          <h2 className="text-lg font-bold mb-2">MINISTRY OF AGRICULTURE</h2>
+                          <h3 className="text-lg font-bold mb-4 underline">CULTIVATION REGISTRATION CERTIFICATE</h3>
+                          <h4 className="text-base font-bold">(SURAT TANDA DAFTAR BUDIDAYA - STDB)</h4>
+                          <div className="mt-4 text-sm">
+                            <p>Certificate No: STDB/{selectedFarmer.respondentSerialNumber}/2024</p>
+                            <p>Registration Date: {new Date().toLocaleDateString('en-GB')}</p>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
 
-                    {/* Certification Statement */}
-                    <div className="mb-8 p-4 border border-black rounded">
-                      <h3 className="text-base font-bold mb-3 text-center">CERTIFICATION STATEMENT</h3>
-                      <p className="text-justify mb-4">
-                        This certificate confirms that the above-mentioned farmer and cultivation plot have been registered 
-                        in accordance with Indonesian agricultural regulations and EU Deforestation Regulation (EUDR) requirements. 
-                        The cultivation activities are conducted on legally designated agricultural land with proper documentation.
-                      </p>
-                      <p className="text-justify">
-                        This registration is valid for commercial cultivation activities and serves as proof of compliance 
-                        with applicable laws and regulations governing sustainable agricultural practices.
-                      </p>
-                    </div>
+                        {/* Farmer Identity Section */}
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            A. FARMER IDENTITY
+                          </h3>
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                            <div><strong>Name:</strong> {selectedFarmer.farmerName}</div>
+                            <div><strong>National ID (KTP):</strong> {selectedFarmer.nationalId}</div>
+                            <div><strong>Place & Date of Birth:</strong> {selectedFarmer.birthPlaceDate}</div>
+                            <div><strong>Sex:</strong> {selectedFarmer.sex}</div>
+                            <div><strong>Education:</strong> {selectedFarmer.education}</div>
+                            <div><strong>Province:</strong> {selectedFarmer.province}</div>
+                            <div><strong>Regency/City:</strong> {selectedFarmer.regencyCity}</div>
+                            <div><strong>District:</strong> {selectedFarmer.district}</div>
+                            <div className="col-span-2"><strong>Village:</strong> {selectedFarmer.village}</div>
+                            <div className="col-span-2"><strong>Address:</strong> {selectedFarmer.farmerAddress}</div>
+                          </div>
+                        </div>
 
-                    {/* Signatures */}
-                    <div className="grid grid-cols-3 gap-8 text-center">
-                      <div>
-                        <p className="mb-16">Data Collection Officer</p>
-                        <p className="border-t border-black pt-2">
-                          <strong>{selectedFarmer.dataCollectionOfficer}</strong>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="mb-16">Regional Supervisor</p>
-                        <p className="border-t border-black pt-2">
-                          <strong>Dr. Siti Rahayu, S.P., M.Si.</strong>
-                        </p>
-                      </div>
-                      <div>
-                        <p className="mb-16">Authorized Officer</p>
-                        <p className="border-t border-black pt-2">
-                          <strong>Ir. Bambang Wijaya, M.P.</strong>
-                        </p>
-                        <p className="text-xs mt-2">Ministry of Agriculture</p>
-                      </div>
-                    </div>
+                        {/* Farm/Plot Information Section */}
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            B. FARM/PLOT INFORMATION
+                          </h3>
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                            <div><strong>Farm/Plot Number:</strong> {selectedFarmer.farmPlotNumber}</div>
+                            <div><strong>Land Tenure:</strong> {selectedFarmer.landTenure}</div>
+                            <div><strong>Land Document:</strong> {selectedFarmer.landDocumentNumber}</div>
+                            <div><strong>Land Area:</strong> {selectedFarmer.landAreaPerDocument?.toLocaleString()} m²</div>
+                            <div><strong>Cropping Pattern:</strong> {selectedFarmer.croppingPattern}</div>
+                            <div><strong>Main Commodity:</strong> {selectedFarmer.mainCommodity}</div>
+                            <div className="col-span-2"><strong>Other Commodities:</strong> {selectedFarmer.otherCommodities || 'None'}</div>
+                            <div><strong>Planted Area:</strong> {selectedFarmer.plantedArea?.toLocaleString()} m²</div>
+                            <div><strong>Year Planted:</strong> {selectedFarmer.yearPlanted}</div>
+                            <div><strong>Year Replanted:</strong> {selectedFarmer.yearReplanted || 'N/A'}</div>
+                            <div><strong>Standing Trees:</strong> {selectedFarmer.standingTrees?.toLocaleString()}</div>
+                            <div><strong>Annual Production:</strong> {selectedFarmer.annualProduction} tons</div>
+                            <div><strong>Productivity:</strong> {selectedFarmer.productivity} tons/ha</div>
+                            <div><strong>Seed Source:</strong> {selectedFarmer.seedSource}</div>
+                            <div><strong>Land Type:</strong> {selectedFarmer.landType}</div>
+                            <div><strong>Fertilizer Type:</strong> {selectedFarmer.fertilizerType}</div>
+                            <div><strong>Sales Partner:</strong> {selectedFarmer.salesPartner}</div>
+                          </div>
+                        </div>
 
-                    {/* Footer */}
-                    <div className="mt-8 text-center text-xs text-gray-600">
-                      <p>This certificate is issued in accordance with Government Regulation No. 17/2023</p>
-                      <p>Valid until: {new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB')}</p>
-                    </div>
+                        {/* Organization Information Section */}
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            C. FARMER ORGANIZATION INFORMATION
+                          </h3>
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                            <div><strong>Organization Name:</strong> {selectedFarmer.organizationName}</div>
+                            <div><strong>SIMLUHTAN Group Number:</strong> {selectedFarmer.groupNumber}</div>
+                            <div className="col-span-2"><strong>Organization Commodities:</strong> {selectedFarmer.organizationCommodities}</div>
+                            <div className="col-span-2"><strong>Organization Address:</strong> {selectedFarmer.organizationAddress}</div>
+                          </div>
+                        </div>
+
+                        {/* Farm Location Section */}
+                        <div className="mb-8">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            D. FARM LOCATION (GPS COORDINATES)
+                          </h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            {selectedFarmer.coordinates?.map((coord, index) => (
+                              <div key={index}>
+                                <strong>Point {index + 1}:</strong> Longitude: {coord.longitude}, Latitude: {coord.latitude}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Certification Statement */}
+                        <div className="mb-8 p-4 border border-black rounded">
+                          <h3 className="text-base font-bold mb-3 text-center">CERTIFICATION STATEMENT</h3>
+                          <p className="text-justify mb-4">
+                            This certificate confirms that the above-mentioned farmer and cultivation plot have been registered 
+                            in accordance with Indonesian agricultural regulations and EU Deforestation Regulation (EUDR) requirements. 
+                            The cultivation activities are conducted on legally designated agricultural land with proper documentation.
+                          </p>
+                          <p className="text-justify">
+                            This registration is valid for commercial cultivation activities and serves as proof of compliance 
+                            with applicable laws and regulations governing sustainable agricultural practices.
+                          </p>
+                        </div>
+
+                        {/* Signatures */}
+                        <div className="grid grid-cols-3 gap-8 text-center">
+                          <div>
+                            <p className="mb-16">Data Collection Officer</p>
+                            <p className="border-t border-black pt-2">
+                              <strong>{selectedFarmer.dataCollectionOfficer}</strong>
+                            </p>
+                          </div>
+                          <div>
+                            <p className="mb-16">Regional Supervisor</p>
+                            <p className="border-t border-black pt-2">
+                              <strong>Dr. Siti Rahayu, S.P., M.Si.</strong>
+                            </p>
+                          </div>
+                          <div>
+                            <p className="mb-16">Authorized Officer</p>
+                            <p className="border-t border-black pt-2">
+                              <strong>Ir. Bambang Wijaya, M.P.</strong>
+                            </p>
+                            <p className="text-xs mt-2">Ministry of Agriculture</p>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-8 text-center text-xs text-gray-600">
+                          <p>This certificate is issued in accordance with Government Regulation No. 17/2023</p>
+                          <p>Valid until: {new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB')}</p>
+                        </div>
+                      </>
+                    ) : (
+                      // Indonesian Version
+                      <>
+                        {/* Header */}
+                        <div className="text-center mb-8">
+                          <h1 className="text-xl font-bold mb-2">REPUBLIK INDONESIA</h1>
+                          <h2 className="text-lg font-bold mb-2">KEMENTERIAN PERTANIAN</h2>
+                          <h3 className="text-lg font-bold mb-4 underline">SURAT TANDA DAFTAR BUDIDAYA</h3>
+                          <h4 className="text-base font-bold">(STDB)</h4>
+                          <div className="mt-4 text-sm">
+                            <p><strong>Nomor Urut Responden:</strong> {selectedFarmer.respondentSerialNumber}</p>
+                            <p><strong>Nama Petugas Pendataan:</strong> {selectedFarmer.dataCollectionOfficer}</p>
+                          </div>
+                        </div>
+
+                        {/* A. Identitas Pekebun */}
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            A. IDENTITAS PEKEBUN
+                          </h3>
+                          <div className="space-y-2">
+                            <div><strong>Nama:</strong> {selectedFarmer.farmerName}</div>
+                            <div><strong>No. KTP:</strong> {selectedFarmer.nationalId}</div>
+                            <div><strong>Tempat tanggal lahir:</strong> {selectedFarmer.birthPlaceDate}</div>
+                            <div><strong>Jenis kelamin:</strong> {selectedFarmer.sex === 'Male' ? 'Laki-laki' : 'Perempuan'}</div>
+                            <div><strong>Pendidikan:</strong> {selectedFarmer.education}</div>
+                            <div><strong>Provinsi:</strong> {selectedFarmer.province}</div>
+                            <div><strong>Kabupaten/Kota:</strong> {selectedFarmer.regencyCity}</div>
+                            <div><strong>Kecamatan:</strong> {selectedFarmer.district}</div>
+                            <div><strong>Desa/Kelurahan:</strong> {selectedFarmer.village}</div>
+                            <div><strong>Alamat Pekebun:</strong> {selectedFarmer.farmerAddress}</div>
+                          </div>
+                        </div>
+
+                        {/* B. Keterangan Kebun */}
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            B. KETERANGAN KEBUN
+                          </h3>
+                          <div className="space-y-2">
+                            <div><strong>Kebun Ke-:</strong> {selectedFarmer.farmPlotNumber}</div>
+                            <div><strong>Status lahan yang diusahakan:</strong> {selectedFarmer.landTenure}</div>
+                            <div><strong>Nomor/dokumen lahan yang diusahakan:</strong> {selectedFarmer.landDocumentNumber}</div>
+                            <div><strong>Luas lahan berdasarkan Dokumen (m²):</strong> {selectedFarmer.landAreaPerDocument?.toLocaleString()}</div>
+                            <div><strong>Pola tanam:</strong> {selectedFarmer.croppingPattern === 'Monoculture' ? 'Monokultur' : 'Polikultur'}</div>
+                            <div><strong>Komoditas Utama:</strong> {selectedFarmer.mainCommodity}</div>
+                            <div><strong>Komoditas Lainnya:</strong> {selectedFarmer.otherCommodities || 'Tidak ada'}</div>
+                            <div><strong>Luas areal tertanam (m²):</strong> {selectedFarmer.plantedArea?.toLocaleString()}</div>
+                            <div><strong>Tahun tanam:</strong> {selectedFarmer.yearPlanted}</div>
+                            <div><strong>Tahun tanam sebelum peremajaan:</strong> {selectedFarmer.yearReplanted || 'Tidak ada'}</div>
+                            <div><strong>Jumlah tegakan pohon:</strong> {selectedFarmer.standingTrees?.toLocaleString()}</div>
+                            <div><strong>Produksi per tahun (ton):</strong> {selectedFarmer.annualProduction}</div>
+                            <div><strong>Produktivitas (Ton/Ha):</strong> {selectedFarmer.productivity}</div>
+                            <div><strong>Asal benih:</strong> {
+                              selectedFarmer.seedSource === 'Certified seed' ? 'Benih bersertifikat' :
+                              selectedFarmer.seedSource === 'Non-certified seed' ? 'Benih tidak bersertifikat' :
+                              'Tidak Tahu'
+                            }</div>
+                            <div><strong>Jenis lahan:</strong> {selectedFarmer.landType === 'Mineral soil' ? 'Lahan Mineral' : 'Lahan Basa (Pasang Surut, Gambut)'}</div>
+                            <div><strong>Jenis Pupuk:</strong> {
+                              selectedFarmer.fertilizerType === 'Organic' ? 'Organik' :
+                              selectedFarmer.fertilizerType === 'Inorganic' ? 'Non Organik' :
+                              'Campuran'
+                            }</div>
+                            <div><strong>Mitra penjualan:</strong> {
+                              selectedFarmer.salesPartner === 'Cooperative' ? 'Koperasi' :
+                              selectedFarmer.salesPartner === 'Processing company' ? 'Perusahaan Pengolahan' :
+                              'Lainnya'
+                            }</div>
+                          </div>
+                        </div>
+
+                        {/* C. Keterangan Kelembagaan Tani */}
+                        <div className="mb-6">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            C. KETERANGAN KELEMBAGAAN TANI
+                          </h3>
+                          <div className="space-y-2">
+                            <div><strong>Nama kelembagaan tani:</strong> {selectedFarmer.organizationName}</div>
+                            <div><strong>Nomor kelompok dalam SIMLUHTAN:</strong> {selectedFarmer.groupNumber}</div>
+                            <div><strong>Komoditas kelembagaan tani:</strong> {selectedFarmer.organizationCommodities}</div>
+                            <div><strong>Alamat kelembagaan tani:</strong> {selectedFarmer.organizationAddress}</div>
+                          </div>
+                        </div>
+
+                        {/* D. Lokasi Kebun */}
+                        <div className="mb-8">
+                          <h3 className="text-base font-bold mb-3 border-b border-black pb-1">
+                            D. LOKASI KEBUN
+                          </h3>
+                          <div className="space-y-1">
+                            <p><strong>Titik Koordinat</strong></p>
+                            {selectedFarmer.coordinates?.map((coord, index) => (
+                              <div key={index}>
+                                <strong>Titik {index + 1}:</strong> (Long) {coord.longitude} (Lat) {coord.latitude}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Pernyataan Sertifikasi */}
+                        <div className="mb-8 p-4 border border-black rounded">
+                          <h3 className="text-base font-bold mb-3 text-center">PERNYATAAN SERTIFIKASI</h3>
+                          <p className="text-justify mb-4">
+                            Sertifikat ini menyatakan bahwa pekebun dan plot budidaya tersebut di atas telah terdaftar
+                            sesuai dengan peraturan pertanian Indonesia dan persyaratan Regulasi Anti-Deforestasi Uni Eropa (EUDR).
+                            Kegiatan budidaya dilakukan di lahan pertanian yang ditunjuk secara legal dengan dokumentasi yang proper.
+                          </p>
+                          <p className="text-justify">
+                            Pendaftaran ini berlaku untuk kegiatan budidaya komersial dan berfungsi sebagai bukti kepatuhan
+                            terhadap hukum dan peraturan yang berlaku dalam praktek pertanian berkelanjutan.
+                          </p>
+                        </div>
+
+                        {/* Tanda Tangan */}
+                        <div className="grid grid-cols-3 gap-8 text-center">
+                          <div>
+                            <p className="mb-16">Petugas Pendataan</p>
+                            <p className="border-t border-black pt-2">
+                              <strong>{selectedFarmer.dataCollectionOfficer}</strong>
+                            </p>
+                          </div>
+                          <div>
+                            <p className="mb-16">Supervisor Regional</p>
+                            <p className="border-t border-black pt-2">
+                              <strong>Dr. Siti Rahayu, S.P., M.Si.</strong>
+                            </p>
+                          </div>
+                          <div>
+                            <p className="mb-16">Pejabat Berwenang</p>
+                            <p className="border-t border-black pt-2">
+                              <strong>Ir. Bambang Wijaya, M.P.</strong>
+                            </p>
+                            <p className="text-xs mt-2">Kementerian Pertanian</p>
+                          </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-8 text-center text-xs text-gray-600">
+                          <p>Sertifikat ini diterbitkan sesuai dengan Peraturan Pemerintah No. 17/2023</p>
+                          <p>Berlaku hingga: {new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID')}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
                 
                 <div className="flex justify-end gap-2 mt-4">
                   <Button variant="outline" data-testid="button-print-stdb">
                     <Download className="h-4 w-4 mr-2" />
-                    Print Certificate
+                    {certificateLanguage === 'en' ? 'Print Certificate' : 'Cetak Sertifikat'}
                   </Button>
                   <Button onClick={() => setShowSTDBDialog(false)} data-testid="button-close-dialog">
-                    Close
+                    {certificateLanguage === 'en' ? 'Close' : 'Tutup'}
                   </Button>
                 </div>
               </DialogContent>
