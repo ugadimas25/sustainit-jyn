@@ -14,6 +14,7 @@ import UnifiedMonitoring from "@/pages/unified-monitoring";
 import UnifiedSupplyChain from "@/pages/unified-supply-chain";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import DDSReports from "@/pages/dds-reports";
+import { AnimatedVisualizationPage } from "@/pages/animated-visualization";
 
 function Router() {
   return (
@@ -22,6 +23,7 @@ function Router() {
       <ProtectedRoute path="/deforestation-monitoring" component={DeforestationMonitoring} />
       <ProtectedRoute path="/legality" component={LegalityAssessment} />
       <ProtectedRoute path="/supply-chain" component={UnifiedSupplyChain} />
+      <ProtectedRoute path="/visualization" component={AnimatedVisualizationPage} />
       <ProtectedRoute path="/reports" component={DDSReports} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />

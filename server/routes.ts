@@ -102,7 +102,7 @@ async function seedSampleData() {
         eoriNumber: "MY123456789000",
         hsCode: "151110",
         productDescription: "Crude Palm Oil (CPO)",
-        netMassKg: "21500000",
+        netMassKg: "2150.000",
         countryOfProduction: "Malaysia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
@@ -111,7 +111,8 @@ async function seedSampleData() {
         ]),
         operatorDeclaration: "I hereby declare that the information provided is accurate and complete.",
         signedBy: "Datuk Seri Ahmad Bin Abdullah",
-        signatureDate: new Date("2024-08-15"),
+        signedDate: new Date("2024-08-15"),
+        signatoryFunction: "Chief Executive Officer",
         status: "draft"
       });
 
@@ -121,7 +122,7 @@ async function seedSampleData() {
         eoriNumber: "ID987654321000",
         hsCode: "151110",
         productDescription: "Refined Palm Oil",
-        netMassKg: "15000000",
+        netMassKg: "1500.000",
         countryOfProduction: "Indonesia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
@@ -131,7 +132,8 @@ async function seedSampleData() {
         priorDdsReference: "EU-DDS-2024-001",
         operatorDeclaration: "This shipment complies with all EU deforestation regulations.",
         signedBy: "Dr. Siti Nurhaliza",
-        signatureDate: new Date("2024-08-10"),
+        signedDate: new Date("2024-08-10"),
+        signatoryFunction: "Operations Director",
         status: "generated",
         pdfDocumentPath: "/pdfs/dds-sample-001.pdf"
       });
@@ -142,7 +144,7 @@ async function seedSampleData() {
         eoriNumber: "SG456789123000",
         hsCode: "151190",
         productDescription: "Palm Kernel Oil",
-        netMassKg: "8500000",
+        netMassKg: "850.000",
         countryOfProduction: "Indonesia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
@@ -151,7 +153,8 @@ async function seedSampleData() {
         ]),
         operatorDeclaration: "All products sourced from verified deforestation-free areas.",
         signedBy: "Mr. Lim Wei Ming",
-        signatureDate: new Date("2024-08-05"),
+        signedDate: new Date("2024-08-05"),
+        signatoryFunction: "Supply Chain Manager",
         status: "submitted",
         pdfDocumentPath: "/pdfs/dds-sample-002.pdf",
         euTraceReference: "EU-TRACE-1755198000-456789ab",

@@ -8,7 +8,8 @@ import {
   FileText, 
   Leaf,
   LogOut,
-  User
+  User,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +18,7 @@ const navigation = [
   { name: 'Deforestation Monitoring', href: '/deforestation-monitoring', icon: Satellite, testId: 'nav-deforestation-monitoring' },
   { name: 'Legality Assessment', href: '/legality', icon: Shield, testId: 'nav-legality' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
+  { name: 'Animated Visualization', href: '/visualization', icon: Activity, testId: 'nav-visualization' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
 ];
 
