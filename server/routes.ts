@@ -93,6 +93,85 @@ async function seedSampleData() {
       });
     }
 
+    // Create sample DDS reports
+    const ddsReports = await storage.getDdsReports();
+    if (ddsReports.length === 0) {
+      const ddsReport1 = await storage.createDdsReport({
+        reportType: "shipment",
+        operatorName: "KPN Plantations Berhad",
+        operatorAddress: "Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia",
+        eoriNumber: "MY123456789000",
+        hsCode: "151110",
+        productName: "Crude Palm Oil (CPO)",
+        scientificName: "Elaeis guineensis",
+        quantity: 21500,
+        unitOfMeasure: "MT",
+        countryOfOrigin: "Malaysia",
+        plotCoordinates: [
+          { latitude: 3.1390, longitude: 101.6869, plotId: "PLT-SELANGOR-001" },
+          { latitude: 2.9300, longitude: 101.8000, plotId: "PLT-SELANGOR-002" }
+        ],
+        cattleEstablishments: [],
+        priorDdsReference: null,
+        operatorDeclaration: "I hereby declare that the information provided is accurate and complete.",
+        operatorSignature: "Datuk Seri Ahmad Bin Abdullah",
+        signatureDate: new Date("2024-08-15"),
+        status: "draft"
+      });
+
+      const ddsReport2 = await storage.createDdsReport({
+        reportType: "shipment",
+        operatorName: "PT Sawit Mas Indonesia",
+        operatorAddress: "Jl. Sudirman No. 123, Jakarta 10220, Indonesia",
+        eoriNumber: "ID987654321000",
+        hsCode: "151110",
+        productName: "Refined Palm Oil",
+        scientificName: "Elaeis guineensis",
+        quantity: 15000,
+        unitOfMeasure: "MT",
+        countryOfOrigin: "Indonesia",
+        plotCoordinates: [
+          { latitude: 0.7893, longitude: 101.4467, plotId: "PLT-RIAU-001" },
+          { latitude: 0.5333, longitude: 101.4500, plotId: "PLT-RIAU-002" }
+        ],
+        cattleEstablishments: [],
+        priorDdsReference: "EU-DDS-2024-001",
+        operatorDeclaration: "This shipment complies with all EU deforestation regulations.",
+        operatorSignature: "Dr. Siti Nurhaliza",
+        signatureDate: new Date("2024-08-10"),
+        status: "generated",
+        pdfDocumentPath: "/pdfs/dds-sample-001.pdf"
+      });
+
+      const ddsReport3 = await storage.createDdsReport({
+        reportType: "shipment", 
+        operatorName: "Golden Agri Resources Ltd",
+        operatorAddress: "108 Pasir Panjang Road, #08-01, Golden Agri Plaza, Singapore 118535",
+        eoriNumber: "SG456789123000",
+        hsCode: "151190",
+        productName: "Palm Kernel Oil",
+        scientificName: "Elaeis guineensis",
+        quantity: 8500,
+        unitOfMeasure: "MT",
+        countryOfOrigin: "Indonesia",
+        plotCoordinates: [
+          { latitude: -1.2708, longitude: 103.7367, plotId: "PLT-JAMBI-001" },
+          { latitude: -1.6000, longitude: 103.6000, plotId: "PLT-JAMBI-002" }
+        ],
+        cattleEstablishments: [],
+        priorDdsReference: null,
+        operatorDeclaration: "All products sourced from verified deforestation-free areas.",
+        operatorSignature: "Mr. Lim Wei Ming",
+        signatureDate: new Date("2024-08-05"),
+        status: "submitted",
+        pdfDocumentPath: "/pdfs/dds-sample-002.pdf",
+        euTraceReference: "EU-TRACE-1755198000-456789ab",
+        submissionDate: new Date("2024-08-06")
+      });
+
+      console.log("✓ Sample DDS reports created");
+    }
+
     console.log("✓ Sample data seeded successfully");
   } catch (error) {
     console.error("Error seeding sample data:", error);
