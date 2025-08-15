@@ -416,14 +416,16 @@ export const ddsReports = pgTable("dds_reports", {
   hsCode: text("hs_code").notNull(),
   productDescription: text("product_description").notNull(),
   scientificName: text("scientific_name"),
-  netMassKg: decimal("net_mass_kg", { precision: 10, scale: 3 }).notNull(),
+  netMassKg: text("net_mass_kg").notNull(),
   supplementaryUnit: text("supplementary_unit"),
-  supplementaryQuantity: decimal("supplementary_quantity", { precision: 10, scale: 3 }),
+  supplementaryQuantity: text("supplementary_quantity"),
   
   // Origin & geolocation
   countryOfProduction: text("country_of_production").notNull(),
-  plotGeolocations: text("plot_geolocations").array(),
-  establishmentGeolocations: text("establishment_geolocations").array(),
+  geolocationType: text("geolocation_type"),
+  geolocationCoordinates: text("geolocation_coordinates"),
+  kmlFileName: text("kml_file_name"),
+  geojsonFilePaths: text("geojson_file_paths"),
   
   // Reference to prior DDS
   priorDdsReference: text("prior_dds_reference"),
@@ -431,8 +433,8 @@ export const ddsReports = pgTable("dds_reports", {
   // Declaration and signature
   operatorDeclaration: text("operator_declaration").notNull(),
   signedBy: text("signed_by").notNull(),
-  signedDate: timestamp("signed_date").notNull(),
-  signatoryFunction: text("signatory_function").notNull(),
+  signatureDate: timestamp("signature_date").notNull(),
+  signatoryFunction: text("signatory_function"),
   digitalSignature: text("digital_signature"),
   
   // Status and processing
@@ -444,7 +446,7 @@ export const ddsReports = pgTable("dds_reports", {
   // Cross-module integration
   deforestationRiskLevel: text("deforestation_risk_level"),
   legalityStatus: text("legality_status"),
-  complianceScore: decimal("compliance_score", { precision: 5, scale: 2 }),
+  complianceScore: text("compliance_score"),
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
@@ -457,15 +459,7 @@ export const ddsReportsRelations = relations(ddsReports, ({ one }) => ({
   }),
 }));
 
-// Add DDS schema exports
-export const insertDdsReportSchema = createInsertSchema(ddsReports).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
 
-export type DdsReport = typeof ddsReports.$inferSelect;
-export type InsertDdsReport = z.infer<typeof insertDdsReportSchema>;
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -518,9 +512,12 @@ export const insertSupplierSchema = createInsertSchema(suppliers);
 export const insertSupplierWorkflowLinkSchema = createInsertSchema(supplierWorkflowLinks);
 export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments);
 export const insertMillSchema = createInsertSchema(mills);
+export const insertDdsReportSchema = createInsertSchema(ddsReports);
 
 // Export types for workflow entities (supplement to existing Supplier types)
 export type SupplierWorkflowLink = typeof supplierWorkflowLinks.$inferSelect;
 export type InsertSupplierWorkflowLink = z.infer<typeof insertSupplierWorkflowLinkSchema>;
 export type WorkflowShipment = typeof workflowShipments.$inferSelect;
 export type InsertWorkflowShipment = z.infer<typeof insertWorkflowShipmentSchema>;
+export type DdsReport = typeof ddsReports.$inferSelect;
+export type InsertDdsReport = z.infer<typeof insertDdsReportSchema>;

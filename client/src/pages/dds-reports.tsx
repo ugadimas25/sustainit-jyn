@@ -16,6 +16,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DdsReport, InsertDdsReport } from "@shared/schema";
+import { KMLUploader } from "@/components/kml-uploader";
+import { GeoJSONGenerator } from "@/components/geojson-generator";
 
 export default function DdsReports() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -596,44 +598,81 @@ export default function DdsReports() {
 
           {/* Create Tab */}
           <TabsContent value="create" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>DDS Report Creation Guide</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">Required Information</h3>
-                    <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                      <li>• Operator legal name and address</li>
-                      <li>• EORI number (for EU imports/exports)</li>
-                      <li>• HS code and product description</li>
-                      <li>• Net mass in kilograms</li>
-                      <li>• Country of production</li>
-                      <li>• Plot geolocations</li>
-                      <li>• Operator declaration and signature</li>
-                    </ul>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>DDS Report Creation Guide</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Required Information</h3>
+                      <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                        <li>• Operator legal name and address</li>
+                        <li>• EORI number (for EU imports/exports)</li>
+                        <li>• HS code and product description</li>
+                        <li>• Net mass in kilograms</li>
+                        <li>• Country of production</li>
+                        <li>• Plot geolocations</li>
+                        <li>• Operator declaration and signature</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-2">Connected Data</h3>
+                      <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                        <li>• Shipment tracking information</li>
+                        <li>• Deforestation risk assessment</li>
+                        <li>• Supplier legality status</li>
+                        <li>• Compliance scoring</li>
+                        <li>• Supply chain traceability</li>
+                      </ul>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Connected Data</h3>
-                    <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                      <li>• Shipment tracking information</li>
-                      <li>• Deforestation risk assessment</li>
-                      <li>• Supplier legality status</li>
-                      <li>• Compliance scoring</li>
-                      <li>• Supply chain traceability</li>
-                    </ul>
+                  <Button 
+                    onClick={() => setActiveTab("overview")} 
+                    className="w-full"
+                    data-testid="button-start-creating"
+                  >
+                    Start Creating DDS Report
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Polygon Data Management</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <h4 className="font-medium mb-2">KML Upload Features</h4>
+                      <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                        <li>• Upload KML files with polygon coordinates</li>
+                        <li>• Automatic plot extraction and validation</li>
+                        <li>• Integration with DDS geolocation requirements</li>
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium mb-2">GeoJSON Output</h4>
+                      <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                        <li>• Generate verified deforestation-free polygons</li>
+                        <li>• Export individual and combined GeoJSON files</li>
+                        <li>• Include verification metadata and timestamps</li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-md">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        <strong>Pro Tip:</strong> Upload KML files during DDS report creation 
+                        to automatically populate geolocation coordinates and generate verified 
+                        polygon outputs for compliance documentation.
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <Button 
-                  onClick={() => setActiveTab("overview")} 
-                  className="w-full"
-                  data-testid="button-start-creating"
-                >
-                  Start Creating DDS Report
-                </Button>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Integration Tab */}
@@ -753,6 +792,25 @@ export default function DdsReports() {
                     <span className="font-medium">Net Mass:</span>
                     <p>{selectedReport.netMassKg} kg</p>
                   </div>
+                </div>
+                
+                {/* KML Upload and GeoJSON Generation */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <KMLUploader 
+                    reportId={selectedReport.id} 
+                    onUploadComplete={() => {
+                      // Refresh the report data after KML upload
+                      queryClient.invalidateQueries({ queryKey: ['/api/dds-reports'] });
+                      toast({
+                        title: "KML Upload Complete",
+                        description: "Polygon data has been processed and added to the DDS report."
+                      });
+                    }}
+                  />
+                  <GeoJSONGenerator 
+                    reportId={selectedReport.id} 
+                    reportData={selectedReport}
+                  />
                 </div>
                 
                 <div className="flex gap-2">

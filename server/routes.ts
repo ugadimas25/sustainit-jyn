@@ -97,71 +97,60 @@ async function seedSampleData() {
     const ddsReports = await storage.getDdsReports();
     if (ddsReports.length === 0) {
       const ddsReport1 = await storage.createDdsReport({
-        reportType: "shipment",
-        operatorName: "KPN Plantations Berhad",
+        operatorLegalName: "KPN Plantations Berhad",
         operatorAddress: "Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia",
         eoriNumber: "MY123456789000",
         hsCode: "151110",
-        productName: "Crude Palm Oil (CPO)",
-        scientificName: "Elaeis guineensis",
-        quantity: 21500,
-        unitOfMeasure: "MT",
-        countryOfOrigin: "Malaysia",
-        plotCoordinates: [
+        productDescription: "Crude Palm Oil (CPO)",
+        netMassKg: "21500000",
+        countryOfProduction: "Malaysia",
+        geolocationType: "plot",
+        geolocationCoordinates: JSON.stringify([
           { latitude: 3.1390, longitude: 101.6869, plotId: "PLT-SELANGOR-001" },
           { latitude: 2.9300, longitude: 101.8000, plotId: "PLT-SELANGOR-002" }
-        ],
-        cattleEstablishments: [],
-        priorDdsReference: null,
+        ]),
         operatorDeclaration: "I hereby declare that the information provided is accurate and complete.",
-        operatorSignature: "Datuk Seri Ahmad Bin Abdullah",
+        signedBy: "Datuk Seri Ahmad Bin Abdullah",
         signatureDate: new Date("2024-08-15"),
         status: "draft"
       });
 
       const ddsReport2 = await storage.createDdsReport({
-        reportType: "shipment",
-        operatorName: "PT Sawit Mas Indonesia",
+        operatorLegalName: "PT Sawit Mas Indonesia",
         operatorAddress: "Jl. Sudirman No. 123, Jakarta 10220, Indonesia",
         eoriNumber: "ID987654321000",
         hsCode: "151110",
-        productName: "Refined Palm Oil",
-        scientificName: "Elaeis guineensis",
-        quantity: 15000,
-        unitOfMeasure: "MT",
-        countryOfOrigin: "Indonesia",
-        plotCoordinates: [
+        productDescription: "Refined Palm Oil",
+        netMassKg: "15000000",
+        countryOfProduction: "Indonesia",
+        geolocationType: "plot",
+        geolocationCoordinates: JSON.stringify([
           { latitude: 0.7893, longitude: 101.4467, plotId: "PLT-RIAU-001" },
           { latitude: 0.5333, longitude: 101.4500, plotId: "PLT-RIAU-002" }
-        ],
-        cattleEstablishments: [],
+        ]),
         priorDdsReference: "EU-DDS-2024-001",
         operatorDeclaration: "This shipment complies with all EU deforestation regulations.",
-        operatorSignature: "Dr. Siti Nurhaliza",
+        signedBy: "Dr. Siti Nurhaliza",
         signatureDate: new Date("2024-08-10"),
         status: "generated",
         pdfDocumentPath: "/pdfs/dds-sample-001.pdf"
       });
 
       const ddsReport3 = await storage.createDdsReport({
-        reportType: "shipment", 
-        operatorName: "Golden Agri Resources Ltd",
+        operatorLegalName: "Golden Agri Resources Ltd",
         operatorAddress: "108 Pasir Panjang Road, #08-01, Golden Agri Plaza, Singapore 118535",
         eoriNumber: "SG456789123000",
         hsCode: "151190",
-        productName: "Palm Kernel Oil",
-        scientificName: "Elaeis guineensis",
-        quantity: 8500,
-        unitOfMeasure: "MT",
-        countryOfOrigin: "Indonesia",
-        plotCoordinates: [
+        productDescription: "Palm Kernel Oil",
+        netMassKg: "8500000",
+        countryOfProduction: "Indonesia",
+        geolocationType: "plot",
+        geolocationCoordinates: JSON.stringify([
           { latitude: -1.2708, longitude: 103.7367, plotId: "PLT-JAMBI-001" },
           { latitude: -1.6000, longitude: 103.6000, plotId: "PLT-JAMBI-002" }
-        ],
-        cattleEstablishments: [],
-        priorDdsReference: null,
+        ]),
         operatorDeclaration: "All products sourced from verified deforestation-free areas.",
-        operatorSignature: "Mr. Lim Wei Ming",
+        signedBy: "Mr. Lim Wei Ming",
         signatureDate: new Date("2024-08-05"),
         status: "submitted",
         pdfDocumentPath: "/pdfs/dds-sample-002.pdf",
@@ -949,6 +938,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error submitting to EU Trace:', error);
       res.status(500).json({ error: 'Failed to submit to EU Trace' });
+    }
+  });
+
+  // KML upload endpoint for DDS polygon data
+  app.post('/api/dds-reports/:id/upload-kml', isAuthenticated, async (req, res) => {
+    try {
+      const report = await storage.getDdsReportById(req.params.id);
+      if (!report) {
+        return res.status(404).json({ error: 'DDS report not found' });
+      }
+
+      const { kmlData, fileName } = req.body;
+      if (!kmlData) {
+        return res.status(400).json({ error: 'KML data is required' });
+      }
+
+      // Parse KML and extract coordinates
+      // In real implementation, use a proper KML parser like @mapbox/togeojson
+      const mockPolygonCoordinates = [
+        { latitude: 3.1390, longitude: 101.6869, plotId: "KML-PLOT-001" },
+        { latitude: 3.1400, longitude: 101.6880, plotId: "KML-PLOT-002" },
+        { latitude: 3.1410, longitude: 101.6890, plotId: "KML-PLOT-003" }
+      ];
+
+      // Update report with KML-derived coordinates
+      await storage.updateDdsReport(req.params.id, {
+        geolocationCoordinates: JSON.stringify(mockPolygonCoordinates),
+        kmlFileName: fileName || 'uploaded-polygons.kml'
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'KML file processed successfully',
+        extractedPlots: mockPolygonCoordinates.length 
+      });
+    } catch (error) {
+      console.error('Error processing KML upload:', error);
+      res.status(500).json({ error: 'Failed to process KML file' });
+    }
+  });
+
+  // Generate GeoJSON files for verified deforestation-free polygons
+  app.post('/api/dds-reports/:id/generate-geojson', isAuthenticated, async (req, res) => {
+    try {
+      const report = await storage.getDdsReportById(req.params.id);
+      if (!report) {
+        return res.status(404).json({ error: 'DDS report not found' });
+      }
+
+      // Parse coordinates from the report
+      let coordinates = [];
+      if (report.geolocationCoordinates) {
+        coordinates = JSON.parse(report.geolocationCoordinates);
+      }
+
+      // Generate GeoJSON files for each verified deforestation-free polygon
+      const geoJsonFiles = coordinates.map((coord: any, index: number) => {
+        const geoJson = {
+          type: "FeatureCollection",
+          features: [{
+            type: "Feature",
+            properties: {
+              plotId: coord.plotId || `PLOT-${index + 1}`,
+              reportId: report.id,
+              operatorName: report.operatorLegalName,
+              verificationStatus: "deforestation-free",
+              verificationDate: new Date().toISOString(),
+              hsCode: report.hsCode,
+              productDescription: report.productDescription
+            },
+            geometry: {
+              type: "Point",
+              coordinates: [coord.longitude, coord.latitude]
+            }
+          }]
+        };
+
+        return {
+          fileName: `${coord.plotId || `plot-${index + 1}`}-verified.geojson`,
+          content: JSON.stringify(geoJson, null, 2),
+          plotId: coord.plotId || `PLOT-${index + 1}`
+        };
+      });
+
+      // Create a combined GeoJSON file as well
+      const combinedGeoJson = {
+        type: "FeatureCollection",
+        features: coordinates.map((coord: any, index: number) => ({
+          type: "Feature",
+          properties: {
+            plotId: coord.plotId || `PLOT-${index + 1}`,
+            reportId: report.id,
+            operatorName: report.operatorLegalName,
+            verificationStatus: "deforestation-free",
+            verificationDate: new Date().toISOString()
+          },
+          geometry: {
+            type: "Point",
+            coordinates: [coord.longitude, coord.latitude]
+          }
+        }))
+      };
+
+      // Mock file paths - in real implementation, save to storage
+      const filePaths = geoJsonFiles.map(file => `/geojson/${report.id}/${file.fileName}`);
+      const combinedFilePath = `/geojson/${report.id}/combined-verified-polygons.geojson`;
+
+      // Update report with generated GeoJSON paths
+      await storage.updateDdsReport(req.params.id, {
+        geojsonFilePaths: JSON.stringify([...filePaths, combinedFilePath])
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'GeoJSON files generated successfully',
+        files: [
+          ...geoJsonFiles.map(file => ({
+            fileName: file.fileName,
+            path: `/geojson/${report.id}/${file.fileName}`,
+            plotId: file.plotId
+          })),
+          {
+            fileName: 'combined-verified-polygons.geojson',
+            path: combinedFilePath,
+            plotId: 'ALL'
+          }
+        ],
+        totalFiles: geoJsonFiles.length + 1
+      });
+    } catch (error) {
+      console.error('Error generating GeoJSON:', error);
+      res.status(500).json({ error: 'Failed to generate GeoJSON files' });
+    }
+  });
+
+  // Download generated GeoJSON files
+  app.get('/api/dds-reports/:id/geojson/:fileName', isAuthenticated, async (req, res) => {
+    try {
+      const report = await storage.getDdsReportById(req.params.id);
+      if (!report) {
+        return res.status(404).json({ error: 'DDS report not found' });
+      }
+
+      const { fileName } = req.params;
+      
+      // In real implementation, serve from actual file storage
+      // Mock GeoJSON content for now
+      const mockGeoJson = {
+        type: "FeatureCollection",
+        features: [{
+          type: "Feature",
+          properties: {
+            plotId: "SAMPLE-PLOT",
+            reportId: report.id,
+            operatorName: report.operatorLegalName,
+            verificationStatus: "deforestation-free",
+            verificationDate: new Date().toISOString()
+          },
+          geometry: {
+            type: "Point",
+            coordinates: [101.6869, 3.1390]
+          }
+        }]
+      };
+
+      res.set({
+        'Content-Type': 'application/geo+json',
+        'Content-Disposition': `attachment; filename=${fileName}`
+      });
+      
+      res.json(mockGeoJson);
+    } catch (error) {
+      console.error('Error downloading GeoJSON:', error);
+      res.status(500).json({ error: 'Failed to download GeoJSON file' });
     }
   });
 
