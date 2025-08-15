@@ -43,10 +43,7 @@ export default function DdsReports() {
   // Create DDS report mutation
   const createDdsMutation = useMutation({
     mutationFn: async (data: InsertDdsReport) => {
-      return apiRequest('/api/dds-reports', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return apiRequest('/api/dds-reports', 'POST', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/dds-reports'] });
@@ -68,9 +65,7 @@ export default function DdsReports() {
   // Generate PDF mutation
   const generatePdfMutation = useMutation({
     mutationFn: async (reportId: string) => {
-      return apiRequest(`/api/dds-reports/${reportId}/pdf`, {
-        method: 'POST',
-      });
+      return apiRequest(`/api/dds-reports/${reportId}/pdf`, 'POST');
     },
     onSuccess: () => {
       toast({
@@ -83,9 +78,7 @@ export default function DdsReports() {
   // Submit to EU Trace mutation
   const submitToEuTraceMutation = useMutation({
     mutationFn: async (reportId: string) => {
-      return apiRequest(`/api/dds-reports/${reportId}/submit`, {
-        method: 'POST',
-      });
+      return apiRequest(`/api/dds-reports/${reportId}/submit`, 'POST');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/dds-reports'] });
@@ -342,11 +335,11 @@ export default function DdsReports() {
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="ID">Indonesia</SelectItem>
-                              <SelectItem value="MY">Malaysia</SelectItem>
-                              <SelectItem value="TH">Thailand</SelectItem>
-                              <SelectItem value="BR">Brazil</SelectItem>
-                              <SelectItem value="CO">Colombia</SelectItem>
+                              <SelectItem value="Indonesia">Indonesia</SelectItem>
+                              <SelectItem value="Malaysia">Malaysia</SelectItem>
+                              <SelectItem value="Thailand">Thailand</SelectItem>
+                              <SelectItem value="Brazil">Brazil</SelectItem>
+                              <SelectItem value="Colombia">Colombia</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

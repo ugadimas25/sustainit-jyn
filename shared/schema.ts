@@ -416,12 +416,14 @@ export const ddsReports = pgTable("dds_reports", {
   hsCode: text("hs_code").notNull(),
   productDescription: text("product_description").notNull(),
   scientificName: text("scientific_name"),
-  netMassKg: text("net_mass_kg").notNull(),
+  netMassKg: decimal("net_mass_kg", { precision: 10, scale: 3 }).notNull(),
   supplementaryUnit: text("supplementary_unit"),
-  supplementaryQuantity: text("supplementary_quantity"),
+  supplementaryQuantity: decimal("supplementary_quantity", { precision: 10, scale: 3 }),
   
   // Origin & geolocation
   countryOfProduction: text("country_of_production").notNull(),
+  plotGeolocations: text("plot_geolocations").array(),
+  establishmentGeolocations: text("establishment_geolocations").array(),
   geolocationType: text("geolocation_type"),
   geolocationCoordinates: text("geolocation_coordinates"),
   kmlFileName: text("kml_file_name"),
@@ -433,8 +435,8 @@ export const ddsReports = pgTable("dds_reports", {
   // Declaration and signature
   operatorDeclaration: text("operator_declaration").notNull(),
   signedBy: text("signed_by").notNull(),
-  signatureDate: timestamp("signature_date").notNull(),
-  signatoryFunction: text("signatory_function"),
+  signedDate: timestamp("signed_date").notNull(),
+  signatoryFunction: text("signatory_function").notNull(),
   digitalSignature: text("digital_signature"),
   
   // Status and processing
@@ -446,7 +448,7 @@ export const ddsReports = pgTable("dds_reports", {
   // Cross-module integration
   deforestationRiskLevel: text("deforestation_risk_level"),
   legalityStatus: text("legality_status"),
-  complianceScore: text("compliance_score"),
+  complianceScore: decimal("compliance_score", { precision: 5, scale: 2 }),
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
