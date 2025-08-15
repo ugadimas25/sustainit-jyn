@@ -5,9 +5,16 @@ The KPN EUDR Platform has evolved into a comprehensive supply chain traceability
 The platform combines advanced traceability technology with AI-powered compliance monitoring, featuring real-time supply chain mapping, comprehensive risk assessment, and shareable chain-of-custody reports for regulatory compliance and transparency.
 
 ## Recent Changes (August 2025)
+- **Merged Animated Visualization with Supply Chain Module**: Integrated interactive geospatial visualization directly into supply chain management:
+  - Added "Animated Visualization" tab to Supply Chain module with real-time animated maps
+  - Five-tab design: Progress, Workflow, Traceability, Analytics, Animated Visualization, Reports
+  - Features bouncing markers, flowing supply routes, timeline controls with play/pause/speed adjustment
+  - Multiple visualization modes: flow networks, heatmaps, risk assessment, cluster analysis
+  - Playful map interactions using Leaflet, React Spring animations, and D3 color scales
+  - Real-time supply chain data visualization with temporal progression and interactive controls
+
 - **Unified Supply Chain Management Platform**: Merged multiple supply chain modules into comprehensive system:
   - Combined workflow management, traceability, and analytics into single interface
-  - Four-tab design: Workflow (supplier registration → tier linking → shipment tracking), Traceability (entity search with visualization), Analytics (metrics and charts), Reports (compliance summaries)
   - Simple 3-step workflow: register suppliers with legality assessment → create tier-based linkages → track tier 1 shipments
   - Complete EPCIS 2.0-compliant database with enhanced supplier workflow tables
   - Interactive supply chain visualization showing business → tier 1-4 → plots flow

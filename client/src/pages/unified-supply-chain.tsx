@@ -12,8 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { 
   Building, Link2, Package, Plus, Users, MapPin, CheckCircle2, AlertTriangle, 
   Clock, GitBranch, BarChart3, FileText, Search, Network, TrendingUp,
-  Target, Shield, Activity, Globe
+  Target, Shield, Activity, Globe, Zap, Play
 } from "lucide-react";
+import { SupplyChainFlowMap } from '@/components/animated-map/supply-chain-flow-map';
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import ComplianceProgressTracker from "@/components/compliance-progress-tracker";
@@ -529,6 +530,10 @@ export default function UnifiedSupplyChain() {
             <TabsTrigger value="analytics" data-testid="tab-analytics">
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value="visualization" data-testid="tab-visualization">
+              <Zap className="h-4 w-4 mr-2" />
+              Animated Visualization
             </TabsTrigger>
             <TabsTrigger value="reports" data-testid="tab-reports">
               <FileText className="h-4 w-4 mr-2" />
@@ -1171,6 +1176,77 @@ export default function UnifiedSupplyChain() {
                       );
                     })}
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Animated Visualization Tab */}
+          <TabsContent value="visualization" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-6 w-6 text-blue-500" />
+                  Interactive Supply Chain Visualization
+                  <Badge variant="secondary" className="ml-auto flex items-center gap-1">
+                    <Activity className="h-3 w-3" />
+                    Real-time Animation
+                  </Badge>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Explore your supply chain with animated geospatial visualization featuring playful map interactions, 
+                  flowing routes, bouncing markers, and real-time data exploration.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <SupplyChainFlowMap className="w-full" />
+              </CardContent>
+            </Card>
+
+            {/* Visualization Features */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="border-blue-200 bg-blue-50/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Play className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <h3 className="font-semibold">Animated Flows</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Watch supply chain movements come alive with animated shipment routes, 
+                    temporal data progression, and interactive timeline controls.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-green-200 bg-green-50/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-green-600" />
+                    </div>
+                    <h3 className="font-semibold">Real-time Data</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Live supply chain data with bouncing facility markers, 
+                    animated shipment tracking, and instant compliance updates.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-200 bg-purple-50/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Globe className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <h3 className="font-semibold">Multi-layer Views</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Switch between heatmaps, flow networks, risk assessment, 
+                    and cluster analysis for comprehensive supply chain insights.
+                  </p>
                 </CardContent>
               </Card>
             </div>
