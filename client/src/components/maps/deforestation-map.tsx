@@ -292,9 +292,9 @@ export function DeforestationMap({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-5 w-5" />
-          Interactive OpenStreetMap
+          Real-Time Deforestation Monitoring
           <Badge variant="secondary" className="ml-auto">
-            Real-time
+            Live Data
           </Badge>
         </CardTitle>
       </CardHeader>
