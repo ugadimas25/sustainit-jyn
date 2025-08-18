@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { DeforestationMap } from "@/components/maps/deforestation-map";
 
 interface Plot {
   id: string;
@@ -310,32 +311,49 @@ export default function DeforestationMonitoring() {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-6">
+              <DeforestationMap
+                plots={filteredPlots}
+                alerts={filteredAlerts}
+                protectedAreas={protectedAreas}
+                activeLayers={activeLayers}
+                onPlotClick={(plot) => setSelectedPlot(plot)}
+                onAlertClick={(alert) => setSelectedAlert(alert)}
+                className="lg:col-span-2"
+              />
+
               <Card>
                 <CardHeader>
-                  <CardTitle>Interactive Spatial Map</CardTitle>
+                  <CardTitle>Layer Controls</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-gray-100 dark:bg-gray-800 rounded-lg h-96 flex items-center justify-center">
-                    <div className="text-center">
-                      <Globe className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                      <p className="text-lg font-medium text-gray-600 dark:text-gray-300">Interactive Map View</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        Satellite imagery with plot polygons and deforestation alerts
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                        {layers.map(layer => (
-                          <Button
-                            key={layer.id}
-                            variant={activeLayers.includes(layer.id) ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => toggleLayer(layer.id)}
-                            data-testid={`layer-${layer.id}`}
-                          >
-                            <Layers className="h-3 w-3 mr-1" />
-                            {layer.name}
-                          </Button>
-                        ))}
-                      </div>
+                  <div className="space-y-4">
+                    <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Active Layers
+                    </div>
+                    <div className="space-y-2">
+                      {layers.map(layer => (
+                        <div key={layer.id} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => toggleLayer(layer.id)}
+                              className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                activeLayers.includes(layer.id)
+                                  ? 'bg-blue-500 border-blue-500'
+                                  : 'border-gray-300 dark:border-gray-600'
+                              }`}
+                              data-testid={`toggle-layer-${layer.id}`}
+                            >
+                              {activeLayers.includes(layer.id) && (
+                                <CheckCircle2 className="w-3 h-3 text-white" />
+                              )}
+                            </button>
+                            <span className="text-sm">{layer.name}</span>
+                          </div>
+                          <Badge variant="secondary" className="text-xs">
+                            {layer.source}
+                          </Badge>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
@@ -343,42 +361,25 @@ export default function DeforestationMonitoring() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Alerts</CardTitle>
+                  <CardTitle>Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
-                    {alerts.length === 0 ? (
-                      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                        No recent deforestation alerts
-                      </p>
-                    ) : (
-                      alerts.map(alert => (
-                        <div key={alert.id} className="border rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm">{alert.plotName}</h4>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${getSeverityColor(alert.severity)}`} />
-                              <Badge variant="outline" className="text-xs">
-                                {alert.alertType}
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                            <div>Date: {new Date(alert.alertDate).toLocaleDateString()}</div>
-                            <div>Area: {alert.area} ha • Confidence: {alert.confidence}%</div>
-                            <div className="flex items-center gap-1">
-                              Status: 
-                              <Badge 
-                                variant={alert.status === 'new' ? 'destructive' : 
-                                        alert.status === 'investigating' ? 'secondary' : 'default'}
-                                className="text-xs"
-                              >
-                                {alert.status}
-                              </Badge>
-                            </div>
-                          </div>
+                  <div className="space-y-3">
+                    {alerts.slice(0, 5).map(alert => (
+                      <div key={alert.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${getSeverityColor(alert.severity)}`} />
+                          <span className="text-sm">{alert.plotName}</span>
                         </div>
-                      ))
+                        <Badge variant="outline" className="text-xs">
+                          {alert.alertType}
+                        </Badge>
+                      </div>
+                    ))}
+                    {alerts.length === 0 && (
+                      <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+                        No recent activity
+                      </p>
                     )}
                   </div>
                 </CardContent>
