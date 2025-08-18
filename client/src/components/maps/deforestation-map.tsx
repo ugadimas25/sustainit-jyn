@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Layers, MapPin, AlertTriangle, Shield } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Layers, MapPin, AlertTriangle, Shield, Search, X, Target } from 'lucide-react';
 
 // Fix default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -76,6 +77,11 @@ export function DeforestationMap({
     alerts: L.LayerGroup;
     protectedAreas: L.LayerGroup;
   } | null>(null);
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Plot[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const highlightedMarkersRef = useRef<L.Marker[]>([]);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
@@ -258,6 +264,117 @@ export function DeforestationMap({
 
   }, [plots, alerts, protectedAreas, activeLayers, onPlotClick, onAlertClick]);
 
+  // Search functionality
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setIsSearching(true);
+    
+    if (!term.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      clearHighlights();
+      return;
+    }
+
+    // Search through plots by name, plotId, supplier, or location
+    const results = plots.filter(plot => 
+      plot.name.toLowerCase().includes(term.toLowerCase()) ||
+      plot.plotId.toLowerCase().includes(term.toLowerCase()) ||
+      plot.supplier.toLowerCase().includes(term.toLowerCase()) ||
+      plot.location.toLowerCase().includes(term.toLowerCase())
+    );
+
+    setSearchResults(results);
+    setIsSearching(false);
+    
+    if (results.length > 0) {
+      highlightSearchResults(results);
+    } else {
+      clearHighlights();
+    }
+  };
+
+  const highlightSearchResults = (results: Plot[]) => {
+    if (!mapInstanceRef.current) return;
+    
+    clearHighlights();
+
+    results.forEach(plot => {
+      // Create highlighted marker for search result
+      const highlightIcon = L.divIcon({
+        html: `<div class="w-8 h-8 rounded-full bg-yellow-400 border-4 border-white shadow-lg flex items-center justify-center animate-pulse">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+               </div>`,
+        className: '',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32]
+      });
+
+      const highlightMarker = L.marker([plot.coordinates.lat, plot.coordinates.lng], {
+        icon: highlightIcon,
+        zIndexOffset: 1000
+      });
+
+      highlightMarker.bindPopup(`
+        <div class="p-3">
+          <h3 class="font-semibold text-lg mb-2 text-yellow-600">🎯 Search Result</h3>
+          <div class="space-y-1 text-sm">
+            <p><strong>Plot:</strong> ${plot.name}</p>
+            <p><strong>ID:</strong> ${plot.plotId}</p>
+            <p><strong>Supplier:</strong> ${plot.supplier}</p>
+            <p><strong>Location:</strong> ${plot.location}</p>
+            <p><strong>Area:</strong> ${plot.area} hectares</p>
+            <p><strong>Status:</strong> <span class="capitalize">${plot.status}</span></p>
+          </div>
+        </div>
+      `);
+
+      if (onPlotClick) {
+        highlightMarker.on('click', () => onPlotClick(plot));
+      }
+
+      mapInstanceRef.current.addLayer(highlightMarker);
+      highlightedMarkersRef.current.push(highlightMarker);
+    });
+
+    // Fit map to show all search results
+    if (results.length === 1) {
+      const plot = results[0];
+      mapInstanceRef.current.setView([plot.coordinates.lat, plot.coordinates.lng], 12, { animate: true });
+    } else if (results.length > 1) {
+      const group = new L.featureGroup(highlightedMarkersRef.current);
+      mapInstanceRef.current.fitBounds(group.getBounds(), { padding: [20, 20] });
+    }
+  };
+
+  const clearHighlights = () => {
+    if (!mapInstanceRef.current) return;
+    
+    highlightedMarkersRef.current.forEach(marker => {
+      mapInstanceRef.current!.removeLayer(marker);
+    });
+    highlightedMarkersRef.current = [];
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchResults([]);
+    setIsSearching(false);
+    clearHighlights();
+  };
+
+  const focusOnResult = (plot: Plot) => {
+    if (!mapInstanceRef.current) return;
+    mapInstanceRef.current.setView([plot.coordinates.lat, plot.coordinates.lng], 14, { animate: true });
+    
+    // Trigger plot click if handler provided
+    if (onPlotClick) {
+      onPlotClick(plot);
+    }
+  };
+
   const getPlotColor = (status: string): string => {
     switch (status) {
       case 'compliant': return '#22c55e';
@@ -300,6 +417,71 @@ export function DeforestationMap({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Search by supplier, plantation, plot name, or location..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="pl-10 pr-10"
+                data-testid="map-search-input"
+              />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSearch}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100"
+                  data-testid="clear-search-button"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+            
+            {/* Search Results Dropdown */}
+            {searchTerm && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                <div className="p-2 text-xs text-gray-500 border-b">
+                  Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                </div>
+                {searchResults.map(plot => (
+                  <button
+                    key={plot.id}
+                    onClick={() => focusOnResult(plot)}
+                    className="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                    data-testid={`search-result-${plot.id}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-sm">{plot.name}</div>
+                        <div className="text-xs text-gray-500">
+                          {plot.supplier} • {plot.location} • {plot.area} ha
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${getPlotColor(plot.status).replace('#', 'bg-')} bg-opacity-60`} />
+                        <Target className="h-3 w-3 text-gray-400" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* No Results Message */}
+            {searchTerm && !isSearching && searchResults.length === 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <div className="p-3 text-center text-gray-500 text-sm">
+                  No plots found for "{searchTerm}"
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Map Legend */}
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
@@ -333,7 +515,12 @@ export function DeforestationMap({
 
           {/* Map Stats */}
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Showing {plots.length} plots, {alerts.length} alerts, {protectedAreas.length} protected areas</span>
+            <span>
+              Showing {plots.length} plots, {alerts.length} alerts, {protectedAreas.length} protected areas
+              {searchTerm && searchResults.length > 0 && (
+                <span className="text-yellow-600 font-medium"> • {searchResults.length} matching "{searchTerm}"</span>
+              )}
+            </span>
             <span>OpenStreetMap © Contributors</span>
           </div>
         </div>
