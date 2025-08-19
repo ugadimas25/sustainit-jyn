@@ -5,8 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, TrendingUp, BarChart3, X } from "lucide-react";
 import { useState } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { TopBar } from "@/components/layout/top-bar";
+
 import { ComplianceChart } from "@/components/charts/compliance-chart";
 import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
 
@@ -67,13 +66,10 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-forest mx-auto"></div>
-            <p className="mt-2 text-gray-600">Loading dashboard...</p>
-          </div>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-forest mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -84,12 +80,9 @@ export default function Dashboard() {
   const criticalRate = (metrics?.criticalPlots && metrics?.totalPlots) ? ((metrics.criticalPlots / metrics.totalPlots) * 100).toFixed(1) : '0';
 
   return (
-    <div className="flex h-screen bg-neutral-bg">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Header */}
+    <>
+      <div className="p-6">
+      {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <div>
               <div className="flex items-center mb-4">
@@ -426,10 +419,8 @@ export default function Dashboard() {
               Export Report
             </Button>
           </div>
-        </main>
-      </div>
-
-      {/* Modal for Plot Details */}
+        </div>
+        
       {selectedModal && (
         <Dialog open={!!selectedModal} onOpenChange={() => setSelectedModal(null)}>
           <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto">
@@ -489,9 +480,9 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-          </DialogContent>
+        </DialogContent>
         </Dialog>
       )}
-    </div>
+    </>
   );
 }

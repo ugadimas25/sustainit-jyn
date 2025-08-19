@@ -5,6 +5,19 @@ The KPN EUDR Platform has evolved into a comprehensive supply chain traceability
 The platform combines advanced traceability technology with AI-powered compliance monitoring, featuring real-time supply chain mapping, comprehensive risk assessment, and shareable chain-of-custody reports for regulatory compliance and transparency.
 
 ## Recent Changes (August 2025)
+- **Persistent Sidebar Navigation**: Implemented consistent layout with always-visible module panel:
+  - Updated ProtectedRoute wrapper to include Sidebar and TopBar for all module pages
+  - Eliminated need for back button navigation between modules
+  - Centralized layout structure for consistent user experience across all pages
+  - Fixed module navigation to maintain sidebar visibility when switching between modules
+
+- **Enhanced Deforestation Monitoring with Search**: Added comprehensive search functionality to deforestation map:
+  - Renamed "Interactive OpenStreetMap" to "Real-Time Deforestation Monitoring"
+  - Integrated supplier/plantation search with real-time filtering across plot names, IDs, suppliers, and locations
+  - Interactive search dropdown with detailed plot information and auto-focus functionality
+  - Highlighted search result markers with pulsing yellow indicators for visual clarity
+  - Automatic map positioning to show search results with smooth zoom transitions
+
 - **Merged Animated Visualization with Supply Chain Module**: Integrated interactive geospatial visualization directly into supply chain management:
   - Added "Animated Visualization" tab to Supply Chain module with real-time animated maps
   - Five-tab design: Progress, Workflow, Traceability, Analytics, Animated Visualization, Reports

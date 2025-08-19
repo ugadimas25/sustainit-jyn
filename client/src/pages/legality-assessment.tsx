@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Sidebar } from "@/components/layout/sidebar";
-import { TopBar } from "@/components/layout/top-bar";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,30 +121,18 @@ export default function LegalityAssessmentPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <TopBar />
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <Users className="h-8 w-8 animate-pulse mx-auto mb-4 text-blue-600" />
-              <p className="text-gray-600">Loading farmer data...</p>
-            </div>
-          </div>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <Users className="h-8 w-8 animate-pulse mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading farmer data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
-        
-        <div className="flex-1 overflow-auto">
-          <div className="p-6 space-y-6">
+    <>
+      <div className="p-6 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
@@ -1414,8 +1401,6 @@ export default function LegalityAssessmentPage() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
