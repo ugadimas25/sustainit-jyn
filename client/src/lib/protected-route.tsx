@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
+import { VoiceAssistantToggle } from "@/components/voice-assistant/VoiceAssistantToggle";
 
 export function ProtectedRoute({
   path,
@@ -40,6 +41,7 @@ export function ProtectedRoute({
           <main className="flex-1 overflow-auto">
             <Component />
           </main>
+          <VoiceAssistantToggle />
         </div>
       </div>
     </Route>

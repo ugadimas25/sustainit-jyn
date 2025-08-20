@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from 'express';
 import { setupAuth, isAuthenticated } from "./auth";
+import { voiceAssistantRouter } from "./routes/voice-assistant";
 import { storage } from "./storage";
 import { 
   insertCommoditySchema,
@@ -176,6 +177,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
   await initializeDefaultUser();
   await seedSampleData();
+
+  // Voice Assistant Routes
+  app.use('/api/voice-assistant', voiceAssistantRouter);
 
   // GraphQL endpoint for traceability queries
   app.post('/api/graphql', isAuthenticated, async (req, res) => {
