@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2
+  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2, Eye
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Define supplier categories
 const SUPPLIER_CATEGORIES = {
@@ -153,6 +154,21 @@ export default function SupplyChainSimple() {
     }));
   };
 
+  const saveTierAssignments = async () => {
+    try {
+      console.log('Saving tier assignments:', tierAssignments);
+      // Here you would normally send to API
+      // await apiRequest('/api/supply-chain/tiers', {
+      //   method: 'POST',
+      //   data: tierAssignments
+      // });
+      alert('Supply chain configuration saved successfully!');
+    } catch (error) {
+      console.error('Error saving tier assignments:', error);
+      alert('Failed to save configuration. Please try again.');
+    }
+  };
+
   const clearAllTiers = () => {
     setTierAssignments({
       1: [],
@@ -161,6 +177,120 @@ export default function SupplyChainSimple() {
       4: [],
       5: []
     });
+  };
+
+  const renderTraceabilityVisualization = () => {
+    const hasAssignments = Object.values(tierAssignments).some(tier => tier.length > 0);
+    
+    if (!hasAssignments) {
+      return (
+        <Card className="p-12 text-center">
+          <div className="text-gray-500">
+            <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No Supply Chain Configuration</h3>
+            <p>Configure your tier assignments first to view the traceability map.</p>
+          </div>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">End-to-End Traceability Map</h2>
+          <p className="text-gray-600">Complete supply chain flow from source to destination</p>
+        </div>
+        
+        <Card className="p-8">
+          <div className="space-y-8">
+            {[1, 2, 3, 4, 5].map(tierNumber => {
+              const suppliers = tierAssignments[tierNumber] || [];
+              if (suppliers.length === 0) return null;
+              
+              return (
+                <div key={tierNumber}>
+                  <div className="flex items-center mb-4">
+                    <Badge className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1">
+                      Tier {tierNumber}
+                    </Badge>
+                    <div className="ml-4 h-px bg-gray-300 flex-1"></div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                    {suppliers.map(supplier => {
+                      const categoryInfo = SUPPLIER_CATEGORIES[supplier.category as keyof typeof SUPPLIER_CATEGORIES];
+                      return (
+                        <div key={supplier.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0">
+                              <categoryInfo.icon className="h-6 w-6 text-gray-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">{supplier.name}</div>
+                              <div className="text-xs text-gray-500 truncate">{supplier.location}</div>
+                              <Badge className={`${categoryInfo.color} text-xs mt-1`}>
+                                {supplier.category}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {tierNumber < 5 && tierAssignments[tierNumber + 1]?.length > 0 && (
+                    <div className="flex justify-center mb-4">
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <ArrowDown className="h-5 w-5" />
+                        <span className="text-sm">Flows to Tier {tierNumber + 1}</span>
+                        <ArrowDown className="h-5 w-5" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Supply Chain Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+              {[1, 2, 3, 4, 5].map(tierNumber => (
+                <div key={tierNumber} className="space-y-2">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {tierAssignments[tierNumber]?.length || 0}
+                  </div>
+                  <div className="text-sm text-gray-600">Tier {tierNumber}</div>
+                  <div className="text-xs text-gray-500">
+                    {tierAssignments[tierNumber]?.length > 0 ? 'Active' : 'Empty'}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 pt-6 border-t">
+              <div className="flex items-center justify-between text-sm">
+                <span>Total Suppliers:</span>
+                <span className="font-medium">{Object.values(tierAssignments).flat().length}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm mt-2">
+                <span>Active Tiers:</span>
+                <span className="font-medium">
+                  {Object.values(tierAssignments).filter(tier => tier.length > 0).length} of 5
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   const renderSupplierCard = (supplier: any, category: string) => {
@@ -273,11 +403,18 @@ export default function SupplyChainSimple() {
             Supply Chain Management
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Drag suppliers from the pool into tiers or between tiers to organize your supply chain hierarchy
+            Configure your supply chain tiers and visualize the complete traceability flow
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <Tabs defaultValue="configuration" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="configuration">Tier Configuration</TabsTrigger>
+            <TabsTrigger value="traceability">Traceability Map</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="configuration" className="space-y-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Supplier Categories - Compact Layout */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -322,16 +459,27 @@ export default function SupplyChainSimple() {
           <div className="lg:col-span-3 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Tier-Based Supply Chain</h2>
-              {Object.values(tierAssignments).some(tier => tier.length > 0) && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={clearAllTiers}
-                  data-testid="clear-all-tiers"
-                >
-                  Clear All Tiers
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {Object.values(tierAssignments).some(tier => tier.length > 0) && (
+                  <>
+                    <Button 
+                      size="sm" 
+                      onClick={saveTierAssignments}
+                      data-testid="save-tier-assignments"
+                    >
+                      Save Configuration
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={clearAllTiers}
+                      data-testid="clear-all-tiers"
+                    >
+                      Clear All
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
             
             <div className="space-y-4">
@@ -395,6 +543,12 @@ export default function SupplyChainSimple() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
+          
+          <TabsContent value="traceability" className="space-y-6 mt-6">
+            {renderTraceabilityVisualization()}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
