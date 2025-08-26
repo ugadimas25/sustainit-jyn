@@ -24,18 +24,60 @@ export default function LegalityAssessmentExpanded() {
 
   // Form states for all collection types
   const [estateForm, setEstateForm] = useState({
+    // Bagian 1 - Informasi Umum
     namaSupplier: '',
-    alamatKantor: '',
-    alamatOperasional: '',
-    nomorTelepon: '',
-    emailKontak: '',
-    namaKontakPerson: '',
-    jabatanKontakPerson: '',
-    nomorIndukBerusaha: '',
+    namaGroup: '',
     aktaPendirian: '', // document URL
-    suratIzinUsaha: '', // document URL
-    npwp: '', // document URL
-    sertifikatHalal: '', // document URL
+    aktaPerubahan: '', // document URL
+    izinBerusaha: '', // NIB
+    tipeSertifikat: '', // ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3
+    nomorSertifikat: '',
+    lembagaSertifikasi: '',
+    ruangLingkupSertifikasi: '',
+    masaBerlakuSertifikat: '',
+    linkDokumen: '',
+    
+    // Alamat
+    alamatKantor: '',
+    alamatKebun: '',
+    
+    // Koordinat
+    koordinatKebun: '',
+    koordinatKantor: '',
+    
+    // Jenis supplier
+    jenisSupplier: '', // KKPA/Sister Company/Pihak Ketiga
+    totalProduksiTBSTahun: '',
+    tanggalPengisianKuisioner: '',
+    
+    // Penanggung Jawab
+    namaPenanggungJawab: '',
+    jabatanPenanggungJawab: '',
+    emailPenanggungJawab: '',
+    nomorTelefonPenanggungJawab: '',
+    
+    // Tim Internal
+    namaTimInternal: '',
+    jabatanTimInternal: '',
+    emailTimInternal: '',
+    nomorTelefonTimInternal: '',
+    
+    // Bagian 2 - Sumber TBS (array of kebun)
+    daftarKebun: [{
+      no: 1,
+      namaKebun: '',
+      alamat: '',
+      luasLahan: 0,
+      longitude: '',
+      latitude: '',
+      tahunTanam: '',
+      jenisBibit: '',
+      produksiTBS1Tahun: ''
+    }],
+    
+    // Bagian 3 - Perlindungan Hutan dan Gambut
+    memilikiKebijakanPerlindunganHutan: false,
+    memilikiKebijakanPerlindunganGambut: false
   });
 
   const [millForm, setMillForm] = useState({
@@ -354,70 +396,343 @@ export default function LegalityAssessmentExpanded() {
               <TabsContent value="estate" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Formulir Data Collection Estate</CardTitle>
+                    <CardTitle>Formulir Pengumpulan Data</CardTitle>
                     <CardDescription>
-                      Formulir pengumpulan data untuk estate sesuai dengan standar EUDR
+                      (Kebun Sendiri/Kebun Satu Manajemen Pengelolaan/Third-Partied)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleEstateSubmit} className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
+                    <form onSubmit={handleEstateSubmit} className="space-y-8">
+                      {/* Bagian 1 - Informasi Umum */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold border-b pb-2">Bagian 1 – Informasi Umum</h3>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="namaSupplier">Nama Supplier</Label>
+                            <Input
+                              id="namaSupplier"
+                              data-testid="input-nama-supplier-estate"
+                              value={estateForm.namaSupplier}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, namaSupplier: e.target.value }))}
+                              placeholder="Masukkan nama supplier"
+                              required
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="namaGroup">Nama Group / Parent Company Name</Label>
+                            <Input
+                              id="namaGroup"
+                              data-testid="input-nama-group-estate"
+                              value={estateForm.namaGroup}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, namaGroup: e.target.value }))}
+                              placeholder="Masukkan nama group/parent company"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="izinBerusaha">Izin Berusaha (Nomor Induk Berusaha)</Label>
+                            <Input
+                              id="izinBerusaha"
+                              data-testid="input-izin-berusaha-estate"
+                              value={estateForm.izinBerusaha}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, izinBerusaha: e.target.value }))}
+                              placeholder="Masukkan NIB"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="tipeSertifikat">Tipe Sertifikat Yang Dimiliki Perusahan</Label>
+                            <Select
+                              value={estateForm.tipeSertifikat}
+                              onValueChange={(value) => setEstateForm(prev => ({ ...prev, tipeSertifikat: value }))}
+                            >
+                              <SelectTrigger data-testid="select-tipe-sertifikat-estate">
+                                <SelectValue placeholder="Pilih tipe sertifikat" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ISPO">ISPO</SelectItem>
+                                <SelectItem value="RSPO">RSPO</SelectItem>
+                                <SelectItem value="ISCC">ISCC</SelectItem>
+                                <SelectItem value="PROPER LINGKUNGAN">PROPER LINGKUNGAN</SelectItem>
+                                <SelectItem value="SMK3">SMK3</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorSertifikat">Nomor Sertifikat</Label>
+                            <Input
+                              id="nomorSertifikat"
+                              data-testid="input-nomor-sertifikat-estate"
+                              value={estateForm.nomorSertifikat}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, nomorSertifikat: e.target.value }))}
+                              placeholder="Masukkan nomor sertifikat"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="lembagaSertifikasi">Lembaga Sertifikasi</Label>
+                            <Input
+                              id="lembagaSertifikasi"
+                              data-testid="input-lembaga-sertifikasi-estate"
+                              value={estateForm.lembagaSertifikasi}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, lembagaSertifikasi: e.target.value }))}
+                              placeholder="Masukkan lembaga sertifikasi"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="masaBerlakuSertifikat">Masa Berlaku Sertifikat</Label>
+                            <Input
+                              id="masaBerlakuSertifikat"
+                              data-testid="input-masa-berlaku-sertifikat-estate"
+                              type="date"
+                              value={estateForm.masaBerlakuSertifikat}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, masaBerlakuSertifikat: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
                         <div className="space-y-2">
-                          <Label htmlFor="namaSupplier">Nama Supplier</Label>
-                          <Input
-                            id="namaSupplier"
-                            data-testid="input-nama-supplier-estate"
-                            value={estateForm.namaSupplier}
-                            onChange={(e) => setEstateForm(prev => ({ ...prev, namaSupplier: e.target.value }))}
-                            placeholder="Masukkan nama supplier"
-                            required
+                          <Label htmlFor="ruangLingkupSertifikasi">Ruang Lingkup Sertifikasi</Label>
+                          <Textarea
+                            id="ruangLingkupSertifikasi"
+                            data-testid="input-ruang-lingkup-sertifikasi-estate"
+                            value={estateForm.ruangLingkupSertifikasi}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, ruangLingkupSertifikasi: e.target.value }))}
+                            placeholder="Masukkan ruang lingkup sertifikasi"
                           />
                         </div>
-                        
+
                         <div className="space-y-2">
-                          <Label htmlFor="alamatKantor">Alamat Kantor</Label>
-                          <Textarea
-                            id="alamatKantor"
-                            data-testid="input-alamat-kantor-estate"
-                            value={estateForm.alamatKantor}
-                            onChange={(e) => setEstateForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
-                            placeholder="Masukkan alamat kantor lengkap"
+                          <Label htmlFor="linkDokumen">Link Dokumen</Label>
+                          <Input
+                            id="linkDokumen"
+                            data-testid="input-link-dokumen-estate"
+                            value={estateForm.linkDokumen}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, linkDokumen: e.target.value }))}
+                            placeholder="Masukkan link dokumen"
                           />
                         </div>
                       </div>
 
+                      {/* Alamat Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Alamat</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="alamatKantor">Kantor</Label>
+                            <Textarea
+                              id="alamatKantor"
+                              data-testid="input-alamat-kantor-estate"
+                              value={estateForm.alamatKantor}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
+                              placeholder="Masukkan alamat kantor lengkap"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="alamatKebun">Kebun</Label>
+                            <Textarea
+                              id="alamatKebun"
+                              data-testid="input-alamat-kebun-estate"
+                              value={estateForm.alamatKebun}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, alamatKebun: e.target.value }))}
+                              placeholder="Masukkan alamat kebun lengkap"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Koordinat Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Koordinat</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="koordinatKebun">Kebun</Label>
+                            <Input
+                              id="koordinatKebun"
+                              data-testid="input-koordinat-kebun-estate"
+                              value={estateForm.koordinatKebun}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, koordinatKebun: e.target.value }))}
+                              placeholder="Contoh: -2.5489, 117.1436"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="koordinatKantor">Kantor</Label>
+                            <Input
+                              id="koordinatKantor"
+                              data-testid="input-koordinat-kantor-estate"
+                              value={estateForm.koordinatKantor}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, koordinatKantor: e.target.value }))}
+                              placeholder="Contoh: -2.5489, 117.1436"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Jenis Supplier Section */}
+                      <div className="space-y-4">
+                        <h4 className="text-md font-semibold">Jenis Supplier</h4>
+                        <Select
+                          value={estateForm.jenisSupplier}
+                          onValueChange={(value) => setEstateForm(prev => ({ ...prev, jenisSupplier: value }))}
+                        >
+                          <SelectTrigger data-testid="select-jenis-supplier-estate">
+                            <SelectValue placeholder="Pilih jenis supplier" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="KKPA">Kebun plasma yang dikelola penuh oleh perusahaan (KKPA)</SelectItem>
+                            <SelectItem value="Sister Company">Kebun dalam satu grup manajemen (sister company)</SelectItem>
+                            <SelectItem value="Pihak Ketiga">Kebun pihak ketiga (PT/ CV/ Koperasi)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="nomorTelepon">Nomor Telepon</Label>
+                          <Label htmlFor="totalProduksiTBSTahun">Total Produksi TBS / Tahun (kurun 1 tahun terakhir)</Label>
                           <Input
-                            id="nomorTelepon"
-                            data-testid="input-nomor-telepon-estate"
-                            value={estateForm.nomorTelepon}
-                            onChange={(e) => setEstateForm(prev => ({ ...prev, nomorTelepon: e.target.value }))}
-                            placeholder="Masukkan nomor telepon"
+                            id="totalProduksiTBSTahun"
+                            data-testid="input-total-produksi-tbs-estate"
+                            value={estateForm.totalProduksiTBSTahun}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, totalProduksiTBSTahun: e.target.value }))}
+                            placeholder="Masukkan total produksi TBS"
                           />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="emailKontak">Email Kontak</Label>
+                          <Label htmlFor="tanggalPengisianKuisioner">Tanggal Pengisian Kuisioner</Label>
                           <Input
-                            id="emailKontak"
-                            data-testid="input-email-kontak-estate"
-                            type="email"
-                            value={estateForm.emailKontak}
-                            onChange={(e) => setEstateForm(prev => ({ ...prev, emailKontak: e.target.value }))}
-                            placeholder="Masukkan email kontak"
+                            id="tanggalPengisianKuisioner"
+                            data-testid="input-tanggal-pengisian-estate"
+                            type="date"
+                            value={estateForm.tanggalPengisianKuisioner}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, tanggalPengisianKuisioner: e.target.value }))}
                           />
+                        </div>
+                      </div>
+
+                      {/* Penanggung Jawab Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Penanggung Jawab</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="namaPenanggungJawab">Nama</Label>
+                            <Input
+                              id="namaPenanggungJawab"
+                              data-testid="input-nama-penanggung-jawab-estate"
+                              value={estateForm.namaPenanggungJawab}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, namaPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan nama penanggung jawab"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="jabatanPenanggungJawab">Jabatan</Label>
+                            <Input
+                              id="jabatanPenanggungJawab"
+                              data-testid="input-jabatan-penanggung-jawab-estate"
+                              value={estateForm.jabatanPenanggungJawab}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, jabatanPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan jabatan"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="emailPenanggungJawab">Email</Label>
+                            <Input
+                              id="emailPenanggungJawab"
+                              data-testid="input-email-penanggung-jawab-estate"
+                              type="email"
+                              value={estateForm.emailPenanggungJawab}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, emailPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan email"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorTelefonPenanggungJawab">Nomor Telfon / Handphone</Label>
+                            <Input
+                              id="nomorTelefonPenanggungJawab"
+                              data-testid="input-nomor-telepon-penanggung-jawab-estate"
+                              value={estateForm.nomorTelefonPenanggungJawab}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, nomorTelefonPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan nomor telepon"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tim Internal Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Tim Internal yang bertanggung jawab mengawasi implementasi kebijakan keberlanjutan perusahan</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="namaTimInternal">Nama</Label>
+                            <Input
+                              id="namaTimInternal"
+                              data-testid="input-nama-tim-internal-estate"
+                              value={estateForm.namaTimInternal}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, namaTimInternal: e.target.value }))}
+                              placeholder="Masukkan nama tim internal"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="jabatanTimInternal">Jabatan</Label>
+                            <Input
+                              id="jabatanTimInternal"
+                              data-testid="input-jabatan-tim-internal-estate"
+                              value={estateForm.jabatanTimInternal}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, jabatanTimInternal: e.target.value }))}
+                              placeholder="Masukkan jabatan"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="emailTimInternal">Email</Label>
+                            <Input
+                              id="emailTimInternal"
+                              data-testid="input-email-tim-internal-estate"
+                              type="email"
+                              value={estateForm.emailTimInternal}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, emailTimInternal: e.target.value }))}
+                              placeholder="Masukkan email"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorTelefonTimInternal">Nomor Telfon / Handphone</Label>
+                            <Input
+                              id="nomorTelefonTimInternal"
+                              data-testid="input-nomor-telepon-tim-internal-estate"
+                              value={estateForm.nomorTelefonTimInternal}
+                              onChange={(e) => setEstateForm(prev => ({ ...prev, nomorTelefonTimInternal: e.target.value }))}
+                              placeholder="Masukkan nomor telepon"
+                            />
+                          </div>
                         </div>
                       </div>
 
                       {/* Document Upload Sections */}
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Dokumen Legalitas</h3>
+                        <h3 className="text-lg font-semibold">Dokumen</h3>
                         
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label>Akta Pendirian</Label>
+                            <Label>Akta Pendirian Perusahaan</Label>
                             <ObjectUploader
                               onGetUploadParameters={handleGetUploadParameters}
                               onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
@@ -435,16 +750,16 @@ export default function LegalityAssessmentExpanded() {
                           </div>
 
                           <div className="space-y-2">
-                            <Label>NPWP</Label>
+                            <Label>Akta Perubahan (Jika Ada)</Label>
                             <ObjectUploader
                               onGetUploadParameters={handleGetUploadParameters}
-                              onComplete={(result) => handleDocumentUploadComplete(result, 'npwp', 'estate')}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
                               buttonClassName="w-full"
                             >
                               <Upload className="w-4 h-4 mr-2" />
-                              Unggah NPWP
+                              Unggah Akta Perubahan
                             </ObjectUploader>
-                            {estateForm.npwp && (
+                            {estateForm.aktaPerubahan && (
                               <Badge variant="secondary" className="text-xs">
                                 <FileText className="w-3 h-3 mr-1" />
                                 Dokumen telah diunggah
