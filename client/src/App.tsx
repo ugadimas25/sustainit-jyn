@@ -11,7 +11,7 @@ import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
 import LegalityAssessment from "@/pages/legality-assessment-expanded";
 import UnifiedMonitoring from "@/pages/unified-monitoring";
-import UnifiedSupplyChain from "@/pages/unified-supply-chain";
+import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import DDSReports from "@/pages/dds-reports";
 function Router() {
@@ -20,7 +20,7 @@ function Router() {
       <ProtectedRoute path="/" component={Dashboard} />
       <ProtectedRoute path="/deforestation-monitoring" component={DeforestationMonitoring} />
       <ProtectedRoute path="/legality" component={LegalityAssessment} />
-      <ProtectedRoute path="/supply-chain" component={UnifiedSupplyChain} />
+      <ProtectedRoute path="/supply-chain" component={SupplyChainSimple} />
       <ProtectedRoute path="/reports" component={DDSReports} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
