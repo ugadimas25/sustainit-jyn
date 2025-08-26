@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2, Eye
+  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2, Eye, MapPin, Navigation
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 // Define supplier categories
 const SUPPLIER_CATEGORIES = {
@@ -63,6 +65,7 @@ interface TierSupplier {
   category: string;
   location: string;
   details: string;
+  assignedTier?: number;
 }
 
 interface TierAssignment {
@@ -124,7 +127,8 @@ export default function SupplyChainSimple() {
         name: supplier.name,
         category: draggedItem.category,
         location: supplier.location,
-        details: supplier.capacity || supplier.members || supplier.type || ''
+        details: supplier.capacity || supplier.members || supplier.type || '',
+        assignedTier: tierNumber
       };
 
       // Check if supplier already exists in this tier
@@ -293,6 +297,269 @@ export default function SupplyChainSimple() {
     );
   };
 
+  const renderGPSJourneyMap = () => {
+    const mapRef = useRef<HTMLDivElement>(null);
+    const mapInstanceRef = useRef<L.Map | null>(null);
+    
+    // Mock GPS coordinates for each supplier with realistic Indonesian palm oil locations
+    const supplierGPSData = {
+      'estate': [
+        { id: 1, name: 'PT Astra Agro Lestari', lat: -2.5489, lng: 111.2183, tier: 1 }, // Central Kalimantan
+        { id: 2, name: 'PT Sampoerna Agro', lat: -1.2379, lng: 116.8444, tier: 1 }, // East Kalimantan
+        { id: 3, name: 'PT Golden Agri-Resources', lat: -0.5014, lng: 117.1436, tier: 1 }, // East Kalimantan
+      ],
+      'mill': [
+        { id: 4, name: 'Sawit Sumbermas Mill', lat: -2.2885, lng: 111.6644, tier: 2 }, // Central Kalimantan
+        { id: 5, name: 'Astra Agro Mill Complex', lat: -1.5537, lng: 117.1436, tier: 2 }, // East Kalimantan
+      ],
+      'shf': [
+        { id: 6, name: 'Kelompok Tani Makmur', lat: -2.6444, lng: 111.5183, tier: 2 }, // Central Kalimantan
+        { id: 7, name: 'Koperasi Sawit Bersama', lat: -1.1879, lng: 116.7944, tier: 2 }, // East Kalimantan
+      ],
+      'business': [
+        { id: 8, name: 'PT Sinar Mas Trading', lat: -6.2088, lng: 106.8456, tier: 3 }, // Jakarta
+        { id: 9, name: 'PT Indo Food Agri', lat: -6.1751, lng: 106.8650, tier: 3 }, // Jakarta
+      ],
+      'bulking': [
+        { id: 10, name: 'Tanjung Perak Port', lat: -7.2575, lng: 112.7521, tier: 4 }, // Surabaya
+        { id: 11, name: 'Jakarta Port Authority', lat: -6.1045, lng: 106.8779, tier: 4 }, // Jakarta
+      ]
+    };
+
+    useEffect(() => {
+      if (!mapRef.current) return;
+
+      // Initialize map
+      if (!mapInstanceRef.current) {
+        mapInstanceRef.current = L.map(mapRef.current).setView([-2.5, 113.9], 6);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(mapInstanceRef.current);
+      }
+
+      const map = mapInstanceRef.current;
+
+      // Clear existing layers
+      map.eachLayer((layer) => {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+          map.removeLayer(layer);
+        }
+      });
+
+      // Get assigned suppliers and their GPS coordinates
+      const assignedSuppliers = Object.values(tierAssignments).flat();
+      const supplierCoords: any[] = [];
+
+      // Add markers for assigned suppliers
+      assignedSuppliers.forEach((supplier, index) => {
+        // Map supplier category to GPS data key
+        const categoryMap: {[key: string]: string} = {
+          'estates': 'estate',
+          'mills': 'mill', 
+          'shf': 'shf',
+          'businesses': 'business',
+          'bulking': 'bulking'
+        };
+        
+        const gpsKey = categoryMap[supplier.category] || supplier.category;
+        const categoryGPSData = supplierGPSData[gpsKey as keyof typeof supplierGPSData] || [];
+        
+        // Get a GPS point for this supplier (cycling through available points)
+        const gpsData = categoryGPSData[index % categoryGPSData.length];
+        
+        if (gpsData) {
+          supplierCoords.push({...gpsData, supplier, assignedTier: supplier.assignedTier});
+          
+          // Create custom icon based on category
+          const iconHtml = supplier.category === 'estates' ? '🌴' : 
+                          supplier.category === 'mills' ? '🏭' : 
+                          supplier.category === 'shf' ? '👥' : 
+                          supplier.category === 'businesses' ? '🏢' : 
+                          supplier.category === 'bulking' ? '🚢' : '📍';
+          
+          const customIcon = L.divIcon({
+            html: `<div style="background: white; border-radius: 50%; padding: 4px; border: 2px solid #3B82F6; font-size: 16px;">${iconHtml}</div>`,
+            className: '',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+
+          const marker = L.marker([gpsData.lat, gpsData.lng], { icon: customIcon })
+            .bindPopup(`
+              <div style="min-width: 200px;">
+                <h3 style="margin: 0 0 8px 0; font-weight: bold;">${supplier.name}</h3>
+                <p style="margin: 4px 0;"><strong>Category:</strong> ${supplier.category}</p>
+                <p style="margin: 4px 0;"><strong>Assigned Tier:</strong> ${supplier.assignedTier}</p>
+                <p style="margin: 4px 0;"><strong>Location:</strong> ${supplier.location}</p>
+                <p style="margin: 4px 0;"><strong>GPS:</strong> ${gpsData.lat.toFixed(4)}, ${gpsData.lng.toFixed(4)}</p>
+              </div>
+            `)
+            .addTo(map);
+        }
+      });
+
+      // Draw arrows between tiers to show product flow
+      const tierCoords: { [key: number]: any[] } = {};
+      supplierCoords.forEach(coord => {
+        if (!tierCoords[coord.assignedTier]) tierCoords[coord.assignedTier] = [];
+        tierCoords[coord.assignedTier].push(coord);
+      });
+
+      // Create flow lines between tiers
+      for (let tier = 1; tier <= 4; tier++) {
+        const currentTier = tierCoords[tier];
+        const nextTier = tierCoords[tier + 1];
+        
+        if (currentTier && nextTier) {
+          currentTier.forEach(source => {
+            nextTier.forEach(destination => {
+              // Create curved line for better visualization
+              const latlngs = [
+                [source.lat, source.lng],
+                [(source.lat + destination.lat) / 2, (source.lng + destination.lng) / 2],
+                [destination.lat, destination.lng]
+              ];
+              
+              const polyline = L.polyline(latlngs, {
+                color: '#EF4444',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '10, 5'
+              }).addTo(map);
+              
+              // Add arrow decorator
+              const arrowIcon = L.divIcon({
+                html: '➤',
+                className: '',
+                iconSize: [20, 20]
+              });
+              
+              const midPoint: [number, number] = [(source.lat + destination.lat) / 2, (source.lng + destination.lng) / 2];
+              L.marker(midPoint, { icon: arrowIcon }).addTo(map);
+            });
+          });
+        }
+      }
+
+      // Fit map to show all markers
+      if (supplierCoords.length > 0) {
+        const group = new L.FeatureGroup(
+          supplierCoords.map(coord => L.marker([coord.lat, coord.lng]))
+        );
+        map.fitBounds(group.getBounds().pad(0.1));
+      }
+
+      return () => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+      };
+    }, [tierAssignments]);
+
+    const hasAssignments = Object.values(tierAssignments).some(tier => tier.length > 0);
+    
+    if (!hasAssignments) {
+      return (
+        <Card className="p-12 text-center">
+          <div className="text-gray-500">
+            <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No Supply Chain to Map</h3>
+            <p>Configure your tier assignments first to view the GPS journey map with product flow arrows.</p>
+          </div>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">GPS Journey Map</h2>
+          <p className="text-gray-600">Interactive map showing product traceability journey with GPS coordinates and flow arrows</p>
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Navigation className="h-5 w-5" />
+              OpenStreetMap Traceability Visualization
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div 
+              ref={mapRef} 
+              className="w-full h-[600px] rounded-lg border"
+              style={{ minHeight: '600px' }}
+            />
+            
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <h4 className="font-medium mb-2">Map Legend:</h4>
+                <ul className="space-y-1 text-gray-600">
+                  <li>🌴 Estates (Tier 1) - Source plantations</li>
+                  <li>🏭 Mills (Tier 2) - Processing facilities</li>
+                  <li>👥 SHF Groups (Tier 2) - Smallholder cooperatives</li>
+                  <li>🏢 Business (Tier 3) - Trading companies</li>
+                  <li>🚢 Bulking (Tier 4) - Ports and distribution</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Journey Flow:</h4>
+                <ul className="space-y-1 text-gray-600">
+                  <li>• Red dashed lines show product flow paths</li>
+                  <li>• Arrows indicate direction of movement</li>
+                  <li>• Click markers for detailed GPS information</li>
+                  <li>• Map auto-fits to show your supply chain network</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Journey Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-green-600">
+                  {Object.values(tierAssignments).flat().length}
+                </div>
+                <div className="text-sm text-gray-600">Total Locations</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {Object.values(tierAssignments).filter(tier => tier.length > 0).length}
+                </div>
+                <div className="text-sm text-gray-600">Active Tiers</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {Object.values(tierAssignments).flat().reduce((total, supplier) => {
+                    const gpsData = Object.values(supplierGPSData).flat().find(gps => 
+                      gps.name.toLowerCase().includes(supplier.name.toLowerCase().substring(0, 10))
+                    );
+                    return total + (gpsData ? 1 : 0);
+                  }, 0)}
+                </div>
+                <div className="text-sm text-gray-600">GPS Mapped</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {Object.values(tierAssignments).length - 1}
+                </div>
+                <div className="text-sm text-gray-600">Flow Connections</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   const renderSupplierCard = (supplier: any, category: string) => {
     const categoryInfo = SUPPLIER_CATEGORIES[category as keyof typeof SUPPLIER_CATEGORIES];
     
@@ -408,9 +675,10 @@ export default function SupplyChainSimple() {
         </div>
 
         <Tabs defaultValue="configuration" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="configuration">Tier Configuration</TabsTrigger>
-            <TabsTrigger value="traceability">Traceability Map</TabsTrigger>
+            <TabsTrigger value="traceability">Traceability Flow</TabsTrigger>
+            <TabsTrigger value="map">GPS Journey Map</TabsTrigger>
           </TabsList>
           
           <TabsContent value="configuration" className="space-y-6 mt-6">
@@ -546,6 +814,10 @@ export default function SupplyChainSimple() {
           
           <TabsContent value="traceability" className="space-y-6 mt-6">
             {renderTraceabilityVisualization()}
+          </TabsContent>
+          
+          <TabsContent value="map" className="space-y-6 mt-6">
+            {renderGPSJourneyMap()}
           </TabsContent>
         </Tabs>
       </div>
