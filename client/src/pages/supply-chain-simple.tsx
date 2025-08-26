@@ -460,24 +460,23 @@ export default function SupplyChainSimple() {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Tier-Based Supply Chain</h2>
               <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  onClick={saveTierAssignments}
+                  disabled={!Object.values(tierAssignments).some(tier => tier.length > 0)}
+                  data-testid="save-tier-assignments"
+                >
+                  Save Configuration
+                </Button>
                 {Object.values(tierAssignments).some(tier => tier.length > 0) && (
-                  <>
-                    <Button 
-                      size="sm" 
-                      onClick={saveTierAssignments}
-                      data-testid="save-tier-assignments"
-                    >
-                      Save Configuration
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={clearAllTiers}
-                      data-testid="clear-all-tiers"
-                    >
-                      Clear All
-                    </Button>
-                  </>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={clearAllTiers}
+                    data-testid="clear-all-tiers"
+                  >
+                    Clear All
+                  </Button>
                 )}
               </div>
             </div>
