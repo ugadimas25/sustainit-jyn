@@ -56,10 +56,16 @@ const SAMPLE_SUPPLIERS = {
   ]
 };
 
-interface SupplyConnection {
+interface TierSupplier {
   id: string;
-  from: { category: string; id: string; name: string };
-  to: { category: string; id: string; name: string };
+  name: string;
+  category: string;
+  location: string;
+  details: string;
+}
+
+interface TierAssignment {
+  [tierNumber: number]: TierSupplier[];
 }
 
 interface DraggedItem {
@@ -68,7 +74,13 @@ interface DraggedItem {
 }
 
 export default function SupplyChainSimple() {
-  const [connections, setConnections] = useState<SupplyConnection[]>([]);
+  const [tierAssignments, setTierAssignments] = useState<TierAssignment>({
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+    5: []
+  });
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
 
@@ -76,71 +88,75 @@ export default function SupplyChainSimple() {
     setDraggedItem({ category, supplier });
   };
 
-  const handleDragOver = (e: React.DragEvent, targetCategory: string, targetSupplier: any) => {
+  const handleDragOver = (e: React.DragEvent, tierNumber: number) => {
     e.preventDefault();
-    setDragOverTarget(`${targetCategory}-${targetSupplier.id}`);
+    setDragOverTarget(`tier-${tierNumber}`);
   };
 
   const handleDragLeave = () => {
     setDragOverTarget(null);
   };
 
-  const handleDrop = (e: React.DragEvent, targetCategory: string, targetSupplier: any) => {
+  const handleDropToTier = (e: React.DragEvent, tierNumber: number) => {
     e.preventDefault();
     setDragOverTarget(null);
     
-    if (draggedItem && draggedItem.category !== targetCategory) {
-      const newConnection: SupplyConnection = {
-        id: `${draggedItem.category}-${draggedItem.supplier.id}-to-${targetCategory}-${targetSupplier.id}`,
-        from: { 
-          category: draggedItem.category, 
-          id: draggedItem.supplier.id, 
-          name: draggedItem.supplier.name 
-        },
-        to: { 
-          category: targetCategory, 
-          id: targetSupplier.id, 
-          name: targetSupplier.name 
-        }
+    if (draggedItem) {
+      const supplier = draggedItem.supplier;
+      const tierSupplier: TierSupplier = {
+        id: `${draggedItem.category}-${supplier.id}`,
+        name: supplier.name,
+        category: draggedItem.category,
+        location: supplier.location,
+        details: supplier.capacity || supplier.members || supplier.type || ''
       };
 
-      // Check if connection already exists
-      const exists = connections.some(conn => 
-        conn.from.id === newConnection.from.id && conn.to.id === newConnection.to.id
-      );
-
+      // Check if supplier already exists in this tier
+      const exists = tierAssignments[tierNumber].some(s => s.id === tierSupplier.id);
+      
       if (!exists) {
-        setConnections([...connections, newConnection]);
+        setTierAssignments(prev => ({
+          ...prev,
+          [tierNumber]: [...prev[tierNumber], tierSupplier]
+        }));
       }
     }
     setDraggedItem(null);
   };
 
-  const removeConnection = (connectionId: string) => {
-    setConnections(connections.filter(conn => conn.id !== connectionId));
+  const removeFromTier = (tierNumber: number, supplierId: string) => {
+    setTierAssignments(prev => ({
+      ...prev,
+      [tierNumber]: prev[tierNumber].filter(s => s.id !== supplierId)
+    }));
   };
 
-  const clearAllConnections = () => {
-    setConnections([]);
+  const clearTier = (tierNumber: number) => {
+    setTierAssignments(prev => ({
+      ...prev,
+      [tierNumber]: []
+    }));
+  };
+
+  const clearAllTiers = () => {
+    setTierAssignments({
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+      5: []
+    });
   };
 
   const renderSupplierCard = (supplier: any, category: string) => {
     const categoryInfo = SUPPLIER_CATEGORIES[category as keyof typeof SUPPLIER_CATEGORIES];
-    const isDropTarget = dragOverTarget === `${category}-${supplier.id}`;
     
     return (
       <div
         key={supplier.id}
         draggable
         onDragStart={() => handleDragStart(category, supplier)}
-        onDragOver={(e) => handleDragOver(e, category, supplier)}
-        onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, category, supplier)}
-        className={`p-3 border rounded-lg cursor-move transition-all duration-200 ${
-          isDropTarget 
-            ? 'border-blue-500 bg-blue-50 shadow-lg scale-105' 
-            : 'border-gray-200 bg-white hover:shadow-md hover:border-gray-300'
-        }`}
+        className="p-3 border rounded-lg cursor-move transition-all duration-200 border-gray-200 bg-white hover:shadow-md hover:border-gray-300"
         data-testid={`supplier-${category}-${supplier.id}`}
       >
         <div className="flex items-start justify-between">
@@ -169,70 +185,61 @@ export default function SupplyChainSimple() {
     );
   };
 
-  const renderConnectionFlow = () => {
-    if (connections.length === 0) {
-      return (
-        <div className="text-center py-8 text-gray-500">
-          <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p>No supply chain connections created yet.</p>
-          <p className="text-sm">Drag suppliers between categories to create connections.</p>
-        </div>
-      );
-    }
-
-    // Group connections by flow stages
-    const flowStages: { [key: string]: SupplyConnection[] } = {};
-    connections.forEach(conn => {
-      const stageKey = `${conn.from.category}-to-${conn.to.category}`;
-      if (!flowStages[stageKey]) {
-        flowStages[stageKey] = [];
-      }
-      flowStages[stageKey].push(conn);
-    });
+  const renderTierDropZone = (tierNumber: number) => {
+    const suppliers = tierAssignments[tierNumber] || [];
+    const isDropTarget = dragOverTarget === `tier-${tierNumber}`;
+    const isEmpty = suppliers.length === 0;
 
     return (
-      <div className="space-y-6">
-        {Object.entries(flowStages).map(([stageKey, stageConnections]) => {
-          const [fromCat, toCat] = stageKey.split('-to-');
-          const fromInfo = SUPPLIER_CATEGORIES[fromCat as keyof typeof SUPPLIER_CATEGORIES];
-          const toInfo = SUPPLIER_CATEGORIES[toCat as keyof typeof SUPPLIER_CATEGORIES];
-
-          return (
-            <div key={stageKey} className="border rounded-lg p-4 bg-gray-50">
-              <div className="flex items-center gap-4 mb-4">
-                <Badge className={fromInfo.color}>
-                  <fromInfo.icon className="h-3 w-3 mr-1" />
-                  {fromInfo.name}
-                </Badge>
-                <ArrowRight className="h-4 w-4 text-gray-400" />
-                <Badge className={toInfo.color}>
-                  <toInfo.icon className="h-3 w-3 mr-1" />
-                  {toInfo.name}
-                </Badge>
-              </div>
-              <div className="space-y-2">
-                {stageConnections.map(conn => (
-                  <div key={conn.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium">{conn.from.name}</span>
-                      <ArrowRight className="h-3 w-3 text-gray-400" />
-                      <span className="font-medium">{conn.to.name}</span>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => removeConnection(conn.id)}
-                      className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                      data-testid={`remove-connection-${conn.id}`}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+      <div
+        onDragOver={(e) => handleDragOver(e, tierNumber)}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDropToTier(e, tierNumber)}
+        className={`min-h-32 p-4 border-2 border-dashed rounded-lg transition-all duration-200 ${
+          isDropTarget 
+            ? 'border-blue-500 bg-blue-50' 
+            : isEmpty 
+            ? 'border-gray-300 bg-gray-50' 
+            : 'border-gray-200 bg-white'
+        }`}
+        data-testid={`tier-${tierNumber}-drop-zone`}
+      >
+        {isEmpty ? (
+          <div className="text-center text-gray-500 py-4">
+            <Package className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">Drop suppliers here for Tier {tierNumber}</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {suppliers.map(supplier => (
+              <div key={supplier.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Badge className={SUPPLIER_CATEGORIES[supplier.category as keyof typeof SUPPLIER_CATEGORIES].color}>
+                      {supplier.category}
+                    </Badge>
+                    <span className="font-medium text-sm">{supplier.name}</span>
                   </div>
-                ))}
+                  <p className="text-xs text-gray-500 mt-1">{supplier.location}</p>
+                  {supplier.details && (
+                    <Badge variant="outline" className="text-xs mt-1">
+                      {supplier.details}
+                    </Badge>
+                  )}
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={() => removeFromTier(tierNumber, supplier.id)}
+                  className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                  data-testid={`remove-tier-${tierNumber}-${supplier.id}`}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
               </div>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -249,12 +256,14 @@ export default function SupplyChainSimple() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Supplier Categories */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Supplier Categories</h2>
-              <Badge variant="secondary">{connections.length} connections</Badge>
+              <h2 className="text-xl font-semibold">Supplier Pool</h2>
+              <Badge variant="secondary">
+                {Object.values(tierAssignments).flat().length} assigned
+              </Badge>
             </div>
             
             {Object.entries(SUPPLIER_CATEGORIES).map(([key, categoryInfo]) => (
@@ -277,52 +286,78 @@ export default function SupplyChainSimple() {
             ))}
           </div>
 
-          {/* Supply Chain Flow */}
-          <div className="space-y-6">
+          {/* Tier Assignment System */}
+          <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Supply Chain Flow</h2>
-              {connections.length > 0 && (
+              <h2 className="text-xl font-semibold">Tier-Based Supply Chain</h2>
+              {Object.values(tierAssignments).some(tier => tier.length > 0) && (
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={clearAllConnections}
-                  data-testid="clear-all-connections"
+                  onClick={clearAllTiers}
+                  data-testid="clear-all-tiers"
                 >
-                  Clear All
+                  Clear All Tiers
                 </Button>
               )}
             </div>
             
-            <Card className="min-h-96">
-              <CardContent className="p-6">
-                {renderConnectionFlow()}
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map(tierNumber => (
+                <Card key={tierNumber}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <ArrowDown className="h-4 w-4" />
+                      Tier {tierNumber}
+                      <Badge variant="outline" className="ml-auto">
+                        {tierAssignments[tierNumber]?.length || 0} suppliers
+                      </Badge>
+                      {tierAssignments[tierNumber]?.length > 0 && (
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => clearTier(tierNumber)}
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                          data-testid={`clear-tier-${tierNumber}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {renderTierDropZone(tierNumber)}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Instructions */}
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="text-base">How to Use</CardTitle>
+            <CardTitle className="text-base">How to Use Tier-Based Supply Chain</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4 text-sm">
               <div>
-                <h4 className="font-medium mb-2">Creating Connections:</h4>
+                <h4 className="font-medium mb-2">Assigning Suppliers to Tiers:</h4>
                 <ul className="space-y-1 text-gray-600">
-                  <li>• Drag a supplier from one category</li>
-                  <li>• Drop it onto a supplier in another category</li>
-                  <li>• The connection will appear in the flow diagram</li>
+                  <li>• Drag any supplier from the Supplier Pool</li>
+                  <li>• Drop it into any Tier (1-5) drop zone</li>
+                  <li>• Multiple suppliers can be assigned to each tier</li>
+                  <li>• Remove individual suppliers or clear entire tiers</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-medium mb-2">Example Flow:</h4>
+                <h4 className="font-medium mb-2">Typical Tier Structure:</h4>
                 <ul className="space-y-1 text-gray-600">
-                  <li>• Estates/SHF → Business Units</li>
-                  <li>• Business Units → Mills</li>
-                  <li>• Mills → Bulking Stations</li>
-                  <li>• Bulking → External/Downstream</li>
+                  <li>• <strong>Tier 1:</strong> Direct suppliers (Estates, Mills)</li>
+                  <li>• <strong>Tier 2:</strong> Regional suppliers (SHF groups)</li>
+                  <li>• <strong>Tier 3:</strong> Business intermediaries</li>
+                  <li>• <strong>Tier 4:</strong> Processing facilities</li>
+                  <li>• <strong>Tier 5:</strong> Final distribution (Bulking, External)</li>
                 </ul>
               </div>
             </div>
