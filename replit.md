@@ -5,6 +5,16 @@ The KPN EUDR Platform has evolved into a comprehensive supply chain traceability
 The platform combines advanced traceability technology with AI-powered compliance monitoring, featuring real-time supply chain mapping, comprehensive risk assessment, and shareable chain-of-custody reports for regulatory compliance and transparency.
 
 ## Recent Changes (August 2025)
+
+- **Removed Estate Data Collection Module** (August 26, 2025): Eliminated duplicate functionality:
+  - Removed Estate Data Collection from navigation sidebar (Building icon removed)
+  - Deleted estate-data-table.tsx page component
+  - Removed all estate data collection API endpoints from server routes
+  - Cleaned up storage interface by removing EstateDataCollection methods
+  - Consolidated estate functionality into Legality Assessment module to avoid overlap
+  - Streamlined navigation from 6 modules to 5: Dashboard, Deforestation Monitoring, Legality Assessment, Supply Chain, DDS Reports
+
+## Previous Changes
 - **Persistent Sidebar Navigation**: Implemented consistent layout with always-visible module panel:
   - Updated ProtectedRoute wrapper to include Sidebar and TopBar for all module pages
   - Eliminated need for back button navigation between modules
