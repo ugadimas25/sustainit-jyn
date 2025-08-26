@@ -88,6 +88,21 @@ export default function SupplyChainSimple() {
     setDraggedItem({ category, supplier });
   };
 
+  const handleDragStartFromTier = (supplier: TierSupplier, fromTier: number) => {
+    setDraggedItem({ 
+      category: supplier.category, 
+      supplier: {
+        id: supplier.id.split('-')[1], // Extract original ID
+        name: supplier.name,
+        location: supplier.location,
+        details: supplier.details
+      }
+    });
+    
+    // Remove from current tier when starting drag
+    removeFromTier(fromTier, supplier.id);
+  };
+
   const handleDragOver = (e: React.DragEvent, tierNumber: number) => {
     e.preventDefault();
     setDragOverTarget(`tier-${tierNumber}`);
@@ -212,7 +227,13 @@ export default function SupplyChainSimple() {
         ) : (
           <div className="space-y-2">
             {suppliers.map(supplier => (
-              <div key={supplier.id} className="flex items-center justify-between p-2 bg-white rounded border">
+              <div 
+                key={supplier.id} 
+                draggable
+                onDragStart={() => handleDragStartFromTier(supplier, tierNumber)}
+                className="flex items-center justify-between p-2 bg-white rounded border cursor-move hover:shadow-md transition-all duration-200"
+                data-testid={`tier-supplier-${supplier.id}`}
+              >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Badge className={SUPPLIER_CATEGORIES[supplier.category as keyof typeof SUPPLIER_CATEGORIES].color}>
@@ -252,42 +273,53 @@ export default function SupplyChainSimple() {
             Supply Chain Management
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Drag and drop suppliers between categories to create product flow connections
+            Drag suppliers from the pool into tiers or between tiers to organize your supply chain hierarchy
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Supplier Categories */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Supplier Categories - Compact Layout */}
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Supplier Pool</h2>
-              <Badge variant="secondary">
+              <h2 className="text-lg font-semibold">Supplier Pool</h2>
+              <Badge variant="secondary" className="text-xs">
                 {Object.values(tierAssignments).flat().length} assigned
               </Badge>
             </div>
             
-            {Object.entries(SUPPLIER_CATEGORIES).map(([key, categoryInfo]) => (
-              <Card key={key}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <categoryInfo.icon className="h-5 w-5" />
-                    {categoryInfo.name}
-                    <Badge variant="outline" className="ml-auto text-xs">
-                      {SAMPLE_SUPPLIERS[key as keyof typeof SAMPLE_SUPPLIERS].length}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 max-h-64 overflow-y-auto">
-                  {SAMPLE_SUPPLIERS[key as keyof typeof SAMPLE_SUPPLIERS].map(supplier => 
-                    renderSupplierCard(supplier, key)
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+            <div className="max-h-[800px] overflow-y-auto space-y-3">
+              {Object.entries(SUPPLIER_CATEGORIES).map(([key, categoryInfo]) => (
+                <Card key={key} className="border-l-4" style={{ borderLeftColor: '#4B5563' }}>
+                  <CardHeader className="pb-2 pt-3">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <categoryInfo.icon className="h-4 w-4" />
+                      <span className="truncate">{categoryInfo.name}</span>
+                      <Badge variant="outline" className="ml-auto text-xs">
+                        {SAMPLE_SUPPLIERS[key as keyof typeof SAMPLE_SUPPLIERS].length}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1 max-h-32 overflow-y-auto pt-0">
+                    {SAMPLE_SUPPLIERS[key as keyof typeof SAMPLE_SUPPLIERS].map(supplier => (
+                      <div
+                        key={supplier.id}
+                        draggable
+                        onDragStart={() => handleDragStart(key, supplier)}
+                        className="p-2 border rounded cursor-move transition-all duration-200 border-gray-200 bg-white hover:shadow-sm hover:border-gray-300 text-xs"
+                        data-testid={`supplier-${key}-${supplier.id}`}
+                      >
+                        <div className="font-medium truncate">{supplier.name}</div>
+                        <div className="text-gray-500 text-xs truncate">{supplier.location}</div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
 
           {/* Tier Assignment System */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Tier-Based Supply Chain</h2>
               {Object.values(tierAssignments).some(tier => tier.length > 0) && (
