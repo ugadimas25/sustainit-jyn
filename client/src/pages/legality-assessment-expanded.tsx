@@ -446,7 +446,7 @@ export default function LegalityAssessmentExpanded() {
                 <TabsTrigger value="estate" data-testid="tab-estate">Data Estate</TabsTrigger>
                 <TabsTrigger value="mill" data-testid="tab-mill">Mill</TabsTrigger>
                 <TabsTrigger value="traceability" data-testid="tab-traceability">Traceability TBS</TabsTrigger>
-                <TabsTrigger value="kcp" data-testid="tab-kcp">Data KCP</TabsTrigger>
+                <TabsTrigger value="kcp" data-testid="tab-kcp">KCP</TabsTrigger>
                 <TabsTrigger value="bulking" data-testid="tab-bulking">Data Bulking</TabsTrigger>
                 <TabsTrigger value="results" data-testid="tab-results">Hasil Koleksi Data</TabsTrigger>
               </TabsList>
@@ -2246,26 +2246,43 @@ export default function LegalityAssessmentExpanded() {
               <TabsContent value="kcp" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Formulir Pengumpulan Data KCP</CardTitle>
+                    <CardTitle>Formulir Pengumpulan Data</CardTitle>
                     <CardDescription>
-                      Data collection untuk Kebun Collection Point
+                      KCP
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleKcpSubmit} className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="namaKCP">Nama KCP</Label>
-                          <Input
-                            id="namaKCP"
-                            data-testid="input-nama-kcp"
-                            value={kcpForm.namaKCP}
-                            onChange={(e) => setKcpForm(prev => ({ ...prev, namaKCP: e.target.value }))}
-                            placeholder="Masukkan nama KCP"
-                            required
-                          />
-                        </div>
+                    <form onSubmit={handleKcpSubmit} className="space-y-8">
+                      {/* Bagian 1 - Informasi Umum */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold border-b pb-2">Bagian 1 – Informasi Umum</h3>
                         
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="ublFacilityId">UBL / Facility ID</Label>
+                            <Input
+                              id="ublFacilityId"
+                              data-testid="input-ubl-facility-id-kcp"
+                              value={kcpForm.ublFacilityId}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, ublFacilityId: e.target.value }))}
+                              placeholder="Masukkan UBL / Facility ID"
+                              required
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="namaKCP">Nama KCP</Label>
+                            <Input
+                              id="namaKCP"
+                              data-testid="input-nama-kcp"
+                              value={kcpForm.namaKCP}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, namaKCP: e.target.value }))}
+                              placeholder="Masukkan nama KCP"
+                              required
+                            />
+                          </div>
+                        </div>
+
                         <div className="space-y-2">
                           <Label htmlFor="namaGroupKCP">Nama Group / Parent Company Name</Label>
                           <Input
@@ -2273,41 +2290,652 @@ export default function LegalityAssessmentExpanded() {
                             data-testid="input-nama-group-kcp"
                             value={kcpForm.namaGroup}
                             onChange={(e) => setKcpForm(prev => ({ ...prev, namaGroup: e.target.value }))}
-                            placeholder="Masukkan nama group"
+                            placeholder="Masukkan nama group/parent company"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="izinBerusahaKCP">Izin Berusaha (Nomor Induk Berusaha)</Label>
+                            <Input
+                              id="izinBerusahaKCP"
+                              data-testid="input-izin-berusaha-kcp"
+                              value={kcpForm.izinBerusaha}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, izinBerusaha: e.target.value }))}
+                              placeholder="Masukkan NIB"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="tipeSertifikatKCP">Tipe Sertifikat Yang Dimiliki Perusahan</Label>
+                            <Select
+                              value={kcpForm.tipeSertifikat}
+                              onValueChange={(value) => setKcpForm(prev => ({ ...prev, tipeSertifikat: value }))}
+                            >
+                              <SelectTrigger data-testid="select-tipe-sertifikat-kcp">
+                                <SelectValue placeholder="Pilih tipe sertifikat" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ISPO">ISPO</SelectItem>
+                                <SelectItem value="RSPO">RSPO</SelectItem>
+                                <SelectItem value="ISCC">ISCC</SelectItem>
+                                <SelectItem value="PROPER">PROPER</SelectItem>
+                                <SelectItem value="Lainnya">Lainnya</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorSertifikatKCP">Nomor Sertifikat</Label>
+                            <Input
+                              id="nomorSertifikatKCP"
+                              data-testid="input-nomor-sertifikat-kcp"
+                              value={kcpForm.nomorSertifikat}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, nomorSertifikat: e.target.value }))}
+                              placeholder="Masukkan nomor sertifikat"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="lembagaSertifikasiKCP">Lembaga Sertifikasi</Label>
+                            <Input
+                              id="lembagaSertifikasiKCP"
+                              data-testid="input-lembaga-sertifikasi-kcp"
+                              value={kcpForm.lembagaSertifikasi}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, lembagaSertifikasi: e.target.value }))}
+                              placeholder="Masukkan lembaga sertifikasi"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="masaBerlakuSertifikatKCP">Masa Berlaku Sertifikat</Label>
+                            <Input
+                              id="masaBerlakuSertifikatKCP"
+                              data-testid="input-masa-berlaku-sertifikat-kcp"
+                              type="date"
+                              value={kcpForm.masaBerlakuSertifikat}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, masaBerlakuSertifikat: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="ruangLingkupSertifikasiKCP">Ruang Lingkup Sertifikasi</Label>
+                          <Textarea
+                            id="ruangLingkupSertifikasiKCP"
+                            data-testid="input-ruang-lingkup-sertifikasi-kcp"
+                            value={kcpForm.ruangLingkupSertifikasi}
+                            onChange={(e) => setKcpForm(prev => ({ ...prev, ruangLingkupSertifikasi: e.target.value }))}
+                            placeholder="Masukkan ruang lingkup sertifikasi"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="kapasitasOlahMTHari">Kapasitas Olah (MT/Hari)</Label>
-                          <Input
-                            id="kapasitasOlahMTHari"
-                            data-testid="input-kapasitas-olah"
-                            type="number"
-                            step="0.01"
-                            value={kcpForm.kapasitasOlahMTHari}
-                            onChange={(e) => setKcpForm(prev => ({ ...prev, kapasitasOlahMTHari: parseFloat(e.target.value) || 0 }))}
-                            placeholder="0.00"
-                          />
+                      {/* Alamat Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Alamat</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="alamatKantorKCP">Kantor</Label>
+                            <Textarea
+                              id="alamatKantorKCP"
+                              data-testid="input-alamat-kantor-kcp"
+                              value={kcpForm.alamatKantor}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
+                              placeholder="Masukkan alamat kantor lengkap"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="alamatKCP">KCP</Label>
+                            <Textarea
+                              id="alamatKCP"
+                              data-testid="input-alamat-kcp"
+                              value={kcpForm.alamatKCP}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, alamatKCP: e.target.value }))}
+                              placeholder="Masukkan alamat KCP lengkap"
+                            />
+                          </div>
                         </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="sistemPencatatan">Sistem Pencatatan</Label>
-                          <Select
-                            value={kcpForm.sistemPencatatan}
-                            onValueChange={(value) => setKcpForm(prev => ({ ...prev, sistemPencatatan: value }))}
-                          >
-                            <SelectTrigger data-testid="select-sistem-pencatatan">
-                              <SelectValue placeholder="Pilih sistem pencatatan" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="LIFO">LIFO</SelectItem>
-                              <SelectItem value="FIFO">FIFO</SelectItem>
-                              <SelectItem value="Weighted">Weighted</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      </div>
+
+                      {/* Koordinat Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Koordinat</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="koordinatKantorKCP">Kantor</Label>
+                            <Input
+                              id="koordinatKantorKCP"
+                              data-testid="input-koordinat-kantor-kcp"
+                              value={kcpForm.koordinatKantor}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, koordinatKantor: e.target.value }))}
+                              placeholder="Contoh: -2.5489, 117.1436"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="koordinatKCP">KCP</Label>
+                            <Input
+                              id="koordinatKCP"
+                              data-testid="input-koordinat-kcp"
+                              value={kcpForm.koordinatKCP}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, koordinatKCP: e.target.value }))}
+                              placeholder="Contoh: -2.5489, 117.1436"
+                            />
+                          </div>
                         </div>
+                      </div>
+
+                      {/* Operasional Section */}
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="modelChainOfCustody">Model Chain Of Custody</Label>
+                            <Input
+                              id="modelChainOfCustody"
+                              data-testid="input-model-chain-of-custody-kcp"
+                              value={kcpForm.modelChainOfCustody}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, modelChainOfCustody: e.target.value }))}
+                              placeholder="Masukkan model chain of custody"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="kapasitasOlah">Kapasitas Olah (MT/Hari)</Label>
+                            <Input
+                              id="kapasitasOlah"
+                              data-testid="input-kapasitas-olah-kcp"
+                              value={kcpForm.kapasitasOlah}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, kapasitasOlah: e.target.value }))}
+                              placeholder="Masukkan kapasitas olah"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="sistemPencatatanKCP">Sistem Pencatatan (LIFO/FIFO/Weighted)</Label>
+                            <Select
+                              value={kcpForm.sistemPencatatan}
+                              onValueChange={(value) => setKcpForm(prev => ({ ...prev, sistemPencatatan: value }))}
+                            >
+                              <SelectTrigger data-testid="select-sistem-pencatatan-kcp">
+                                <SelectValue placeholder="Pilih sistem pencatatan" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="LIFO">LIFO</SelectItem>
+                                <SelectItem value="FIFO">FIFO</SelectItem>
+                                <SelectItem value="Weighted">Weighted</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="tanggalPengisianKuisionerKCP">Tanggal Pengisian Kuisioner</Label>
+                            <Input
+                              id="tanggalPengisianKuisionerKCP"
+                              data-testid="input-tanggal-pengisian-kcp"
+                              type="date"
+                              value={kcpForm.tanggalPengisianKuisioner}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, tanggalPengisianKuisioner: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Penanggung Jawab Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Penanggung Jawab</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="namaPenanggungJawabKCP">Nama</Label>
+                            <Input
+                              id="namaPenanggungJawabKCP"
+                              data-testid="input-nama-penanggung-jawab-kcp"
+                              value={kcpForm.namaPenanggungJawab}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, namaPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan nama penanggung jawab"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="jabatanPenanggungJawabKCP">Jabatan</Label>
+                            <Input
+                              id="jabatanPenanggungJawabKCP"
+                              data-testid="input-jabatan-penanggung-jawab-kcp"
+                              value={kcpForm.jabatanPenanggungJawab}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, jabatanPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan jabatan"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="emailPenanggungJawabKCP">Email</Label>
+                            <Input
+                              id="emailPenanggungJawabKCP"
+                              data-testid="input-email-penanggung-jawab-kcp"
+                              type="email"
+                              value={kcpForm.emailPenanggungJawab}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, emailPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan email"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorTelefonPenanggungJawabKCP">Nomor Telfon / Handphone</Label>
+                            <Input
+                              id="nomorTelefonPenanggungJawabKCP"
+                              data-testid="input-nomor-telepon-penanggung-jawab-kcp"
+                              value={kcpForm.nomorTelefonPenanggungJawab}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, nomorTelefonPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan nomor telepon"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tim Internal Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Tim Internal yang bertanggung jawab mengawasi implementasi kebijakan keberlanjutan perusahan</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="namaTimInternalKCP">Nama</Label>
+                            <Input
+                              id="namaTimInternalKCP"
+                              data-testid="input-nama-tim-internal-kcp"
+                              value={kcpForm.namaTimInternal}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, namaTimInternal: e.target.value }))}
+                              placeholder="Masukkan nama tim internal"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="jabatanTimInternalKCP">Jabatan</Label>
+                            <Input
+                              id="jabatanTimInternalKCP"
+                              data-testid="input-jabatan-tim-internal-kcp"
+                              value={kcpForm.jabatanTimInternal}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, jabatanTimInternal: e.target.value }))}
+                              placeholder="Masukkan jabatan"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="emailTimInternalKCP">Email</Label>
+                            <Input
+                              id="emailTimInternalKCP"
+                              data-testid="input-email-tim-internal-kcp"
+                              type="email"
+                              value={kcpForm.emailTimInternal}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, emailTimInternal: e.target.value }))}
+                              placeholder="Masukkan email"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorTelefonTimInternalKCP">Nomor Telfon / Handphone</Label>
+                            <Input
+                              id="nomorTelefonTimInternalKCP"
+                              data-testid="input-nomor-telepon-tim-internal-kcp"
+                              value={kcpForm.nomorTelefonTimInternal}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, nomorTelefonTimInternal: e.target.value }))}
+                              placeholder="Masukkan nomor telepon"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bagian 2 - Daftar Tangki / Silo */}
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Daftar Tangki / Silo</h3>
+                        </div>
+
+                        {kcpForm.tangkiSilo.map((tangki, index) => (
+                          <Card key={index} className="p-4 bg-purple-50">
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <h4 className="font-medium">Tangki / Silo {index + 1}</h4>
+                                {kcpForm.tangkiSilo.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki.splice(index, 1);
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                  >
+                                    Hapus
+                                  </Button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <Label>ID Tanki /Silo</Label>
+                                  <Input
+                                    value={tangki.idTankiSilo}
+                                    onChange={(e) => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki[index].idTankiSilo = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                    placeholder="Masukkan ID tangki/silo"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Kategori (Raw Kernel/CPKO/PKC)</Label>
+                                  <Select
+                                    value={tangki.kategori}
+                                    onValueChange={(value) => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki[index].kategori = value;
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Pilih kategori" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Raw Kernel">Raw Kernel</SelectItem>
+                                      <SelectItem value="CPKO">CPKO</SelectItem>
+                                      <SelectItem value="PKC">PKC</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Produk</Label>
+                                  <Input
+                                    value={tangki.produk}
+                                    onChange={(e) => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki[index].produk = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                    placeholder="Masukkan produk"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Alamat</Label>
+                                <Input
+                                  value={tangki.alamat}
+                                  onChange={(e) => {
+                                    const newTangki = [...kcpForm.tangkiSilo];
+                                    newTangki[index].alamat = e.target.value;
+                                    setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                  }}
+                                  placeholder="Masukkan alamat tangki/silo"
+                                />
+                              </div>
+
+                              <div className="grid grid-cols-4 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Longitude</Label>
+                                  <Input
+                                    value={tangki.longitude}
+                                    onChange={(e) => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki[index].longitude = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                    placeholder="117.1436"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Latitude</Label>
+                                  <Input
+                                    value={tangki.latitude}
+                                    onChange={(e) => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki[index].latitude = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                    placeholder="-2.5489"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Kapasitas</Label>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={tangki.kapasitas}
+                                    onChange={(e) => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki[index].kapasitas = parseFloat(e.target.value) || 0;
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                    placeholder="0.00"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Tanggal Cleaning Terakhir</Label>
+                                  <Input
+                                    type="date"
+                                    value={tangki.tanggalCleaningTerakhir}
+                                    onChange={(e) => {
+                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      newTangki[index].tanggalCleaningTerakhir = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const newTangki = {
+                              idTankiSilo: '',
+                              kategori: '',
+                              produk: '',
+                              alamat: '',
+                              longitude: '',
+                              latitude: '',
+                              kapasitas: 0,
+                              tanggalCleaningTerakhir: ''
+                            };
+                            setKcpForm(prev => ({
+                              ...prev,
+                              tangkiSilo: [...prev.tangkiSilo, newTangki]
+                            }));
+                          }}
+                          className="w-full"
+                        >
+                          + Tambah Tangki / Silo
+                        </Button>
+                      </div>
+
+                      {/* Bagian 3 - Sumber Produk */}
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-lg font-semibold border-b pb-2">Bagian 3 – Sumber Produk</h3>
+                        </div>
+
+                        {kcpForm.sumberProduk.map((sumber, index) => (
+                          <Card key={index} className="p-4 bg-teal-50">
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <h4 className="font-medium">Sumber Produk {index + 1}</h4>
+                                {kcpForm.sumberProduk.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber.splice(index, 1);
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                  >
+                                    Hapus
+                                  </Button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Mill ID</Label>
+                                  <Input
+                                    value={sumber.millId}
+                                    onChange={(e) => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber[index].millId = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                    placeholder="Masukkan Mill ID"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Nama PKS</Label>
+                                  <Input
+                                    value={sumber.namaPKS}
+                                    onChange={(e) => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber[index].namaPKS = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                    placeholder="Masukkan nama PKS"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Alamat</Label>
+                                  <Input
+                                    value={sumber.alamat}
+                                    onChange={(e) => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber[index].alamat = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                    placeholder="Masukkan alamat"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-4 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Longitude</Label>
+                                  <Input
+                                    value={sumber.longitude}
+                                    onChange={(e) => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber[index].longitude = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                    placeholder="117.1436"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Latitude</Label>
+                                  <Input
+                                    value={sumber.latitude}
+                                    onChange={(e) => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber[index].latitude = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                    placeholder="-2.5489"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Produk</Label>
+                                  <Input
+                                    value={sumber.produk}
+                                    onChange={(e) => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber[index].produk = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                    placeholder="Masukkan produk"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Volume</Label>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={sumber.volume}
+                                    onChange={(e) => {
+                                      const newSumber = [...kcpForm.sumberProduk];
+                                      newSumber[index].volume = parseFloat(e.target.value) || 0;
+                                      setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                    }}
+                                    placeholder="0.00"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Sertifikasi (ISPO/RSPO/ISCC)</Label>
+                                <Select
+                                  value={sumber.sertifikasi}
+                                  onValueChange={(value) => {
+                                    const newSumber = [...kcpForm.sumberProduk];
+                                    newSumber[index].sertifikasi = value;
+                                    setKcpForm(prev => ({ ...prev, sumberProduk: newSumber }));
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih sertifikasi" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="ISPO">ISPO</SelectItem>
+                                    <SelectItem value="RSPO">RSPO</SelectItem>
+                                    <SelectItem value="ISCC">ISCC</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const newSumber = {
+                              millId: '',
+                              namaPKS: '',
+                              alamat: '',
+                              longitude: '',
+                              latitude: '',
+                              produk: '',
+                              volume: 0,
+                              sertifikasi: ''
+                            };
+                            setKcpForm(prev => ({
+                              ...prev,
+                              sumberProduk: [...prev.sumberProduk, newSumber]
+                            }));
+                          }}
+                          className="w-full"
+                        >
+                          + Tambah Sumber Produk
+                        </Button>
                       </div>
 
                       <Button 
