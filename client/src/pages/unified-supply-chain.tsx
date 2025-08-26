@@ -15,6 +15,7 @@ import {
   Target, Shield, Activity, Globe, Zap, Play
 } from "lucide-react";
 import { SupplyChainFlowMap } from '@/components/animated-map/supply-chain-flow-map';
+import { HarvestCollectionLinkage } from '@/components/supply-chain/harvest-collection-linkage';
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import ComplianceProgressTracker from "@/components/compliance-progress-tracker";
@@ -514,7 +515,7 @@ export default function UnifiedSupplyChain() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="progress" data-testid="tab-progress">
               <Target className="h-4 w-4 mr-2" />
               Progress
@@ -522,6 +523,10 @@ export default function UnifiedSupplyChain() {
             <TabsTrigger value="workflow" data-testid="tab-workflow">
               <Building className="h-4 w-4 mr-2" />
               Workflow
+            </TabsTrigger>
+            <TabsTrigger value="linkage" data-testid="tab-linkage">
+              <Link2 className="h-4 w-4 mr-2" />
+              Linkage
             </TabsTrigger>
             <TabsTrigger value="traceability" data-testid="tab-traceability">
               <GitBranch className="h-4 w-4 mr-2" />
@@ -534,10 +539,6 @@ export default function UnifiedSupplyChain() {
             <TabsTrigger value="visualization" data-testid="tab-visualization">
               <Zap className="h-4 w-4 mr-2" />
               Animated Visualization
-            </TabsTrigger>
-            <TabsTrigger value="reports" data-testid="tab-reports">
-              <FileText className="h-4 w-4 mr-2" />
-              Reports
             </TabsTrigger>
           </TabsList>
 
@@ -1016,6 +1017,32 @@ export default function UnifiedSupplyChain() {
                 <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800 max-h-96 overflow-y-auto">
                   {getSupplyChainVisualization()}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Linkage Configuration Tab */}
+          <TabsContent value="linkage" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Link2 className="h-5 w-5" />
+                  Harvest Collection Linkage Configuration
+                </CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                  Configure multi-tier harvest collection sources and destinations. Design the linkage flow to match your operational requirements.
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <HarvestCollectionLinkage 
+                  onUpdate={(linkageData) => {
+                    console.log('Linkage configuration updated:', linkageData);
+                    toast({ 
+                      title: "Linkage configuration updated successfully!",
+                      description: "The harvest collection flow has been configured."
+                    });
+                  }}
+                />
               </CardContent>
             </Card>
           </TabsContent>
