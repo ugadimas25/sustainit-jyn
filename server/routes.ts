@@ -1191,5 +1191,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mill Data Collection API routes
+  app.get("/api/mill-data-collection", isAuthenticated, async (req, res) => {
+    try {
+      const mills = await storage.getMillDataCollection();
+      res.json(mills);
+    } catch (error) {
+      console.error('Error fetching mill data collection:', error);
+      res.status(500).json({ error: 'Failed to fetch mill data collection' });
+    }
+  });
+
+  app.get("/api/mill-data-collection/:id", isAuthenticated, async (req, res) => {
+    try {
+      const mill = await storage.getMillDataCollectionById(req.params.id);
+      if (!mill) {
+        return res.status(404).json({ error: 'Mill data collection not found' });
+      }
+      res.json(mill);
+    } catch (error) {
+      console.error('Error fetching mill data collection:', error);
+      res.status(500).json({ error: 'Failed to fetch mill data collection' });
+    }
+  });
+
+  app.post("/api/mill-data-collection", isAuthenticated, async (req, res) => {
+    try {
+      const { insertMillDataCollectionSchema } = await import("@shared/schema");
+      const validatedData = insertMillDataCollectionSchema.parse(req.body);
+      const mill = await storage.createMillDataCollection(validatedData);
+      res.status(201).json(mill);
+    } catch (error) {
+      console.error('Error creating mill data collection:', error);
+      if (error.issues) {
+        return res.status(400).json({ error: 'Validation error', details: error.issues });
+      }
+      res.status(500).json({ error: 'Failed to create mill data collection' });
+    }
+  });
+
+  // Object storage endpoints for document uploads
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const { ObjectStorageService, ObjectNotFoundError } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing object:", error);
+      if (error instanceof Error && error.constructor.name === 'ObjectNotFoundError') {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
   return httpServer;
 }

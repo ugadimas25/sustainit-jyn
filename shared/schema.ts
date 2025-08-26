@@ -42,7 +42,7 @@ export const parties = pgTable("parties", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   type: partyTypeEnum("type").notNull(),
-  parentId: varchar("parent_id").references(() => parties.id),
+  parentId: varchar("parent_id").references((): any => parties.id),
   gln: text("gln"), // Global Location Number for EPCIS
   address: text("address"),
   country: text("country"),
@@ -454,6 +454,219 @@ export const ddsReports = pgTable("dds_reports", {
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
+// Estate Data Collection Forms
+export const estateDataCollection = pgTable("estate_data_collection", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Bagian 1: Informasi Umum
+  namaSupplier: text("nama_supplier").notNull(),
+  namaGroupParentCompany: text("nama_group_parent_company"),
+  aktaPendirianPerusahaan: text("akta_pendirian_perusahaan"),
+  aktaPendirianDokumen: text("akta_pendirian_dokumen"), // document URL
+  aktaPerubahan: text("akta_perubahan"),
+  aktaPerubahanDokumen: text("akta_perubahan_dokumen"), // document URL
+  izinBerusaha: text("izin_berusaha"),
+  tipeSertifikat: text("tipe_sertifikat"),
+  nomorSertifikat: text("nomor_sertifikat"),
+  lembagaSertifikasi: text("lembaga_sertifikasi"),
+  ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
+  masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
+  linkDokumen: text("link_dokumen"),
+  
+  // Alamat & Koordinat
+  alamatKantor: text("alamat_kantor"),
+  alamatKebun: text("alamat_kebun"),
+  koordinatKantor: text("koordinat_kantor"),
+  koordinatKebun: text("koordinat_kebun"),
+  
+  // Jenis Supplier & Info Lainnya
+  jenisSupplier: text("jenis_supplier"),
+  totalProduksiTBS: text("total_produksi_tbs"),
+  tanggalPengisianKuisioner: text("tanggal_pengisian_kuisioner"),
+  
+  // Penanggung Jawab
+  namaPenanggungJawab: text("nama_penanggung_jawab"),
+  jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
+  emailPenanggungJawab: text("email_penanggung_jawab"),
+  nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
+  
+  // Tim Internal
+  namaTimInternal: text("nama_tim_internal"),
+  jabatanTimInternal: text("jabatan_tim_internal"),
+  emailTimInternal: text("email_tim_internal"),
+  nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
+  
+  // Bagian 2: Sumber TBS (JSON array)
+  sumberTBS: jsonb("sumber_tbs").$type<Array<{
+    no: number;
+    namaKebun: string;
+    alamat: string;
+    luasLahan: number;
+    longitude: string;
+    latitude: string;
+    tahunTanam: string;
+    jenisBibit: string;
+    produksiTBS: number;
+  }>>().default([]),
+  
+  // Bagian 3: Perlindungan Hutan dan Gambut
+  memilikiKebijakanPerlindunganHutan: boolean("memiliki_kebijakan_perlindungan_hutan"),
+  keteranganKebijakanHutan: text("keterangan_kebijakan_hutan"),
+  dokumenKebijakanHutan: text("dokumen_kebijakan_hutan"), // document URL
+  
+  mengikutiWorkshopNDPE: boolean("mengikuti_workshop_ndpe"),
+  keteranganWorkshopNDPE: text("keterangan_workshop_ndpe"),
+  
+  memilikiSOPKonservasi: boolean("memiliki_sop_konservasi"),
+  memilikiSOPPembukaanLahan: boolean("memiliki_sop_pembukaan_lahan"),
+  keteranganSOP: text("keterangan_sop"),
+  
+  melakukanPenilaianNKT: boolean("melakukan_penilaian_nkt"),
+  menyampaikanLaporanNKT: boolean("menyampaikan_laporan_nkt"),
+  melakukanPenilaianSKT: boolean("melakukan_penilaian_skt"),
+  keteranganPenilaian: text("keterangan_penilaian"),
+  
+  penanamanDiAreaGambut: boolean("penanaman_di_area_gambut"),
+  keteranganAreaGambut: text("keterangan_area_gambut"),
+  luasAreaGambut: decimal("luas_area_gambut", { precision: 10, scale: 2 }),
+  tahunPembukaanGambut: integer("tahun_pembukaan_gambut"),
+  
+  memilikiSKTitikPenaatan: boolean("memiliki_sk_titik_penaatan"),
+  keteranganSKTitikPenaatan: text("keterangan_sk_titik_penaatan"),
+  dokumenSKTitikPenaatan: text("dokumen_sk_titik_penaatan"), // document URL
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Mill Data Collection Forms
+export const millDataCollection = pgTable("mill_data_collection", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Bagian 1: Informasi Umum
+  umlId: text("uml_id"),
+  namaPabrik: text("nama_pabrik").notNull(),
+  namaGroupParentCompany: text("nama_group_parent_company"),
+  aktaPendirianPerusahaan: text("akta_pendirian_perusahaan"),
+  aktaPendirianDokumen: text("akta_pendirian_dokumen"), // document URL
+  aktaPerubahan: text("akta_perubahan"),
+  aktaPerubahanDokumen: text("akta_perubahan_dokumen"), // document URL
+  izinBerusaha: text("izin_berusaha"),
+  tipeSertifikat: text("tipe_sertifikat"),
+  nomorSertifikat: text("nomor_sertifikat"),
+  lembagaSertifikasi: text("lembaga_sertifikasi"),
+  ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
+  masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
+  
+  // Alamat & Koordinat
+  alamatKantor: text("alamat_kantor"),
+  alamatPabrik: text("alamat_pabrik"),
+  koordinatPabrik: text("koordinat_pabrik"),
+  koordinatKantor: text("koordinat_kantor"),
+  
+  // Jenis Supplier & Info Lainnya
+  jenisSupplier: text("jenis_supplier"),
+  kuantitasCPOPK: text("kuantitas_cpo_pk"),
+  tanggalPengisianKuisioner: text("tanggal_pengisian_kuisioner"),
+  
+  // Penanggung Jawab
+  namaPenanggungJawab: text("nama_penanggung_jawab"),
+  jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
+  emailPenanggungJawab: text("email_penanggung_jawab"),
+  nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
+  
+  // Tim Internal
+  namaTimInternal: text("nama_tim_internal"),
+  jabatanTimInternal: text("jabatan_tim_internal"),
+  emailTimInternal: text("email_tim_internal"),
+  nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
+  
+  // Bagian 2: Daftar Sumber TBS & Plot Produksi (JSON arrays for each category)
+  kebunInti: jsonb("kebun_inti").$type<Array<{
+    no: number;
+    namaSupplier: string;
+    alamat: string;
+    luasPlotLahan: number;
+    longitude: string;
+    latitude: string;
+    polygonKebun: string;
+    persenPasokanKeMill: number;
+    volumeTBSPasokan: number;
+    dokumenLegalitasLahan: string; // document URL
+    tahunTanam: string;
+  }>>().default([]),
+  
+  kebunSepupu: jsonb("kebun_sepupu").$type<Array<{
+    no: number;
+    namaSupplier: string;
+    alamat: string;
+    luasPlotLahan: number;
+    longitude: string;
+    latitude: string;
+    polygonKebun: string;
+    persenPasokanKeMill: number;
+    volumeTBSPasokan: number;
+    dokumenLegalitasLahan: string; // document URL
+    tahunTanam: string;
+  }>>().default([]),
+  
+  thirdPartied: jsonb("third_partied").$type<Array<{
+    no: number;
+    namaSupplier: string;
+    alamat: string;
+    luasPlotLahan: number;
+    longitude: string;
+    latitude: string;
+    polygonKebun: string;
+    persenPasokanKeMill: number;
+    volumeTBSPasokan: number;
+    dokumenLegalitasLahan: string; // document URL
+    tahunTanam: string;
+  }>>().default([]),
+  
+  smallHolder: jsonb("small_holder").$type<Array<{
+    no: number;
+    namaSupplier: string;
+    alamat: string;
+    luasPlotLahan: number;
+    longitude: string;
+    latitude: string;
+    polygonKebun: string;
+    persenPasokanKeMill: number;
+    volumeTBSPasokan: number;
+    dokumenLegalitasLahan: string; // document URL
+    tahunTanam: string;
+  }>>().default([]),
+  
+  // Bagian 3: Perlindungan Hutan dan Gambut
+  memilikiKebijakanPerlindunganHutan: boolean("memiliki_kebijakan_perlindungan_hutan"),
+  memilikiKebijakanPerlindunganGambut: boolean("memiliki_kebijakan_perlindungan_gambut"),
+  keteranganKebijakanHutan: text("keterangan_kebijakan_hutan"),
+  dokumenKebijakanHutan: text("dokumen_kebijakan_hutan"), // document URL
+  
+  mengikutiWorkshopNDPE: boolean("mengikuti_workshop_ndpe"),
+  keteranganWorkshopNDPE: text("keterangan_workshop_ndpe"),
+  
+  memilikiSOPKonservasi: boolean("memiliki_sop_konservasi"),
+  memilikiSOPPembukaanLahan: boolean("memiliki_sop_pembukaan_lahan"),
+  keteranganSOP: text("keterangan_sop"),
+  
+  melakukanPenilaianNKT: boolean("melakukan_penilaian_nkt"),
+  menyampaikanLaporanNKT: boolean("menyampaikan_laporan_nkt"),
+  melakukanPenilaianSKT: boolean("melakukan_penilaian_skt"),
+  keteranganPenilaian: text("keterangan_penilaian"),
+  
+  penanamanDiAreaGambut: boolean("penanaman_di_area_gambut"),
+  keteranganAreaGambut: text("keterangan_area_gambut"),
+  luasAreaGambut: decimal("luas_area_gambut", { precision: 10, scale: 2 }),
+  tahunPembukaanGambut: integer("tahun_pembukaan_gambut"),
+  
+  memilikiSKTitikPenaatan: boolean("memiliki_sk_titik_penaatan"),
+  keteranganSKTitikPenaatan: text("keterangan_sk_titik_penaatan"),
+  dokumenSKTitikPenaatan: text("dokumen_sk_titik_penaatan"), // document URL
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const ddsReportsRelations = relations(ddsReports, ({ one }) => ({
   shipment: one(shipments, {
     fields: [ddsReports.shipmentId],
@@ -461,8 +674,8 @@ export const ddsReportsRelations = relations(ddsReports, ({ one }) => ({
   }),
 }));
 
-// Estate Data Collection for EUDR compliance
-export const estateDataCollection = pgTable("estate_data_collection", {
+// Legacy Estate Data Collection for EUDR compliance (renamed to avoid conflicts)
+export const legacyEstateDataCollection = pgTable("legacy_estate_data_collection", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
   // Section 1: General Information
@@ -606,6 +819,7 @@ export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments
 export const insertMillSchema = createInsertSchema(mills);
 export const insertDdsReportSchema = createInsertSchema(ddsReports);
 export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection);
+export const insertMillDataCollectionSchema = createInsertSchema(millDataCollection);
 
 // Export types for workflow entities (supplement to existing Supplier types)
 export type SupplierWorkflowLink = typeof supplierWorkflowLinks.$inferSelect;
@@ -616,3 +830,5 @@ export type DdsReport = typeof ddsReports.$inferSelect;
 export type InsertDdsReport = z.infer<typeof insertDdsReportSchema>;
 export type EstateDataCollection = typeof estateDataCollection.$inferSelect;
 export type InsertEstateDataCollection = typeof estateDataCollection.$inferInsert;
+export type MillDataCollection = typeof millDataCollection.$inferSelect;
+export type InsertMillDataCollection = typeof millDataCollection.$inferInsert;

@@ -551,8 +551,8 @@ export default function LegalityAssessmentPage() {
                     <Input 
                       id="nomor-telepon-tim-internal" 
                       placeholder="Nomor telepon tim internal" 
-                      value={estateForm.nomorTeleponTimInternal || ""}
-                      onChange={(e) => setEstateForm(prev => ({ ...prev, nomorTeleponTimInternal: e.target.value }))}
+                      value={estateForm.nomorTelefonTimInternal || ""}
+                      onChange={(e) => setEstateForm(prev => ({ ...prev, nomorTelefonTimInternal: e.target.value }))}
                       data-testid="input-nomor-telepon-tim-internal" 
                     />
                   </div>

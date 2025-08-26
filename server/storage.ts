@@ -116,6 +116,13 @@ export interface IStorage {
   createEstateDataCollection(insertEstateData: InsertEstateDataCollection): Promise<EstateDataCollection>;
   updateEstateDataCollection(id: string, updates: Partial<EstateDataCollection>): Promise<EstateDataCollection | undefined>;
   deleteEstateDataCollection(id: string): Promise<boolean>;
+  
+  // Mill Data Collection management
+  getMillDataCollection(): Promise<import("@shared/schema").MillDataCollection[]>;
+  getMillDataCollectionById(id: string): Promise<import("@shared/schema").MillDataCollection | undefined>;
+  createMillDataCollection(insertMillData: import("@shared/schema").InsertMillDataCollection): Promise<import("@shared/schema").MillDataCollection>;
+  updateMillDataCollection(id: string, updates: Partial<import("@shared/schema").MillDataCollection>): Promise<import("@shared/schema").MillDataCollection | undefined>;
+  deleteMillDataCollection(id: string): Promise<boolean>;
 }
 
 // Database implementation of IStorage
@@ -555,6 +562,68 @@ export class DatabaseStorage implements IStorage {
   async deleteEstateDataCollection(id: string): Promise<boolean> {
     const result = await db.delete(estateDataCollection).where(eq(estateDataCollection.id, id));
     return result.rowCount > 0;
+  }
+
+  // Mill Data Collection management
+  async getMillDataCollection(): Promise<import("@shared/schema").MillDataCollection[]> {
+    try {
+      const { millDataCollection } = await import("@shared/schema");
+      return await db.select().from(millDataCollection).orderBy(desc(millDataCollection.createdAt));
+    } catch (error) {
+      console.error("Error getting mill data collections:", error);
+      return [];
+    }
+  }
+
+  async getMillDataCollectionById(id: string): Promise<import("@shared/schema").MillDataCollection | undefined> {
+    try {
+      const { millDataCollection } = await import("@shared/schema");
+      const [result] = await db.select().from(millDataCollection).where(eq(millDataCollection.id, id));
+      return result || undefined;
+    } catch (error) {
+      console.error("Error getting mill data collection by id:", error);
+      return undefined;
+    }
+  }
+
+  async createMillDataCollection(insertMillData: import("@shared/schema").InsertMillDataCollection): Promise<import("@shared/schema").MillDataCollection> {
+    try {
+      const { millDataCollection } = await import("@shared/schema");
+      const [result] = await db
+        .insert(millDataCollection)
+        .values(insertMillData)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error("Error creating mill data collection:", error);
+      throw error;
+    }
+  }
+
+  async updateMillDataCollection(id: string, updates: Partial<import("@shared/schema").MillDataCollection>): Promise<import("@shared/schema").MillDataCollection | undefined> {
+    try {
+      const { millDataCollection } = await import("@shared/schema");
+      const [result] = await db
+        .update(millDataCollection)
+        .set(updates)
+        .where(eq(millDataCollection.id, id))
+        .returning();
+      return result || undefined;
+    } catch (error) {
+      console.error("Error updating mill data collection:", error);
+      return undefined;
+    }
+  }
+
+  async deleteMillDataCollection(id: string): Promise<boolean> {
+    try {
+      const { millDataCollection } = await import("@shared/schema");
+      const result = await db.delete(millDataCollection).where(eq(millDataCollection.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting mill data collection:", error);
+      return false;
+    }
   }
 }
 
