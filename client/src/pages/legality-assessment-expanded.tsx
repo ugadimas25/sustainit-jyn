@@ -81,22 +81,81 @@ export default function LegalityAssessmentExpanded() {
   });
 
   const [millForm, setMillForm] = useState({
-    namaSupplier: '',
+    // Bagian 1 - Informasi Umum
+    umlId: '',
+    namaPabrik: '',
+    namaGroup: '',
+    aktaPendirian: '', // document URL
+    aktaPerubahan: '', // document URL
+    izinBerusaha: '', // NIB
+    tipeSertifikat: '', // ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3
+    nomorSertifikat: '',
+    lembagaSertifikasi: '',
+    ruangLingkupSertifikasi: '',
+    masaBerlakuSertifikat: '',
+    
+    // Alamat
     alamatKantor: '',
-    alamatFasilitas: '',
-    nomorTelepon: '',
-    emailKontak: '',
-    namaKontakPerson: '',
-    kapasitasProduksi: 0,
-    jenisProduk: '',
-    teknologiProduksi: '',
-    tahunBerdiri: 2000,
-    jumlahKaryawan: 0,
-    statusKepemilikan: '',
-    sertifikatISO: '', // document URL
-    sertifikatHalal: '', // document URL
-    izinLingkungan: '', // document URL
-    izinOperasional: '', // document URL
+    alamatPabrik: '',
+    
+    // Koordinat
+    koordinatPabrik: '',
+    koordinatKantor: '',
+    
+    // Jenis supplier
+    jenisSupplier: '', // KKPA/Sister Company/Pihak Ketiga
+    kuantitasCPOPK: '', // M/T
+    tanggalPengisianKuisioner: '',
+    
+    // Penanggung Jawab
+    namaPenanggungJawab: '',
+    jabatanPenanggungJawab: '',
+    emailPenanggungJawab: '',
+    nomorTelefonPenanggungJawab: '',
+    
+    // Tim Internal
+    namaTimInternal: '',
+    jabatanTimInternal: '',
+    emailTimInternal: '',
+    nomorTelefonTimInternal: '',
+    
+    // Bagian 2 - Daftar Sumber TBS & Plot Produksi
+    kebunInti: [{
+      namaSupplier: '',
+      alamat: '',
+      luasPlotLahan: 0,
+      longitude: '',
+      latitude: '',
+      polygonKebun: '',
+      persenPasokanKeMill: 0,
+      volumeTBSUntukPasokan: 0,
+      dokumenLegalitasLahan: '', // document URL
+      tahunTanam: ''
+    }],
+    kebunSepupu: [{
+      namaSupplier: '',
+      alamat: '',
+      luasPlotLahan: 0,
+      longitude: '',
+      latitude: '',
+      polygonKebun: '',
+      persenPasokanKeMill: 0,
+      volumeTBSUntukPasokan: 0,
+      dokumenLegalitasLahan: '', // document URL
+      tahunTanam: ''
+    }],
+    thirdPartied: [{
+      namaSupplier: '',
+      alamat: '',
+      luasPlotLahan: 0,
+      longitude: '',
+      latitude: '',
+      polygonKebun: '',
+      persenPasokanKeMill: 0,
+      volumeTBSUntukPasokan: 0,
+      dokumenLegalitasLahan: '', // document URL
+      tahunTanam: ''
+    }]
   });
 
   const [traceabilityForm, setTraceabilityForm] = useState({
@@ -385,7 +444,7 @@ export default function LegalityAssessmentExpanded() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="estate" data-testid="tab-estate">Data Estate</TabsTrigger>
-                <TabsTrigger value="mill" data-testid="tab-mill">Data Mill</TabsTrigger>
+                <TabsTrigger value="mill" data-testid="tab-mill">Mill</TabsTrigger>
                 <TabsTrigger value="traceability" data-testid="tab-traceability">Traceability TBS</TabsTrigger>
                 <TabsTrigger value="kcp" data-testid="tab-kcp">Data KCP</TabsTrigger>
                 <TabsTrigger value="bulking" data-testid="tab-bulking">Data Bulking</TabsTrigger>
@@ -786,54 +845,981 @@ export default function LegalityAssessmentExpanded() {
               <TabsContent value="mill" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Formulir Data Collection Mill</CardTitle>
+                    <CardTitle>Formulir Pengumpulan Data</CardTitle>
                     <CardDescription>
-                      Formulir pengumpulan data untuk fasilitas mill sesuai dengan standar EUDR
+                      Pabrik
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleMillSubmit} className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
+                    <form onSubmit={handleMillSubmit} className="space-y-8">
+                      {/* Bagian 1 - Informasi Umum */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold border-b pb-2">Bagian 1 – Informasi Umum</h3>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="umlId">UML ID</Label>
+                            <Input
+                              id="umlId"
+                              data-testid="input-uml-id-mill"
+                              value={millForm.umlId}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, umlId: e.target.value }))}
+                              placeholder="Masukkan UML ID"
+                              required
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="namaPabrik">Nama Pabrik</Label>
+                            <Input
+                              id="namaPabrik"
+                              data-testid="input-nama-pabrik-mill"
+                              value={millForm.namaPabrik}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, namaPabrik: e.target.value }))}
+                              placeholder="Masukkan nama pabrik"
+                              required
+                            />
+                          </div>
+                        </div>
+
                         <div className="space-y-2">
-                          <Label htmlFor="namaSupplierMill">Nama Supplier</Label>
+                          <Label htmlFor="namaGroupMill">Nama Group / Parent Company Name</Label>
                           <Input
-                            id="namaSupplierMill"
-                            data-testid="input-nama-supplier-mill"
-                            value={millForm.namaSupplier}
-                            onChange={(e) => setMillForm(prev => ({ ...prev, namaSupplier: e.target.value }))}
-                            placeholder="Masukkan nama supplier mill"
-                            required
+                            id="namaGroupMill"
+                            data-testid="input-nama-group-mill"
+                            value={millForm.namaGroup}
+                            onChange={(e) => setMillForm(prev => ({ ...prev, namaGroup: e.target.value }))}
+                            placeholder="Masukkan nama group/parent company"
                           />
                         </div>
-                        
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="izinBerusahaMill">Izin Berusaha (Nomor Induk Berusaha)</Label>
+                            <Input
+                              id="izinBerusahaMill"
+                              data-testid="input-izin-berusaha-mill"
+                              value={millForm.izinBerusaha}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, izinBerusaha: e.target.value }))}
+                              placeholder="Masukkan NIB"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="tipeSertifikatMill">Tipe Sertifikat Yang Dimiliki Perusahan</Label>
+                            <Select
+                              value={millForm.tipeSertifikat}
+                              onValueChange={(value) => setMillForm(prev => ({ ...prev, tipeSertifikat: value }))}
+                            >
+                              <SelectTrigger data-testid="select-tipe-sertifikat-mill">
+                                <SelectValue placeholder="Pilih tipe sertifikat" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="ISPO">ISPO</SelectItem>
+                                <SelectItem value="RSPO">RSPO</SelectItem>
+                                <SelectItem value="ISCC">ISCC</SelectItem>
+                                <SelectItem value="PROPER LINGKUNGAN">PROPER LINGKUNGAN</SelectItem>
+                                <SelectItem value="SMK3">SMK3</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorSertifikatMill">Nomor Sertifikat</Label>
+                            <Input
+                              id="nomorSertifikatMill"
+                              data-testid="input-nomor-sertifikat-mill"
+                              value={millForm.nomorSertifikat}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, nomorSertifikat: e.target.value }))}
+                              placeholder="Masukkan nomor sertifikat"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="lembagaSertifikasiMill">Lembaga Sertifikasi</Label>
+                            <Input
+                              id="lembagaSertifikasiMill"
+                              data-testid="input-lembaga-sertifikasi-mill"
+                              value={millForm.lembagaSertifikasi}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, lembagaSertifikasi: e.target.value }))}
+                              placeholder="Masukkan lembaga sertifikasi"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="masaBerlakuSertifikatMill">Masa Berlaku Sertifikat</Label>
+                            <Input
+                              id="masaBerlakuSertifikatMill"
+                              data-testid="input-masa-berlaku-sertifikat-mill"
+                              type="date"
+                              value={millForm.masaBerlakuSertifikat}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, masaBerlakuSertifikat: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
                         <div className="space-y-2">
-                          <Label htmlFor="kapasitasProduksi">Kapasitas Produksi (MT/hari)</Label>
-                          <Input
-                            id="kapasitasProduksi"
-                            data-testid="input-kapasitas-produksi"
-                            type="number"
-                            value={millForm.kapasitasProduksi}
-                            onChange={(e) => setMillForm(prev => ({ ...prev, kapasitasProduksi: parseInt(e.target.value) || 0 }))}
-                            placeholder="0"
+                          <Label htmlFor="ruangLingkupSertifikasiMill">Ruang Lingkup Sertifikasi</Label>
+                          <Textarea
+                            id="ruangLingkupSertifikasiMill"
+                            data-testid="input-ruang-lingkup-sertifikasi-mill"
+                            value={millForm.ruangLingkupSertifikasi}
+                            onChange={(e) => setMillForm(prev => ({ ...prev, ruangLingkupSertifikasi: e.target.value }))}
+                            placeholder="Masukkan ruang lingkup sertifikasi"
                           />
                         </div>
                       </div>
 
+                      {/* Alamat Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Alamat</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="alamatKantorMill">Kantor</Label>
+                            <Textarea
+                              id="alamatKantorMill"
+                              data-testid="input-alamat-kantor-mill"
+                              value={millForm.alamatKantor}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
+                              placeholder="Masukkan alamat kantor lengkap"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="alamatPabrik">Pabrik</Label>
+                            <Textarea
+                              id="alamatPabrik"
+                              data-testid="input-alamat-pabrik-mill"
+                              value={millForm.alamatPabrik}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, alamatPabrik: e.target.value }))}
+                              placeholder="Masukkan alamat pabrik lengkap"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Koordinat Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Koordinat</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="koordinatPabrik">Pabrik</Label>
+                            <Input
+                              id="koordinatPabrik"
+                              data-testid="input-koordinat-pabrik-mill"
+                              value={millForm.koordinatPabrik}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, koordinatPabrik: e.target.value }))}
+                              placeholder="Contoh: -2.5489, 117.1436"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="koordinatKantorMill">Kantor</Label>
+                            <Input
+                              id="koordinatKantorMill"
+                              data-testid="input-koordinat-kantor-mill"
+                              value={millForm.koordinatKantor}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, koordinatKantor: e.target.value }))}
+                              placeholder="Contoh: -2.5489, 117.1436"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Jenis Supplier Section */}
                       <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Dokumen Sertifikasi</h3>
+                        <h4 className="text-md font-semibold">Jenis Supplier</h4>
+                        <Select
+                          value={millForm.jenisSupplier}
+                          onValueChange={(value) => setMillForm(prev => ({ ...prev, jenisSupplier: value }))}
+                        >
+                          <SelectTrigger data-testid="select-jenis-supplier-mill">
+                            <SelectValue placeholder="Pilih jenis supplier" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="KKPA">Kebun plasma yang dikelola penuh oleh perusahaan (KKPA)</SelectItem>
+                            <SelectItem value="Sister Company">Kebun dalam satu grup manajemen (sister company)</SelectItem>
+                            <SelectItem value="Pihak Ketiga">Kebun pihak ketiga (PT/ CV/ Koperasi)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="kuantitasCPOPK">Kuantitas CPO/PK (M/T)</Label>
+                          <Input
+                            id="kuantitasCPOPK"
+                            data-testid="input-kuantitas-cpo-pk-mill"
+                            value={millForm.kuantitasCPOPK}
+                            onChange={(e) => setMillForm(prev => ({ ...prev, kuantitasCPOPK: e.target.value }))}
+                            placeholder="Masukkan kuantitas CPO/PK"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="tanggalPengisianKuisionerMill">Tanggal Pengisian Kuisioner</Label>
+                          <Input
+                            id="tanggalPengisianKuisionerMill"
+                            data-testid="input-tanggal-pengisian-mill"
+                            type="date"
+                            value={millForm.tanggalPengisianKuisioner}
+                            onChange={(e) => setMillForm(prev => ({ ...prev, tanggalPengisianKuisioner: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Penanggung Jawab Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Penanggung Jawab</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="namaPenanggungJawabMill">Nama</Label>
+                            <Input
+                              id="namaPenanggungJawabMill"
+                              data-testid="input-nama-penanggung-jawab-mill"
+                              value={millForm.namaPenanggungJawab}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, namaPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan nama penanggung jawab"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="jabatanPenanggungJawabMill">Jabatan</Label>
+                            <Input
+                              id="jabatanPenanggungJawabMill"
+                              data-testid="input-jabatan-penanggung-jawab-mill"
+                              value={millForm.jabatanPenanggungJawab}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, jabatanPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan jabatan"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="emailPenanggungJawabMill">Email</Label>
+                            <Input
+                              id="emailPenanggungJawabMill"
+                              data-testid="input-email-penanggung-jawab-mill"
+                              type="email"
+                              value={millForm.emailPenanggungJawab}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, emailPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan email"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorTelefonPenanggungJawabMill">Nomor Telfon / Handphone</Label>
+                            <Input
+                              id="nomorTelefonPenanggungJawabMill"
+                              data-testid="input-nomor-telepon-penanggung-jawab-mill"
+                              value={millForm.nomorTelefonPenanggungJawab}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, nomorTelefonPenanggungJawab: e.target.value }))}
+                              placeholder="Masukkan nomor telepon"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tim Internal Section */}
+                      <div className="space-y-6">
+                        <h4 className="text-md font-semibold">Tim Internal yang bertanggung jawab mengawasi implementasi kebijakan keberlanjutan perusahan</h4>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="namaTimInternalMill">Nama</Label>
+                            <Input
+                              id="namaTimInternalMill"
+                              data-testid="input-nama-tim-internal-mill"
+                              value={millForm.namaTimInternal}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, namaTimInternal: e.target.value }))}
+                              placeholder="Masukkan nama tim internal"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="jabatanTimInternalMill">Jabatan</Label>
+                            <Input
+                              id="jabatanTimInternalMill"
+                              data-testid="input-jabatan-tim-internal-mill"
+                              value={millForm.jabatanTimInternal}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, jabatanTimInternal: e.target.value }))}
+                              placeholder="Masukkan jabatan"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="emailTimInternalMill">Email</Label>
+                            <Input
+                              id="emailTimInternalMill"
+                              data-testid="input-email-tim-internal-mill"
+                              type="email"
+                              value={millForm.emailTimInternal}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, emailTimInternal: e.target.value }))}
+                              placeholder="Masukkan email"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="nomorTelefonTimInternalMill">Nomor Telfon / Handphone</Label>
+                            <Input
+                              id="nomorTelefonTimInternalMill"
+                              data-testid="input-nomor-telepon-tim-internal-mill"
+                              value={millForm.nomorTelefonTimInternal}
+                              onChange={(e) => setMillForm(prev => ({ ...prev, nomorTelefonTimInternal: e.target.value }))}
+                              placeholder="Masukkan nomor telepon"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bagian 2 - Daftar Sumber TBS & Plot Produksi */}
+                      <div className="space-y-8">
+                        <div>
+                          <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Daftar Sumber TBS & Plot Produksi</h3>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Cantumkan setiap unit pemasok, beserta geolokasi plot asal TBS yang memasok ke pabrik.
+                          </p>
+                        </div>
+
+                        {/* Kebun Inti Section */}
+                        <div className="space-y-4">
+                          <h4 className="text-md font-semibold">Kebun Inti</h4>
+                          {millForm.kebunInti.map((kebun, index) => (
+                            <Card key={index} className="p-4 bg-blue-50">
+                              <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                  <h5 className="font-medium">Kebun Inti {index + 1}</h5>
+                                  {millForm.kebunInti.length > 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun.splice(index, 1);
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                    >
+                                      Hapus
+                                    </Button>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Nama Supplier</Label>
+                                    <Input
+                                      value={kebun.namaSupplier}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].namaSupplier = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="Masukkan nama supplier"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Alamat</Label>
+                                    <Input
+                                      value={kebun.alamat}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].alamat = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="Masukkan alamat"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Luas Plot Lahan (Ha)</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={kebun.luasPlotLahan}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].luasPlotLahan = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>% Pasokan Ke Mill</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.1"
+                                      max="100"
+                                      value={kebun.persenPasokanKeMill}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].persenPasokanKeMill = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="0.0"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Volume TBS untuk Pasokan Ini</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={kebun.volumeTBSUntukPasokan}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].volumeTBSUntukPasokan = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-4 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Longitude</Label>
+                                    <Input
+                                      value={kebun.longitude}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].longitude = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="117.1436"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Latitude</Label>
+                                    <Input
+                                      value={kebun.latitude}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].latitude = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="-2.5489"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Polygon Kebun</Label>
+                                    <Input
+                                      value={kebun.polygonKebun}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].polygonKebun = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="Data polygon"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Tahun Tanam</Label>
+                                    <Input
+                                      value={kebun.tahunTanam}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunInti];
+                                        newKebun[index].tahunTanam = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                      }}
+                                      placeholder="2015"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Dokumen Legalitas Lahan (HGU/HGB/dll)</Label>
+                                  <ObjectUploader
+                                    onGetUploadParameters={handleGetUploadParameters}
+                                    onComplete={(result) => {
+                                      const newKebun = [...millForm.kebunInti];
+                                      newKebun[index].dokumenLegalitasLahan = result.successful[0]?.uploadURL || '';
+                                      setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
+                                    }}
+                                    buttonClassName="w-full"
+                                  >
+                                    <Upload className="w-4 h-4 mr-2" />
+                                    Unggah Dokumen Legalitas Lahan
+                                  </ObjectUploader>
+                                  {kebun.dokumenLegalitasLahan && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <FileText className="w-3 h-3 mr-1" />
+                                      Dokumen telah diunggah
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              const newKebun = {
+                                namaSupplier: '',
+                                alamat: '',
+                                luasPlotLahan: 0,
+                                longitude: '',
+                                latitude: '',
+                                polygonKebun: '',
+                                persenPasokanKeMill: 0,
+                                volumeTBSUntukPasokan: 0,
+                                dokumenLegalitasLahan: '',
+                                tahunTanam: ''
+                              };
+                              setMillForm(prev => ({
+                                ...prev,
+                                kebunInti: [...prev.kebunInti, newKebun]
+                              }));
+                            }}
+                            className="w-full"
+                          >
+                            + Tambah Kebun Inti
+                          </Button>
+                        </div>
+
+                        {/* Kebun Sepupu Section */}
+                        <div className="space-y-4">
+                          <h4 className="text-md font-semibold">Kebun Sepupu</h4>
+                          {millForm.kebunSepupu.map((kebun, index) => (
+                            <Card key={index} className="p-4 bg-green-50">
+                              <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                  <h5 className="font-medium">Kebun Sepupu {index + 1}</h5>
+                                  {millForm.kebunSepupu.length > 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun.splice(index, 1);
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                    >
+                                      Hapus
+                                    </Button>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Nama Supplier</Label>
+                                    <Input
+                                      value={kebun.namaSupplier}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].namaSupplier = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="Masukkan nama supplier"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Alamat</Label>
+                                    <Input
+                                      value={kebun.alamat}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].alamat = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="Masukkan alamat"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Luas Plot Lahan (Ha)</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={kebun.luasPlotLahan}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].luasPlotLahan = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>% Pasokan Ke Mill</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.1"
+                                      max="100"
+                                      value={kebun.persenPasokanKeMill}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].persenPasokanKeMill = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="0.0"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Volume TBS untuk Pasokan Ini</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={kebun.volumeTBSUntukPasokan}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].volumeTBSUntukPasokan = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-4 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Longitude</Label>
+                                    <Input
+                                      value={kebun.longitude}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].longitude = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="117.1436"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Latitude</Label>
+                                    <Input
+                                      value={kebun.latitude}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].latitude = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="-2.5489"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Polygon Kebun</Label>
+                                    <Input
+                                      value={kebun.polygonKebun}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].polygonKebun = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="Data polygon"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Tahun Tanam</Label>
+                                    <Input
+                                      value={kebun.tahunTanam}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.kebunSepupu];
+                                        newKebun[index].tahunTanam = e.target.value;
+                                        setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                      }}
+                                      placeholder="2015"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Dokumen Legalitas Lahan (HGU/HGB/dll)</Label>
+                                  <ObjectUploader
+                                    onGetUploadParameters={handleGetUploadParameters}
+                                    onComplete={(result) => {
+                                      const newKebun = [...millForm.kebunSepupu];
+                                      newKebun[index].dokumenLegalitasLahan = result.successful[0]?.uploadURL || '';
+                                      setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
+                                    }}
+                                    buttonClassName="w-full"
+                                  >
+                                    <Upload className="w-4 h-4 mr-2" />
+                                    Unggah Dokumen Legalitas Lahan
+                                  </ObjectUploader>
+                                  {kebun.dokumenLegalitasLahan && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <FileText className="w-3 h-3 mr-1" />
+                                      Dokumen telah diunggah
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              const newKebun = {
+                                namaSupplier: '',
+                                alamat: '',
+                                luasPlotLahan: 0,
+                                longitude: '',
+                                latitude: '',
+                                polygonKebun: '',
+                                persenPasokanKeMill: 0,
+                                volumeTBSUntukPasokan: 0,
+                                dokumenLegalitasLahan: '',
+                                tahunTanam: ''
+                              };
+                              setMillForm(prev => ({
+                                ...prev,
+                                kebunSepupu: [...prev.kebunSepupu, newKebun]
+                              }));
+                            }}
+                            className="w-full"
+                          >
+                            + Tambah Kebun Sepupu
+                          </Button>
+                        </div>
+
+                        {/* Third-Partied Section */}
+                        <div className="space-y-4">
+                          <h4 className="text-md font-semibold">Third-Partied ( PT/CV/KUD)</h4>
+                          {millForm.thirdPartied.map((kebun, index) => (
+                            <Card key={index} className="p-4 bg-orange-50">
+                              <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                  <h5 className="font-medium">Third-Partied {index + 1}</h5>
+                                  {millForm.thirdPartied.length > 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun.splice(index, 1);
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                    >
+                                      Hapus
+                                    </Button>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Nama Supplier</Label>
+                                    <Input
+                                      value={kebun.namaSupplier}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].namaSupplier = e.target.value;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="Masukkan nama supplier"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Alamat</Label>
+                                    <Input
+                                      value={kebun.alamat}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].alamat = e.target.value;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="Masukkan alamat"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Luas Plot Lahan (Ha)</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={kebun.luasPlotLahan}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].luasPlotLahan = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>% Pasokan Ke Mill</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.1"
+                                      max="100"
+                                      value={kebun.persenPasokanKeMill}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].persenPasokanKeMill = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="0.0"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Volume TBS untuk Pasokan Ini</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={kebun.volumeTBSUntukPasokan}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].volumeTBSUntukPasokan = parseFloat(e.target.value) || 0;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="0.00"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-4 gap-4">
+                                  <div className="space-y-2">
+                                    <Label>Longitude</Label>
+                                    <Input
+                                      value={kebun.longitude}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].longitude = e.target.value;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="117.1436"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Latitude</Label>
+                                    <Input
+                                      value={kebun.latitude}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].latitude = e.target.value;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="-2.5489"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Polygon Kebun</Label>
+                                    <Input
+                                      value={kebun.polygonKebun}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].polygonKebun = e.target.value;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="Data polygon"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label>Tahun Tanam</Label>
+                                    <Input
+                                      value={kebun.tahunTanam}
+                                      onChange={(e) => {
+                                        const newKebun = [...millForm.thirdPartied];
+                                        newKebun[index].tahunTanam = e.target.value;
+                                        setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                      }}
+                                      placeholder="2015"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Dokumen Legalitas Lahan (HGU/HGB/dll)</Label>
+                                  <ObjectUploader
+                                    onGetUploadParameters={handleGetUploadParameters}
+                                    onComplete={(result) => {
+                                      const newKebun = [...millForm.thirdPartied];
+                                      newKebun[index].dokumenLegalitasLahan = result.successful[0]?.uploadURL || '';
+                                      setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
+                                    }}
+                                    buttonClassName="w-full"
+                                  >
+                                    <Upload className="w-4 h-4 mr-2" />
+                                    Unggah Dokumen Legalitas Lahan
+                                  </ObjectUploader>
+                                  {kebun.dokumenLegalitasLahan && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <FileText className="w-3 h-3 mr-1" />
+                                      Dokumen telah diunggah
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              const newKebun = {
+                                namaSupplier: '',
+                                alamat: '',
+                                luasPlotLahan: 0,
+                                longitude: '',
+                                latitude: '',
+                                polygonKebun: '',
+                                persenPasokanKeMill: 0,
+                                volumeTBSUntukPasokan: 0,
+                                dokumenLegalitasLahan: '',
+                                tahunTanam: ''
+                              };
+                              setMillForm(prev => ({
+                                ...prev,
+                                thirdPartied: [...prev.thirdPartied, newKebun]
+                              }));
+                            }}
+                            className="w-full"
+                          >
+                            + Tambah Third-Partied
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Document Upload Sections */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Dokumen</h3>
                         
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label>Sertifikat ISO</Label>
+                            <Label>Akta Pendirian Perusahaan</Label>
                             <ObjectUploader
                               onGetUploadParameters={handleGetUploadParameters}
-                              onComplete={(result) => handleDocumentUploadComplete(result, 'sertifikatISO', 'mill')}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirian', 'mill')}
                               buttonClassName="w-full"
                             >
                               <Upload className="w-4 h-4 mr-2" />
-                              Unggah Sertifikat ISO
+                              Unggah Akta Pendirian
                             </ObjectUploader>
-                            {millForm.sertifikatISO && (
+                            {millForm.aktaPendirian && (
                               <Badge variant="secondary" className="text-xs">
                                 <FileText className="w-3 h-3 mr-1" />
                                 Dokumen telah diunggah
@@ -842,16 +1828,16 @@ export default function LegalityAssessmentExpanded() {
                           </div>
 
                           <div className="space-y-2">
-                            <Label>Izin Lingkungan</Label>
+                            <Label>Akta Perubahan (Jika Ada)</Label>
                             <ObjectUploader
                               onGetUploadParameters={handleGetUploadParameters}
-                              onComplete={(result) => handleDocumentUploadComplete(result, 'izinLingkungan', 'mill')}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'mill')}
                               buttonClassName="w-full"
                             >
                               <Upload className="w-4 h-4 mr-2" />
-                              Unggah Izin Lingkungan
+                              Unggah Akta Perubahan
                             </ObjectUploader>
-                            {millForm.izinLingkungan && (
+                            {millForm.aktaPerubahan && (
                               <Badge variant="secondary" className="text-xs">
                                 <FileText className="w-3 h-3 mr-1" />
                                 Dokumen telah diunggah
