@@ -111,9 +111,9 @@ export default function LegalityAssessmentExpanded() {
     pemasokTBS: [{
       no: 1,
       namaPetani: '',
-      alamatTempaTinggal: '',
+      alamatTempatTinggal: '',
       lokasiKebun: '',
-      luasHa: 0,
+      luas: 0, // Ha
       legalitasLahan: '', // document URL
       tahunTanam: '',
       stdb: '', // document URL
@@ -922,12 +922,50 @@ export default function LegalityAssessmentExpanded() {
                         />
                       </div>
 
+                      <div className="space-y-2">
+                        <Label htmlFor="lokasiUsaha">Lokasi Usaha</Label>
+                        <Input
+                          id="lokasiUsaha"
+                          data-testid="input-lokasi-usaha"
+                          value={traceabilityForm.lokasiUsaha}
+                          onChange={(e) => setTraceabilityForm(prev => ({ ...prev, lokasiUsaha: e.target.value }))}
+                          placeholder="Lokasi Ramp / Alamat Terdaftar CV / Koperasi / Usaha Individu"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          ( Lokasi Ramp / Alamat Terdaftar CV / Koperasi / Usaha Individu  )
+                        </p>
+                      </div>
+
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold">Legalitas Pemegang DO</h3>
                         
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label>Akta Pendirian Usaha (Jika Berbadan Hukum)</Label>
+                            <Label htmlFor="nib">NIB</Label>
+                            <Input
+                              id="nib"
+                              data-testid="input-nib-traceability"
+                              value={traceabilityForm.nib}
+                              onChange={(e) => setTraceabilityForm(prev => ({ ...prev, nib: e.target.value }))}
+                              placeholder="Masukkan NIB"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="npwp">NPWP</Label>
+                            <Input
+                              id="npwp"
+                              data-testid="input-npwp-traceability"
+                              value={traceabilityForm.npwp}
+                              onChange={(e) => setTraceabilityForm(prev => ({ ...prev, npwp: e.target.value }))}
+                              placeholder="Masukkan NPWP"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label>Akta Pendirian Usaha ( Jika Berbadan Hukum)</Label>
                             <ObjectUploader
                               onGetUploadParameters={handleGetUploadParameters}
                               onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'traceability')}
@@ -964,13 +1002,254 @@ export default function LegalityAssessmentExpanded() {
                         </div>
                       </div>
 
+                      {/* Pemasok TBS Section */}
+                      <div className="space-y-6">
+                        <h3 className="text-lg font-semibold border-b pb-2">Pemasok TBS</h3>
+                        
+                        {traceabilityForm.pemasokTBS.map((pemasok, index) => (
+                          <Card key={index} className="p-4 bg-gray-50">
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-center">
+                                <h4 className="font-medium">Pemasok {index + 1}</h4>
+                                {traceabilityForm.pemasokTBS.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok.splice(index, 1);
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                  >
+                                    Hapus
+                                  </Button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Nama Petani</Label>
+                                  <Input
+                                    value={pemasok.namaPetani}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].namaPetani = e.target.value;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="Masukkan nama petani"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Alamat Tempat Tinggal</Label>
+                                  <Input
+                                    value={pemasok.alamatTempatTinggal}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].alamatTempatTinggal = e.target.value;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="Masukkan alamat tempat tinggal"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Lokasi Kebun</Label>
+                                  <Input
+                                    value={pemasok.lokasiKebun}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].lokasiKebun = e.target.value;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="< 4 Ha : Titik Koordinat ≥ 4 Ha : Polygon"
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    ( &lt; 4 Ha : Titik Koordinat ≥ 4 Ha : Polygon )
+                                  </p>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Longitude</Label>
+                                  <Input
+                                    value={pemasok.longitude}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].longitude = e.target.value;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="Contoh: 117.1436"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Latitude</Label>
+                                  <Input
+                                    value={pemasok.latitude}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].latitude = e.target.value;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="Contoh: -2.5489"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Luas (Ha)</Label>
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={pemasok.luas}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].luas = parseFloat(e.target.value) || 0;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="0.00"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Tahun Tanam</Label>
+                                  <Input
+                                    value={pemasok.tahunTanam}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].tahunTanam = e.target.value;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="Contoh: 2015"
+                                  />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Nomor Objek Pajak PBB</Label>
+                                  <Input
+                                    value={pemasok.nomorObjekPajakPBB}
+                                    onChange={(e) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].nomorObjekPajakPBB = e.target.value;
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    placeholder="Masukkan nomor objek pajak PBB"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Document uploads for this pemasok */}
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Legalitas Lahan</Label>
+                                  <ObjectUploader
+                                    onGetUploadParameters={handleGetUploadParameters}
+                                    onComplete={(result) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].legalitasLahan = result.successful[0]?.uploadURL || '';
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    buttonClassName="w-full text-xs py-1"
+                                  >
+                                    <Upload className="w-3 h-3 mr-1" />
+                                    Unggah
+                                  </ObjectUploader>
+                                  {pemasok.legalitasLahan && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <FileText className="w-3 h-3 mr-1" />
+                                      Terunggah
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>STDB</Label>
+                                  <ObjectUploader
+                                    onGetUploadParameters={handleGetUploadParameters}
+                                    onComplete={(result) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].stdb = result.successful[0]?.uploadURL || '';
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    buttonClassName="w-full text-xs py-1"
+                                  >
+                                    <Upload className="w-3 h-3 mr-1" />
+                                    Unggah
+                                  </ObjectUploader>
+                                  {pemasok.stdb && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <FileText className="w-3 h-3 mr-1" />
+                                      Terunggah
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>SPPL</Label>
+                                  <ObjectUploader
+                                    onGetUploadParameters={handleGetUploadParameters}
+                                    onComplete={(result) => {
+                                      const newPemasok = [...traceabilityForm.pemasokTBS];
+                                      newPemasok[index].sppl = result.successful[0]?.uploadURL || '';
+                                      setTraceabilityForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
+                                    }}
+                                    buttonClassName="w-full text-xs py-1"
+                                  >
+                                    <Upload className="w-3 h-3 mr-1" />
+                                    Unggah
+                                  </ObjectUploader>
+                                  {pemasok.sppl && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <FileText className="w-3 h-3 mr-1" />
+                                      Terunggah
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const newPemasok = {
+                              no: traceabilityForm.pemasokTBS.length + 1,
+                              namaPetani: '',
+                              alamatTempatTinggal: '',
+                              lokasiKebun: '',
+                              longitude: '',
+                              latitude: '',
+                              luas: 0,
+                              legalitasLahan: '',
+                              tahunTanam: '',
+                              stdb: '',
+                              sppl: '',
+                              nomorObjekPajakPBB: ''
+                            };
+                            setTraceabilityForm(prev => ({
+                              ...prev,
+                              pemasokTBS: [...prev.pemasokTBS, newPemasok]
+                            }));
+                          }}
+                          className="w-full"
+                        >
+                          + Tambah Pemasok TBS
+                        </Button>
+                      </div>
+
                       <Button 
                         type="submit" 
                         data-testid="button-submit-traceability"
                         className="w-full" 
                         disabled={createTraceabilityMutation.isPending}
                       >
-                        {createTraceabilityMutation.isPending ? 'Menyimpan...' : 'Simpan Data Traceability'}
+                        {createTraceabilityMutation.isPending ? 'Menyimpan...' : 'Simpan Data Traceability TBS'}
                       </Button>
                     </form>
                   </CardContent>
