@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { Sidebar } from '@/components/layout/sidebar';
-import { TopBar } from '@/components/layout/top-bar';
+
 import { ObjectUploader } from '@/components/ObjectUploader';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -330,13 +329,8 @@ export default function LegalityAssessmentExpanded() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <TopBar />
-        
-        <div className="flex-1 overflow-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
             <div>
               <h1 data-testid="text-page-title" className="text-3xl font-bold">
                 Penilaian Legalitas EUDR
@@ -1036,8 +1030,6 @@ export default function LegalityAssessmentExpanded() {
               </TabsContent>
             </Tabs>
           </div>
-        </div>
-      </div>
     </div>
   );
 }
