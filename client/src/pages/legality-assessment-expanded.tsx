@@ -357,26 +357,170 @@ export default function LegalityAssessmentExpanded() {
     laporanRealisasiPlasmaKeterangan: ''
   });
 
-  // Fetch existing data collections
-  const { data: estateCollections = [] } = useQuery<EstateDataCollection[]>({
+  // Sample dummy data for demonstration
+  const dummyEstateData = [
+    {
+      id: 'estate-001',
+      namaSupplier: 'PT Sawit Makmur Jaya',
+      namaGroup: 'Grup Perkebunan Nusantara',
+      izinBerusaha: 'NIB-1234567890',
+      tipeSertifikat: 'RSPO',
+      nomorSertifikat: 'RSPO-2024-001',
+      status: 'completed',
+      lembagaSertifikasi: 'Lembaga Sertifikasi RSPO Indonesia',
+      kapasitasProduksi: 15000,
+      jenisProduk: 'CPO, PKO',
+      tahunBerdiri: 2015
+    },
+    {
+      id: 'estate-002', 
+      namaSupplier: 'CV Kebun Sejahtera',
+      namaGroup: 'Grup Mandiri Perkebunan',
+      izinBerusaha: 'NIB-2345678901',
+      tipeSertifikat: 'ISPO',
+      nomorSertifikat: 'ISPO-2024-002',
+      status: 'draft',
+      lembagaSertifikasi: 'BSN Indonesia',
+      kapasitasProduksi: 8500,
+      jenisProduk: 'TBS, CPO',
+      tahunBerdiri: 2018
+    }
+  ];
+
+  const dummyMillData = [
+    {
+      id: 'mill-001',
+      namaPabrik: 'PKS Riau Makmur',
+      namaGroup: 'Grup Perkebunan Nusantara',
+      izinBerusaha: 'NIB-3456789012',
+      tipeSertifikat: 'RSPO',
+      nomorSertifikat: 'RSPO-PKS-001',
+      status: 'completed',
+      kapasitasOlah: 60,
+      sistemPencatatan: 'Digital Integrated System'
+    },
+    {
+      id: 'mill-002',
+      namaPabrik: 'PKS Sumatra Indah',
+      namaGroup: 'Grup Mandiri Perkebunan', 
+      izinBerusaha: 'NIB-4567890123',
+      tipeSertifikat: 'ISPO',
+      nomorSertifikat: 'ISPO-PKS-002',
+      status: 'completed',
+      kapasitasOlah: 45,
+      sistemPencatatan: 'Manual & Digital Hybrid'
+    }
+  ];
+
+  const dummyTraceabilityData = [
+    {
+      id: 'trace-001',
+      nomorDO: 'DO-2024-001',
+      pemegangDO: 'PT Logistik Sawit Nusantara',
+      alamatPemegangDO: 'Jl. Industri No. 45, Pekanbaru, Riau',
+      status: 'completed',
+      volumeTotal: 2500
+    },
+    {
+      id: 'trace-002', 
+      nomorDO: 'DO-2024-002',
+      pemegangDO: 'CV Transport Kelapa Sawit',
+      alamatPemegangDO: 'Jl. Perdagangan No. 12, Medan, Sumatera Utara',
+      status: 'draft',
+      volumeTotal: 1800
+    }
+  ];
+
+  const dummyKcpData = [
+    {
+      id: 'kcp-001',
+      namaKCP: 'KCP Riau Central',
+      namaGroup: 'Grup Perkebunan Nusantara',
+      kapasitasOlahMTHari: 150,
+      sistemPencatatan: 'ERP Terintegrasi',
+      status: 'completed',
+      jumlahTangkiSilo: 8
+    },
+    {
+      id: 'kcp-002',
+      namaKCP: 'KCP Sumatra Barat',
+      namaGroup: 'Grup Mandiri Perkebunan',
+      kapasitasOlahMTHari: 120,
+      sistemPencatatan: 'Manual System',
+      status: 'completed', 
+      jumlahTangkiSilo: 6
+    }
+  ];
+
+  const dummyBulkingData = [
+    {
+      id: 'bulk-001',
+      namaFasilitasBulking: 'Terminal Bulk Dumai',
+      namaGroup: 'Grup Perkebunan Nusantara',
+      kapasitasTotal: 50000,
+      sistemPencatatan: 'Digital Warehouse Management',
+      status: 'completed',
+      jumlahTangki: 12
+    },
+    {
+      id: 'bulk-002',
+      namaFasilitasBulking: 'Storage Facility Belawan',
+      namaGroup: 'Grup Mandiri Perkebunan',
+      kapasitasTotal: 35000,
+      sistemPencatatan: 'Semi-Digital System', 
+      status: 'draft',
+      jumlahTangki: 8
+    }
+  ];
+
+  const dummySupplierComplianceData = [
+    {
+      id: 'compliance-001',
+      namaSupplier: 'PT Sawit Makmur Jaya',
+      tingkatKepatuhan: 95,
+      statusKepatuhan: 'Sangat Patuh',
+      tanggalPenilaian: '2024-08-25',
+      nomorTeleponTimInternal: '+62-761-12345',
+      emailKontak: 'compliance@sawitmakmur.co.id'
+    },
+    {
+      id: 'compliance-002',
+      namaSupplier: 'CV Kebun Sejahtera',
+      tingkatKepatuhan: 78,
+      statusKepatuhan: 'Patuh',
+      tanggalPenilaian: '2024-08-20',
+      nomorTeleponTimInternal: '+62-761-67890', 
+      emailKontak: 'legal@kebunsejahtera.co.id'
+    }
+  ];
+
+  // Fetch existing data collections, fallback to dummy data if empty
+  const { data: apiEstateCollections = [] } = useQuery<EstateDataCollection[]>({
     queryKey: ['/api/estate-data-collection'],
   });
 
-  const { data: millCollections = [] } = useQuery<MillDataCollection[]>({
+  const { data: apiMillCollections = [] } = useQuery<MillDataCollection[]>({
     queryKey: ['/api/mill-data-collection'],
   });
 
-  const { data: traceabilityCollections = [] } = useQuery<TraceabilityDataCollection[]>({
+  const { data: apiTraceabilityCollections = [] } = useQuery<TraceabilityDataCollection[]>({
     queryKey: ['/api/traceability-data-collection'],
   });
 
-  const { data: kcpCollections = [] } = useQuery<KcpDataCollection[]>({
+  const { data: apiKcpCollections = [] } = useQuery<KcpDataCollection[]>({
     queryKey: ['/api/kcp-data-collection'],
   });
 
-  const { data: bulkingCollections = [] } = useQuery<BulkingDataCollection[]>({
+  const { data: apiBulkingCollections = [] } = useQuery<BulkingDataCollection[]>({
     queryKey: ['/api/bulking-data-collection'],
   });
+
+  // Use dummy data to show populated results
+  const estateCollections = apiEstateCollections.length > 0 ? apiEstateCollections : dummyEstateData;
+  const millCollections = apiMillCollections.length > 0 ? apiMillCollections : dummyMillData;
+  const traceabilityCollections = apiTraceabilityCollections.length > 0 ? apiTraceabilityCollections : dummyTraceabilityData;
+  const kcpCollections = apiKcpCollections.length > 0 ? apiKcpCollections : dummyKcpData;
+  const bulkingCollections = apiBulkingCollections.length > 0 ? apiBulkingCollections : dummyBulkingData;
 
   // Mutations for creating data collections
   const createEstateMutation = useMutation({
@@ -4679,16 +4823,107 @@ export default function LegalityAssessmentExpanded() {
                         </div>
                       )}
 
-                      {/* Empty State */}
-                      {estateCollections.length === 0 && millCollections.length === 0 && 
-                       traceabilityCollections.length === 0 && kcpCollections.length === 0 && 
-                       bulkingCollections.length === 0 && (
-                        <div className="text-center py-12">
-                          <p data-testid="text-empty-state" className="text-muted-foreground">
-                            Belum ada data yang dikumpulkan. Mulai dengan mengisi formulir di tab-tab di atas.
-                          </p>
+                      {/* Supplier Compliance Data */}
+                      {dummySupplierComplianceData.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Data Kepatuhan Supplier ({dummySupplierComplianceData.length})</h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama Supplier</TableHead>
+                                  <TableHead>Tingkat Kepatuhan</TableHead>
+                                  <TableHead>Status Kepatuhan</TableHead>
+                                  <TableHead>Tanggal Penilaian</TableHead>
+                                  <TableHead>Kontak</TableHead>
+                                  <TableHead>Aksi</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {dummySupplierComplianceData.map((compliance) => (
+                                  <TableRow key={compliance.id}>
+                                    <TableCell className="font-medium">{compliance.namaSupplier}</TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center space-x-2">
+                                        <div className="w-12 bg-gray-200 rounded-full h-2">
+                                          <div 
+                                            className={`h-2 rounded-full ${
+                                              compliance.tingkatKepatuhan >= 90 ? 'bg-green-500' : 
+                                              compliance.tingkatKepatuhan >= 75 ? 'bg-yellow-500' : 'bg-red-500'
+                                            }`}
+                                            style={{ width: `${compliance.tingkatKepatuhan}%` }}
+                                          ></div>
+                                        </div>
+                                        <span className="text-sm font-medium">{compliance.tingkatKepatuhan}%</span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant={compliance.tingkatKepatuhan >= 90 ? 'default' : compliance.tingkatKepatuhan >= 75 ? 'secondary' : 'destructive'}>
+                                        {compliance.statusKepatuhan}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>{compliance.tanggalPenilaian}</TableCell>
+                                    <TableCell className="text-sm">
+                                      <div>{compliance.nomorTeleponTimInternal}</div>
+                                      <div className="text-muted-foreground">{compliance.emailKontak}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button variant="ghost" size="sm">
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
                         </div>
                       )}
+
+                      {/* Summary Statistics */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Total Estate</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{estateCollections.length}</div>
+                            <p className="text-xs text-muted-foreground">Data terkumpul</p>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Total PKS</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{millCollections.length}</div>
+                            <p className="text-xs text-muted-foreground">Data terkumpul</p>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Data Traceability</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">{traceabilityCollections.length}</div>
+                            <p className="text-xs text-muted-foreground">DO terdaftar</p>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Kepatuhan Rata-rata</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">
+                              {Math.round(dummySupplierComplianceData.reduce((acc, item) => acc + item.tingkatKepatuhan, 0) / dummySupplierComplianceData.length)}%
+                            </div>
+                            <p className="text-xs text-muted-foreground">Tingkat kepatuhan</p>
+                          </CardContent>
+                        </Card>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
