@@ -1258,5 +1258,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Traceability Data Collection endpoints
+  app.get('/api/traceability-data-collection', async (req, res) => {
+    try {
+      const collections = await storage.getTraceabilityDataCollections();
+      res.json(collections);
+    } catch (error) {
+      console.error('Error fetching traceability data collections:', error);
+      res.status(500).json({ error: 'Failed to fetch traceability data collections' });
+    }
+  });
+
+  app.post('/api/traceability-data-collection', async (req, res) => {
+    try {
+      const { insertTraceabilityDataCollectionSchema } = await import("@shared/schema");
+      const validatedData = insertTraceabilityDataCollectionSchema.parse(req.body);
+      const collection = await storage.createTraceabilityDataCollection(validatedData);
+      res.status(201).json(collection);
+    } catch (error) {
+      console.error('Error creating traceability data collection:', error);
+      if (error.name === 'ZodError') {
+        res.status(400).json({ error: 'Invalid data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create traceability data collection' });
+      }
+    }
+  });
+
+  // KCP Data Collection endpoints
+  app.get('/api/kcp-data-collection', async (req, res) => {
+    try {
+      const collections = await storage.getKcpDataCollections();
+      res.json(collections);
+    } catch (error) {
+      console.error('Error fetching KCP data collections:', error);
+      res.status(500).json({ error: 'Failed to fetch KCP data collections' });
+    }
+  });
+
+  app.post('/api/kcp-data-collection', async (req, res) => {
+    try {
+      const { insertKcpDataCollectionSchema } = await import("@shared/schema");
+      const validatedData = insertKcpDataCollectionSchema.parse(req.body);
+      const collection = await storage.createKcpDataCollection(validatedData);
+      res.status(201).json(collection);
+    } catch (error) {
+      console.error('Error creating KCP data collection:', error);
+      if (error.name === 'ZodError') {
+        res.status(400).json({ error: 'Invalid data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create KCP data collection' });
+      }
+    }
+  });
+
+  // Bulking Data Collection endpoints
+  app.get('/api/bulking-data-collection', async (req, res) => {
+    try {
+      const collections = await storage.getBulkingDataCollections();
+      res.json(collections);
+    } catch (error) {
+      console.error('Error fetching bulking data collections:', error);
+      res.status(500).json({ error: 'Failed to fetch bulking data collections' });
+    }
+  });
+
+  app.post('/api/bulking-data-collection', async (req, res) => {
+    try {
+      const { insertBulkingDataCollectionSchema } = await import("@shared/schema");
+      const validatedData = insertBulkingDataCollectionSchema.parse(req.body);
+      const collection = await storage.createBulkingDataCollection(validatedData);
+      res.status(201).json(collection);
+    } catch (error) {
+      console.error('Error creating bulking data collection:', error);
+      if (error.name === 'ZodError') {
+        res.status(400).json({ error: 'Invalid data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create bulking data collection' });
+      }
+    }
+  });
+
   return httpServer;
 }

@@ -9,7 +9,7 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
-import LegalityAssessment from "@/pages/legality-assessment-complete";
+import LegalityAssessment from "@/pages/legality-assessment-expanded";
 import UnifiedMonitoring from "@/pages/unified-monitoring";
 import UnifiedSupplyChain from "@/pages/unified-supply-chain";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";

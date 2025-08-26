@@ -764,7 +764,179 @@ export const legacyEstateDataCollection = pgTable("legacy_estate_data_collection
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Traceability (TBS Luar) Data Collection Schema
+export const traceabilityDataCollection = pgTable("traceability_data_collection", {
+  id: serial("id").primaryKey(),
+  
+  // Basic DO Information
+  nomorDO: text("nomor_do").notNull(),
+  pemegangDO: text("pemegang_do").notNull(),
+  alamatPemegangDO: text("alamat_pemegang_do"),
+  lokasiUsaha: text("lokasi_usaha"),
+  
+  // Legalitas Pemegang DO
+  aktaPendirianUsaha: text("akta_pendirian_usaha"), // document URL
+  nib: text("nib"),
+  npwp: text("npwp"),
+  ktp: text("ktp"), // document URL
+  
+  // Pemasok TBS Array - structured as JSON for dynamic farmer entries
+  pemasokTBS: jsonb("pemasok_tbs").$type<Array<{
+    no: number;
+    namaPetani: string;
+    alamatTempaTinggal: string;
+    lokasiKebun: string;
+    luasHa: number;
+    legalitasLahan: string; // document URL
+    tahunTanam: string;
+    stdb: string; // document URL
+    sppl: string; // document URL
+    nomorObjekPajakPBB: string;
+    longitude: string;
+    latitude: string;
+  }>>().default([]),
+  
+  // Status and metadata
+  status: text("status").default("draft"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
+// KCP Data Collection Schema
+export const kcpDataCollection = pgTable("kcp_data_collection", {
+  id: serial("id").primaryKey(),
+  
+  // Bagian 1 - Informasi Umum
+  ublFacilityId: text("ubl_facility_id"),
+  namaKCP: text("nama_kcp").notNull(),
+  namaGroup: text("nama_group"),
+  izinBerusaha: text("izin_berusaha"),
+  tipeSertifikat: text("tipe_sertifikat"),
+  nomorSertifikat: text("nomor_sertifikat"),
+  lembagaSertifikasi: text("lembaga_sertifikasi"),
+  ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
+  masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
+  
+  // Alamat
+  alamatKantor: text("alamat_kantor"),
+  alamatKCP: text("alamat_kcp"),
+  koordinatKantor: text("koordinat_kantor"),
+  koordinatKCP: text("koordinat_kcp"),
+  
+  // Operational Info
+  modelChainOfCustody: text("model_chain_of_custody"),
+  kapasitasOlahMTHari: decimal("kapasitas_olah_mt_hari", { precision: 10, scale: 2 }),
+  sistemPencatatan: text("sistem_pencatatan"), // LIFO/FIFO/Weighted
+  tanggalPengisianKuisioner: date("tanggal_pengisian_kuisioner"),
+  
+  // Penanggung Jawab
+  namaPenanggungJawab: text("nama_penanggung_jawab"),
+  jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
+  emailPenanggungJawab: text("email_penanggung_jawab"),
+  nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
+  
+  // Tim Internal
+  namaTimInternal: text("nama_tim_internal"),
+  jabatanTimInternal: text("jabatan_tim_internal"),
+  emailTimInternal: text("email_tim_internal"),
+  nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
+  
+  // Bagian 2 - Daftar Tangki/Silo Array
+  daftarTangkiSilo: jsonb("daftar_tangki_silo").$type<Array<{
+    idTangkiSilo: string;
+    kategori: string; // Raw Kernel/CPKO/PKC
+    produk: string;
+    alamat: string;
+    longitude: string;
+    latitude: string;
+    kapasitas: number;
+    tanggalCleaningTerakhir: string;
+  }>>().default([]),
+  
+  // Bagian 3 - Sumber Produk Array
+  sumberProduk: jsonb("sumber_produk").$type<Array<{
+    millId: string;
+    namaPKS: string;
+    alamat: string;
+    longitude: string;
+    latitude: string;
+    produk: string;
+    volume: number;
+    sertifikasi: string; // ISPO/RSPO/ISCC
+  }>>().default([]),
+  
+  // Status and metadata
+  status: text("status").default("draft"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Bulking Data Collection Schema
+export const bulkingDataCollection = pgTable("bulking_data_collection", {
+  id: serial("id").primaryKey(),
+  
+  // Bagian 1 - Informasi Umum
+  ublFacilityId: text("ubl_facility_id"),
+  namaFasilitasBulking: text("nama_fasilitas_bulking").notNull(),
+  namaGroup: text("nama_group"),
+  izinBerusaha: text("izin_berusaha"),
+  tipeSertifikat: text("tipe_sertifikat"),
+  nomorSertifikat: text("nomor_sertifikat"),
+  lembagaSertifikasi: text("lembaga_sertifikasi"),
+  ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
+  masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
+  
+  // Alamat
+  alamatKantor: text("alamat_kantor"),
+  alamatBulking: text("alamat_bulking"),
+  
+  // Operational Info
+  modelChainOfCustody: text("model_chain_of_custody"),
+  kapasitasTotal: decimal("kapasitas_total", { precision: 10, scale: 2 }),
+  sistemPencatatan: text("sistem_pencatatan"), // LIFO/FIFO
+  tanggalPengisianKuisioner: date("tanggal_pengisian_kuisioner"),
+  
+  // Penanggung Jawab
+  namaPenanggungJawab: text("nama_penanggung_jawab"),
+  jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
+  emailPenanggungJawab: text("email_penanggung_jawab"),
+  nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
+  
+  // Tim Internal
+  namaTimInternal: text("nama_tim_internal"),
+  jabatanTimInternal: text("jabatan_tim_internal"),
+  emailTimInternal: text("email_tim_internal"),
+  nomorTeleponTimInternal: text("nomor_telepon_tim_internal"),
+  
+  // Bagian 2 - Daftar Tangki Array
+  daftarTangki: jsonb("daftar_tangki").$type<Array<{
+    tankId: string;
+    produk: string;
+    kapasitas: number;
+    alamat: string;
+    longitude: string;
+    latitude: string;
+    dedicatedShared: string; // Dedicated/Shared
+    tanggalCleaningTerakhir: string;
+  }>>().default([]),
+  
+  // Bagian 3 - Sumber Produk Array
+  sumberProduk: jsonb("sumber_produk").$type<Array<{
+    millId: string;
+    namaPKS: string;
+    alamat: string;
+    longitude: string;
+    latitude: string;
+    produk: string;
+    volume: number;
+    sertifikasi: string; // ISPO/RSPO/ISCC
+  }>>().default([]),
+  
+  // Status and metadata
+  status: text("status").default("draft"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
 // Export types
 export type User = typeof users.$inferSelect;
@@ -820,6 +992,9 @@ export const insertMillSchema = createInsertSchema(mills);
 export const insertDdsReportSchema = createInsertSchema(ddsReports);
 export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection);
 export const insertMillDataCollectionSchema = createInsertSchema(millDataCollection);
+export const insertTraceabilityDataCollectionSchema = createInsertSchema(traceabilityDataCollection);
+export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollection);
+export const insertBulkingDataCollectionSchema = createInsertSchema(bulkingDataCollection);
 
 // Export types for workflow entities (supplement to existing Supplier types)
 export type SupplierWorkflowLink = typeof supplierWorkflowLinks.$inferSelect;
@@ -832,3 +1007,9 @@ export type EstateDataCollection = typeof estateDataCollection.$inferSelect;
 export type InsertEstateDataCollection = typeof estateDataCollection.$inferInsert;
 export type MillDataCollection = typeof millDataCollection.$inferSelect;
 export type InsertMillDataCollection = typeof millDataCollection.$inferInsert;
+export type TraceabilityDataCollection = typeof traceabilityDataCollection.$inferSelect;
+export type InsertTraceabilityDataCollection = typeof traceabilityDataCollection.$inferInsert;
+export type KcpDataCollection = typeof kcpDataCollection.$inferSelect;
+export type InsertKcpDataCollection = typeof kcpDataCollection.$inferInsert;
+export type BulkingDataCollection = typeof bulkingDataCollection.$inferSelect;
+export type InsertBulkingDataCollection = typeof bulkingDataCollection.$inferInsert;

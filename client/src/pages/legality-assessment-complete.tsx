@@ -233,6 +233,18 @@ export default function LegalityAssessmentPage() {
     queryKey: ['/api/mill-data-collection'],
   });
 
+  const { data: traceabilityCollections = [] } = useQuery({
+    queryKey: ['/api/traceability-data-collection'],
+  });
+
+  const { data: kcpCollections = [] } = useQuery({
+    queryKey: ['/api/kcp-data-collection'],
+  });
+
+  const { data: bulkingCollections = [] } = useQuery({
+    queryKey: ['/api/bulking-data-collection'],
+  });
+
   // Mutations for creating data collections
   const createEstateMutation = useMutation({
     mutationFn: (data: any) => apiRequest('/api/estate-data-collection', 'POST', data),

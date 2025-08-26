@@ -123,6 +123,21 @@ export interface IStorage {
   createMillDataCollection(insertMillData: import("@shared/schema").InsertMillDataCollection): Promise<import("@shared/schema").MillDataCollection>;
   updateMillDataCollection(id: string, updates: Partial<import("@shared/schema").MillDataCollection>): Promise<import("@shared/schema").MillDataCollection | undefined>;
   deleteMillDataCollection(id: string): Promise<boolean>;
+  
+  // Traceability Data Collection methods
+  getTraceabilityDataCollections(): Promise<import("@shared/schema").TraceabilityDataCollection[]>;
+  getTraceabilityDataCollectionById(id: string): Promise<import("@shared/schema").TraceabilityDataCollection | undefined>;
+  createTraceabilityDataCollection(insertData: import("@shared/schema").InsertTraceabilityDataCollection): Promise<import("@shared/schema").TraceabilityDataCollection>;
+  
+  // KCP Data Collection methods
+  getKcpDataCollections(): Promise<import("@shared/schema").KcpDataCollection[]>;
+  getKcpDataCollectionById(id: string): Promise<import("@shared/schema").KcpDataCollection | undefined>;
+  createKcpDataCollection(insertData: import("@shared/schema").InsertKcpDataCollection): Promise<import("@shared/schema").KcpDataCollection>;
+  
+  // Bulking Data Collection methods
+  getBulkingDataCollections(): Promise<import("@shared/schema").BulkingDataCollection[]>;
+  getBulkingDataCollectionById(id: string): Promise<import("@shared/schema").BulkingDataCollection | undefined>;
+  createBulkingDataCollection(insertData: import("@shared/schema").InsertBulkingDataCollection): Promise<import("@shared/schema").BulkingDataCollection>;
 }
 
 // Database implementation of IStorage
@@ -623,6 +638,114 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error deleting mill data collection:", error);
       return false;
+    }
+  }
+
+  // Traceability Data Collection methods
+  async getTraceabilityDataCollections(): Promise<import("@shared/schema").TraceabilityDataCollection[]> {
+    try {
+      const { traceabilityDataCollection } = await import("@shared/schema");
+      return await db.select().from(traceabilityDataCollection).orderBy(desc(traceabilityDataCollection.createdAt));
+    } catch (error) {
+      console.error("Error getting traceability data collections:", error);
+      return [];
+    }
+  }
+
+  async getTraceabilityDataCollectionById(id: string): Promise<import("@shared/schema").TraceabilityDataCollection | undefined> {
+    try {
+      const { traceabilityDataCollection } = await import("@shared/schema");
+      const [result] = await db.select().from(traceabilityDataCollection).where(eq(traceabilityDataCollection.id, id));
+      return result || undefined;
+    } catch (error) {
+      console.error("Error getting traceability data collection by id:", error);
+      return undefined;
+    }
+  }
+
+  async createTraceabilityDataCollection(insertData: import("@shared/schema").InsertTraceabilityDataCollection): Promise<import("@shared/schema").TraceabilityDataCollection> {
+    try {
+      const { traceabilityDataCollection } = await import("@shared/schema");
+      const [result] = await db
+        .insert(traceabilityDataCollection)
+        .values(insertData)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error("Error creating traceability data collection:", error);
+      throw error;
+    }
+  }
+
+  // KCP Data Collection methods
+  async getKcpDataCollections(): Promise<import("@shared/schema").KcpDataCollection[]> {
+    try {
+      const { kcpDataCollection } = await import("@shared/schema");
+      return await db.select().from(kcpDataCollection).orderBy(desc(kcpDataCollection.createdAt));
+    } catch (error) {
+      console.error("Error getting KCP data collections:", error);
+      return [];
+    }
+  }
+
+  async getKcpDataCollectionById(id: string): Promise<import("@shared/schema").KcpDataCollection | undefined> {
+    try {
+      const { kcpDataCollection } = await import("@shared/schema");
+      const [result] = await db.select().from(kcpDataCollection).where(eq(kcpDataCollection.id, parseInt(id)));
+      return result || undefined;
+    } catch (error) {
+      console.error("Error getting KCP data collection by id:", error);
+      return undefined;
+    }
+  }
+
+  async createKcpDataCollection(insertData: import("@shared/schema").InsertKcpDataCollection): Promise<import("@shared/schema").KcpDataCollection> {
+    try {
+      const { kcpDataCollection } = await import("@shared/schema");
+      const [result] = await db
+        .insert(kcpDataCollection)
+        .values(insertData)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error("Error creating KCP data collection:", error);
+      throw error;
+    }
+  }
+
+  // Bulking Data Collection methods
+  async getBulkingDataCollections(): Promise<import("@shared/schema").BulkingDataCollection[]> {
+    try {
+      const { bulkingDataCollection } = await import("@shared/schema");
+      return await db.select().from(bulkingDataCollection).orderBy(desc(bulkingDataCollection.createdAt));
+    } catch (error) {
+      console.error("Error getting bulking data collections:", error);
+      return [];
+    }
+  }
+
+  async getBulkingDataCollectionById(id: string): Promise<import("@shared/schema").BulkingDataCollection | undefined> {
+    try {
+      const { bulkingDataCollection } = await import("@shared/schema");
+      const [result] = await db.select().from(bulkingDataCollection).where(eq(bulkingDataCollection.id, parseInt(id)));
+      return result || undefined;
+    } catch (error) {
+      console.error("Error getting bulking data collection by id:", error);
+      return undefined;
+    }
+  }
+
+  async createBulkingDataCollection(insertData: import("@shared/schema").InsertBulkingDataCollection): Promise<import("@shared/schema").BulkingDataCollection> {
+    try {
+      const { bulkingDataCollection } = await import("@shared/schema");
+      const [result] = await db
+        .insert(bulkingDataCollection)
+        .values(insertData)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error("Error creating bulking data collection:", error);
+      throw error;
     }
   }
 }

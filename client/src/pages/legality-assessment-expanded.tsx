@@ -1,0 +1,1043 @@
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Sidebar } from '@/components/layout/sidebar';
+import { TopBar } from '@/components/layout/top-bar';
+import { ObjectUploader } from '@/components/ObjectUploader';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Trash2, FileText, Upload, Download, Eye } from 'lucide-react';
+import type { UploadResult } from '@uppy/core';
+import type { EstateDataCollection, MillDataCollection, TraceabilityDataCollection, KcpDataCollection, BulkingDataCollection } from '@shared/schema';
+
+export default function LegalityAssessmentExpanded() {
+  const [activeTab, setActiveTab] = useState('estate');
+  const { toast } = useToast();
+
+  // Form states for all collection types
+  const [estateForm, setEstateForm] = useState({
+    namaSupplier: '',
+    alamatKantor: '',
+    alamatOperasional: '',
+    nomorTelepon: '',
+    emailKontak: '',
+    namaKontakPerson: '',
+    jabatanKontakPerson: '',
+    nomorIndukBerusaha: '',
+    aktaPendirian: '', // document URL
+    suratIzinUsaha: '', // document URL
+    npwp: '', // document URL
+    sertifikatHalal: '', // document URL
+  });
+
+  const [millForm, setMillForm] = useState({
+    namaSupplier: '',
+    alamatKantor: '',
+    alamatFasilitas: '',
+    nomorTelepon: '',
+    emailKontak: '',
+    namaKontakPerson: '',
+    kapasitasProduksi: 0,
+    jenisProduk: '',
+    teknologiProduksi: '',
+    tahunBerdiri: 2000,
+    jumlahKaryawan: 0,
+    statusKepemilikan: '',
+    sertifikatISO: '', // document URL
+    sertifikatHalal: '', // document URL
+    izinLingkungan: '', // document URL
+    izinOperasional: '', // document URL
+  });
+
+  const [traceabilityForm, setTraceabilityForm] = useState({
+    nomorDO: '',
+    pemegangDO: '',
+    alamatPemegangDO: '',
+    lokasiUsaha: '',
+    aktaPendirianUsaha: '', // document URL
+    nib: '',
+    npwp: '',
+    ktp: '', // document URL
+    pemasokTBS: [{
+      no: 1,
+      namaPetani: '',
+      alamatTempaTinggal: '',
+      lokasiKebun: '',
+      luasHa: 0,
+      legalitasLahan: '', // document URL
+      tahunTanam: '',
+      stdb: '', // document URL
+      sppl: '', // document URL
+      nomorObjekPajakPBB: '',
+      longitude: '',
+      latitude: '',
+    }]
+  });
+
+  const [kcpForm, setKcpForm] = useState({
+    ublFacilityId: '',
+    namaKCP: '',
+    namaGroup: '',
+    izinBerusaha: '',
+    tipeSertifikat: '',
+    nomorSertifikat: '',
+    lembagaSertifikasi: '',
+    ruangLingkupSertifikasi: '',
+    masaBerlakuSertifikat: '',
+    alamatKantor: '',
+    alamatKCP: '',
+    koordinatKantor: '',
+    koordinatKCP: '',
+    modelChainOfCustody: '',
+    kapasitasOlahMTHari: 0,
+    sistemPencatatan: '',
+    tanggalPengisianKuisioner: '',
+    namaPenanggungJawab: '',
+    jabatanPenanggungJawab: '',
+    emailPenanggungJawab: '',
+    nomorTelefonPenanggungJawab: '',
+    namaTimInternal: '',
+    jabatanTimInternal: '',
+    emailTimInternal: '',
+    nomorTelefonTimInternal: '',
+    daftarTangkiSilo: [{
+      idTangkiSilo: '',
+      kategori: '',
+      produk: '',
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      kapasitas: 0,
+      tanggalCleaningTerakhir: '',
+    }],
+    sumberProduk: [{
+      millId: '',
+      namaPKS: '',
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      produk: '',
+      volume: 0,
+      sertifikasi: '',
+    }]
+  });
+
+  const [bulkingForm, setBulkingForm] = useState({
+    ublFacilityId: '',
+    namaFasilitasBulking: '',
+    namaGroup: '',
+    izinBerusaha: '',
+    tipeSertifikat: '',
+    nomorSertifikat: '',
+    lembagaSertifikasi: '',
+    ruangLingkupSertifikasi: '',
+    masaBerlakuSertifikat: '',
+    alamatKantor: '',
+    alamatBulking: '',
+    modelChainOfCustody: '',
+    kapasitasTotal: 0,
+    sistemPencatatan: '',
+    tanggalPengisianKuisioner: '',
+    namaPenanggungJawab: '',
+    jabatanPenanggungJawab: '',
+    emailPenanggungJawab: '',
+    nomorTelefonPenanggungJawab: '',
+    namaTimInternal: '',
+    jabatanTimInternal: '',
+    emailTimInternal: '',
+    nomorTeleponTimInternal: '',
+    daftarTangki: [{
+      tankId: '',
+      produk: '',
+      kapasitas: 0,
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      dedicatedShared: '',
+      tanggalCleaningTerakhir: '',
+    }],
+    sumberProduk: [{
+      millId: '',
+      namaPKS: '',
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      produk: '',
+      volume: 0,
+      sertifikasi: '',
+    }]
+  });
+
+  // Fetch existing data collections
+  const { data: estateCollections = [] } = useQuery<EstateDataCollection[]>({
+    queryKey: ['/api/estate-data-collection'],
+  });
+
+  const { data: millCollections = [] } = useQuery<MillDataCollection[]>({
+    queryKey: ['/api/mill-data-collection'],
+  });
+
+  const { data: traceabilityCollections = [] } = useQuery<TraceabilityDataCollection[]>({
+    queryKey: ['/api/traceability-data-collection'],
+  });
+
+  const { data: kcpCollections = [] } = useQuery<KcpDataCollection[]>({
+    queryKey: ['/api/kcp-data-collection'],
+  });
+
+  const { data: bulkingCollections = [] } = useQuery<BulkingDataCollection[]>({
+    queryKey: ['/api/bulking-data-collection'],
+  });
+
+  // Mutations for creating data collections
+  const createEstateMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/estate-data-collection', 'POST', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/estate-data-collection'] });
+      toast({
+        title: "Data Estate berhasil disimpan",
+        description: "Data Estate telah berhasil disimpan ke sistem.",
+      });
+      setActiveTab('results');
+    },
+  });
+
+  const createMillMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/mill-data-collection', 'POST', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/mill-data-collection'] });
+      toast({
+        title: "Data Mill berhasil disimpan",
+        description: "Data Mill telah berhasil disimpan ke sistem.",
+      });
+      setActiveTab('results');
+    },
+  });
+
+  const createTraceabilityMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/traceability-data-collection', 'POST', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/traceability-data-collection'] });
+      toast({
+        title: "Data Traceability berhasil disimpan",
+        description: "Data Kemampuan Telusur (TBS Luar) telah berhasil disimpan ke sistem.",
+      });
+      setActiveTab('results');
+    },
+  });
+
+  const createKcpMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/kcp-data-collection', 'POST', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/kcp-data-collection'] });
+      toast({
+        title: "Data KCP berhasil disimpan",
+        description: "Data KCP telah berhasil disimpan ke sistem.",
+      });
+      setActiveTab('results');
+    },
+  });
+
+  const createBulkingMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/bulking-data-collection', 'POST', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bulking-data-collection'] });
+      toast({
+        title: "Data Bulking berhasil disimpan",
+        description: "Data Bulking telah berhasil disimpan ke sistem.",
+      });
+      setActiveTab('results');
+    },
+  });
+
+  // Document upload functionality
+  const handleGetUploadParameters = async () => {
+    try {
+      const response = await apiRequest('/api/objects/upload', 'POST');
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL,
+      };
+    } catch (error) {
+      console.error('Error getting upload parameters:', error);
+      throw error;
+    }
+  };
+
+  const handleDocumentUploadComplete = (
+    result: UploadResult<Record<string, unknown>, Record<string, unknown>>,
+    fieldName: string,
+    formType: 'estate' | 'mill' | 'traceability' | 'kcp' | 'bulking'
+  ) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      const uploadURL = uploadedFile.response?.uploadURL || uploadedFile.uploadURL || '';
+      const objectPath = uploadURL.includes('/uploads/') ? 
+        `/objects/uploads/${uploadURL.split('/uploads/')[1]}` : 
+        `/objects/uploads/${uploadedFile.id || 'unknown'}`;
+      
+      if (formType === 'estate') {
+        setEstateForm(prev => ({ ...prev, [fieldName]: objectPath }));
+      } else if (formType === 'mill') {
+        setMillForm(prev => ({ ...prev, [fieldName]: objectPath }));
+      } else if (formType === 'traceability') {
+        setTraceabilityForm(prev => ({ ...prev, [fieldName]: objectPath }));
+      } else if (formType === 'kcp') {
+        setKcpForm(prev => ({ ...prev, [fieldName]: objectPath }));
+      } else if (formType === 'bulking') {
+        setBulkingForm(prev => ({ ...prev, [fieldName]: objectPath }));
+      }
+      
+      toast({
+        title: "Dokumen berhasil diunggah",
+        description: `Dokumen telah disimpan dan terhubung dengan formulir ${formType}.`,
+      });
+    }
+  };
+
+  const handleEstateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createEstateMutation.mutate(estateForm);
+  };
+
+  const handleMillSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMillMutation.mutate(millForm);
+  };
+
+  const handleTraceabilitySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createTraceabilityMutation.mutate(traceabilityForm);
+  };
+
+  const handleKcpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createKcpMutation.mutate(kcpForm);
+  };
+
+  const handleBulkingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createBulkingMutation.mutate(bulkingForm);
+  };
+
+  return (
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar />
+        
+        <div className="flex-1 overflow-auto p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div>
+              <h1 data-testid="text-page-title" className="text-3xl font-bold">
+                Penilaian Legalitas EUDR
+              </h1>
+              <p data-testid="text-page-description" className="text-muted-foreground mt-2">
+                Sistem pengumpulan data komprehensif untuk kepatuhan EUDR dengan kemampuan unggah dokumen
+              </p>
+            </div>
+
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="estate" data-testid="tab-estate">Data Estate</TabsTrigger>
+                <TabsTrigger value="mill" data-testid="tab-mill">Data Mill</TabsTrigger>
+                <TabsTrigger value="traceability" data-testid="tab-traceability">Traceability TBS</TabsTrigger>
+                <TabsTrigger value="kcp" data-testid="tab-kcp">Data KCP</TabsTrigger>
+                <TabsTrigger value="bulking" data-testid="tab-bulking">Data Bulking</TabsTrigger>
+                <TabsTrigger value="results" data-testid="tab-results">Hasil Koleksi Data</TabsTrigger>
+              </TabsList>
+
+              {/* Estate Data Collection Tab */}
+              <TabsContent value="estate" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Formulir Data Collection Estate</CardTitle>
+                    <CardDescription>
+                      Formulir pengumpulan data untuk estate sesuai dengan standar EUDR
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleEstateSubmit} className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="namaSupplier">Nama Supplier</Label>
+                          <Input
+                            id="namaSupplier"
+                            data-testid="input-nama-supplier-estate"
+                            value={estateForm.namaSupplier}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, namaSupplier: e.target.value }))}
+                            placeholder="Masukkan nama supplier"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="alamatKantor">Alamat Kantor</Label>
+                          <Textarea
+                            id="alamatKantor"
+                            data-testid="input-alamat-kantor-estate"
+                            value={estateForm.alamatKantor}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
+                            placeholder="Masukkan alamat kantor lengkap"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="nomorTelepon">Nomor Telepon</Label>
+                          <Input
+                            id="nomorTelepon"
+                            data-testid="input-nomor-telepon-estate"
+                            value={estateForm.nomorTelepon}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, nomorTelepon: e.target.value }))}
+                            placeholder="Masukkan nomor telepon"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="emailKontak">Email Kontak</Label>
+                          <Input
+                            id="emailKontak"
+                            data-testid="input-email-kontak-estate"
+                            type="email"
+                            value={estateForm.emailKontak}
+                            onChange={(e) => setEstateForm(prev => ({ ...prev, emailKontak: e.target.value }))}
+                            placeholder="Masukkan email kontak"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Document Upload Sections */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Dokumen Legalitas</h3>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label>Akta Pendirian</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
+                              buttonClassName="w-full"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Unggah Akta Pendirian
+                            </ObjectUploader>
+                            {estateForm.aktaPendirian && (
+                              <Badge variant="secondary" className="text-xs">
+                                <FileText className="w-3 h-3 mr-1" />
+                                Dokumen telah diunggah
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>NPWP</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'npwp', 'estate')}
+                              buttonClassName="w-full"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Unggah NPWP
+                            </ObjectUploader>
+                            {estateForm.npwp && (
+                              <Badge variant="secondary" className="text-xs">
+                                <FileText className="w-3 h-3 mr-1" />
+                                Dokumen telah diunggah
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        data-testid="button-submit-estate"
+                        className="w-full" 
+                        disabled={createEstateMutation.isPending}
+                      >
+                        {createEstateMutation.isPending ? 'Menyimpan...' : 'Simpan Data Estate'}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Mill Data Collection Tab */}
+              <TabsContent value="mill" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Formulir Data Collection Mill</CardTitle>
+                    <CardDescription>
+                      Formulir pengumpulan data untuk fasilitas mill sesuai dengan standar EUDR
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleMillSubmit} className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="namaSupplierMill">Nama Supplier</Label>
+                          <Input
+                            id="namaSupplierMill"
+                            data-testid="input-nama-supplier-mill"
+                            value={millForm.namaSupplier}
+                            onChange={(e) => setMillForm(prev => ({ ...prev, namaSupplier: e.target.value }))}
+                            placeholder="Masukkan nama supplier mill"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="kapasitasProduksi">Kapasitas Produksi (MT/hari)</Label>
+                          <Input
+                            id="kapasitasProduksi"
+                            data-testid="input-kapasitas-produksi"
+                            type="number"
+                            value={millForm.kapasitasProduksi}
+                            onChange={(e) => setMillForm(prev => ({ ...prev, kapasitasProduksi: parseInt(e.target.value) || 0 }))}
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Dokumen Sertifikasi</h3>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label>Sertifikat ISO</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'sertifikatISO', 'mill')}
+                              buttonClassName="w-full"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Unggah Sertifikat ISO
+                            </ObjectUploader>
+                            {millForm.sertifikatISO && (
+                              <Badge variant="secondary" className="text-xs">
+                                <FileText className="w-3 h-3 mr-1" />
+                                Dokumen telah diunggah
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Izin Lingkungan</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'izinLingkungan', 'mill')}
+                              buttonClassName="w-full"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Unggah Izin Lingkungan
+                            </ObjectUploader>
+                            {millForm.izinLingkungan && (
+                              <Badge variant="secondary" className="text-xs">
+                                <FileText className="w-3 h-3 mr-1" />
+                                Dokumen telah diunggah
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        data-testid="button-submit-mill"
+                        className="w-full" 
+                        disabled={createMillMutation.isPending}
+                      >
+                        {createMillMutation.isPending ? 'Menyimpan...' : 'Simpan Data Mill'}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Traceability Tab */}
+              <TabsContent value="traceability" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Form Kemampuan Telusur (Traceability) TBS Luar</CardTitle>
+                    <CardDescription>
+                      Unit Usaha Kecil Menengah/Small Medium Enterprise
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleTraceabilitySubmit} className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="nomorDO">Nomor DO</Label>
+                          <Input
+                            id="nomorDO"
+                            data-testid="input-nomor-do"
+                            value={traceabilityForm.nomorDO}
+                            onChange={(e) => setTraceabilityForm(prev => ({ ...prev, nomorDO: e.target.value }))}
+                            placeholder="Masukkan nomor DO"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="pemegangDO">Pemegang DO</Label>
+                          <Input
+                            id="pemegangDO"
+                            data-testid="input-pemegang-do"
+                            value={traceabilityForm.pemegangDO}
+                            onChange={(e) => setTraceabilityForm(prev => ({ ...prev, pemegangDO: e.target.value }))}
+                            placeholder="Masukkan nama pemegang DO"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="alamatPemegangDO">Alamat Pemegang DO</Label>
+                        <Textarea
+                          id="alamatPemegangDO"
+                          data-testid="input-alamat-pemegang-do"
+                          value={traceabilityForm.alamatPemegangDO}
+                          onChange={(e) => setTraceabilityForm(prev => ({ ...prev, alamatPemegangDO: e.target.value }))}
+                          placeholder="Masukkan alamat pemegang DO"
+                        />
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Legalitas Pemegang DO</h3>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label>Akta Pendirian Usaha (Jika Berbadan Hukum)</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'traceability')}
+                              buttonClassName="w-full"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Unggah Akta Pendirian
+                            </ObjectUploader>
+                            {traceabilityForm.aktaPendirianUsaha && (
+                              <Badge variant="secondary" className="text-xs">
+                                <FileText className="w-3 h-3 mr-1" />
+                                Dokumen telah diunggah
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>KTP (Jika Usaha Individu)</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'ktp', 'traceability')}
+                              buttonClassName="w-full"
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Unggah KTP
+                            </ObjectUploader>
+                            {traceabilityForm.ktp && (
+                              <Badge variant="secondary" className="text-xs">
+                                <FileText className="w-3 h-3 mr-1" />
+                                Dokumen telah diunggah
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        data-testid="button-submit-traceability"
+                        className="w-full" 
+                        disabled={createTraceabilityMutation.isPending}
+                      >
+                        {createTraceabilityMutation.isPending ? 'Menyimpan...' : 'Simpan Data Traceability'}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* KCP Tab */}
+              <TabsContent value="kcp" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Formulir Pengumpulan Data KCP</CardTitle>
+                    <CardDescription>
+                      Data collection untuk Kebun Collection Point
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleKcpSubmit} className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="namaKCP">Nama KCP</Label>
+                          <Input
+                            id="namaKCP"
+                            data-testid="input-nama-kcp"
+                            value={kcpForm.namaKCP}
+                            onChange={(e) => setKcpForm(prev => ({ ...prev, namaKCP: e.target.value }))}
+                            placeholder="Masukkan nama KCP"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="namaGroupKCP">Nama Group / Parent Company Name</Label>
+                          <Input
+                            id="namaGroupKCP"
+                            data-testid="input-nama-group-kcp"
+                            value={kcpForm.namaGroup}
+                            onChange={(e) => setKcpForm(prev => ({ ...prev, namaGroup: e.target.value }))}
+                            placeholder="Masukkan nama group"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="kapasitasOlahMTHari">Kapasitas Olah (MT/Hari)</Label>
+                          <Input
+                            id="kapasitasOlahMTHari"
+                            data-testid="input-kapasitas-olah"
+                            type="number"
+                            step="0.01"
+                            value={kcpForm.kapasitasOlahMTHari}
+                            onChange={(e) => setKcpForm(prev => ({ ...prev, kapasitasOlahMTHari: parseFloat(e.target.value) || 0 }))}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="sistemPencatatan">Sistem Pencatatan</Label>
+                          <Select
+                            value={kcpForm.sistemPencatatan}
+                            onValueChange={(value) => setKcpForm(prev => ({ ...prev, sistemPencatatan: value }))}
+                          >
+                            <SelectTrigger data-testid="select-sistem-pencatatan">
+                              <SelectValue placeholder="Pilih sistem pencatatan" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="LIFO">LIFO</SelectItem>
+                              <SelectItem value="FIFO">FIFO</SelectItem>
+                              <SelectItem value="Weighted">Weighted</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        data-testid="button-submit-kcp"
+                        className="w-full" 
+                        disabled={createKcpMutation.isPending}
+                      >
+                        {createKcpMutation.isPending ? 'Menyimpan...' : 'Simpan Data KCP'}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Bulking Tab */}
+              <TabsContent value="bulking" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Formulir Pengumpulan Data Bulking</CardTitle>
+                    <CardDescription>
+                      Data collection untuk fasilitas bulking
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleBulkingSubmit} className="space-y-6">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="namaFasilitasBulking">Nama Fasilitas Bulking</Label>
+                          <Input
+                            id="namaFasilitasBulking"
+                            data-testid="input-nama-fasilitas-bulking"
+                            value={bulkingForm.namaFasilitasBulking}
+                            onChange={(e) => setBulkingForm(prev => ({ ...prev, namaFasilitasBulking: e.target.value }))}
+                            placeholder="Masukkan nama fasilitas bulking"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="kapasitasTotal">Kapasitas Total</Label>
+                          <Input
+                            id="kapasitasTotal"
+                            data-testid="input-kapasitas-total"
+                            type="number"
+                            step="0.01"
+                            value={bulkingForm.kapasitasTotal}
+                            onChange={(e) => setBulkingForm(prev => ({ ...prev, kapasitasTotal: parseFloat(e.target.value) || 0 }))}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="sistemPencatatanBulking">Sistem Pencatatan</Label>
+                        <Select
+                          value={bulkingForm.sistemPencatatan}
+                          onValueChange={(value) => setBulkingForm(prev => ({ ...prev, sistemPencatatan: value }))}
+                        >
+                          <SelectTrigger data-testid="select-sistem-pencatatan-bulking">
+                            <SelectValue placeholder="Pilih sistem pencatatan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="LIFO">LIFO</SelectItem>
+                            <SelectItem value="FIFO">FIFO</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        data-testid="button-submit-bulking"
+                        className="w-full" 
+                        disabled={createBulkingMutation.isPending}
+                      >
+                        {createBulkingMutation.isPending ? 'Menyimpan...' : 'Simpan Data Bulking'}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Results Tab */}
+              <TabsContent value="results" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Hasil Koleksi Data</CardTitle>
+                    <CardDescription>
+                      Data yang telah dikumpulkan dari semua formulir
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-8">
+                      {/* Estate Collections */}
+                      {estateCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Data Estate ({estateCollections.length})</h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama Supplier</TableHead>
+                                  <TableHead>Alamat Kantor</TableHead>
+                                  <TableHead>No. Telepon</TableHead>
+                                  <TableHead>Email</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Aksi</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {estateCollections.map((collection) => (
+                                  <TableRow key={collection.id}>
+                                    <TableCell>{collection.namaSupplier || '-'}</TableCell>
+                                    <TableCell className="max-w-xs truncate">{collection.alamatKantor || '-'}</TableCell>
+                                    <TableCell>{collection.nomorTelepon || '-'}</TableCell>
+                                    <TableCell>{collection.emailKontak || '-'}</TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button variant="ghost" size="sm">
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Mill Collections */}
+                      {millCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Data Mill ({millCollections.length})</h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama Supplier</TableHead>
+                                  <TableHead>Kapasitas Produksi</TableHead>
+                                  <TableHead>Jenis Produk</TableHead>
+                                  <TableHead>Tahun Berdiri</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Aksi</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {millCollections.map((collection) => (
+                                  <TableRow key={collection.id}>
+                                    <TableCell>{collection.namaSupplier || '-'}</TableCell>
+                                    <TableCell>{collection.kapasitasProduksi || 0} MT/hari</TableCell>
+                                    <TableCell>{collection.jenisProduk || '-'}</TableCell>
+                                    <TableCell>{collection.tahunBerdiri || '-'}</TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button variant="ghost" size="sm">
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Traceability Collections */}
+                      {traceabilityCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Data Traceability ({traceabilityCollections.length})</h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nomor DO</TableHead>
+                                  <TableHead>Pemegang DO</TableHead>
+                                  <TableHead>Alamat</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Aksi</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {traceabilityCollections.map((collection) => (
+                                  <TableRow key={collection.id}>
+                                    <TableCell>{collection.nomorDO || '-'}</TableCell>
+                                    <TableCell>{collection.pemegangDO || '-'}</TableCell>
+                                    <TableCell className="max-w-xs truncate">{collection.alamatPemegangDO || '-'}</TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button variant="ghost" size="sm">
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* KCP Collections */}
+                      {kcpCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Data KCP ({kcpCollections.length})</h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama KCP</TableHead>
+                                  <TableHead>Nama Group</TableHead>
+                                  <TableHead>Kapasitas Olah</TableHead>
+                                  <TableHead>Sistem Pencatatan</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Aksi</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {kcpCollections.map((collection) => (
+                                  <TableRow key={collection.id}>
+                                    <TableCell>{collection.namaKCP || '-'}</TableCell>
+                                    <TableCell>{collection.namaGroup || '-'}</TableCell>
+                                    <TableCell>{collection.kapasitasOlahMTHari || 0} MT/hari</TableCell>
+                                    <TableCell>{collection.sistemPencatatan || '-'}</TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button variant="ghost" size="sm">
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bulking Collections */}
+                      {bulkingCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Data Bulking ({bulkingCollections.length})</h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama Fasilitas</TableHead>
+                                  <TableHead>Nama Group</TableHead>
+                                  <TableHead>Kapasitas Total</TableHead>
+                                  <TableHead>Sistem Pencatatan</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Aksi</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {bulkingCollections.map((collection) => (
+                                  <TableRow key={collection.id}>
+                                    <TableCell>{collection.namaFasilitasBulking || '-'}</TableCell>
+                                    <TableCell>{collection.namaGroup || '-'}</TableCell>
+                                    <TableCell>{collection.kapasitasTotal || 0}</TableCell>
+                                    <TableCell>{collection.sistemPencatatan || '-'}</TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Button variant="ghost" size="sm">
+                                        <Eye className="w-4 h-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Empty State */}
+                      {estateCollections.length === 0 && millCollections.length === 0 && 
+                       traceabilityCollections.length === 0 && kcpCollections.length === 0 && 
+                       bulkingCollections.length === 0 && (
+                        <div className="text-center py-12">
+                          <p data-testid="text-empty-state" className="text-muted-foreground">
+                            Belum ada data yang dikumpulkan. Mulai dengan mengisi formulir di tab-tab di atas.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
