@@ -199,6 +199,7 @@ export default function LegalityAssessmentExpanded() {
     koordinatKCP: '',
     modelChainOfCustody: '',
     kapasitasOlahMTHari: 0,
+    kapasitasOlah: 0,
     sistemPencatatan: '',
     tanggalPengisianKuisioner: '',
     namaPenanggungJawab: '',
@@ -2697,20 +2698,20 @@ export default function LegalityAssessmentExpanded() {
                           <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Daftar Tangki / Silo</h3>
                         </div>
 
-                        {kcpForm.tangkiSilo.map((tangki, index) => (
+                        {kcpForm.daftarTangkiSilo.map((tangki, index) => (
                           <Card key={index} className="p-4 bg-purple-50">
                             <div className="space-y-4">
                               <div className="flex justify-between items-center">
                                 <h4 className="font-medium">Tangki / Silo {index + 1}</h4>
-                                {kcpForm.tangkiSilo.length > 1 && (
+                                {kcpForm.daftarTangkiSilo.length > 1 && (
                                   <Button
                                     type="button"
                                     variant="destructive"
                                     size="sm"
                                     onClick={() => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
                                       newTangki.splice(index, 1);
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                   >
                                     Hapus
@@ -2722,11 +2723,11 @@ export default function LegalityAssessmentExpanded() {
                                 <div className="space-y-2">
                                   <Label>ID Tanki /Silo</Label>
                                   <Input
-                                    value={tangki.idTankiSilo}
+                                    value={tangki.idTangkiSilo}
                                     onChange={(e) => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
-                                      newTangki[index].idTankiSilo = e.target.value;
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
+                                      newTangki[index].idTangkiSilo = e.target.value;
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                     placeholder="Masukkan ID tangki/silo"
                                   />
@@ -2737,9 +2738,9 @@ export default function LegalityAssessmentExpanded() {
                                   <Select
                                     value={tangki.kategori}
                                     onValueChange={(value) => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
                                       newTangki[index].kategori = value;
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                   >
                                     <SelectTrigger>
@@ -2758,9 +2759,9 @@ export default function LegalityAssessmentExpanded() {
                                   <Input
                                     value={tangki.produk}
                                     onChange={(e) => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
                                       newTangki[index].produk = e.target.value;
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                     placeholder="Masukkan produk"
                                   />
@@ -2772,9 +2773,9 @@ export default function LegalityAssessmentExpanded() {
                                 <Input
                                   value={tangki.alamat}
                                   onChange={(e) => {
-                                    const newTangki = [...kcpForm.tangkiSilo];
+                                    const newTangki = [...kcpForm.daftarTangkiSilo];
                                     newTangki[index].alamat = e.target.value;
-                                    setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                    setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                   }}
                                   placeholder="Masukkan alamat tangki/silo"
                                 />
@@ -2786,9 +2787,9 @@ export default function LegalityAssessmentExpanded() {
                                   <Input
                                     value={tangki.longitude}
                                     onChange={(e) => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
                                       newTangki[index].longitude = e.target.value;
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                     placeholder="117.1436"
                                   />
@@ -2799,9 +2800,9 @@ export default function LegalityAssessmentExpanded() {
                                   <Input
                                     value={tangki.latitude}
                                     onChange={(e) => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
                                       newTangki[index].latitude = e.target.value;
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                     placeholder="-2.5489"
                                   />
@@ -2814,9 +2815,9 @@ export default function LegalityAssessmentExpanded() {
                                     step="0.01"
                                     value={tangki.kapasitas}
                                     onChange={(e) => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
                                       newTangki[index].kapasitas = parseFloat(e.target.value) || 0;
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                     placeholder="0.00"
                                   />
@@ -2828,9 +2829,9 @@ export default function LegalityAssessmentExpanded() {
                                     type="date"
                                     value={tangki.tanggalCleaningTerakhir}
                                     onChange={(e) => {
-                                      const newTangki = [...kcpForm.tangkiSilo];
+                                      const newTangki = [...kcpForm.daftarTangkiSilo];
                                       newTangki[index].tanggalCleaningTerakhir = e.target.value;
-                                      setKcpForm(prev => ({ ...prev, tangkiSilo: newTangki }));
+                                      setKcpForm(prev => ({ ...prev, daftarTangkiSilo: newTangki }));
                                     }}
                                   />
                                 </div>
@@ -2844,7 +2845,7 @@ export default function LegalityAssessmentExpanded() {
                           variant="outline"
                           onClick={() => {
                             const newTangki = {
-                              idTankiSilo: '',
+                              idTangkiSilo: '',
                               kategori: '',
                               produk: '',
                               alamat: '',
@@ -2855,7 +2856,7 @@ export default function LegalityAssessmentExpanded() {
                             };
                             setKcpForm(prev => ({
                               ...prev,
-                              tangkiSilo: [...prev.tangkiSilo, newTangki]
+                              daftarTangkiSilo: [...prev.daftarTangkiSilo, newTangki]
                             }));
                           }}
                           className="w-full"
@@ -4006,8 +4007,8 @@ export default function LegalityAssessmentExpanded() {
                             <Input
                               id="nomorTelefonTimInternalCompliance"
                               data-testid="input-nomor-telepon-tim-internal-compliance"
-                              value={supplierComplianceForm.nomorTelefonTimInternal}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, nomorTelefonTimInternal: e.target.value }))}
+                              value={supplierComplianceForm.nomorTeleponTimInternal}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, nomorTeleponTimInternal: e.target.value }))}
                               placeholder="Masukkan nomor telepon"
                             />
                           </div>
