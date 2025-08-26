@@ -461,6 +461,96 @@ export const ddsReportsRelations = relations(ddsReports, ({ one }) => ({
   }),
 }));
 
+// Estate Data Collection for EUDR compliance
+export const estateDataCollection = pgTable("estate_data_collection", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Section 1: General Information
+  supplierName: text("supplier_name").notNull(),
+  groupParentCompanyName: text("group_parent_company_name"),
+  establishmentAct: text("establishment_act"),
+  amendmentAct: text("amendment_act"),
+  businessLicense: text("business_license"),
+  certificationType: text("certification_type"), // ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3
+  certificateNumber: text("certificate_number"),
+  certificationBody: text("certification_body"),
+  certificationScope: text("certification_scope"),
+  certificateValidity: date("certificate_validity"),
+  documentLink: text("document_link"),
+  
+  // Addresses
+  officeAddress: text("office_address"),
+  estateAddress: text("estate_address"),
+  
+  // Coordinates
+  estateCoordinates: text("estate_coordinates"),
+  officeCoordinates: text("office_coordinates"),
+  
+  // Supplier type (enum-like)
+  supplierType: text("supplier_type"), // KKPA, sister company, third party
+  totalAnnualProduction: decimal("total_annual_production", { precision: 12, scale: 3 }),
+  formFillingDate: date("form_filling_date"),
+  
+  // Responsible person
+  responsiblePersonName: text("responsible_person_name"),
+  responsiblePersonPosition: text("responsible_person_position"),
+  responsiblePersonEmail: text("responsible_person_email"),
+  responsiblePersonPhone: text("responsible_person_phone"),
+  
+  // Internal sustainability team
+  internalTeamName: text("internal_team_name"),
+  internalTeamPosition: text("internal_team_position"),
+  internalTeamEmail: text("internal_team_email"),
+  internalTeamPhone: text("internal_team_phone"),
+  
+  // Section 2: FFB Sources (stored as JSONB array)
+  ffbSources: jsonb("ffb_sources").$type<Array<{
+    no: number;
+    estateName: string;
+    address: string;
+    landArea: number; // in hectares
+    longitude: string;
+    latitude: string;
+    plantingYear: string;
+    seedType: string;
+    annualProduction: number; // in tons
+  }>>().default([]),
+  
+  // Section 3: Forest and Peat Protection
+  hasForestPeatPolicy: boolean("has_forest_peat_policy"),
+  forestPeatPolicyNotes: text("forest_peat_policy_notes"),
+  forestPeatDocumentLink: text("forest_peat_document_link"),
+  
+  attendedNdpeWorkshop: boolean("attended_ndpe_workshop"),
+  ndpeWorkshopNotes: text("ndpe_workshop_notes"),
+  
+  hasForestProtectionProcedure: boolean("has_forest_protection_procedure"),
+  hasConservationAreaSop: boolean("has_conservation_area_sop"),
+  hasLandOpeningSop: boolean("has_land_opening_sop"),
+  forestProtectionNotes: text("forest_protection_notes"),
+  
+  conductedHcvAssessment: boolean("conducted_hcv_assessment"),
+  submittedHcvReport: boolean("submitted_hcv_report"),
+  conductedHcsAssessment: boolean("conducted_hcs_assessment"),
+  hcsAssessmentNotes: text("hcs_assessment_notes"),
+  
+  plantingOnPeatland: boolean("planting_on_peatland"),
+  peatlandArea: decimal("peatland_area", { precision: 8, scale: 2 }),
+  peatlandOpeningYear: integer("peatland_opening_year"),
+  peatlandNotes: text("peatland_notes"),
+  
+  hasHydrologicalRestorationPermit: boolean("has_hydrological_restoration_permit"),
+  hydrologicalPermitNotes: text("hydrological_permit_notes"),
+  hydrologicalDocumentLink: text("hydrological_document_link"),
+  
+  // Status and metadata
+  status: text("status").default("draft"), // draft, submitted, reviewed, approved
+  completionPercentage: integer("completion_percentage").default(0),
+  reviewComments: text("review_comments"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 
 
 // Export types
@@ -515,6 +605,7 @@ export const insertSupplierWorkflowLinkSchema = createInsertSchema(supplierWorkf
 export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments);
 export const insertMillSchema = createInsertSchema(mills);
 export const insertDdsReportSchema = createInsertSchema(ddsReports);
+export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection);
 
 // Export types for workflow entities (supplement to existing Supplier types)
 export type SupplierWorkflowLink = typeof supplierWorkflowLinks.$inferSelect;
@@ -523,3 +614,5 @@ export type WorkflowShipment = typeof workflowShipments.$inferSelect;
 export type InsertWorkflowShipment = z.infer<typeof insertWorkflowShipmentSchema>;
 export type DdsReport = typeof ddsReports.$inferSelect;
 export type InsertDdsReport = z.infer<typeof insertDdsReportSchema>;
+export type EstateDataCollection = typeof estateDataCollection.$inferSelect;
+export type InsertEstateDataCollection = typeof estateDataCollection.$inferInsert;

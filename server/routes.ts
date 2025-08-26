@@ -21,6 +21,7 @@ import {
   insertSupplierWorkflowLinkSchema,
   insertWorkflowShipmentSchema,
   insertDdsReportSchema,
+  insertEstateDataCollectionSchema,
   insertMillSchema
 } from "@shared/schema";
 import { z } from "zod";
@@ -1119,6 +1120,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error downloading GeoJSON:', error);
       res.status(500).json({ error: 'Failed to download GeoJSON file' });
+    }
+  });
+
+  // Estate Data Collection API routes
+  app.get("/api/estate-data-collection", isAuthenticated, async (req, res) => {
+    try {
+      const estates = await storage.getEstateDataCollection();
+      res.json(estates);
+    } catch (error) {
+      console.error('Error fetching estate data collection:', error);
+      res.status(500).json({ error: 'Failed to fetch estate data collection' });
+    }
+  });
+
+  app.get("/api/estate-data-collection/:id", isAuthenticated, async (req, res) => {
+    try {
+      const estate = await storage.getEstateDataCollectionById(req.params.id);
+      if (!estate) {
+        return res.status(404).json({ error: 'Estate data collection not found' });
+      }
+      res.json(estate);
+    } catch (error) {
+      console.error('Error fetching estate data collection:', error);
+      res.status(500).json({ error: 'Failed to fetch estate data collection' });
+    }
+  });
+
+  app.post("/api/estate-data-collection", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertEstateDataCollectionSchema.parse(req.body);
+      const estate = await storage.createEstateDataCollection(validatedData);
+      res.status(201).json(estate);
+    } catch (error) {
+      console.error('Error creating estate data collection:', error);
+      if (error.issues) {
+        return res.status(400).json({ error: 'Validation error', details: error.issues });
+      }
+      res.status(500).json({ error: 'Failed to create estate data collection' });
+    }
+  });
+
+  app.put("/api/estate-data-collection/:id", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertEstateDataCollectionSchema.partial().parse(req.body);
+      const estate = await storage.updateEstateDataCollection(req.params.id, validatedData);
+      if (!estate) {
+        return res.status(404).json({ error: 'Estate data collection not found' });
+      }
+      res.json(estate);
+    } catch (error) {
+      console.error('Error updating estate data collection:', error);
+      if (error.issues) {
+        return res.status(400).json({ error: 'Validation error', details: error.issues });
+      }
+      res.status(500).json({ error: 'Failed to update estate data collection' });
+    }
+  });
+
+  app.delete("/api/estate-data-collection/:id", isAuthenticated, async (req, res) => {
+    try {
+      const success = await storage.deleteEstateDataCollection(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: 'Estate data collection not found' });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting estate data collection:', error);
+      res.status(500).json({ error: 'Failed to delete estate data collection' });
     }
   });
 

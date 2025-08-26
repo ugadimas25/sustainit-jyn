@@ -14,6 +14,7 @@ import UnifiedMonitoring from "@/pages/unified-monitoring";
 import UnifiedSupplyChain from "@/pages/unified-supply-chain";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import DDSReports from "@/pages/dds-reports";
+import EstateDataTablePage from "@/pages/estate-data-table";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <ProtectedRoute path="/legality" component={LegalityAssessment} />
       <ProtectedRoute path="/supply-chain" component={UnifiedSupplyChain} />
       <ProtectedRoute path="/reports" component={DDSReports} />
+      <ProtectedRoute path="/estate-data" component={EstateDataTablePage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

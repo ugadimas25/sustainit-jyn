@@ -16,6 +16,7 @@ import {
   supplierWorkflowLinks, type SupplierWorkflowLink, type InsertSupplierWorkflowLink,
   workflowShipments, type WorkflowShipment, type InsertWorkflowShipment,
   ddsReports, type DdsReport, type InsertDdsReport,
+  estateDataCollection, type EstateDataCollection, type InsertEstateDataCollection,
   mills, type Mill, type InsertMill
 } from "@shared/schema";
 import { db } from "./db";
@@ -108,6 +109,13 @@ export interface IStorage {
   getDdsReportById(id: string): Promise<DdsReport | undefined>;
   createDdsReport(insertDdsReport: InsertDdsReport): Promise<DdsReport>;
   updateDdsReport(id: string, updates: Partial<DdsReport>): Promise<DdsReport | undefined>;
+
+  // Estate Data Collection management
+  getEstateDataCollection(): Promise<EstateDataCollection[]>;
+  getEstateDataCollectionById(id: string): Promise<EstateDataCollection | undefined>;
+  createEstateDataCollection(insertEstateData: InsertEstateDataCollection): Promise<EstateDataCollection>;
+  updateEstateDataCollection(id: string, updates: Partial<EstateDataCollection>): Promise<EstateDataCollection | undefined>;
+  deleteEstateDataCollection(id: string): Promise<boolean>;
 }
 
 // Database implementation of IStorage
@@ -515,6 +523,38 @@ export class DatabaseStorage implements IStorage {
       .where(eq(ddsReports.id, id))
       .returning();
     return updatedReport || undefined;
+  }
+
+  // Estate Data Collection management
+  async getEstateDataCollection(): Promise<EstateDataCollection[]> {
+    return await db.select().from(estateDataCollection).orderBy(desc(estateDataCollection.createdAt));
+  }
+
+  async getEstateDataCollectionById(id: string): Promise<EstateDataCollection | undefined> {
+    const [estate] = await db.select().from(estateDataCollection).where(eq(estateDataCollection.id, id));
+    return estate || undefined;
+  }
+
+  async createEstateDataCollection(insertEstateData: InsertEstateDataCollection): Promise<EstateDataCollection> {
+    const [estate] = await db
+      .insert(estateDataCollection)
+      .values(insertEstateData)
+      .returning();
+    return estate;
+  }
+
+  async updateEstateDataCollection(id: string, updates: Partial<EstateDataCollection>): Promise<EstateDataCollection | undefined> {
+    const [updatedEstate] = await db
+      .update(estateDataCollection)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(estateDataCollection.id, id))
+      .returning();
+    return updatedEstate || undefined;
+  }
+
+  async deleteEstateDataCollection(id: string): Promise<boolean> {
+    const result = await db.delete(estateDataCollection).where(eq(estateDataCollection.id, id));
+    return result.rowCount > 0;
   }
 }
 

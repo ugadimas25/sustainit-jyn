@@ -944,11 +944,12 @@ export default function LegalityAssessmentPage() {
 
                 {editingFarmer && (
                   <Tabs defaultValue="identity" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-5">
                       <TabsTrigger value="identity">A. Farmer Identity</TabsTrigger>
                       <TabsTrigger value="farm">B. Farm Information</TabsTrigger>
                       <TabsTrigger value="organization">C. Organization</TabsTrigger>
                       <TabsTrigger value="location">D. GPS Location</TabsTrigger>
+                      <TabsTrigger value="estate">E. Estate Collection</TabsTrigger>
                     </TabsList>
 
                     {/* A. Farmer Identity Tab */}
@@ -1366,6 +1367,411 @@ export default function LegalityAssessmentPage() {
                               Validate Polygon
                             </Button>
                           </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    {/* E. Estate Data Collection Tab */}
+                    <TabsContent value="estate" className="space-y-6">
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Estate Data Collection Form</h3>
+                          <Badge variant="outline">Based on EUDR Requirements</Badge>
+                        </div>
+                        
+                        {/* Section 1: General Information */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base">Section 1 - General Information</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="supplier-name">Supplier Name *</Label>
+                                <Input id="supplier-name" placeholder="Enter supplier name" data-testid="input-supplier-name" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="group-parent-company">Group/Parent Company Name</Label>
+                                <Input id="group-parent-company" placeholder="Enter group/parent company" data-testid="input-group-parent-company" />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="establishment-act">Company Establishment Act</Label>
+                                <Input id="establishment-act" placeholder="Act number" data-testid="input-establishment-act" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="amendment-act">Amendment Act (if any)</Label>
+                                <Input id="amendment-act" placeholder="Amendment act number" data-testid="input-amendment-act" />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="business-license">Business License (NIB)</Label>
+                                <Input id="business-license" placeholder="Business identification number" data-testid="input-business-license" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="certification-type">Certification Type</Label>
+                                <Select>
+                                  <SelectTrigger data-testid="select-certification-type">
+                                    <SelectValue placeholder="Select certification" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="ISPO">ISPO</SelectItem>
+                                    <SelectItem value="RSPO">RSPO</SelectItem>
+                                    <SelectItem value="ISCC">ISCC</SelectItem>
+                                    <SelectItem value="PROPER">PROPER Environment</SelectItem>
+                                    <SelectItem value="SMK3">SMK3</SelectItem>
+                                    <SelectItem value="multiple">Multiple Certifications</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="certificate-number">Certificate Number</Label>
+                                <Input id="certificate-number" placeholder="Certificate number" data-testid="input-certificate-number" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="certification-body">Certification Body</Label>
+                                <Input id="certification-body" placeholder="Certifying organization" data-testid="input-certification-body" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="certificate-validity">Certificate Validity</Label>
+                                <Input id="certificate-validity" type="date" data-testid="input-certificate-validity" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="certification-scope">Certification Scope</Label>
+                              <Textarea id="certification-scope" placeholder="Describe certification scope" data-testid="textarea-certification-scope" />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="document-link">Document Link</Label>
+                              <Input id="document-link" placeholder="Google Drive or website link" data-testid="input-document-link" />
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Addresses and Coordinates */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base">Addresses & Coordinates</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="office-address">Office Address</Label>
+                                <Textarea id="office-address" placeholder="Head office address" data-testid="textarea-office-address" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="estate-address">Estate Address</Label>
+                                <Textarea id="estate-address" placeholder="Estate/plantation address" data-testid="textarea-estate-address" />
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="office-coordinates">Office Coordinates</Label>
+                                <Input id="office-coordinates" placeholder="Lat, Long (e.g., 3.1390, 101.6869)" data-testid="input-office-coordinates" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="estate-coordinates">Estate Coordinates</Label>
+                                <Input id="estate-coordinates" placeholder="Lat, Long (e.g., 3.1390, 101.6869)" data-testid="input-estate-coordinates" />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Section 2: FFB Sources */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base">Section 2 - FFB Sources</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm text-gray-600">Add plantation details for FFB sources</p>
+                                <Button variant="outline" size="sm" data-testid="button-add-ffb-source">
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add Estate
+                                </Button>
+                              </div>
+                              
+                              <div className="overflow-x-auto">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>No.</TableHead>
+                                      <TableHead>Estate Name</TableHead>
+                                      <TableHead>Address</TableHead>
+                                      <TableHead>Land Area (Ha)</TableHead>
+                                      <TableHead>Longitude</TableHead>
+                                      <TableHead>Latitude</TableHead>
+                                      <TableHead>Planting Year</TableHead>
+                                      <TableHead>Seed Type</TableHead>
+                                      <TableHead>Annual Production (tons)</TableHead>
+                                      <TableHead>Actions</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    <TableRow>
+                                      <TableCell>1</TableCell>
+                                      <TableCell>
+                                        <Input placeholder="Estate name" className="min-w-32" data-testid="input-estate-name-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input placeholder="Address" className="min-w-40" data-testid="input-estate-address-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input type="number" placeholder="0" className="min-w-20" data-testid="input-estate-area-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input placeholder="101.6869" className="min-w-24" data-testid="input-estate-longitude-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input placeholder="3.1390" className="min-w-24" data-testid="input-estate-latitude-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input type="number" placeholder="2010" className="min-w-20" data-testid="input-estate-planting-year-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input placeholder="Certified seed" className="min-w-32" data-testid="input-estate-seed-type-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Input type="number" placeholder="0" className="min-w-24" data-testid="input-estate-production-1" />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button variant="ghost" size="sm" data-testid="button-remove-estate-1">
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  </TableBody>
+                                </Table>
+                              </div>
+                              
+                              <p className="text-xs text-gray-500">
+                                * For areas &gt; 4Ha, polygon data (SHP/GeoJSON) is required
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Section 3: Forest and Peat Protection */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base">Section 3 - Forest and Peat Protection</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-6">
+                            {/* 2.1 Policy */}
+                            <div className="space-y-4">
+                              <h4 className="font-medium">2.1 Forest and Peat Protection Policy</h4>
+                              <div className="space-y-3">
+                                <div className="space-y-2">
+                                  <Label>Do you have a policy covering forest and peat protection?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="policy-yes" name="forestPeatPolicy" value="yes" data-testid="radio-policy-yes" />
+                                      <Label htmlFor="policy-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="policy-no" name="forestPeatPolicy" value="no" data-testid="radio-policy-no" />
+                                      <Label htmlFor="policy-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="policy-notes">Notes</Label>
+                                  <Textarea id="policy-notes" placeholder="Additional information" data-testid="textarea-policy-notes" />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="policy-document">Document Link</Label>
+                                  <Input id="policy-document" placeholder="Google Drive link if not published on website" data-testid="input-policy-document" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 2.2 NDPE Workshop */}
+                            <div className="space-y-4">
+                              <h4 className="font-medium">2.2 NDPE Workshop Participation</h4>
+                              <div className="space-y-3">
+                                <div className="space-y-2">
+                                  <Label>Have you attended NDPE policy commitment workshops?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="ndpe-yes" name="ndpeWorkshop" value="yes" data-testid="radio-ndpe-yes" />
+                                      <Label htmlFor="ndpe-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="ndpe-no" name="ndpeWorkshop" value="no" data-testid="radio-ndpe-no" />
+                                      <Label htmlFor="ndpe-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="ndpe-notes">Notes</Label>
+                                  <Textarea id="ndpe-notes" placeholder="Workshop details" data-testid="textarea-ndpe-notes" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 2.3 Conservation Procedures */}
+                            <div className="space-y-4">
+                              <h4 className="font-medium">2.3 Conservation Area Management</h4>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label>Do you have SOP for Conservation Area Management (HCV & HCS)?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="conservation-sop-yes" name="conservationSop" value="yes" data-testid="radio-conservation-sop-yes" />
+                                      <Label htmlFor="conservation-sop-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="conservation-sop-no" name="conservationSop" value="no" data-testid="radio-conservation-sop-no" />
+                                      <Label htmlFor="conservation-sop-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Do you have SOP for Land Opening and Soil/Water Conservation?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="land-opening-sop-yes" name="landOpeningSop" value="yes" data-testid="radio-land-opening-sop-yes" />
+                                      <Label htmlFor="land-opening-sop-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="land-opening-sop-no" name="landOpeningSop" value="no" data-testid="radio-land-opening-sop-no" />
+                                      <Label htmlFor="land-opening-sop-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 2.4 Implementation Evidence */}
+                            <div className="space-y-4">
+                              <h4 className="font-medium">2.4 Implementation Evidence</h4>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label>Do you conduct High Conservation Value (HCV) assessments?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hcv-yes" name="hcvAssessment" value="yes" data-testid="radio-hcv-yes" />
+                                      <Label htmlFor="hcv-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hcv-no" name="hcvAssessment" value="no" data-testid="radio-hcv-no" />
+                                      <Label htmlFor="hcv-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Do you submit HCV management reports to relevant authorities?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hcv-report-yes" name="hcvReport" value="yes" data-testid="radio-hcv-report-yes" />
+                                      <Label htmlFor="hcv-report-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hcv-report-no" name="hcvReport" value="no" data-testid="radio-hcv-report-no" />
+                                      <Label htmlFor="hcv-report-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Do you conduct High Carbon Stock (HCS) assessments?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hcs-yes" name="hcsAssessment" value="yes" data-testid="radio-hcs-yes" />
+                                      <Label htmlFor="hcs-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hcs-no" name="hcsAssessment" value="no" data-testid="radio-hcs-no" />
+                                      <Label htmlFor="hcs-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 2.5 Peatland */}
+                            <div className="space-y-4">
+                              <h4 className="font-medium">2.5 Peatland Management</h4>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label>Do you have plantings on peatland?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="peatland-yes" name="peatlandPlanting" value="yes" data-testid="radio-peatland-yes" />
+                                      <Label htmlFor="peatland-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="peatland-no" name="peatlandPlanting" value="no" data-testid="radio-peatland-no" />
+                                      <Label htmlFor="peatland-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="peatland-area">If yes, specify area (Ha)</Label>
+                                    <Input id="peatland-area" type="number" placeholder="Area in hectares" data-testid="input-peatland-area" />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="peatland-opening-year">Year of opening</Label>
+                                    <Input id="peatland-opening-year" type="number" placeholder="Year" data-testid="input-peatland-opening-year" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 2.6 Hydrological Restoration */}
+                            <div className="space-y-4">
+                              <h4 className="font-medium">2.6 Hydrological Restoration Permit</h4>
+                              <div className="space-y-4">
+                                <div className="space-y-2">
+                                  <Label>Do you have KLHK permit for peat hydrological restoration?</Label>
+                                  <div className="flex gap-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hydro-permit-yes" name="hydroPermit" value="yes" data-testid="radio-hydro-permit-yes" />
+                                      <Label htmlFor="hydro-permit-yes">Yes</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input type="radio" id="hydro-permit-no" name="hydroPermit" value="no" data-testid="radio-hydro-permit-no" />
+                                      <Label htmlFor="hydro-permit-no">No</Label>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="hydro-permit-notes">Notes (Fill if you have peatland plantings)</Label>
+                                  <Textarea id="hydro-permit-notes" placeholder="Additional information" data-testid="textarea-hydro-permit-notes" />
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="hydro-permit-document">Permit Document Link</Label>
+                                  <Input id="hydro-permit-document" placeholder="Document link" data-testid="input-hydro-permit-document" />
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <div className="flex justify-end gap-3">
+                          <Button variant="outline" data-testid="button-save-draft">
+                            Save as Draft
+                          </Button>
+                          <Button data-testid="button-submit-estate-form">
+                            Submit Form
+                          </Button>
                         </div>
                       </div>
                     </TabsContent>

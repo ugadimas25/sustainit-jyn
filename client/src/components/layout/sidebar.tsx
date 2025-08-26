@@ -9,7 +9,8 @@ import {
   Leaf,
   LogOut,
   User,
-  Activity
+  Activity,
+  Building
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +19,7 @@ const navigation = [
   { name: 'Deforestation Monitoring', href: '/deforestation-monitoring', icon: Satellite, testId: 'nav-deforestation-monitoring' },
   { name: 'Legality Assessment', href: '/legality', icon: Shield, testId: 'nav-legality' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
+  { name: 'Estate Data Collection', href: '/estate-data', icon: Building, testId: 'nav-estate-data' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
 ];
 
