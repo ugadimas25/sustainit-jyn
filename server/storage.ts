@@ -21,9 +21,13 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
+import MemoryStore from "memorystore";
+import session from "express-session";
 
 // Enhanced IStorage interface for EPCIS-compliant traceability
 export interface IStorage {
+  sessionStore: session.Store;
+  
   // User management
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -136,6 +140,15 @@ export interface IStorage {
 
 // Database implementation of IStorage
 export class DatabaseStorage implements IStorage {
+  public sessionStore: session.Store;
+
+  constructor() {
+    // Initialize in-memory session store for development
+    this.sessionStore = new (MemoryStore(session))({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    });
+  }
+
   // User management
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
