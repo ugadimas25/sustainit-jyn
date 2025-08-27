@@ -19,7 +19,7 @@ import type { UploadResult } from '@uppy/core';
 import type { EstateDataCollection, MillDataCollection, TraceabilityDataCollection, KcpDataCollection, BulkingDataCollection } from '@shared/schema';
 
 export default function LegalityAssessmentExpanded() {
-  const [activeTab, setActiveTab] = useState('mill');
+  const [activeTab, setActiveTab] = useState('traceability');
   const { toast } = useToast();
 
   // Form states for all collection types
