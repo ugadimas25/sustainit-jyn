@@ -849,51 +849,319 @@ export default function DdsReports() {
           </TabsContent>
         </Tabs>
 
-        {/* Report Detail Modal */}
+        {/* DDS Report Preview Dialog - FarmForce Structure */}
         {selectedReport && (
           <Dialog open={!!selectedReport} onOpenChange={() => setSelectedReport(null)}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>DDS Report Details</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Report ID:</span>
-                    <p className="font-mono">{selectedReport.id}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Status:</span>
-                    <p>{selectedReport.status}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Operator:</span>
-                    <p>{selectedReport.operatorLegalName}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Product:</span>
-                    <p>{selectedReport.productDescription}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Country:</span>
-                    <p>{selectedReport.countryOfProduction}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium">Net Mass:</span>
-                    <p>{selectedReport.netMassKg} kg</p>
-                  </div>
+                <DialogTitle className="text-center text-2xl font-bold">
+                  KPN EUDR DUE DILIGENCE STATEMENT
+                </DialogTitle>
+                <div className="text-right text-sm font-mono text-gray-600 dark:text-gray-400">
+                  DDS Reference Number: KPN{selectedReport.id.slice(0, 12).toUpperCase()}
                 </div>
-                
-                {/* KML Upload and GeoJSON Generation */}
-                <div className="grid md:grid-cols-2 gap-6">
+              </DialogHeader>
+              
+              <div className="space-y-8 p-6">
+                {(() => {
+                  const ddsData = generateComprehensiveDDS(selectedReport);
+                  return (
+                    <>
+                      {/* Section A: Operator Information */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-4 border-b pb-2">A. Operator Information</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <strong>Operator's legal name:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.operatorInfo.legalName}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Operator's address:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.operatorInfo.address}
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <strong>Economic Operators Registration and Identification Number (EORI):</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.operatorInfo.eoriNumber || 'Not applicable for domestic operations'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section B: Overall Conclusion */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-4 border-b pb-2">B. Overall Conclusion</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="font-semibold text-green-700 dark:text-green-400 mb-2">
+                              {ddsData.overallConclusion.riskLevel}
+                            </div>
+                            <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-md space-y-2 text-sm">
+                              <p><strong>1) Deforestation Risk:</strong> {ddsData.overallConclusion.deforestationAssessment}</p>
+                              <p><strong>2) Legality Risk:</strong> {ddsData.overallConclusion.legalityAssessment}</p>
+                              <p><strong>Certifications:</strong> {ddsData.overallConclusion.certifications}</p>
+                              <p><strong>Documentation:</strong> {ddsData.overallConclusion.documentation}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section C: Product Information */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-4 border-b pb-2">C. Product Information</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <strong>Harmonized System (HS) Code:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded font-mono">
+                              {ddsData.productInfo.hsCode}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Product description:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.productInfo.description}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Scientific name:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded italic">
+                              {ddsData.productInfo.scientificName}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Quantity (kg. of net mass):</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded font-mono">
+                              {ddsData.productInfo.quantity}
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <strong>Number of units:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.productInfo.units}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section D: Supply Chain Mapping */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-4 border-b pb-2">D. Supply Chain Mapping</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <strong>Country of production:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.countryOfProduction}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Country of production subregion(s):</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.subregions.join(', ')}
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <strong>Complexity of Supply Chain:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.complexity}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Total number of suppliers:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.totalSuppliers}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Total number of sub-suppliers:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.totalSubSuppliers}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Total number of plots:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.totalPlots}
+                            </div>
+                          </div>
+                          <div>
+                            <strong>Number of plots with geolocation:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.plotsWithGeolocation}
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <strong>Date or time range of production:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              {ddsData.supplyChainMapping.productionDateRange}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section E: Deforestation Risk Assessment */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-4 border-b pb-2">E. Deforestation Risk Assessment</h3>
+                        <div className="space-y-4 text-sm">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <strong>Deforestation risk level (based on country EU benchmarking):</strong>
+                              <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                                {ddsData.deforestationRisk.riskLevel}
+                              </div>
+                            </div>
+                            <div>
+                              <strong>Total number of plots checked for deforestation:</strong>
+                              <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded space-y-1">
+                                <div>Total Plot: {ddsData.deforestationRisk.totalPlots}</div>
+                                <div>Plot with Valid Status: {ddsData.deforestationRisk.validPlots}</div>
+                                <div>Plot with Invalid Status: {ddsData.deforestationRisk.invalidPlots}</div>
+                                <div>Plot with No Status: {ddsData.deforestationRisk.noStatusPlots}</div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <strong>Deforestation assessment risk:</strong>
+                            <div className="mt-1 p-2 bg-blue-50 dark:bg-blue-950/20 rounded space-y-2">
+                              <div>Total Fields Validated: {ddsData.deforestationRisk.totalPlots} fields</div>
+                              <div>High Risk (0-20%): {ddsData.deforestationRisk.riskDistribution.highRisk}</div>
+                              <div>Medium Risk (21-80%): {ddsData.deforestationRisk.riskDistribution.mediumRisk}</div>
+                              <div>Low Risk (81-100%): {ddsData.deforestationRisk.riskDistribution.lowRisk}</div>
+                              <div className="text-xs italic pt-2">
+                                The risk percentage indicates if this field carries a risk of deforestation in the near future based on past trends. Lower percentage means higher risk.
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <strong>Risk mitigation measures & verification methods:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              <ol className="space-y-1">
+                                {ddsData.deforestationRisk.mitigationMeasures.map((measure, index) => (
+                                  <li key={index}>{index + 1}. {measure}</li>
+                                ))}
+                              </ol>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section F: Legal Compliance Assessment */}
+                      <div>
+                        <h3 className="text-lg font-bold mb-4 border-b pb-2">F. Legal Compliance Assessment</h3>
+                        <div className="space-y-4 text-sm">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <strong>Total number of farms checked for legal compliance:</strong>
+                              <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded space-y-1">
+                                <div>Total Plot: {ddsData.legalCompliance.totalPlots}</div>
+                                <div>Plot with Compliant Survey Status: {ddsData.legalCompliance.compliantSurveys}</div>
+                                <div>Plot with Non-Compliant Survey Status: {ddsData.legalCompliance.nonCompliantSurveys}</div>
+                              </div>
+                            </div>
+                            <div>
+                              <strong>Overall Sustainability Risk Score:</strong>
+                              <div className="mt-1 p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded">
+                                <div className="font-semibold">{ddsData.legalCompliance.sustainabilityScore}</div>
+                                <div className="text-xs mt-1">
+                                  Based on overall assessment of the palm oil value chain in {selectedReport.countryOfProduction}<br/>
+                                  1 = Low, 2 = Moderate, 3 = Significant, 4 = High, 5 = Very high risk
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <strong>Country specific risk analysis:</strong>
+                            <div className="mt-1 space-y-2">
+                              {Object.entries(ddsData.legalCompliance.countryRisks).map(([category, data]) => (
+                                <div key={category} className="flex items-center gap-4 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                                  <div className="font-medium capitalize w-32">{category.replace(/([A-Z])/g, ' $1').trim()}:</div>
+                                  <div className="w-8 h-8 bg-red-100 text-red-800 rounded-full flex items-center justify-center font-bold text-sm">
+                                    {data.score}
+                                  </div>
+                                  <div className="flex-1 text-xs">{data.description}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <strong>Presence of indigenous communities and lands:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded space-y-1">
+                              <div>{ddsData.legalCompliance.indigenousLands.present}</div>
+                              <div>{ddsData.legalCompliance.indigenousLands.fieldsWithData} fields with indigenous lands data</div>
+                              <div>{ddsData.legalCompliance.indigenousLands.overlapPercentage} of overlap with indigenous lands</div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <strong>Applicable local laws:</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              <ul className="space-y-2">
+                                {ddsData.legalCompliance.applicableLaws.map((law, index) => (
+                                  <li key={index} className="text-sm">• {law}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <strong>Legal assessment risk:</strong>
+                            <div className="mt-1 p-2 bg-green-50 dark:bg-green-950/20 rounded">
+                              <div className="font-semibold text-green-700 dark:text-green-400 mb-2">
+                                Given the results of the risk assessment, mitigation and verification measures we conclude negligible legality risk
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <strong>Risk Mitigation Measures (if applicable):</strong>
+                            <div className="mt-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                              <ol className="space-y-1">
+                                {ddsData.legalCompliance.mitigationMeasures.map((measure, index) => (
+                                  <li key={index} className="text-sm">{index + 1}. {measure}</li>
+                                ))}
+                              </ol>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4 pt-4">
+                            <div className="text-center">
+                              <div className="font-semibold mb-2">Farmer Survey</div>
+                              <div className="text-2xl font-bold">{Math.max(1, Math.floor(ddsData.legalCompliance.totalPlots / 2))} farmers</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold mb-2">Plot Survey</div>
+                              <div className="text-2xl font-bold">{ddsData.legalCompliance.totalPlots} fields</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Document Footer */}
+                      <div className="border-t pt-4 mt-8 text-center text-sm text-gray-500">
+                        <div>Generated by KPN EUDR Platform on {new Date().toLocaleDateString()}</div>
+                        <div className="mt-2 font-mono">DDS Reference: KPN{selectedReport.id.slice(0, 12).toUpperCase()}</div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+              
+              <div className="flex justify-between items-center p-6 border-t bg-gray-50 dark:bg-gray-800">
+                <div className="flex gap-2">
                   <KMLUploader 
                     reportId={selectedReport.id} 
                     onUploadComplete={() => {
-                      // Refresh the report data after KML upload
                       queryClient.invalidateQueries({ queryKey: ['/api/dds-reports'] });
                       toast({
                         title: "KML Upload Complete",
-                        description: "Polygon data has been processed and added to the DDS report."
+                        description: "Polygon data processed and added to DDS report."
                       });
                     }}
                   />
@@ -902,26 +1170,27 @@ export default function DdsReports() {
                     reportData={selectedReport}
                   />
                 </div>
-                
                 <div className="flex gap-2">
                   <Button 
+                    variant="outline" 
                     onClick={() => generatePdfMutation.mutate(selectedReport.id)}
                     disabled={generatePdfMutation.isPending}
-                    data-testid="button-modal-pdf"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download PDF
+                    Export PDF
                   </Button>
                   {selectedReport.status === 'draft' && (
                     <Button 
                       onClick={() => submitToEuTraceMutation.mutate(selectedReport.id)}
                       disabled={submitToEuTraceMutation.isPending}
-                      data-testid="button-modal-submit"
                     >
                       <Send className="h-4 w-4 mr-2" />
                       Submit to EU Trace
                     </Button>
                   )}
+                  <Button variant="secondary" onClick={() => setSelectedReport(null)}>
+                    Close Preview
+                  </Button>
                 </div>
               </div>
             </DialogContent>

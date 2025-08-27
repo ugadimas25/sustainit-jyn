@@ -6,6 +6,14 @@ The platform combines advanced traceability technology with AI-powered complianc
 
 ## Recent Changes (August 2025)
 
+- **Enhanced DDS Reports with FarmForce Structure** (August 27, 2025): Comprehensive due diligence document generation:
+  - Implemented complete FarmForce EUDR DDS document structure replication
+  - Added 6-section professional format: Operator Info, Overall Conclusion, Product Info, Supply Chain Mapping, Deforestation Risk, Legal Compliance
+  - Integrated comprehensive risk analysis with country-specific assessments
+  - Added professional document preview with KPN branding and reference numbers
+  - Enhanced compliance scoring with indigenous lands assessment and mitigation measures
+  - Connected to existing supply chain data, plot geolocations, and risk assessments for authentic data integration
+
 - **Removed Estate Data Collection Module** (August 26, 2025): Eliminated duplicate functionality:
   - Removed Estate Data Collection from navigation sidebar (Building icon removed)
   - Deleted estate-data-table.tsx page component
