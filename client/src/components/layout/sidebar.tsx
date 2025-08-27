@@ -23,7 +23,9 @@ const navigation = [
 
 export function Sidebar() {
   const [location, setLocation] = useLocation();
-  const { user, logoutMutation } = useAuth();
+  // Temporarily bypass authentication for direct access
+  const user = { name: 'Demo User', role: 'compliance_officer' };
+  const logoutMutation = { mutate: () => {} };
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
