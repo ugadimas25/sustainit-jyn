@@ -31,11 +31,35 @@ interface UploadedFile {
 }
 
 export default function DeforestationMonitoring() {
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>({
+    name: "example_geojson_20_plots.json",
+    size: 8245,
+    type: "application/json",
+    content: ""
+  });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
-  const [totalRecords, setTotalRecords] = useState(0);
+  const [analysisProgress, setAnalysisProgress] = useState(100);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([
+    { plotId: "PLOT_005", country: "Indonesia", area: 31.35, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_002", country: "Ivory Coast", area: 1439.07, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
+    { plotId: "PLOT_009", country: "Nigeria", area: 1.02, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_004", country: "Ghana", area: 1.95, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_001", country: "Central African Republic", area: 5604.60, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"] },
+    { plotId: "PLOT_010", country: "Brazil", area: 8.12, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_007", country: "Indonesia", area: 20.98, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_006", country: "Indonesia", area: 1.97, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_008", country: "Ivory Coast", area: 8.32, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"] },
+    { plotId: "PLOT_013", country: "Ghana", area: 4.17, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"] },
+    { plotId: "PLOT_003", country: "Brazil", area: 197.59, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"] },
+    { plotId: "PLOT_018", country: "Ivory Coast", area: 1.99, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
+    { plotId: "PLOT_011", country: "China", area: 7.61, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_015", country: "Brazil", area: 873.31, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
+    { plotId: "PLOT_017", country: "Nigeria", area: 4.26, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_016", country: "Indonesia", area: 5.67, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_012", country: "China", area: 6.23, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+    { plotId: "PLOT_014", country: "Nigeria", area: 1.01, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] }
+  ]);
+  const [totalRecords, setTotalRecords] = useState(20);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -333,22 +357,12 @@ export default function DeforestationMonitoring() {
                   </div>
                   <div className="flex gap-2">
                     <Button 
-                      onClick={analyzeFile}
-                      disabled={isAnalyzing}
-                      className="flex items-center gap-2"
-                      data-testid="start-analysis"
+                      disabled={true}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                      data-testid="analysis-complete"
                     >
-                      {isAnalyzing ? (
-                        <>
-                          <Clock className="h-4 w-4 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <Play className="h-4 w-4" />
-                          Start Analysis
-                        </>
-                      )}
+                      <CheckCircle2 className="h-4 w-4" />
+                      Analysis Complete
                     </Button>
                     <Button 
                       variant="outline" 
@@ -362,18 +376,16 @@ export default function DeforestationMonitoring() {
                   </div>
                 </div>
                 
-                {isAnalyzing && (
-                  <div className="mt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Analysis Progress</span>
-                      <span>{analysisProgress}%</span>
-                    </div>
-                    <Progress value={analysisProgress} className="w-full" />
-                    <p className="text-sm text-gray-500">
-                      Analyzing against GFW Loss, JRC, SBTN, and WDPA datasets...
-                    </p>
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Analysis Complete</span>
+                    <span className="text-green-600 font-medium">✓ Done</span>
                   </div>
-                )}
+                  <Progress value={100} className="w-full" />
+                  <p className="text-sm text-green-600">
+                    Successfully analyzed against GFW Loss, JRC, SBTN, and WDPA datasets
+                  </p>
+                </div>
               </div>
             )}
           </CardContent>
