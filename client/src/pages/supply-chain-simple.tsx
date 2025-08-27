@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2, Eye, MapPin, Navigation
+  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2, Eye, MapPin, Navigation, Download
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // Define supplier categories
 const SUPPLIER_CATEGORIES = {
@@ -181,6 +183,86 @@ export default function SupplyChainSimple() {
       4: [],
       5: []
     });
+  };
+
+  // Download functionality for exporting mockups
+  const downloadAsPNG = async (elementId: string, filename: string) => {
+    try {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${filename}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      console.error('Error downloading PNG:', error);
+      alert('Failed to download PNG. Please try again.');
+    }
+  };
+
+  const downloadAsJPG = async (elementId: string, filename: string) => {
+    try {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${filename}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.9);
+      link.click();
+    } catch (error) {
+      console.error('Error downloading JPG:', error);
+      alert('Failed to download JPG. Please try again.');
+    }
+  };
+
+  const downloadAsPDF = async (elementId: string, filename: string) => {
+    try {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: false
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 30;
+      
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${filename}.pdf`);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF. Please try again.');
+    }
   };
 
   const renderTraceabilityVisualization = () => {
@@ -675,14 +757,68 @@ export default function SupplyChainSimple() {
         </div>
 
         <Tabs defaultValue="configuration" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="configuration">Tier Configuration</TabsTrigger>
-            <TabsTrigger value="traceability">Traceability Flow</TabsTrigger>
-            <TabsTrigger value="map">GPS Journey Map</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-between items-center mb-4">
+            <TabsList className="grid grid-cols-3">
+              <TabsTrigger value="configuration">Tier Configuration</TabsTrigger>
+              <TabsTrigger value="traceability">Traceability Flow</TabsTrigger>
+              <TabsTrigger value="map">GPS Journey Map</TabsTrigger>
+            </TabsList>
+            
+            {/* Download Options */}
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => {
+                  // Get the current active tab
+                  const activeButton = document.querySelector('[role="tablist"] [data-state="active"]');
+                  const currentTab = activeButton?.getAttribute('value') || 'configuration';
+                  const filename = `KPN-Supply-Chain-${currentTab}-${new Date().toISOString().split('T')[0]}`;
+                  downloadAsPNG(`${currentTab}-content`, filename);
+                }}
+                className="flex items-center gap-1"
+                data-testid="download-png"
+              >
+                <Download className="h-3 w-3" />
+                PNG
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => {
+                  // Get the current active tab
+                  const activeButton = document.querySelector('[role="tablist"] [data-state="active"]');
+                  const currentTab = activeButton?.getAttribute('value') || 'configuration';
+                  const filename = `KPN-Supply-Chain-${currentTab}-${new Date().toISOString().split('T')[0]}`;
+                  downloadAsJPG(`${currentTab}-content`, filename);
+                }}
+                className="flex items-center gap-1"
+                data-testid="download-jpg"
+              >
+                <Download className="h-3 w-3" />
+                JPG
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => {
+                  // Get the current active tab
+                  const activeButton = document.querySelector('[role="tablist"] [data-state="active"]');
+                  const currentTab = activeButton?.getAttribute('value') || 'configuration';
+                  const filename = `KPN-Supply-Chain-${currentTab}-${new Date().toISOString().split('T')[0]}`;
+                  downloadAsPDF(`${currentTab}-content`, filename);
+                }}
+                className="flex items-center gap-1"
+                data-testid="download-pdf"
+              >
+                <Download className="h-3 w-3" />
+                PDF
+              </Button>
+            </div>
+          </div>
           
           <TabsContent value="configuration" className="space-y-6 mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div id="configuration-content" className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Supplier Categories - Compact Layout */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -813,11 +949,15 @@ export default function SupplyChainSimple() {
           </TabsContent>
           
           <TabsContent value="traceability" className="space-y-6 mt-6">
-            {renderTraceabilityVisualization()}
+            <div id="traceability-content">
+              {renderTraceabilityVisualization()}
+            </div>
           </TabsContent>
           
           <TabsContent value="map" className="space-y-6 mt-6">
-            {renderGPSJourneyMap()}
+            <div id="map-content">
+              {renderGPSJourneyMap()}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
