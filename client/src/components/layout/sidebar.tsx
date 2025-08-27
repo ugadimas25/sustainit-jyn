@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3, testId: 'nav-dashboard' },
   { name: 'Deforestation Monitoring', href: '/deforestation-monitoring', icon: Satellite, testId: 'nav-deforestation-monitoring' },
-  { name: 'Legality Assessment', href: '/legality', icon: Shield, testId: 'nav-legality' },
+  { name: 'Legality Assessment', href: '/legality-assessment', icon: Shield, testId: 'nav-legality' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
 ];

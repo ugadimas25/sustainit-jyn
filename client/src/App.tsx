@@ -19,7 +19,7 @@ function Router() {
     <Switch>
       <ProtectedRoute path="/" component={Dashboard} />
       <ProtectedRoute path="/deforestation-monitoring" component={DeforestationMonitoring} />
-      <ProtectedRoute path="/legality" component={LegalityAssessment} />
+      <ProtectedRoute path="/legality-assessment" component={LegalityAssessment} />
       <ProtectedRoute path="/supply-chain" component={SupplyChainSimple} />
       <ProtectedRoute path="/reports" component={DDSReports} />
       <Route path="/auth" component={AuthPage} />
