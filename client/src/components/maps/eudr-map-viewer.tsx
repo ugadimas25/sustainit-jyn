@@ -520,10 +520,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Deforestation layers from multiple sources
             const deforestationLayers = {
-              gfw: L.tileLayer('https://production-api.globalforestwatch.org/v1/gfw/forest-change/umd/loss-year/{z}/{x}/{y}.png', {
+              gfw: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/gfw_tree_cover_loss/{z}/{x}/{y}', {
                 attribution: '© Global Forest Watch',
-                opacity: 0.7,
-                maxZoom: 12
+                opacity: 0.7
               }),
               jrc: L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
                 layers: 'gfc2020_v2',
@@ -749,13 +748,24 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   console.log('GFW tree cover loss layer added to map');
                   console.log('GFW layer URL template:', deforestationLayers.gfw._url);
                   
-                  // Test if tiles are loading by checking for tile load events
-                  deforestationLayers.gfw.on('tileload', function() {
-                    console.log('GFW tile loaded successfully');
+                  // Force map refresh to show the layer
+                  map.invalidateSize();
+                  
+                  // Test if tiles are loading
+                  deforestationLayers.gfw.on('tileload', function(e) {
+                    console.log('GFW tile loaded successfully at:', e.coords);
                   });
                   
-                  deforestationLayers.gfw.on('tileerror', function(error) {
-                    console.error('GFW tile load error:', error);
+                  deforestationLayers.gfw.on('tileerror', function(e) {
+                    console.error('GFW tile load error:', e.error, 'at coords:', e.coords);
+                  });
+                  
+                  deforestationLayers.gfw.on('loading', function() {
+                    console.log('GFW layer started loading tiles');
+                  });
+                  
+                  deforestationLayers.gfw.on('load', function() {
+                    console.log('GFW layer finished loading tiles');
                   });
                   
                 } catch (error) {
