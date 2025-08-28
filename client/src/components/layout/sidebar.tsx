@@ -9,7 +9,8 @@ import {
   Leaf,
   LogOut,
   User,
-  Activity
+  Activity,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +20,7 @@ const navigation = [
   { name: 'Legality Assessment', href: '/legality-assessment', icon: Shield, testId: 'nav-legality' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
+  { name: 'Compliance Reports', href: '/compliance-reports', icon: TrendingUp, testId: 'nav-compliance-reports' },
 ];
 
 export function Sidebar() {
