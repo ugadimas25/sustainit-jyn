@@ -546,38 +546,7 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  const clearData = async () => {
-    try {
-      // Clear client-side state
-      setAnalysisResults([]);
-      setFilteredResults([]);
-      setTotalRecords(0);
-      setUploadedFile(null);
-      setHasRealData(false);
-      
-      // Clear localStorage
-      localStorage.removeItem('currentAnalysisResults');
-      localStorage.removeItem('hasRealAnalysisData');
-      
-      // Clear server-side data
-      await apiRequest('/api/analysis-results', {
-        method: 'DELETE',
-      });
 
-      toast({
-        title: "Data Cleared",
-        description: "Analysis results have been removed from storage.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error clearing data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to clear analysis data completely.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const downloadExcel = () => {
     try {
@@ -863,15 +832,7 @@ export default function DeforestationMonitoring() {
                   <Download className="h-4 w-4 mr-2" />
                   GeoJSON
                 </Button>
-                <Button 
-                  onClick={() => clearData()}
-                  variant="outline" 
-                  className="text-red-600 border-red-300 hover:bg-red-50"
-                  data-testid="clear-data"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear Data
-                </Button>
+
               </div>
             </CardHeader>
 
