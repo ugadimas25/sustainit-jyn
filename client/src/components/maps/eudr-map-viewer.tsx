@@ -32,41 +32,118 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             .header {
               background-color: hsl(0, 0%, 100%);
-              padding: 15px 20px;
+              padding: 16px 24px;
               border-bottom: 1px solid hsl(0, 0%, 88%);
               display: flex;
               justify-content: space-between;
               align-items: center;
               box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+              min-height: 70px;
+            }
+
+            .header-left {
+              display: flex;
+              align-items: center;
+              gap: 24px;
+              flex: 1;
             }
 
             .header h1 {
               margin: 0;
-              font-size: 24px;
+              font-size: 20px;
               color: hsl(20, 14.3%, 4.1%);
               font-weight: 600;
+              white-space: nowrap;
             }
 
-            .back-btn {
+            .header-stats {
+              display: flex;
+              align-items: center;
+              gap: 16px;
+              margin-left: 8px;
+            }
+
+            .stat-item {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 2px;
+            }
+
+            .stat-count {
+              font-size: 18px;
+              font-weight: 700;
+              color: hsl(207, 90%, 54%);
+              line-height: 1;
+            }
+
+            .stat-label {
+              font-size: 11px;
+              font-weight: 500;
+              color: hsl(25, 5.3%, 44.7%);
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              line-height: 1;
+            }
+
+            .stat-divider {
+              color: hsl(0, 0%, 88%);
+              font-weight: 300;
+              font-size: 16px;
+            }
+
+            .header-right {
+              display: flex;
+              align-items: center;
+            }
+
+            .header-actions {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            }
+
+            .action-btn {
+              border: none;
+              padding: 10px 16px;
+              border-radius: 8px;
+              font-size: 14px;
+              font-weight: 500;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              white-space: nowrap;
+              text-decoration: none;
+            }
+
+            .action-btn.primary {
               background-color: hsl(207, 90%, 54%);
               color: hsl(211, 100%, 99%);
-              border: none;
-              padding: 10px 20px;
-              border-radius: 8px;
-              cursor: pointer;
-              font-weight: 600;
-              text-decoration: none;
-              display: inline-block;
-              transition: background-color 0.2s ease;
-              box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             }
 
-            .back-btn:hover {
+            .action-btn.primary:hover {
               background-color: hsl(207, 90%, 48%);
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px hsl(207, 90%, 54%, 0.3);
+            }
+
+            .action-btn.secondary {
+              background-color: hsl(60, 4.8%, 95.9%);
+              color: hsl(25, 5.3%, 44.7%);
+              border: 1px solid hsl(0, 0%, 88%);
+            }
+
+            .action-btn.secondary:hover {
+              background-color: hsl(207, 90%, 54%);
+              color: hsl(211, 100%, 99%);
+              border-color: hsl(207, 90%, 54%);
+              transform: translateY(-1px);
             }
 
             .map-container {
-              height: calc(100vh - 80px);
+              height: calc(100vh - 70px);
               position: relative;
             }
 
@@ -429,8 +506,37 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
         </head>
         <body>
           <div class="header">
-            <h1>EUDR Map Viewer</h1>
-            <button onclick="window.parent.postMessage({type: 'closeMap'}, '*')" class="back-btn">← Back to Results</button>
+            <div class="header-left">
+              <h1>EUDR Map Viewer</h1>
+              <div class="header-stats">
+                <span class="stat-item">
+                  <span class="stat-count">${analysisResults.length}</span>
+                  <span class="stat-label">Plots</span>
+                </span>
+                <span class="stat-divider">|</span>
+                <span class="stat-item">
+                  <span class="stat-count">${analysisResults.filter(r => r.overallRisk === 'HIGH').length}</span>
+                  <span class="stat-label">High Risk</span>
+                </span>
+                <span class="stat-divider">|</span>
+                <span class="stat-item">
+                  <span class="stat-count">${analysisResults.filter(r => r.complianceStatus === 'COMPLIANT').length}</span>
+                  <span class="stat-label">Compliant</span>
+                </span>
+              </div>
+            </div>
+            <div class="header-right">
+              <div class="header-actions">
+                <button class="action-btn secondary" onclick="map.setView([0, 0], 2)">
+                  <span>🌍</span>
+                  Reset View
+                </button>
+                <button class="action-btn primary" onclick="window.parent.postMessage({type: 'closeMap'}, '*')">
+                  <span>←</span>
+                  Back to Results
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="map-container">
