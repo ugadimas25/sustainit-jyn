@@ -311,7 +311,19 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha) for low risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">6,533</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-low-risk-area">
+                    {(() => {
+                      const totalPlots = Number(displayMetrics?.totalPlots || 0);
+                      const highRiskPlots = Number(displayMetrics?.highRiskPlots || 0);
+                      const mediumRiskPlots = Number(displayMetrics?.mediumRiskPlots || 0);
+                      const totalArea = Number(displayMetrics?.totalArea || 0);
+                      const lowRiskPlots = totalPlots - highRiskPlots - mediumRiskPlots;
+                      
+                      // Calculate proportional area for low risk plots
+                      const lowRiskArea = totalPlots > 0 ? (lowRiskPlots / totalPlots) * totalArea : 0;
+                      return lowRiskArea.toFixed(2);
+                    })()}
+                  </p>
                 </CardContent>
               </Card>
 
