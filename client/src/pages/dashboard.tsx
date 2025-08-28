@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -41,6 +41,7 @@ const samplePlotData = {
 export default function Dashboard() {
   const [selectedModal, setSelectedModal] = useState<string | null>(null);
   const [currentMetrics, setCurrentMetrics] = useState<any>(null);
+  const queryClient = useQueryClient();
   
   // Function to get modal title and data based on selected modal
   const getModalData = (modalType: string) => {
@@ -93,44 +94,22 @@ export default function Dashboard() {
           if (analysisResults && Array.isArray(analysisResults) && analysisResults.length > 0) {
             // Only calculate metrics if we have real analysis data
             calculateMetricsMutation.mutate(analysisResults);
-          } else {
-            // Set metrics to zero if real data is empty
-            setCurrentMetrics({
-              totalPlots: "0",
-              compliantPlots: "0",
-              highRiskPlots: "0",
-              mediumRiskPlots: "0",
-              deforestedPlots: "0",
-              totalArea: "0"
-            });
           }
-        } else {
-          // No real data available, keep dashboard at zero
-          setCurrentMetrics({
-            totalPlots: "0",
-            compliantPlots: "0",
-            highRiskPlots: "0",
-            mediumRiskPlots: "0",
-            deforestedPlots: "0",
-            totalArea: "0"
-          });
         }
+        // Removed the setting of currentMetrics to null/zero - let server metrics handle this
       } catch (error) {
         console.error("Error parsing stored analysis results:", error);
       }
     };
 
-    // Initialize with zero values first, then check for real data
-    setCurrentMetrics({
-      totalPlots: "0",
-      compliantPlots: "0",
-      highRiskPlots: "0", 
-      mediumRiskPlots: "0",
-      deforestedPlots: "0",
-      totalArea: "0"
-    });
+    // Clear React Query cache for dashboard metrics
+    queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+    queryClient.removeQueries({ queryKey: ["/api/dashboard/metrics"] });
     
-    // Then check for real data
+    // Clear any cached browser data
+    localStorage.removeItem('dashboard-cache');
+    
+    // Check for real data
     checkForUpdatedResults();
     
     // Set up periodic checking for updates
@@ -151,8 +130,8 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Use current metrics from localStorage, or server metrics, or zero fallback
-  const displayMetrics = currentMetrics || metrics || {
+  // Force use of server metrics (which are now guaranteed to be zeros) or explicit zeros
+  const displayMetrics = metrics || {
     totalPlots: "0",
     compliantPlots: "0", 
     highRiskPlots: "0",
@@ -160,6 +139,9 @@ export default function Dashboard() {
     deforestedPlots: "0",
     totalArea: "0"
   };
+
+  // Debug log to check what metrics we're actually getting
+  console.log("Dashboard metrics:", { metrics, displayMetrics });
 
   if (isLoading) {
     return (
