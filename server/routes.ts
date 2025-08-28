@@ -28,6 +28,7 @@ import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import FormData from "form-data";
+import { Readable } from "stream";
 
 const scryptAsync = promisify(scrypt);
 
@@ -1347,21 +1348,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'GeoJSON file is required' });
       }
 
-      // Create FormData using the built-in FormData API
-      const formData = new FormData();
+      // Create a proper multipart/form-data request
+      const boundary = `----formdata-node-${Date.now()}`;
+      const fileContent = geojsonFile;
+      const uploadFileName = fileName || 'plot_boundaries.json';
       
-      // Create a Blob from the GeoJSON string and append to FormData
-      const blob = new Blob([geojsonFile], { type: 'application/json' });
-      formData.append('file', blob, fileName || 'plot_boundaries.json');
+      const formBody = [
+        `--${boundary}`,
+        `Content-Disposition: form-data; name="file"; filename="${uploadFileName}"`,
+        'Content-Type: application/json',
+        '',
+        fileContent,
+        `--${boundary}--`
+      ].join('\r\n');
 
-      // Call Global Climate Solution API
-      const response = await fetch('https://global-climate-solution.p.rapidapi.com/api/v1/upload-geojson', {
+      // Call EUDR Multilayer API
+      const response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
         method: 'POST',
         headers: {
-          'x-rapidapi-host': 'global-climate-solution.p.rapidapi.com',
-          'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
+          'Content-Type': `multipart/form-data; boundary=${boundary}`
         },
-        body: formData
+        body: formBody
       });
 
       if (!response.ok) {

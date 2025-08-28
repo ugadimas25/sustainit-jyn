@@ -6,12 +6,13 @@ The platform combines advanced traceability technology with AI-powered complianc
 
 ## Recent Changes (August 2025)
 
-- **Global Climate Solution API Integration** (August 28, 2025): Real-time deforestation analysis with authentic satellite data:
-  - Integrated Global Climate Solution RapidAPI for GeoJSON plot analysis
-  - Connected real-time satellite data processing (GFW, JRC, SBTN datasets)
+- **EUDR Multilayer API Integration** (August 28, 2025): Real-time deforestation analysis with authentic satellite data:
+  - Successfully migrated to EUDR Multilayer API (https://eudr-multilayer-api.fly.dev) for unlimited usage
+  - Connected real-time satellite data processing (GFW, JRC, SBTN datasets) without quota restrictions
   - Implemented authentic deforestation risk assessment with compliance scoring
-  - Added comprehensive error handling and progress tracking for API calls
+  - Fixed multipart/form-data handling for proper file uploads to external API
   - Transformed API response data to match existing UI structure for seamless integration
+  - Complete end-to-end GeoJSON upload and analysis functionality working in production
 
 - **Complete EUDR Assessment Backend Integration** (August 28, 2025): Full database persistence and API integration:
   - Built comprehensive PostgreSQL schema with all 8 EUDR legality indicators (Land Tenure, Environmental Laws, Forest Regulations, Third-Party Rights, Labour, Human Rights, Tax/Anti-Corruption, Other National Laws)
