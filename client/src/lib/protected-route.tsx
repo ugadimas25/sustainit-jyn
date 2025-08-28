@@ -12,28 +12,19 @@ export function ProtectedRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  const { user, isLoading } = useAuth();
-
+  // Authentication temporarily disabled - direct access to all pages
   return (
     <Route path={path}>
-      {isLoading ? (
-        <div className="flex h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <TopBar />
+          <main className="flex-1 overflow-auto">
+            <Component />
+          </main>
+          <VoiceAssistantToggle />
         </div>
-      ) : user ? (
-        <div className="flex h-screen bg-gray-50">
-          <Sidebar />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <TopBar />
-            <main className="flex-1 overflow-auto">
-              <Component />
-            </main>
-            <VoiceAssistantToggle />
-          </div>
-        </div>
-      ) : (
-        <Redirect to="/auth" />
-      )}
+      </div>
     </Route>
   );
 }
