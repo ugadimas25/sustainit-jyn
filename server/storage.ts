@@ -18,6 +18,7 @@ import {
   ddsReports, type DdsReport, type InsertDdsReport,
 
   mills, type Mill, type InsertMill,
+  analysisResults, type AnalysisResult, type InsertAnalysisResult,
   eudrAssessments, type EudrAssessment, type InsertEudrAssessment
 } from "@shared/schema";
 import { db } from "./db";
@@ -144,6 +145,21 @@ export interface IStorage {
   createEudrAssessment(insertEudrAssessment: InsertEudrAssessment): Promise<EudrAssessment>;
   updateEudrAssessment(id: string, updates: Partial<EudrAssessment>): Promise<EudrAssessment>;
   deleteEudrAssessment(id: string): Promise<void>;
+
+  // Analysis Results management
+  getAnalysisResults(): Promise<AnalysisResult[]>;
+  getAnalysisResult(id: string): Promise<AnalysisResult | undefined>;
+  getAnalysisResultsBySession(uploadSession: string): Promise<AnalysisResult[]>;
+  createAnalysisResult(insertAnalysisResult: InsertAnalysisResult): Promise<AnalysisResult>;
+  clearAnalysisResults(): Promise<void>;
+  calculateDashboardMetrics(): Promise<{
+    totalPlots: string;
+    compliantPlots: string;
+    highRiskPlots: string;
+    mediumRiskPlots: string;
+    deforestedPlots: string;
+    totalArea: string;
+  }>;
 }
 
 // Database implementation of IStorage
@@ -763,6 +779,103 @@ export class DatabaseStorage implements IStorage {
 
   async deleteEudrAssessment(id: string): Promise<void> {
     await db.delete(eudrAssessments).where(eq(eudrAssessments.id, id));
+  }
+
+  // Analysis Results management
+  async getAnalysisResults(): Promise<AnalysisResult[]> {
+    try {
+      return await db.select().from(analysisResults).orderBy(desc(analysisResults.createdAt));
+    } catch (error) {
+      console.error("Error getting analysis results:", error);
+      return [];
+    }
+  }
+
+  async getAnalysisResult(id: string): Promise<AnalysisResult | undefined> {
+    try {
+      const [result] = await db.select().from(analysisResults).where(eq(analysisResults.id, id));
+      return result || undefined;
+    } catch (error) {
+      console.error("Error getting analysis result by id:", error);
+      return undefined;
+    }
+  }
+
+  async getAnalysisResultsBySession(uploadSession: string): Promise<AnalysisResult[]> {
+    try {
+      return await db.select().from(analysisResults).where(eq(analysisResults.uploadSession, uploadSession));
+    } catch (error) {
+      console.error("Error getting analysis results by session:", error);
+      return [];
+    }
+  }
+
+  async createAnalysisResult(insertAnalysisResult: InsertAnalysisResult): Promise<AnalysisResult> {
+    try {
+      const [result] = await db
+        .insert(analysisResults)
+        .values({
+          ...insertAnalysisResult,
+          updatedAt: new Date()
+        })
+        .returning();
+      return result;
+    } catch (error) {
+      console.error("Error creating analysis result:", error);
+      throw error;
+    }
+  }
+
+  async clearAnalysisResults(): Promise<void> {
+    try {
+      await db.delete(analysisResults);
+    } catch (error) {
+      console.error("Error clearing analysis results:", error);
+      throw error;
+    }
+  }
+
+  async calculateDashboardMetrics(): Promise<{
+    totalPlots: string;
+    compliantPlots: string;
+    highRiskPlots: string;
+    mediumRiskPlots: string;
+    deforestedPlots: string;
+    totalArea: string;
+  }> {
+    try {
+      const results = await this.getAnalysisResults();
+      
+      const totalPlots = results.length;
+      const compliantPlots = results.filter(r => r.complianceStatus === 'COMPLIANT').length;
+      const highRiskPlots = results.filter(r => r.overallRisk === 'HIGH').length;
+      const mediumRiskPlots = results.filter(r => r.overallRisk === 'MEDIUM').length;
+      const deforestedPlots = results.filter(r => 
+        r.highRiskDatasets?.includes('GFW Forest Loss') || 
+        r.highRiskDatasets?.includes('JRC Forest Loss')
+      ).length;
+      const totalArea = results.reduce((sum, r) => sum + Number(r.area), 0).toFixed(2);
+
+      return {
+        totalPlots: totalPlots.toString(),
+        compliantPlots: compliantPlots.toString(),
+        highRiskPlots: highRiskPlots.toString(),
+        mediumRiskPlots: mediumRiskPlots.toString(),
+        deforestedPlots: deforestedPlots.toString(),
+        totalArea: totalArea
+      };
+    } catch (error) {
+      console.error("Error calculating dashboard metrics:", error);
+      // Return default values if calculation fails
+      return {
+        totalPlots: "0",
+        compliantPlots: "0", 
+        highRiskPlots: "0",
+        mediumRiskPlots: "0",
+        deforestedPlots: "0",
+        totalArea: "0"
+      };
+    }
   }
 }
 

@@ -32,6 +32,24 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Analysis Results table for storing GeoJSON analysis results
+export const analysisResults = pgTable("analysis_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  plotId: text("plot_id").notNull(),
+  country: text("country").notNull(),
+  area: decimal("area", { precision: 12, scale: 2 }).notNull(),
+  overallRisk: text("overall_risk").notNull(), // LOW, MEDIUM, HIGH
+  complianceStatus: text("compliance_status").notNull(), // COMPLIANT, NON-COMPLIANT
+  gfwLoss: text("gfw_loss").notNull(),
+  jrcLoss: text("jrc_loss").notNull(), 
+  sbtnLoss: text("sbtn_loss").notNull(),
+  highRiskDatasets: jsonb("high_risk_datasets").$type<string[]>().default([]),
+  geometry: jsonb("geometry"), // Store the original GeoJSON geometry
+  uploadSession: text("upload_session"), // Track which upload session this belongs to
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Commodities table for product definitions
 export const commodities = pgTable("commodities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -974,6 +992,8 @@ export type MassBalanceRecord = typeof massBalanceRecords.$inferSelect;
 export type InsertMassBalanceRecord = typeof massBalanceRecords.$inferInsert;
 export type Mill = typeof mills.$inferSelect;
 export type InsertMill = typeof mills.$inferInsert;
+export type AnalysisResult = typeof analysisResults.$inferSelect;
+export type InsertAnalysisResult = typeof analysisResults.$inferInsert;
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users);
@@ -994,6 +1014,7 @@ export const insertSupplierSchema = createInsertSchema(suppliers);
 export const insertSupplierWorkflowLinkSchema = createInsertSchema(supplierWorkflowLinks);
 export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments);
 export const insertMillSchema = createInsertSchema(mills);
+export const insertAnalysisResultSchema = createInsertSchema(analysisResults);
 export const insertDdsReportSchema = createInsertSchema(ddsReports);
 export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection);
 export const insertMillDataCollectionSchema = createInsertSchema(millDataCollection);

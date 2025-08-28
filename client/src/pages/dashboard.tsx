@@ -137,7 +137,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total plot mapped with polygon</p>
-                  <p className="text-3xl font-bold text-gray-900">14,014</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-plots">{metrics?.totalPlots || "0"}</p>
                 </CardContent>
               </Card>
 
@@ -148,8 +148,8 @@ export default function Dashboard() {
                       <CheckCircle className="w-5 h-5" />
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">Total low risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900">13,067</p>
+                  <p className="text-sm text-gray-600 mb-2">Total compliant plots</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-compliant-plots">{metrics?.compliantPlots || "0"}</p>
                 </CardContent>
               </Card>
 
@@ -162,7 +162,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total high risk plot</p>
                   <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900">35</p>
+                    <p className="text-3xl font-bold text-gray-900" data-testid="text-high-risk-plots">{metrics?.highRiskPlots || "0"}</p>
                     <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                 </CardContent>
@@ -177,7 +177,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total medium risk plot</p>
                   <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900">912</p>
+                    <p className="text-3xl font-bold text-gray-900" data-testid="text-medium-risk-plots">{metrics?.mediumRiskPlots || "0"}</p>
                     <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                 </CardContent>
@@ -193,7 +193,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Deforested plot (after 31 Dec 2020)</p>
                   <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900">35</p>
+                    <p className="text-3xl font-bold text-gray-900" data-testid="text-deforested-plots">{metrics?.deforestedPlots || "0"}</p>
                     <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                 </CardContent>
@@ -223,7 +223,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha)</p>
-                  <p className="text-3xl font-bold text-gray-900">7,141</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-area">{metrics?.totalArea || "0"}</p>
                 </CardContent>
               </Card>
 

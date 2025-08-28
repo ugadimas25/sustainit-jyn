@@ -772,20 +772,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard metrics for backward compatibility
+  // Dashboard metrics for backward compatibility - now using analysis results
   app.get("/api/dashboard/metrics", async (req, res) => {
     try {
-      const plots = await storage.getPlots();
-      const facilities = await storage.getFacilities();
-      const shipments = await storage.getShipments();
-      
-      res.json({
-        totalPlots: plots.length.toString(),
-        compliantPlots: plots.filter(p => p.riskFlags?.length === 0).length.toString(),
-        activeFacilities: facilities.filter(f => f.isActive).length.toString(),
-        pendingShipments: shipments.filter(s => s.status === 'pending').length.toString()
-      });
+      const metrics = await storage.calculateDashboardMetrics();
+      res.json(metrics);
     } catch (error) {
+      console.error("Error fetching dashboard metrics:", error);
       res.status(500).json({ error: "Failed to fetch dashboard metrics" });
     }
   });
@@ -1402,6 +1395,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: `Only ${outputFeatures} out of ${inputFeatures} features were processed successfully.`,
           recommendation: "For better results, split large files into smaller batches of 5-10 features each."
         };
+      }
+      
+      // Store analysis results in database for dashboard metrics
+      if (analysisResults.data?.features) {
+        const uploadSession = `session-${Date.now()}`;
+        
+        // Clear previous analysis results
+        await storage.clearAnalysisResults();
+        
+        // Store each analysis result in the database
+        for (const feature of analysisResults.data.features) {
+          try {
+            await storage.createAnalysisResult({
+              plotId: feature.properties.plot_id || 'unknown',
+              country: feature.properties.country_name || 'Unknown',
+              area: String(feature.properties.total_area_hectares || 0),
+              overallRisk: feature.properties.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
+              complianceStatus: feature.properties.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
+              gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
+              jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
+              sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
+              highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
+              geometry: feature.geometry,
+              uploadSession: uploadSession
+            });
+          } catch (err) {
+            console.log("Could not store analysis result:", err.message);
+          }
+        }
+        
+        console.log(`✅ Stored ${analysisResults.data.features.length} analysis results in database for reactive dashboard`);
       }
       
       // Return the response directly as it already has the expected structure
