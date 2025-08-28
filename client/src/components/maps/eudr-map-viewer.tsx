@@ -525,11 +525,12 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 opacity: 0.7
               }),
               jrc: L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
-                layers: 'iforce:gfc2020_deforestation',
+                layers: 'gfc2020_v2',
                 format: 'image/png',
                 transparent: true,
                 attribution: '© JRC European Commission',
-                opacity: 0.7
+                opacity: 0.8,
+                version: '1.3.0'
               }),
               sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
                 attribution: '© SBTN',
@@ -750,9 +751,19 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             document.getElementById('jrcLayer').addEventListener('change', function(e) {
               if (e.target.checked) {
-                deforestationLayers.jrc.addTo(map);
+                try {
+                  deforestationLayers.jrc.addTo(map);
+                  console.log('JRC WMS layer added to map');
+                } catch (error) {
+                  console.error('Error adding JRC WMS layer:', error);
+                }
               } else {
-                map.removeLayer(deforestationLayers.jrc);
+                try {
+                  map.removeLayer(deforestationLayers.jrc);
+                  console.log('JRC WMS layer removed from map');
+                } catch (error) {
+                  console.error('Error removing JRC WMS layer:', error);
+                }
               }
             });
 
