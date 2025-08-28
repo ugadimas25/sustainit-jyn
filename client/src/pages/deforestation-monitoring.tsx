@@ -63,6 +63,50 @@ export default function DeforestationMonitoring() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // GeoJSON upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: async ({ geojsonFile, fileName }: { geojsonFile: string, fileName: string }) => {
+      return apiRequest('/api/geojson/upload', {
+        method: 'POST',
+        body: { geojsonFile, fileName }
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Analysis Complete",
+        description: `GeoJSON analysis completed successfully. Processing ${data.data?.totalPlots || 0} plots.`
+      });
+      
+      // Update analysis results with real data if available
+      if (data.data?.plots) {
+        setAnalysisResults(data.data.plots.map((plot: any) => ({
+          plotId: plot.plotId || plot.id,
+          country: plot.country || 'Unknown',
+          area: plot.area || 0,
+          overallRisk: plot.overallRisk || 'UNKNOWN',
+          complianceStatus: plot.complianceStatus || 'UNKNOWN',
+          gfwLoss: plot.gfwLoss || 'UNKNOWN',
+          jrcLoss: plot.jrcLoss || 'UNKNOWN', 
+          sbtnLoss: plot.sbtnLoss || 'UNKNOWN',
+          highRiskDatasets: plot.highRiskDatasets || []
+        })));
+      }
+      
+      setIsAnalyzing(false);
+      setAnalysisProgress(100);
+    },
+    onError: (error: any) => {
+      console.error('Upload error:', error);
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "Failed to analyze GeoJSON file. Please try again.",
+        variant: "destructive"
+      });
+      setIsAnalyzing(false);
+      setAnalysisProgress(0);
+    }
+  });
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -161,96 +205,21 @@ export default function DeforestationMonitoring() {
     URL.revokeObjectURL(url);
   };
 
-  // Mock analysis function - in real implementation, this would call your backend API
+  // Real API analysis function using Global Climate Solution API
   const analyzeFile = async () => {
-    if (!uploadedFile) return;
+    if (!uploadedFile || !uploadedFile.content) return;
 
     setIsAnalyzing(true);
-    setAnalysisProgress(0);
+    setAnalysisProgress(10);
 
     try {
-      // Simulate analysis progress
-      const progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 500);
-
-      // Mock analysis results - in real implementation, this would be from your API
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Simulate API call
-      
-      const mockResults: AnalysisResult[] = [
-        {
-          plotId: "PLOT_005",
-          country: "Indonesia",
-          area: 31.35,
-          overallRisk: "LOW",
-          complianceStatus: "COMPLIANT",
-          gfwLoss: "LOW",
-          jrcLoss: "LOW",
-          sbtnLoss: "LOW",
-          highRiskDatasets: []
-        },
-        {
-          plotId: "PLOT_002", 
-          country: "Ivory Coast",
-          area: 1439.07,
-          overallRisk: "HIGH",
-          complianceStatus: "NON-COMPLIANT", 
-          gfwLoss: "HIGH",
-          jrcLoss: "LOW",
-          sbtnLoss: "LOW",
-          highRiskDatasets: ["GFW Forest Loss"]
-        },
-        {
-          plotId: "PLOT_009",
-          country: "Nigeria", 
-          area: 1.02,
-          overallRisk: "LOW",
-          complianceStatus: "COMPLIANT",
-          gfwLoss: "LOW",
-          jrcLoss: "LOW", 
-          sbtnLoss: "LOW",
-          highRiskDatasets: []
-        },
-        {
-          plotId: "PLOT_004",
-          country: "Ghana",
-          area: 1.95,
-          overallRisk: "LOW",
-          complianceStatus: "COMPLIANT",
-          gfwLoss: "LOW",
-          jrcLoss: "LOW",
-          sbtnLoss: "LOW", 
-          highRiskDatasets: []
-        },
-        {
-          plotId: "PLOT_001",
-          country: "Central African Republic",
-          area: 5604.60,
-          overallRisk: "HIGH",
-          complianceStatus: "NON-COMPLIANT",
-          gfwLoss: "HIGH", 
-          jrcLoss: "HIGH",
-          sbtnLoss: "HIGH",
-          highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"]
-        }
-      ];
-
-      clearInterval(progressInterval);
-      setAnalysisProgress(100);
-      setAnalysisResults(mockResults);
-      setTotalRecords(mockResults.length);
-      
-      toast({
-        title: "Analysis completed successfully",
-        description: `Analyzed ${mockResults.length} plots with deforestation and legality data`
+      // Call the real API through our backend
+      uploadMutation.mutate({
+        geojsonFile: uploadedFile.content as string,
+        fileName: uploadedFile.name
       });
-
+      
+      // Progress will be handled by the mutation callbacks
     } catch (error) {
       console.error('Analysis failed:', error);
       toast({
@@ -258,8 +227,8 @@ export default function DeforestationMonitoring() {
         description: "Please check your file format and try again",
         variant: "destructive"
       });
-    } finally {
       setIsAnalyzing(false);
+      setAnalysisProgress(0);
     }
   };
 

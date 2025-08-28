@@ -1337,5 +1337,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GeoJSON upload and analysis endpoint
+  app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
+    try {
+      const { geojsonFile, fileName } = req.body;
+      
+      if (!geojsonFile) {
+        return res.status(400).json({ error: 'GeoJSON file is required' });
+      }
+
+      // Create form data for RapidAPI request
+      const FormData = require('form-data');
+      const formData = new FormData();
+      
+      // Convert GeoJSON string to buffer
+      const fileBuffer = Buffer.from(geojsonFile, 'utf-8');
+      formData.append('file', fileBuffer, {
+        filename: fileName || 'plot_boundaries.json',
+        contentType: 'application/json'
+      });
+
+      // Call Global Climate Solution API
+      const response = await fetch('https://global-climate-solution.p.rapidapi.com/api/v1/upload-geojson', {
+        method: 'POST',
+        headers: {
+          'x-rapidapi-host': 'global-climate-solution.p.rapidapi.com',
+          'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
+          ...formData.getHeaders()
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('RapidAPI Error:', response.status, errorText);
+        return res.status(response.status).json({ 
+          error: 'Failed to analyze GeoJSON file',
+          details: errorText 
+        });
+      }
+
+      const analysisResults = await response.json();
+      
+      // Transform and return results
+      res.json({
+        success: true,
+        message: 'GeoJSON analysis completed successfully',
+        data: analysisResults
+      });
+
+    } catch (error) {
+      console.error('GeoJSON upload error:', error);
+      res.status(500).json({ 
+        error: 'Internal server error during GeoJSON analysis',
+        details: error.message 
+      });
+    }
+  });
+
   return httpServer;
 }
