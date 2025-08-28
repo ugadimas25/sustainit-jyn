@@ -531,11 +531,7 @@ export default function DeforestationMonitoring() {
   const getLossDisplay = (riskLevel: string, lossArea?: number) => {
     // Always show the area value when it's HIGH, regardless of the area amount
     if (riskLevel === 'HIGH') {
-      let areaValue = lossArea !== undefined ? Number(lossArea) : 0;
-      // If area is 0.00, display as 0.01
-      if (areaValue === 0) {
-        areaValue = 0.01;
-      }
+      const areaValue = lossArea !== undefined ? Number(lossArea) : 0;
       return (
         <span className="text-sm font-medium text-red-600">
           {areaValue.toFixed(2)} ha
