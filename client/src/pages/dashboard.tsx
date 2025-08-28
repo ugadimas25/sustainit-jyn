@@ -140,9 +140,6 @@ export default function Dashboard() {
     totalArea: "0"
   };
 
-  // Debug log to check what metrics we're actually getting
-  console.log("Dashboard metrics:", { metrics, displayMetrics });
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">

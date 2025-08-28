@@ -171,10 +171,14 @@ export default function DeforestationMonitoring() {
     };
     clearDatabaseResults();
     
-    // Load sample data in table for UI demonstration, but keep dashboard at zero
+    // Load sample data in table for UI demonstration ONLY - this data does NOT affect dashboard
+    // Dashboard metrics come from database which is cleared above
     setAnalysisResults(defaultAnalysisResults);
     setFilteredResults(defaultAnalysisResults);
     setTotalRecords(defaultAnalysisResults.length);
+    
+    // Ensure sample data never gets sent to dashboard calculation
+    console.log("Sample data loaded for table display only - dashboard uses database (cleared)");
   }, []);
 
   // GeoJSON upload mutation
