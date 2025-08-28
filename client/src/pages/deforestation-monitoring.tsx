@@ -525,20 +525,20 @@ export default function DeforestationMonitoring() {
   };
 
   const getLossDisplay = (riskLevel: string, lossArea?: number) => {
-    if (riskLevel === 'HIGH' && lossArea !== undefined && lossArea > 0) {
+    // Always show the area value when it's HIGH, regardless of the area amount
+    if (riskLevel === 'HIGH') {
+      const areaValue = lossArea !== undefined ? Number(lossArea) : 0;
       return (
         <span className="text-sm font-medium text-red-600">
-          {Number(lossArea).toFixed(2)} ha
+          {areaValue.toFixed(2)} ha
         </span>
       );
-    } else if (riskLevel === 'HIGH') {
-      return <Badge className="bg-red-100 text-red-800">HIGH</Badge>;
     } else if (riskLevel === 'LOW') {
       return <Badge className="bg-green-100 text-green-800">LOW</Badge>;
     } else if (riskLevel === 'MEDIUM') {
       return <Badge className="bg-yellow-100 text-yellow-800">MEDIUM</Badge>;
     } else {
-      return <Badge className="bg-red-100 text-red-800">HIGH</Badge>;
+      return <Badge className="bg-red-100 text-red-800">UNKNOWN</Badge>;
     }
   };
 
