@@ -226,34 +226,53 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Set default base layer
             baseLayers.satellite.addTo(map);
 
-            // Analysis results from React
+            // Analysis results from React (contains actual polygon geometries)
             const analysisResults = ${JSON.stringify(analysisResults)};
             
-            // Add markers for each plot
-            const markers = [];
+            // Add polygons for each plot using actual geometry data
+            const polygons = [];
+            const bounds = [];
+            
             analysisResults.forEach(result => {
-              // Generate random coordinates for demonstration (in real app, use actual coordinates)
-              const lat = (Math.random() - 0.5) * 120;
-              const lng = (Math.random() - 0.5) * 360;
+              // Skip if no geometry data available
+              if (!result.geometry || !result.geometry.coordinates) {
+                console.warn('No geometry data for plot:', result.plotId);
+                return;
+              }
               
               const isHighRisk = result.overallRisk === 'HIGH';
               const color = isHighRisk ? '#dc2626' : '#10b981';
-              const animation = isHighRisk ? 'pulse-red 2s infinite' : 'pulse-green 2s infinite';
               
-              const marker = L.circleMarker([lat, lng], {
+              // Convert coordinates for Leaflet (handle polygon structure)
+              let coordinates = result.geometry.coordinates;
+              if (result.geometry.type === 'Polygon') {
+                // Polygon coordinates are [[[lng, lat], [lng, lat], ...]]
+                coordinates = coordinates[0].map(coord => [coord[1], coord[0]]); // Convert [lng, lat] to [lat, lng]
+              }
+              
+              // Create polygon with styling
+              const polygon = L.polygon(coordinates, {
+                fillColor: color,
+                color: isHighRisk ? '#dc2626' : '#10b981',
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.4,
+                className: isHighRisk ? 'high-risk-polygon' : 'low-risk-polygon'
+              }).addTo(map);
+              
+              // Add center marker for better visibility
+              const center = polygon.getBounds().getCenter();
+              const centerMarker = L.circleMarker(center, {
                 radius: 8,
                 fillColor: color,
                 color: '#fff',
                 weight: 2,
                 opacity: 1,
-                fillOpacity: 0.8
+                fillOpacity: 0.9
               }).addTo(map);
               
-              // Add pulsing animation
-              marker.getElement().style.animation = animation;
-              
-              // Add popup with plot information
-              marker.bindPopup(\`
+              // Add popup with plot information to both polygon and center marker
+              const popupContent = \`
                 <div style="background: linear-gradient(135deg, #1a1a1a, #2a2a2a); padding: 15px; border-radius: 8px; color: white; min-width: 200px;">
                   <h3 style="margin: 0 0 10px 0; color: #4da6ff;">\${result.plotId}</h3>
                   <p><strong>Country:</strong> \${result.country}</p>
@@ -265,14 +284,36 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   <p><strong>SBTN Loss:</strong> \${result.sbtnLoss}</p>
                   \${result.highRiskDatasets.length > 0 ? \`<p><strong>High Risk Datasets:</strong> \${result.highRiskDatasets.join(', ')}</p>\` : ''}
                 </div>
-              \`);
+              \`;
               
-              markers.push({ marker, risk: result.overallRisk });
+              polygon.bindPopup(popupContent);
+              centerMarker.bindPopup(popupContent);
+              
+              // Add pulsing animation to center marker
+              const animation = isHighRisk ? 'pulse-red 2s infinite' : 'pulse-green 2s infinite';
+              setTimeout(() => {
+                if (centerMarker.getElement()) {
+                  centerMarker.getElement().style.animation = animation;
+                }
+              }, 100);
+              
+              polygons.push({ 
+                polygon, 
+                centerMarker, 
+                risk: result.overallRisk,
+                bounds: polygon.getBounds()
+              });
+              
+              bounds.push(polygon.getBounds());
             });
 
-            // Fit map to show all markers
-            if (markers.length > 0) {
-              const group = new L.featureGroup(markers.map(m => m.marker));
+            // Fit map to show all polygons
+            if (bounds.length > 0) {
+              const group = new L.featureGroup([]);
+              bounds.forEach(bound => {
+                const tempLayer = L.rectangle(bound);
+                group.addLayer(tempLayer);
+              });
               map.fitBounds(group.getBounds().pad(0.1));
             }
 
@@ -290,20 +331,26 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Risk filter control
             document.getElementById('riskFilter').addEventListener('change', function(e) {
               const filterValue = e.target.value;
-              markers.forEach(({marker, risk}) => {
+              polygons.forEach(({polygon, centerMarker, risk}) => {
                 if (filterValue === 'all') {
-                  marker.addTo(map);
+                  polygon.addTo(map);
+                  centerMarker.addTo(map);
                 } else if (filterValue === 'high' && risk === 'HIGH') {
-                  marker.addTo(map);
+                  polygon.addTo(map);
+                  centerMarker.addTo(map);
                 } else if (filterValue === 'low' && risk === 'LOW') {
-                  marker.addTo(map);
+                  polygon.addTo(map);
+                  centerMarker.addTo(map);
                 } else {
-                  map.removeLayer(marker);
+                  map.removeLayer(polygon);
+                  map.removeLayer(centerMarker);
                 }
               });
             });
 
             console.log('EUDR Map loaded with', analysisResults.length, 'plots');
+            console.log('Polygons rendered:', polygons.length);
+            console.log('Sample geometry data:', analysisResults[0]?.geometry);
           </script>
         </body>
         </html>

@@ -88,7 +88,7 @@ export default function DeforestationMonitoring() {
         });
       }
       
-      // Transform real API response to our expected format
+      // Transform real API response to our expected format (preserve geometry data)
       if (response.data?.features) {
         const transformedResults = response.data.features.map((feature: any) => ({
           plotId: feature.properties.plot_id,
@@ -99,7 +99,9 @@ export default function DeforestationMonitoring() {
           gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
           jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
           sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
-          highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || []
+          highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
+          // Preserve the actual geometry data from GeoJSON
+          geometry: feature.geometry
         }));
         
         setAnalysisResults(transformedResults);
