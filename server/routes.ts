@@ -27,6 +27,7 @@ import {
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
+import FormData from "form-data";
 
 const scryptAsync = promisify(scrypt);
 
@@ -1346,16 +1347,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'GeoJSON file is required' });
       }
 
-      // Create form data for RapidAPI request
-      const FormData = require('form-data');
+      // Create FormData using the built-in FormData API
       const formData = new FormData();
       
-      // Convert GeoJSON string to buffer
-      const fileBuffer = Buffer.from(geojsonFile, 'utf-8');
-      formData.append('file', fileBuffer, {
-        filename: fileName || 'plot_boundaries.json',
-        contentType: 'application/json'
-      });
+      // Create a Blob from the GeoJSON string and append to FormData
+      const blob = new Blob([geojsonFile], { type: 'application/json' });
+      formData.append('file', blob, fileName || 'plot_boundaries.json');
 
       // Call Global Climate Solution API
       const response = await fetch('https://global-climate-solution.p.rapidapi.com/api/v1/upload-geojson', {
@@ -1363,7 +1360,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         headers: {
           'x-rapidapi-host': 'global-climate-solution.p.rapidapi.com',
           'x-rapidapi-key': process.env.RAPIDAPI_KEY || '',
-          ...formData.getHeaders()
         },
         body: formData
       });
@@ -1379,12 +1375,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysisResults = await response.json();
       
-      // Transform and return results
-      res.json({
-        success: true,
-        message: 'GeoJSON analysis completed successfully',
-        data: analysisResults
-      });
+      // Log the response for debugging
+      console.log('RapidAPI Response:', JSON.stringify(analysisResults, null, 2));
+      
+      // Return the response directly as it already has the expected structure
+      res.json(analysisResults);
 
     } catch (error) {
       console.error('GeoJSON upload error:', error);

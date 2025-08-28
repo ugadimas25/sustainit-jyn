@@ -1,0 +1,160 @@
+{
+  "status": "success",
+  "message": "EUDR file processing completed",
+  "file_info": {
+    "filename": "example_geojson_20_plots (7).json",
+    "size_mb": 0,
+    "features_count": 2
+  },
+  "analysis_summary": {
+    "total_processed": 0,
+    "high_risk": 0,
+    "low_risk": 2,
+    "parallel_processing": false,
+    "processing_time_seconds": 4.45
+  },
+  "data": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_002",
+          "country_name": "unknown",
+          "total_area_hectares": 581.82,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": 2023,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "high",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0.01,
+            "sbtn_loss_year_compilation": 2023,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss",
+              "SBTN Natural Lands Loss"
+            ],
+            "total_high_risk_indicators": 2
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -1.094512,
+                7.946527
+              ],
+              [
+                -1.072272,
+                7.946527
+              ],
+              [
+                -1.072272,
+                7.925164
+              ],
+              [
+                -1.094512,
+                7.925164
+              ],
+              [
+                -1.094512,
+                7.946527
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_005",
+          "country_name": "unknown",
+          "total_area_hectares": 587.03,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": 2023,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "high",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": 2023,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "high",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": 2023,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss",
+              "JRC Forest Loss",
+              "SBTN Natural Lands Loss"
+            ],
+            "total_high_risk_indicators": 3
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                113.921327,
+                -2.147871
+              ],
+              [
+                113.943567,
+                -2.147871
+              ],
+              [
+                113.943567,
+                -2.169234
+              ],
+              [
+                113.921327,
+                -2.169234
+              ],
+              [
+                113.921327,
+                -2.147871
+              ]
+            ]
+          ]
+        }
+      }
+    ],
+    "processing_stats": {
+      "total_features": 2,
+      "successful": 2,
+      "failed": 0,
+      "processing_mode": "parallel",
+      "workers_used": 8,
+      "accounts_available": 16
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "plot_id": "TEST_PLOT_001",
+        "name": "Test Plot Indonesia"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [113.921327, -2.147871],
+          [113.943567, -2.147871],
+          [113.943567, -2.169234],
+          [113.921327, -2.169234],
+          [113.921327, -2.147871]
+        ]]
+      }
+    }
+  ]
+}

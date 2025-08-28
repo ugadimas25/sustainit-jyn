@@ -71,25 +71,28 @@ export default function DeforestationMonitoring() {
         body: { geojsonFile, fileName }
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (response) => {
       toast({
         title: "Analysis Complete",
-        description: `GeoJSON analysis completed successfully. Processing ${data.data?.totalPlots || 0} plots.`
+        description: `GeoJSON analysis completed successfully. Processing ${response.data?.features?.length || 0} plots.`
       });
       
-      // Update analysis results with real data if available
-      if (data.data?.plots) {
-        setAnalysisResults(data.data.plots.map((plot: any) => ({
-          plotId: plot.plotId || plot.id,
-          country: plot.country || 'Unknown',
-          area: plot.area || 0,
-          overallRisk: plot.overallRisk || 'UNKNOWN',
-          complianceStatus: plot.complianceStatus || 'UNKNOWN',
-          gfwLoss: plot.gfwLoss || 'UNKNOWN',
-          jrcLoss: plot.jrcLoss || 'UNKNOWN', 
-          sbtnLoss: plot.sbtnLoss || 'UNKNOWN',
-          highRiskDatasets: plot.highRiskDatasets || []
-        })));
+      // Transform real API response to our expected format
+      if (response.data?.features) {
+        const transformedResults = response.data.features.map((feature: any) => ({
+          plotId: feature.properties.plot_id,
+          country: feature.properties.country_name || 'Unknown',
+          area: feature.properties.total_area_hectares || 0,
+          overallRisk: feature.properties.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
+          complianceStatus: feature.properties.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
+          gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
+          jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
+          sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
+          highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || []
+        }));
+        
+        setAnalysisResults(transformedResults);
+        setTotalRecords(transformedResults.length);
       }
       
       setIsAnalyzing(false);
@@ -213,13 +216,22 @@ export default function DeforestationMonitoring() {
     setAnalysisProgress(10);
 
     try {
+      // Simulate progress during API call
+      const progressInterval = setInterval(() => {
+        setAnalysisProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + 15;
+        });
+      }, 800);
+
       // Call the real API through our backend
       uploadMutation.mutate({
         geojsonFile: uploadedFile.content as string,
         fileName: uploadedFile.name
       });
-      
-      // Progress will be handled by the mutation callbacks
     } catch (error) {
       console.error('Analysis failed:', error);
       toast({
