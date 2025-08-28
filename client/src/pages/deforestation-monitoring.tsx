@@ -520,6 +520,147 @@ export default function DeforestationMonitoring() {
     }
   };
 
+  const clearData = async () => {
+    try {
+      // Clear client-side state
+      setAnalysisResults([]);
+      setFilteredResults([]);
+      setTotalRecords(0);
+      setUploadedFile(null);
+      setHasRealData(false);
+      
+      // Clear localStorage
+      localStorage.removeItem('currentAnalysisResults');
+      localStorage.removeItem('hasRealAnalysisData');
+      
+      // Clear server-side data
+      await apiRequest('/api/analysis-results', {
+        method: 'DELETE',
+      });
+
+      toast({
+        title: "Data Cleared",
+        description: "Analysis results have been removed from storage.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear analysis data completely.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const downloadExcel = () => {
+    try {
+      // Prepare data without geometry information
+      const excelData = filteredResults.map(result => ({
+        'Plot ID': result.plotId,
+        'Country': result.country,
+        'Area (ha)': result.area,
+        'Overall Risk': result.overallRisk,
+        'Compliance Status': result.complianceStatus,
+        'GFW Forest Loss': result.gfwLoss,
+        'JRC Forest Loss': result.jrcLoss,
+        'SBTN Natural Loss': result.sbtnLoss,
+        'High Risk Datasets': result.highRiskDatasets.join(', ')
+      }));
+
+      // Convert to CSV format for Excel compatibility
+      const headers = Object.keys(excelData[0]);
+      const csvContent = [
+        headers.join(','),
+        ...excelData.map(row => 
+          headers.map(header => {
+            const value = row[header] || '';
+            // Escape quotes and wrap in quotes if contains comma
+            return value.toString().includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `eudr-analysis-results-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Excel Export Complete",
+        description: `Downloaded ${filteredResults.length} records as CSV file.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error downloading Excel:', error);
+      toast({
+        title: "Export Error",
+        description: "Failed to export data as Excel file.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const downloadGeoJSON = () => {
+    try {
+      // Prepare GeoJSON data with geometry information
+      const features = filteredResults.map(result => ({
+        type: 'Feature',
+        properties: {
+          plotId: result.plotId,
+          country: result.country,
+          area: result.area,
+          overallRisk: result.overallRisk,
+          complianceStatus: result.complianceStatus,
+          gfwLoss: result.gfwLoss,
+          jrcLoss: result.jrcLoss,
+          sbtnLoss: result.sbtnLoss,
+          highRiskDatasets: result.highRiskDatasets
+        },
+        geometry: result.geometry || null
+      }));
+
+      const geoJsonData = {
+        type: 'FeatureCollection',
+        features: features
+      };
+
+      // Create and download file
+      const blob = new Blob([JSON.stringify(geoJsonData, null, 2)], { 
+        type: 'application/json;charset=utf-8;' 
+      });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `eudr-analysis-results-${new Date().toISOString().split('T')[0]}.geojson`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "GeoJSON Export Complete",
+        description: `Downloaded ${filteredResults.length} records with geometry data.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error downloading GeoJSON:', error);
+      toast({
+        title: "Export Error",
+        description: "Failed to export data as GeoJSON file.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -671,6 +812,33 @@ export default function DeforestationMonitoring() {
                 >
                   <Map className="h-4 w-4 mr-2" />
                   View in EUDR Map
+                </Button>
+                <Button 
+                  onClick={() => downloadExcel()}
+                  variant="outline"
+                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                  data-testid="download-excel"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Excel
+                </Button>
+                <Button 
+                  onClick={() => downloadGeoJSON()}
+                  variant="outline"
+                  className="text-purple-600 border-purple-300 hover:bg-purple-50"
+                  data-testid="download-geojson"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  GeoJSON
+                </Button>
+                <Button 
+                  onClick={() => clearData()}
+                  variant="outline" 
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  data-testid="clear-data"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Clear Data
                 </Button>
               </div>
             </CardHeader>

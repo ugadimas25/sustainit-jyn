@@ -6,6 +6,13 @@ The platform combines advanced traceability technology with AI-powered complianc
 
 ## Recent Changes (August 2025)
 
+- **Enhanced Results Export Functionality** (August 28, 2025): Added comprehensive download options to Results Table:
+  - Excel export: CSV format without geometry data for spreadsheet analysis and reporting
+  - GeoJSON export: Full geospatial data with polygon coordinates for GIS applications
+  - Smart file naming with timestamps for organized data management
+  - Filtered results export - downloads respect active table filters and search terms
+  - Error handling and user feedback with toast notifications for successful exports
+
 - **EUDR Map Viewer as Standalone Page** (August 28, 2025): Converted from modal to dedicated page with enhanced interactions:
   - Created separate `/map-viewer` route replacing modal popup approach
   - Added click-to-zoom functionality - clicking any polygon or point zooms to that specific plot with 50px padding
