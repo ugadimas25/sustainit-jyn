@@ -783,6 +783,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Real-time dashboard metrics from current session data
+  app.post("/api/dashboard/calculate-metrics", async (req, res) => {
+    try {
+      const { analysisResults } = req.body;
+      
+      if (!Array.isArray(analysisResults)) {
+        return res.status(400).json({ error: "analysisResults must be an array" });
+      }
+      
+      const totalPlots = analysisResults.length;
+      const compliantPlots = analysisResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
+      const highRiskPlots = analysisResults.filter(r => r.overallRisk === 'HIGH').length;
+      const mediumRiskPlots = analysisResults.filter(r => r.overallRisk === 'MEDIUM').length;
+      const deforestedPlots = analysisResults.filter(r => 
+        r.highRiskDatasets?.includes('GFW Forest Loss') || 
+        r.highRiskDatasets?.includes('JRC Forest Loss')
+      ).length;
+      const totalArea = analysisResults.reduce((sum, r) => sum + (Number(r.area) || 0), 0).toFixed(2);
+
+      const metrics = {
+        totalPlots: totalPlots.toString(),
+        compliantPlots: compliantPlots.toString(),
+        highRiskPlots: highRiskPlots.toString(),
+        mediumRiskPlots: mediumRiskPlots.toString(),
+        deforestedPlots: deforestedPlots.toString(),
+        totalArea: totalArea
+      };
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error calculating real-time dashboard metrics:", error);
+      res.status(500).json({ error: "Failed to calculate dashboard metrics" });
+    }
+  });
+
   // User authentication routes
   app.get("/api/user", (req, res) => {
     if (req.user) {

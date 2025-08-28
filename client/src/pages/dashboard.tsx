@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, TrendingUp, BarChart3, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiRequest } from "@/lib/queryClient";
 
 import { ComplianceChart } from "@/components/charts/compliance-chart";
 import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
@@ -39,6 +40,7 @@ const samplePlotData = {
 
 export default function Dashboard() {
   const [selectedModal, setSelectedModal] = useState<string | null>(null);
+  const [currentMetrics, setCurrentMetrics] = useState<any>(null);
   
   // Function to get modal title and data based on selected modal
   const getModalData = (modalType: string) => {
@@ -56,6 +58,7 @@ export default function Dashboard() {
     }
   };
   
+  // Default metrics query
   const { data: metrics, isLoading } = useQuery({
     queryKey: ["/api/dashboard/metrics"],
   });
@@ -63,6 +66,57 @@ export default function Dashboard() {
   const { data: alerts } = useQuery({
     queryKey: ["/api/alerts"],
   });
+
+  // Mutation to calculate real-time metrics from current table data
+  const calculateMetricsMutation = useMutation({
+    mutationFn: async (analysisResults: any[]) => {
+      const response = await apiRequest('POST', '/api/dashboard/calculate-metrics', { analysisResults });
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      setCurrentMetrics(data);
+    }
+  });
+
+  // Listen for analysis results updates from localStorage or global state
+  useEffect(() => {
+    const checkForUpdatedResults = () => {
+      try {
+        const storedResults = localStorage.getItem('currentAnalysisResults');
+        if (storedResults) {
+          const analysisResults = JSON.parse(storedResults);
+          if (analysisResults && Array.isArray(analysisResults) && analysisResults.length > 0) {
+            calculateMetricsMutation.mutate(analysisResults);
+          }
+        }
+      } catch (error) {
+        console.error("Error parsing stored analysis results:", error);
+      }
+    };
+
+    // Check immediately
+    checkForUpdatedResults();
+    
+    // Set up periodic checking for updates
+    const interval = setInterval(checkForUpdatedResults, 2000);
+    
+    // Listen for storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'currentAnalysisResults') {
+        checkForUpdatedResults();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Use current metrics if available, otherwise fall back to default metrics
+  const displayMetrics = currentMetrics || metrics;
 
   if (isLoading) {
     return (
@@ -75,9 +129,9 @@ export default function Dashboard() {
     );
   }
 
-  const complianceRate = (metrics?.compliantPlots && metrics?.totalPlots) ? ((metrics.compliantPlots / metrics.totalPlots) * 100).toFixed(1) : '0';
-  const atRiskRate = (metrics?.atRiskPlots && metrics?.totalPlots) ? ((metrics.atRiskPlots / metrics.totalPlots) * 100).toFixed(1) : '0';
-  const criticalRate = (metrics?.criticalPlots && metrics?.totalPlots) ? ((metrics.criticalPlots / metrics.totalPlots) * 100).toFixed(1) : '0';
+  const complianceRate = (displayMetrics?.compliantPlots && displayMetrics?.totalPlots) ? ((Number(displayMetrics.compliantPlots) / Number(displayMetrics.totalPlots)) * 100).toFixed(1) : '0';
+  const atRiskRate = (displayMetrics?.highRiskPlots && displayMetrics?.totalPlots) ? ((Number(displayMetrics.highRiskPlots) / Number(displayMetrics.totalPlots)) * 100).toFixed(1) : '0';
+  const criticalRate = (displayMetrics?.deforestedPlots && displayMetrics?.totalPlots) ? ((Number(displayMetrics.deforestedPlots) / Number(displayMetrics.totalPlots)) * 100).toFixed(1) : '0';
 
   return (
     <>
@@ -137,7 +191,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total plot mapped with polygon</p>
-                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-plots">{metrics?.totalPlots || "0"}</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-plots">{displayMetrics?.totalPlots || "0"}</p>
                 </CardContent>
               </Card>
 
@@ -149,7 +203,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total compliant plots</p>
-                  <p className="text-3xl font-bold text-gray-900" data-testid="text-compliant-plots">{metrics?.compliantPlots || "0"}</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-compliant-plots">{displayMetrics?.compliantPlots || "0"}</p>
                 </CardContent>
               </Card>
 
@@ -162,7 +216,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total high risk plot</p>
                   <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900" data-testid="text-high-risk-plots">{metrics?.highRiskPlots || "0"}</p>
+                    <p className="text-3xl font-bold text-gray-900" data-testid="text-high-risk-plots">{displayMetrics?.highRiskPlots || "0"}</p>
                     <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                 </CardContent>
@@ -177,7 +231,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total medium risk plot</p>
                   <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900" data-testid="text-medium-risk-plots">{metrics?.mediumRiskPlots || "0"}</p>
+                    <p className="text-3xl font-bold text-gray-900" data-testid="text-medium-risk-plots">{displayMetrics?.mediumRiskPlots || "0"}</p>
                     <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                 </CardContent>
@@ -193,7 +247,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Deforested plot (after 31 Dec 2020)</p>
                   <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900" data-testid="text-deforested-plots">{metrics?.deforestedPlots || "0"}</p>
+                    <p className="text-3xl font-bold text-gray-900" data-testid="text-deforested-plots">{displayMetrics?.deforestedPlots || "0"}</p>
                     <span className="text-xs text-blue-600 font-medium">Details</span>
                   </div>
                 </CardContent>
@@ -223,7 +277,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha)</p>
-                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-area">{metrics?.totalArea || "0"}</p>
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-area">{displayMetrics?.totalArea || "0"}</p>
                 </CardContent>
               </Card>
 

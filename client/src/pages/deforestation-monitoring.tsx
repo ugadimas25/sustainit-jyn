@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,27 @@ interface UploadedFile {
   content: string | ArrayBuffer | null;
 }
 
+const defaultAnalysisResults = [
+  { plotId: "PLOT_005", country: "Indonesia", area: 31.35, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_002", country: "Ivory Coast", area: 1439.07, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
+  { plotId: "PLOT_009", country: "Nigeria", area: 1.02, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_004", country: "Ghana", area: 1.95, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_001", country: "Central African Republic", area: 5604.60, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"] },
+  { plotId: "PLOT_010", country: "Brazil", area: 8.12, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_007", country: "Indonesia", area: 20.98, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_006", country: "Indonesia", area: 1.97, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_008", country: "Ivory Coast", area: 8.32, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"] },
+  { plotId: "PLOT_013", country: "Ghana", area: 4.17, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"] },
+  { plotId: "PLOT_003", country: "Brazil", area: 197.59, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"] },
+  { plotId: "PLOT_018", country: "Ivory Coast", area: 1.99, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
+  { plotId: "PLOT_011", country: "China", area: 7.61, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_015", country: "Brazil", area: 873.31, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
+  { plotId: "PLOT_017", country: "Nigeria", area: 4.26, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_016", country: "Indonesia", area: 5.67, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_012", country: "China", area: 6.23, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
+  { plotId: "PLOT_014", country: "Nigeria", area: 1.01, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] }
+] as const;
+
 export default function DeforestationMonitoring() {
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>({
     name: "example_geojson_20_plots.json",
@@ -40,30 +61,17 @@ export default function DeforestationMonitoring() {
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(100);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([
-    { plotId: "PLOT_005", country: "Indonesia", area: 31.35, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_002", country: "Ivory Coast", area: 1439.07, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
-    { plotId: "PLOT_009", country: "Nigeria", area: 1.02, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_004", country: "Ghana", area: 1.95, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_001", country: "Central African Republic", area: 5604.60, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"] },
-    { plotId: "PLOT_010", country: "Brazil", area: 8.12, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_007", country: "Indonesia", area: 20.98, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_006", country: "Indonesia", area: 1.97, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_008", country: "Ivory Coast", area: 8.32, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"] },
-    { plotId: "PLOT_013", country: "Ghana", area: 4.17, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"] },
-    { plotId: "PLOT_003", country: "Brazil", area: 197.59, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"] },
-    { plotId: "PLOT_018", country: "Ivory Coast", area: 1.99, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
-    { plotId: "PLOT_011", country: "China", area: 7.61, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_015", country: "Brazil", area: 873.31, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"] },
-    { plotId: "PLOT_017", country: "Nigeria", area: 4.26, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_016", country: "Indonesia", area: 5.67, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_012", country: "China", area: 6.23, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] },
-    { plotId: "PLOT_014", country: "Nigeria", area: 1.01, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] }
-  ]);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>(defaultAnalysisResults);
   const [totalRecords, setTotalRecords] = useState(20);
   const [showMapViewer, setShowMapViewer] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Initialize localStorage with default data on component mount
+  useEffect(() => {
+    // Store default analysis results in localStorage for dashboard reactivity
+    localStorage.setItem('currentAnalysisResults', JSON.stringify(defaultAnalysisResults));
+  }, []);
 
   // GeoJSON upload mutation
   const uploadMutation = useMutation({
@@ -106,6 +114,9 @@ export default function DeforestationMonitoring() {
         
         setAnalysisResults(transformedResults);
         setTotalRecords(transformedResults.length);
+        
+        // Store results in localStorage for dashboard reactivity
+        localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
       }
       
       setIsAnalyzing(false);
