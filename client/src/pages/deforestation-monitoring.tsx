@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +14,6 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { EudrMapViewer } from "@/components/maps/eudr-map-viewer";
 
 interface AnalysisResult {
   plotId: string;
@@ -139,7 +139,7 @@ export default function DeforestationMonitoring() {
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [filteredResults, setFilteredResults] = useState<AnalysisResult[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [showMapViewer, setShowMapViewer] = useState(false);
+  const [, setLocation] = useLocation();
   const [hasRealData, setHasRealData] = useState(false);
   
   // Table state
@@ -665,7 +665,7 @@ export default function DeforestationMonitoring() {
               </div>
               <div className="flex gap-2">
                 <Button 
-                  onClick={() => setShowMapViewer(true)}
+                  onClick={() => setLocation('/map-viewer')}
                   className="bg-green-600 hover:bg-green-700 text-white"
                   data-testid="view-map"
                 >
@@ -947,13 +947,7 @@ export default function DeforestationMonitoring() {
           </Card>
         )}
 
-        {/* EUDR Map Viewer Modal */}
-        {showMapViewer && (
-          <EudrMapViewer 
-            analysisResults={analysisResults}
-            onClose={() => setShowMapViewer(false)}
-          />
-        )}
+
       </div>
     </div>
   );
