@@ -414,7 +414,7 @@ export default function DeforestationMonitoring() {
                     data-testid="view-in-map"
                   >
                     <Map className="h-4 w-4" />
-                    View in Whisp Map
+                    View in EUDR Map
                   </Button>
                   <Button 
                     variant="outline" 
