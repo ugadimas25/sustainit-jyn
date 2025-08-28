@@ -4,9 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, File, Download, Trash2, Play, Map, AlertTriangle, 
-  CheckCircle2, XCircle, Clock, Eye, Info, Zap
+  CheckCircle2, XCircle, Clock, Eye, Info, Zap, ChevronUp, ChevronDown,
+  Search, Filter, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -134,9 +137,21 @@ export default function DeforestationMonitoring() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(100);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
+  const [filteredResults, setFilteredResults] = useState<AnalysisResult[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [showMapViewer, setShowMapViewer] = useState(false);
   const [hasRealData, setHasRealData] = useState(false);
+  
+  // Table state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage] = useState(10);
+  const [sortColumn, setSortColumn] = useState<keyof AnalysisResult | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [complianceFilter, setComplianceFilter] = useState<string>('all');
+  const [countryFilter, setCountryFilter] = useState<string>('all');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -148,6 +163,7 @@ export default function DeforestationMonitoring() {
     
     // Load sample data in table for UI demonstration, but keep dashboard at zero
     setAnalysisResults(defaultAnalysisResults);
+    setFilteredResults(defaultAnalysisResults);
     setTotalRecords(defaultAnalysisResults.length);
   }, []);
 
@@ -191,6 +207,7 @@ export default function DeforestationMonitoring() {
         }));
         
         setAnalysisResults(transformedResults);
+        setFilteredResults(transformedResults);
         setTotalRecords(transformedResults.length);
         setHasRealData(true);
         
@@ -250,9 +267,15 @@ export default function DeforestationMonitoring() {
   const clearUpload = () => {
     setUploadedFile(null);
     setAnalysisResults([]);
+    setFilteredResults([]);
     setTotalRecords(0);
     setAnalysisProgress(0);
     setHasRealData(false);
+    setCurrentPage(1);
+    setSearchTerm('');
+    setRiskFilter('all');
+    setComplianceFilter('all');
+    setCountryFilter('all');
     
     // Reset dashboard to zero when clearing upload
     localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
@@ -341,6 +364,89 @@ export default function DeforestationMonitoring() {
       geojsonFile: uploadedFile.content as string,
       fileName: uploadedFile.name
     });
+  };
+
+  // Filter and sort functionality
+  useEffect(() => {
+    let filtered = [...analysisResults];
+    
+    // Apply search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(result =>
+        result.plotId.toLowerCase().includes(search) ||
+        result.country.toLowerCase().includes(search) ||
+        result.area.toString().includes(search)
+      );
+    }
+    
+    // Apply risk filter
+    if (riskFilter !== 'all') {
+      filtered = filtered.filter(result => result.overallRisk === riskFilter.toUpperCase());
+    }
+    
+    // Apply compliance filter
+    if (complianceFilter !== 'all') {
+      filtered = filtered.filter(result => result.complianceStatus === complianceFilter.toUpperCase());
+    }
+    
+    // Apply country filter
+    if (countryFilter !== 'all') {
+      filtered = filtered.filter(result => result.country === countryFilter);
+    }
+    
+    // Apply sorting
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        const aVal = a[sortColumn];
+        const bVal = b[sortColumn];
+        
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+        } else {
+          const aStr = String(aVal).toLowerCase();
+          const bStr = String(bVal).toLowerCase();
+          if (sortDirection === 'asc') {
+            return aStr < bStr ? -1 : aStr > bStr ? 1 : 0;
+          } else {
+            return aStr > bStr ? -1 : aStr < bStr ? 1 : 0;
+          }
+        }
+      });
+    }
+    
+    setFilteredResults(filtered);
+    setCurrentPage(1); // Reset to first page when filtering
+  }, [analysisResults, searchTerm, riskFilter, complianceFilter, countryFilter, sortColumn, sortDirection]);
+
+  // Handle sorting
+  const handleSort = (column: keyof AnalysisResult) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  // Get unique values for filters
+  const uniqueCountries = [...new Set(analysisResults.map(r => r.country))];
+  const uniqueRisks = [...new Set(analysisResults.map(r => r.overallRisk))];
+  const uniqueCompliance = [...new Set(analysisResults.map(r => r.complianceStatus))];
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredResults.length / rowsPerPage);
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const currentPageData = filteredResults.slice(startIndex, endIndex);
+
+  const getSortIcon = (column: keyof AnalysisResult) => {
+    if (sortColumn !== column) {
+      return <div className="w-4 h-4"></div>;
+    }
+    return sortDirection === 'asc' ? 
+      <ChevronUp className="w-4 h-4" /> : 
+      <ChevronDown className="w-4 h-4" />;
   };
 
   const getRiskBadge = (risk: string) => {
@@ -500,63 +606,172 @@ export default function DeforestationMonitoring() {
         {/* Results Table */}
         {analysisResults.length > 0 && (
           <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Results ({totalRecords} records)</CardTitle>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Deforestation risk analysis and compliance assessment
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                    onClick={() => setShowMapViewer(true)}
-                    data-testid="view-in-map"
-                  >
-                    <Map className="h-4 w-4" />
-                    View in EUDR Map
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center gap-2"
-                    data-testid="download-results"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download ▼
-                  </Button>
-                </div>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Info className="h-5 w-5" />
+                  Results Table
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Showing {filteredResults.length} of {analysisResults.length} plots
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowMapViewer(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  data-testid="view-map"
+                >
+                  <Map className="h-4 w-4 mr-2" />
+                  View in EUDR Map
+                </Button>
               </div>
             </CardHeader>
+
+            {/* Search and Filter Controls */}
+            <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-b">
+              <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex items-center gap-2 min-w-[200px]">
+                  <Search className="h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search plots, countries, area..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="flex-1"
+                    data-testid="search-input"
+                  />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-gray-400" />
+                  <Select value={countryFilter} onValueChange={setCountryFilter}>
+                    <SelectTrigger className="w-40" data-testid="country-filter">
+                      <SelectValue placeholder="Country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Countries</SelectItem>
+                      {uniqueCountries.map(country => (
+                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Select value={riskFilter} onValueChange={setRiskFilter}>
+                    <SelectTrigger className="w-32" data-testid="risk-filter">
+                      <SelectValue placeholder="Risk" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Risk</SelectItem>
+                      {uniqueRisks.map(risk => (
+                        <SelectItem key={risk} value={risk}>{risk}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Select value={complianceFilter} onValueChange={setComplianceFilter}>
+                    <SelectTrigger className="w-40" data-testid="compliance-filter">
+                      <SelectValue placeholder="Compliance" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      {uniqueCompliance.map(status => (
+                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Plot ID
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('plotId')}
+                        data-testid="sort-plotid"
+                      >
+                        <div className="flex items-center gap-2">
+                          Plot ID
+                          {getSortIcon('plotId')}
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Country
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('country')}
+                        data-testid="sort-country"
+                      >
+                        <div className="flex items-center gap-2">
+                          Country
+                          {getSortIcon('country')}
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Area (HA)
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('area')}
+                        data-testid="sort-area"
+                      >
+                        <div className="flex items-center gap-2">
+                          Area (HA)
+                          {getSortIcon('area')}
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Overall Risk
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('overallRisk')}
+                        data-testid="sort-risk"
+                      >
+                        <div className="flex items-center gap-2">
+                          Overall Risk
+                          {getSortIcon('overallRisk')}
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Compliance Status
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('complianceStatus')}
+                        data-testid="sort-compliance"
+                      >
+                        <div className="flex items-center gap-2">
+                          Compliance Status
+                          {getSortIcon('complianceStatus')}
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        GFW Loss
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('gfwLoss')}
+                        data-testid="sort-gfw"
+                      >
+                        <div className="flex items-center gap-2">
+                          GFW Loss
+                          {getSortIcon('gfwLoss')}
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        JRC Loss
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('jrcLoss')}
+                        data-testid="sort-jrc"
+                      >
+                        <div className="flex items-center gap-2">
+                          JRC Loss
+                          {getSortIcon('jrcLoss')}
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        SBTN Loss
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('sbtnLoss')}
+                        data-testid="sort-sbtn"
+                      >
+                        <div className="flex items-center gap-2">
+                          SBTN Loss
+                          {getSortIcon('sbtnLoss')}
+                        </div>
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         High Risk Datasets
@@ -564,8 +779,8 @@ export default function DeforestationMonitoring() {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                    {analysisResults.map((result, index) => (
-                      <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {currentPageData.map((result, index) => (
+                      <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800" data-testid={`table-row-${result.plotId}`}>
                         <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
                           {result.plotId}
                         </td>
@@ -598,6 +813,68 @@ export default function DeforestationMonitoring() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t bg-white dark:bg-gray-900">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      Showing {startIndex + 1} to {Math.min(endIndex, filteredResults.length)} of {filteredResults.length} results
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        data-testid="prev-page"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(pageNum)}
+                              className="w-8 h-8 p-0"
+                              data-testid={`page-${pageNum}`}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        data-testid="next-page"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
