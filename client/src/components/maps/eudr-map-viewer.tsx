@@ -25,39 +25,44 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
           <style>
             body {
               margin: 0;
-              background-color: #000;
-              color: #fff;
-              font-family: Arial, sans-serif;
+              background-color: hsl(0, 0%, 100%);
+              color: hsl(20, 14.3%, 4.1%);
+              font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             }
 
             .header {
-              background-color: #1a1a1a;
+              background-color: hsl(0, 0%, 100%);
               padding: 15px 20px;
-              border-bottom: 1px solid #333;
+              border-bottom: 1px solid hsl(0, 0%, 88%);
               display: flex;
               justify-content: space-between;
               align-items: center;
+              box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
             }
 
             .header h1 {
               margin: 0;
               font-size: 24px;
+              color: hsl(20, 14.3%, 4.1%);
+              font-weight: 600;
             }
 
             .back-btn {
-              background-color: #6366f1;
-              color: white;
+              background-color: hsl(207, 90%, 54%);
+              color: hsl(211, 100%, 99%);
               border: none;
               padding: 10px 20px;
-              border-radius: 4px;
+              border-radius: 8px;
               cursor: pointer;
-              font-weight: bold;
+              font-weight: 600;
               text-decoration: none;
               display: inline-block;
+              transition: background-color 0.2s ease;
+              box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             }
 
             .back-btn:hover {
-              background-color: #5855eb;
+              background-color: hsl(207, 90%, 48%);
             }
 
             .map-container {
@@ -75,13 +80,13 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               top: 10px;
               right: 10px;
               z-index: 1000;
-              background-color: rgba(26, 26, 26, 0.8);
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              padding: 15px;
-              border-radius: 8px;
-              min-width: 250px;
+              background-color: hsl(0, 0%, 100%);
+              border: 1px solid hsl(0, 0%, 88%);
+              padding: 16px;
+              border-radius: 12px;
+              min-width: 280px;
               backdrop-filter: blur(10px);
-              box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+              box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             }
 
             .control-group {
@@ -94,21 +99,29 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             .control-group label {
               display: block;
-              margin-bottom: 5px;
+              margin-bottom: 8px;
               font-size: 12px;
-              color: #ccc;
+              color: hsl(25, 5.3%, 44.7%);
               text-transform: uppercase;
-              font-weight: bold;
+              font-weight: 600;
+              letter-spacing: 0.025em;
             }
 
             .control-group select {
               width: 100%;
-              padding: 8px;
-              background-color: #2a2a2a;
-              border: 1px solid #404040;
-              border-radius: 4px;
-              color: #fff;
+              padding: 10px 12px;
+              background-color: hsl(0, 0%, 100%);
+              border: 1px solid hsl(20, 5.9%, 90%);
+              border-radius: 8px;
+              color: hsl(20, 14.3%, 4.1%);
               font-size: 14px;
+              transition: border-color 0.2s ease, box-shadow 0.2s ease;
+              outline: none;
+            }
+
+            .control-group select:focus {
+              border-color: hsl(207, 90%, 54%);
+              box-shadow: 0 0 0 3px hsl(207, 90%, 54%, 0.1);
             }
 
             .layer-controls {
@@ -118,16 +131,16 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             .layer-checkbox {
               display: flex !important;
               align-items: center !important;
-              gap: 8px !important;
+              gap: 10px !important;
               cursor: pointer !important;
-              margin-bottom: 8px !important;
-              padding: 6px !important;
-              border-radius: 4px !important;
+              margin-bottom: 10px !important;
+              padding: 8px 10px !important;
+              border-radius: 8px !important;
               transition: background-color 0.2s ease !important;
             }
 
             .layer-checkbox:hover {
-              background-color: rgba(255, 255, 255, 0.05) !important;
+              background-color: hsl(60, 4.8%, 95.9%) !important;
             }
 
             .layer-checkbox input[type="checkbox"] {
@@ -135,70 +148,74 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             }
 
             .checkmark {
-              width: 16px !important;
-              height: 16px !important;
-              border: 2px solid #666 !important;
-              border-radius: 3px !important;
+              width: 18px !important;
+              height: 18px !important;
+              border: 2px solid hsl(20, 5.9%, 90%) !important;
+              border-radius: 4px !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
-              transition: all 0.3s ease !important;
+              transition: all 0.2s ease !important;
               flex-shrink: 0 !important;
+              background-color: hsl(0, 0%, 100%) !important;
             }
 
             .layer-checkbox input[type="checkbox"]:checked + .checkmark {
-              background-color: #4da6ff !important;
-              border-color: #4da6ff !important;
+              background-color: hsl(207, 90%, 54%) !important;
+              border-color: hsl(207, 90%, 54%) !important;
             }
 
             .layer-checkbox input[type="checkbox"]:checked + .checkmark::after {
               content: '✓' !important;
-              color: white !important;
+              color: hsl(211, 100%, 99%) !important;
               font-weight: bold !important;
               font-size: 12px !important;
             }
 
             .layer-name {
-              color: #ccc !important;
-              font-size: 13px !important;
+              color: hsl(20, 14.3%, 4.1%) !important;
+              font-size: 14px !important;
               flex: 1 !important;
+              font-weight: 500 !important;
             }
 
             .legend-panel {
               position: absolute;
               bottom: 20px;
               left: 20px;
-              background-color: rgba(26, 26, 26, 0.85);
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              border-radius: 10px;
-              padding: 15px;
-              min-width: 250px;
+              background-color: hsl(0, 0%, 100%);
+              border: 1px solid hsl(0, 0%, 88%);
+              border-radius: 12px;
+              padding: 16px;
+              min-width: 280px;
               z-index: 1000;
               backdrop-filter: blur(12px);
-              box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+              box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             }
 
             .legend-header h4 {
-              margin: 0 0 10px 0;
-              color: #4da6ff;
+              margin: 0 0 12px 0;
+              color: hsl(207, 90%, 54%);
               font-size: 16px;
+              font-weight: 600;
             }
 
             .legend-item {
               display: flex;
               align-items: center;
-              gap: 10px;
-              margin-bottom: 8px;
-              font-size: 13px;
-              color: #ccc;
+              gap: 12px;
+              margin-bottom: 10px;
+              color: hsl(20, 14.3%, 4.1%);
+              font-size: 14px;
+              font-weight: 500;
             }
 
             .legend-color {
               width: 16px;
               height: 16px;
-              border-radius: 3px;
+              border-radius: 4px;
               flex-shrink: 0;
-              border: 1px solid #555;
+              border: 1px solid hsl(0, 0%, 88%);
             }
 
             @keyframes pulse-red {
@@ -215,14 +232,14 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             /* Modern Popup Styling */
             .leaflet-popup-content-wrapper {
-              background: transparent !important;
-              border-radius: 16px !important;
-              box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) !important;
+              background: hsl(0, 0%, 100%) !important;
+              border-radius: 12px !important;
+              box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+              border: 1px solid hsl(0, 0%, 88%) !important;
               padding: 0 !important;
               overflow: visible !important;
-              backdrop-filter: blur(20px) !important;
               max-width: none !important;
-              min-width: 300px !important;
+              min-width: 320px !important;
             }
 
             .leaflet-popup-content {
@@ -237,45 +254,42 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             }
 
             .leaflet-popup-tip {
-              background: rgba(26, 26, 26, 0.95) !important;
-              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              background: hsl(0, 0%, 100%) !important;
+              border: 1px solid hsl(0, 0%, 88%) !important;
             }
 
             .leaflet-popup-close-button {
-              color: #fff !important;
-              font-size: 20px !important;
-              font-weight: 300 !important;
+              color: hsl(25, 5.3%, 44.7%) !important;
+              font-size: 18px !important;
+              font-weight: 600 !important;
               right: 12px !important;
               top: 12px !important;
-              width: 32px !important;
-              height: 32px !important;
-              background: rgba(255, 255, 255, 0.1) !important;
-              border: 1px solid rgba(255, 255, 255, 0.2) !important;
-              border-radius: 50% !important;
+              width: 28px !important;
+              height: 28px !important;
+              background: hsl(60, 4.8%, 95.9%) !important;
+              border: 1px solid hsl(0, 0%, 88%) !important;
+              border-radius: 6px !important;
               display: flex !important;
               align-items: center !important;
               justify-content: center !important;
-              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+              transition: all 0.2s ease !important;
               text-decoration: none !important;
-              backdrop-filter: blur(10px) !important;
             }
 
             .leaflet-popup-close-button:hover {
-              background: rgba(255, 255, 255, 0.2) !important;
-              border-color: rgba(255, 255, 255, 0.3) !important;
-              transform: scale(1.1) rotate(90deg) !important;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+              background: hsl(207, 90%, 54%) !important;
+              color: hsl(211, 100%, 99%) !important;
+              border-color: hsl(207, 90%, 54%) !important;
+              transform: scale(1.05) !important;
             }
 
             .modern-popup-content {
-              background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(42, 42, 42, 0.95)) !important;
-              backdrop-filter: blur(20px) !important;
-              padding: 24px !important;
-              color: white !important;
+              background: hsl(0, 0%, 100%) !important;
+              padding: 20px !important;
+              color: hsl(20, 14.3%, 4.1%) !important;
               min-width: 300px !important;
-              max-width: 400px !important;
-              border: 1px solid rgba(255, 255, 255, 0.1) !important;
-              border-radius: 16px !important;
+              max-width: 380px !important;
+              border-radius: 12px !important;
               position: relative !important;
               overflow: visible !important;
               box-sizing: border-box !important;
@@ -288,7 +302,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               left: 0 !important;
               right: 0 !important;
               height: 3px !important;
-              background: linear-gradient(90deg, #dc2626, #f59e0b, #10b981, #3b82f6) !important;
+              background: hsl(207, 90%, 54%) !important;
+              border-top-left-radius: 12px !important;
+              border-top-right-radius: 12px !important;
             }
 
             .popup-header {
@@ -297,7 +313,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               gap: 12px !important;
               margin-bottom: 16px !important;
               padding-bottom: 12px !important;
-              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-bottom: 1px solid hsl(0, 0%, 88%) !important;
             }
 
             .popup-icon {
@@ -316,7 +332,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               margin: 0 !important;
               font-size: 18px !important;
               font-weight: 600 !important;
-              color: #fff !important;
+              color: hsl(20, 14.3%, 4.1%) !important;
               flex: 1 !important;
             }
 
@@ -330,7 +346,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               justify-content: space-between !important;
               align-items: center !important;
               padding: 8px 0 !important;
-              border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+              border-bottom: 1px solid hsl(60, 4.8%, 95.9%) !important;
             }
 
             .popup-row:last-child {
@@ -339,7 +355,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             .popup-label {
               font-weight: 500 !important;
-              color: rgba(255, 255, 255, 0.7) !important;
+              color: hsl(25, 5.3%, 44.7%) !important;
               font-size: 13px !important;
               text-transform: uppercase !important;
               letter-spacing: 0.5px !important;
@@ -347,7 +363,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             .popup-value {
               font-weight: 600 !important;
-              color: #fff !important;
+              color: hsl(20, 14.3%, 4.1%) !important;
               font-size: 14px !important;
               text-align: right !important;
             }
