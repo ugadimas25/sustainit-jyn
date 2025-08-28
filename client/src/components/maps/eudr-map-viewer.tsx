@@ -520,7 +520,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Deforestation layers from multiple sources
             const deforestationLayers = {
-              gfw: L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/latest/{z}/{x}/{y}.png', {
+              gfw: L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/{z}/{x}/{y}.png?start_year=2001&end_year=2023&tree_cover_density_threshold=30&render_type=true_color', {
                 attribution: '© Global Forest Watch',
                 opacity: 0.8,
                 maxZoom: 18

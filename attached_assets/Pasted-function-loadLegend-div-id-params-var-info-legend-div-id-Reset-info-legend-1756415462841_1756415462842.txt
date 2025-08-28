@@ -1,0 +1,85 @@
+function loadLegend(div_id, params) {
+  var $info_legend = $(div_id);
+
+  // Reset
+  $info_legend.html("");
+
+  $info_legend.append(layerActorsBasic(params));
+  if (parseInt(m_partner_id) == 5) {
+    $info_legend.append(layerFarmPolygonByStatus());
+  }
+  if (new_polygon_status.includes(parseInt(m_partner_id))) {
+    $info_legend.append(layerFarmPolygonByStatus_issues());
+  } else {
+    $info_legend.append(layerFarmPolygonByStatus_issues());
+  }
+
+  if (parseInt(m_partner_id) == 172) {
+      $info_legend.append(layerUnileverBasic(params));
+  }
+
+  $info_legend.append(layerPlantationInventory());
+
+  loadKmlLayer(div_id, params);
+  cekConnTileLayer["adm-boundary"] &&
+    $info_legend.append(layerTMSAdmBoundary());
+
+  cekConnTileLayer["GFW-ProtectedArea"] && $info_legend.append(layerGfwPA());
+  params.CountryID == 10 &&
+    cekConnTileLayer["Landuse-KLHK"] &&
+    $info_legend.append(layerLUKLHK());
+  params.CountryID == 10 &&
+    cekConnTileLayer["pmz"] &&
+    $info_legend.append(layerLUPMZ());
+  params.CountryID == 10 &&
+    cekConnTileLayer["additional-layers"] &&
+    $info_legend.append(layerAddLayers());
+
+  ID_Amarumayu.includes(parseInt(m_partner_id)) &&
+    cekConnTileLayer["nab-amarumayu"] &&
+    $info_legend.append(layerNabAmarumayu());
+  ID_Amarumayu.includes(parseInt(m_partner_id)) &&
+    cekConnTileLayer["al-amarumayu"] &&
+    $info_legend.append(layerAlAmarumayu());
+
+  ID_VillaRica.includes(parseInt(m_partner_id)) &&
+    cekConnTileLayer["al-villarica"] &&
+    $info_legend.append(layerAlVillaRica());
+
+  ID_HDDAP.includes(parseInt(m_partner_id)) &&
+    cekConnTileLayer["water-risk"] &&
+    $info_legend.append(layerWaterRisk());
+
+  ID_Puratos.includes(parseInt(m_partner_id)) &&
+    reg_mexico.includes(parseInt(params.CountryID)) &&
+    cekConnTileLayer["puratos-ncpna"] &&
+    $info_legend.append(layerPuratosNCPNA());
+
+  cekConnTileLayer["GFW-DRA"] && $info_legend.append(layerGfwDRA());
+  cekConnTileLayer["Hansen"] && $info_legend.append(layerForestCoverHansen());
+
+  cardEvent(params);
+
+  $('#canopyDensitySelect-loss').on('change', function () {
+    const from = $('#fromSlider').val();
+    const to = $('#toSlider').val();
+    const selectedThreshold = $(this).val();
+
+    const url = `https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/{z}/{x}/{y}.png?start_year=${from}&end_year=${to}` +
+                (selectedThreshold ? `&tree_cover_density_threshold=${selectedThreshold}` : '')+ `&render_type=true_color`;
+
+    map.overlayMapTypes.setAt(
+      6,
+      new google.maps.ImageMapType({
+        getTileUrl: function (coordinates, zoom) {
+          return url
+            .replace("{x}", coordinates.x)
+            .replace("{y}", coordinates.y)
+            .replace("{z}", zoom);
+        },
+        name: "HansenLossYear",
+        alt: "HansenLossYear",
+        opacity: 1,
+      })
+    );
+  });
