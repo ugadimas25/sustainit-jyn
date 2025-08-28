@@ -520,9 +520,11 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Deforestation layers from multiple sources
             const deforestationLayers = {
-              gfw: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/gfw_tree_cover_loss/{z}/{x}/{y}', {
-                attribution: '© Global Forest Watch',
-                opacity: 0.7
+              gfw: L.tileLayer('https://storage.googleapis.com/wri-public/hansen_2013/gfw2015/loss_year_2015/loss_year_2015_{z}_{x}_{y}.png', {
+                attribution: '© Global Forest Watch / Hansen',
+                opacity: 0.8,
+                maxZoom: 12,
+                minZoom: 3
               }),
               jrc: L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
                 layers: 'gfc2020_v2',
