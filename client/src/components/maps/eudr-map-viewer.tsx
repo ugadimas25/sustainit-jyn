@@ -518,14 +518,17 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Set default base layer
             baseLayers.satellite.addTo(map);
 
-            // Deforestation layers from Koltiva API
+            // Deforestation layers from multiple sources
             const deforestationLayers = {
               gfw: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/gfw_deforestation/{z}/{x}/{y}', {
                 attribution: '© GFW',
                 opacity: 0.7
               }),
-              jrc: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/jrc_deforestation/{z}/{x}/{y}', {
-                attribution: '© JRC',
+              jrc: L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
+                layers: 'iforce:gfc2020_deforestation',
+                format: 'image/png',
+                transparent: true,
+                attribution: '© JRC European Commission',
                 opacity: 0.7
               }),
               sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
