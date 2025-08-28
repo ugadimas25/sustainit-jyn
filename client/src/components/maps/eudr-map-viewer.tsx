@@ -166,13 +166,21 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               border-radius: 16px !important;
               box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) !important;
               padding: 0 !important;
-              overflow: hidden !important;
+              overflow: visible !important;
               backdrop-filter: blur(20px) !important;
+              max-width: none !important;
+              min-width: 300px !important;
             }
 
             .leaflet-popup-content {
               margin: 0 !important;
               line-height: 1.5 !important;
+              max-height: none !important;
+              overflow: visible !important;
+            }
+
+            .leaflet-popup {
+              margin-bottom: 20px !important;
             }
 
             .leaflet-popup-tip {
@@ -211,11 +219,13 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               backdrop-filter: blur(20px) !important;
               padding: 24px !important;
               color: white !important;
-              min-width: 280px !important;
+              min-width: 300px !important;
+              max-width: 400px !important;
               border: 1px solid rgba(255, 255, 255, 0.1) !important;
               border-radius: 16px !important;
               position: relative !important;
-              overflow: hidden !important;
+              overflow: visible !important;
+              box-sizing: border-box !important;
             }
 
             .modern-popup-content::before {
@@ -520,8 +530,20 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 </div>
               \`;
               
-              polygon.bindPopup(popupContent);
-              centerMarker.bindPopup(popupContent);
+              // Bind popup with custom options to prevent cut-off
+              const popupOptions = {
+                maxWidth: 400,
+                minWidth: 300,
+                maxHeight: 600,
+                autoPan: true,
+                autoPanPaddingTopLeft: [20, 20],
+                autoPanPaddingBottomRight: [20, 20],
+                keepInView: true,
+                className: 'modern-popup'
+              };
+              
+              polygon.bindPopup(popupContent, popupOptions);
+              centerMarker.bindPopup(popupContent, popupOptions);
               
               // Add pulsing animation to center marker
               const animation = isHighRisk ? 'pulse-red 2s infinite' : 'pulse-green 2s infinite';
