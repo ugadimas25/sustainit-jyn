@@ -520,9 +520,10 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Deforestation layers from multiple sources
             const deforestationLayers = {
-              gfw: L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.10/dynamic/{z}/{x}/{y}.png', {
+              gfw: L.tileLayer('https://production-api.globalforestwatch.org/v1/gfw/forest-change/umd/loss-year/{z}/{x}/{y}.png', {
                 attribution: '© Global Forest Watch',
-                opacity: 0.7
+                opacity: 0.7,
+                maxZoom: 12
               }),
               jrc: L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
                 layers: 'gfc2020_v2',
@@ -746,6 +747,17 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 try {
                   deforestationLayers.gfw.addTo(map);
                   console.log('GFW tree cover loss layer added to map');
+                  console.log('GFW layer URL template:', deforestationLayers.gfw._url);
+                  
+                  // Test if tiles are loading by checking for tile load events
+                  deforestationLayers.gfw.on('tileload', function() {
+                    console.log('GFW tile loaded successfully');
+                  });
+                  
+                  deforestationLayers.gfw.on('tileerror', function(error) {
+                    console.error('GFW tile load error:', error);
+                  });
+                  
                 } catch (error) {
                   console.error('Error adding GFW layer:', error);
                 }
