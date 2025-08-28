@@ -557,6 +557,21 @@ export default function MapViewer() {
             fillOpacity: 0.9
           }).addTo(map);
           
+          // Add click handler to zoom to polygon
+          polygon.on('click', function(e) {
+            map.fitBounds(polygon.getBounds(), {
+              padding: [50, 50],
+              maxZoom: 18
+            });
+          });
+          
+          centerMarker.on('click', function(e) {
+            map.fitBounds(polygon.getBounds(), {
+              padding: [50, 50],
+              maxZoom: 18
+            });
+          });
+
           // Add popup
           const popupContent = \`
             <div class="modern-popup-content">

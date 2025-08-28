@@ -6,6 +6,14 @@ The platform combines advanced traceability technology with AI-powered complianc
 
 ## Recent Changes (August 2025)
 
+- **EUDR Map Viewer as Standalone Page** (August 28, 2025): Converted from modal to dedicated page with enhanced interactions:
+  - Created separate `/map-viewer` route replacing modal popup approach
+  - Added click-to-zoom functionality - clicking any polygon or point zooms to that specific plot with 50px padding
+  - Professional full-screen interface with real-time statistics header (Total Plots, High Risk, Compliant, Total Area)
+  - Enhanced navigation flow with proper routing integration and data persistence
+  - Interactive map controls for base layers, risk filtering, and deforestation layer overlays
+  - Seamless data flow from analysis results to dedicated map visualization page
+
 - **Enhanced Data Persistence and Dashboard Zero State** (August 28, 2025): Complete data flow synchronization:
   - Fixed dashboard to start with all zeros by default instead of showing sample data
   - Dashboard metrics now directly correspond to analysis results in database (zero when empty, calculated values when data exists)
