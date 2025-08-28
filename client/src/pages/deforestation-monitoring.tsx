@@ -25,6 +25,10 @@ interface AnalysisResult {
   jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH';
   sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH';
   highRiskDatasets: string[];
+  // Intersection areas for high-risk datasets
+  gfwLossArea?: number;
+  jrcLossArea?: number;
+  sbtnLossArea?: number;
 }
 
 interface UploadedFile {
@@ -520,6 +524,23 @@ export default function DeforestationMonitoring() {
     }
   };
 
+  const getLossDisplay = (riskLevel: string, lossArea?: number) => {
+    if (riskLevel === 'HIGH' && lossArea !== undefined && lossArea > 0) {
+      return (
+        <div className="flex flex-col items-start">
+          <Badge className="bg-red-100 text-red-800 mb-1">HIGH</Badge>
+          <span className="text-xs text-gray-600">{lossArea.toFixed(2)} ha</span>
+        </div>
+      );
+    } else if (riskLevel === 'LOW') {
+      return <Badge className="bg-green-100 text-green-800">LOW</Badge>;
+    } else if (riskLevel === 'MEDIUM') {
+      return <Badge className="bg-yellow-100 text-yellow-800">MEDIUM</Badge>;
+    } else {
+      return <Badge className="bg-red-100 text-red-800">HIGH</Badge>;
+    }
+  };
+
   const clearData = async () => {
     try {
       // Clear client-side state
@@ -563,8 +584,11 @@ export default function DeforestationMonitoring() {
         'Overall Risk': result.overallRisk,
         'Compliance Status': result.complianceStatus,
         'GFW Forest Loss': result.gfwLoss,
+        'GFW Loss Area (ha)': result.gfwLossArea || 0,
         'JRC Forest Loss': result.jrcLoss,
+        'JRC Loss Area (ha)': result.jrcLossArea || 0,
         'SBTN Natural Loss': result.sbtnLoss,
+        'SBTN Loss Area (ha)': result.sbtnLossArea || 0,
         'High Risk Datasets': result.highRiskDatasets.join(', ')
       }));
 
@@ -620,8 +644,11 @@ export default function DeforestationMonitoring() {
           overallRisk: result.overallRisk,
           complianceStatus: result.complianceStatus,
           gfwLoss: result.gfwLoss,
+          gfwLossArea: result.gfwLossArea,
           jrcLoss: result.jrcLoss,
+          jrcLossArea: result.jrcLossArea,
           sbtnLoss: result.sbtnLoss,
+          sbtnLossArea: result.sbtnLossArea,
           highRiskDatasets: result.highRiskDatasets
         },
         geometry: result.geometry || null
@@ -1012,13 +1039,13 @@ export default function DeforestationMonitoring() {
                           {getComplianceBadge(result.complianceStatus)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getRiskBadge(result.gfwLoss)}
+                          {getLossDisplay(result.gfwLoss, result.gfwLossArea)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getRiskBadge(result.jrcLoss)}
+                          {getLossDisplay(result.jrcLoss, result.jrcLossArea)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getRiskBadge(result.sbtnLoss)}
+                          {getLossDisplay(result.sbtnLoss, result.sbtnLossArea)}
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
                           {result.highRiskDatasets.length > 0 ? result.highRiskDatasets.join(', ') : '-'}

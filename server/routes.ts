@@ -1494,6 +1494,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
               jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
               sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
+              // Include intersection area data for high-risk datasets
+              gfwLossArea: feature.properties.gfw_loss?.intersection_area_hectares || 0,
+              jrcLossArea: feature.properties.jrc_loss?.intersection_area_hectares || 0,
+              sbtnLossArea: feature.properties.sbtn_loss?.intersection_area_hectares || 0,
               highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
               geometry: feature.geometry,
               uploadSession: uploadSession

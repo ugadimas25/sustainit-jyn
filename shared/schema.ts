@@ -43,6 +43,10 @@ export const analysisResults = pgTable("analysis_results", {
   gfwLoss: text("gfw_loss").notNull(),
   jrcLoss: text("jrc_loss").notNull(), 
   sbtnLoss: text("sbtn_loss").notNull(),
+  // Intersection area data for high-risk datasets
+  gfwLossArea: decimal("gfw_loss_area", { precision: 12, scale: 4 }).default("0"),
+  jrcLossArea: decimal("jrc_loss_area", { precision: 12, scale: 4 }).default("0"),
+  sbtnLossArea: decimal("sbtn_loss_area", { precision: 12, scale: 4 }).default("0"),
   highRiskDatasets: jsonb("high_risk_datasets").$type<string[]>().default([]),
   geometry: jsonb("geometry"), // Store the original GeoJSON geometry
   uploadSession: text("upload_session"), // Track which upload session this belongs to
