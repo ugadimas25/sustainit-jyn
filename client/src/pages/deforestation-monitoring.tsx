@@ -171,14 +171,12 @@ export default function DeforestationMonitoring() {
     };
     clearDatabaseResults();
     
-    // Load sample data in table for UI demonstration ONLY - this data does NOT affect dashboard
-    // Dashboard metrics come from database which is cleared above
-    setAnalysisResults(defaultAnalysisResults);
-    setFilteredResults(defaultAnalysisResults);
-    setTotalRecords(defaultAnalysisResults.length);
+    // Initialize with empty table - no sample data
+    setAnalysisResults([]);
+    setFilteredResults([]);
+    setTotalRecords(0);
     
-    // Ensure sample data never gets sent to dashboard calculation
-    console.log("Sample data loaded for table display only - dashboard uses database (cleared)");
+    console.log("Table Result initialized as empty - dashboard will start with zero values");
   }, []);
 
   // GeoJSON upload mutation
@@ -618,7 +616,7 @@ export default function DeforestationMonitoring() {
         </Card>
 
         {/* Results Table */}
-        {analysisResults.length > 0 && (
+        {analysisResults.length > 0 ? (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -889,6 +887,27 @@ export default function DeforestationMonitoring() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5" />
+                Results Table
+              </CardTitle>
+              <p className="text-sm text-gray-600">
+                No analysis results yet. Upload a GeoJSON file to see deforestation analysis data.
+              </p>
+            </CardHeader>
+            <CardContent className="py-12">
+              <div className="text-center text-gray-500">
+                <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No Data Available</p>
+                <p className="text-sm">
+                  Upload and analyze GeoJSON files to populate this table with deforestation risk assessment results.
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
