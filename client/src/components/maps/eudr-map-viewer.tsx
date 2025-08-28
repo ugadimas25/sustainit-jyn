@@ -450,17 +450,12 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   <label class="layer-checkbox">
                     <input type="checkbox" id="jrcLayer">
                     <span class="checkmark"></span>
-                    <span class="layer-name">JRC Deforestation</span>
+                    <span class="layer-name">JRC Forest</span>
                   </label>
                   <label class="layer-checkbox">
                     <input type="checkbox" id="sbtnLayer">
                     <span class="checkmark"></span>
                     <span class="layer-name">SBTN Natural Loss</span>
-                  </label>
-                  <label class="layer-checkbox">
-                    <input type="checkbox" id="primaryForestLayer">
-                    <span class="checkmark"></span>
-                    <span class="layer-name">Primary Forest 2020</span>
                   </label>
                 </div>
               </div>
@@ -483,16 +478,12 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 <span>GFW Forest Loss</span>
               </div>
               <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff8800;"></div>
-                <span>JRC Deforestation</span>
+                <div class="legend-color" style="background-color: #10b981;"></div>
+                <span>JRC Forest</span>
               </div>
               <div class="legend-item">
                 <div class="legend-color" style="background-color: #ff00ff;"></div>
                 <span>SBTN Natural Loss</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background-color: #00ff00;"></div>
-                <span>Primary Forest 2020</span>
               </div>
             </div>
           </div>
@@ -536,10 +527,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
                 attribution: '© SBTN',
                 opacity: 0.7
-              }),
-              primaryForest: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/primary_forest_2020/{z}/{x}/{y}', {
-                attribution: '© Primary Forest',
-                opacity: 0.6
               })
             };
 
@@ -811,14 +798,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 deforestationLayers.sbtn.addTo(map);
               } else {
                 map.removeLayer(deforestationLayers.sbtn);
-              }
-            });
-
-            document.getElementById('primaryForestLayer').addEventListener('change', function(e) {
-              if (e.target.checked) {
-                deforestationLayers.primaryForest.addTo(map);
-              } else {
-                map.removeLayer(deforestationLayers.primaryForest);
               }
             });
 
