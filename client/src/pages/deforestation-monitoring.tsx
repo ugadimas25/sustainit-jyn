@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   Upload, File, Download, Trash2, Play, Map, AlertTriangle, 
-  CheckCircle2, XCircle, Clock, Eye, Info
+  CheckCircle2, XCircle, Clock, Eye, Info, Zap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -215,33 +215,22 @@ export default function DeforestationMonitoring() {
     setIsAnalyzing(true);
     setAnalysisProgress(10);
 
-    try {
-      // Simulate progress during API call
-      const progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 15;
-        });
-      }, 800);
+    // Simulate progress during API call
+    const progressInterval = setInterval(() => {
+      setAnalysisProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 15;
+      });
+    }, 800);
 
-      // Call the real API through our backend
-      uploadMutation.mutate({
-        geojsonFile: uploadedFile.content as string,
-        fileName: uploadedFile.name
-      });
-    } catch (error) {
-      console.error('Analysis failed:', error);
-      toast({
-        title: "Analysis failed",
-        description: "Please check your file format and try again",
-        variant: "destructive"
-      });
-      setIsAnalyzing(false);
-      setAnalysisProgress(0);
-    }
+    // Call the real API through our backend
+    uploadMutation.mutate({
+      geojsonFile: uploadedFile.content as string,
+      fileName: uploadedFile.name
+    });
   };
 
   const getRiskBadge = (risk: string) => {
@@ -332,22 +321,33 @@ export default function DeforestationMonitoring() {
                     <div>
                       <p className="font-medium">File uploaded: {uploadedFile.name}</p>
                       <p className="text-sm text-gray-500">
-                        {(uploadedFile.size / 1024).toFixed(1)} KB
+                        {(uploadedFile.size / 1024).toFixed(1)} KB • Ready for analysis
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <Button 
-                      disabled={true}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-                      data-testid="analysis-complete"
+                      onClick={analyzeFile}
+                      disabled={isAnalyzing}
+                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                      data-testid="analyze-file"
                     >
-                      <CheckCircle2 className="h-4 w-4" />
-                      Analysis Complete
+                      {isAnalyzing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="h-4 w-4" />
+                          Analyze File
+                        </>
+                      )}
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={clearUpload}
+                      disabled={isAnalyzing}
                       className="flex items-center gap-2 text-red-600"
                       data-testid="clear-upload"
                     >
@@ -357,16 +357,31 @@ export default function DeforestationMonitoring() {
                   </div>
                 </div>
                 
-                <div className="mt-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Analysis Complete</span>
-                    <span className="text-green-600 font-medium">✓ Done</span>
+                {isAnalyzing && (
+                  <div className="mt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Analyzing with satellite data...</span>
+                      <span className="text-blue-600 font-medium">{analysisProgress}%</span>
+                    </div>
+                    <Progress value={analysisProgress} className="w-full" />
+                    <p className="text-sm text-blue-600">
+                      Processing against GFW Loss, JRC, SBTN, and WDPA datasets
+                    </p>
                   </div>
-                  <Progress value={100} className="w-full" />
-                  <p className="text-sm text-green-600">
-                    Successfully analyzed against GFW Loss, JRC, SBTN, and WDPA datasets
-                  </p>
-                </div>
+                )}
+
+                {analysisResults.length > 0 && !isAnalyzing && (
+                  <div className="mt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Analysis Complete</span>
+                      <span className="text-green-600 font-medium">✓ Done</span>
+                    </div>
+                    <Progress value={100} className="w-full" />
+                    <p className="text-sm text-green-600">
+                      Successfully analyzed {analysisResults.length} plots against satellite datasets
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
