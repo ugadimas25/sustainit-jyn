@@ -58,10 +58,12 @@ export default function Dashboard() {
     }
   };
   
-  // Default metrics query - disabled initially since we want to start with 0 values
+  // Default metrics query - force fresh data from server
   const { data: metrics, isLoading } = useQuery({
     queryKey: ["/api/dashboard/metrics"],
-    enabled: false, // Disable automatic loading of server metrics
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0, // Always fetch fresh data
   });
 
   const { data: alerts } = useQuery({
@@ -149,8 +151,8 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Use current metrics if available, otherwise start with zero values
-  const displayMetrics = currentMetrics || {
+  // Use current metrics from localStorage, or server metrics, or zero fallback
+  const displayMetrics = currentMetrics || metrics || {
     totalPlots: "0",
     compliantPlots: "0", 
     highRiskPlots: "0",
