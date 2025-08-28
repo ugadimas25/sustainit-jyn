@@ -70,10 +70,21 @@ export default function DeforestationMonitoring() {
       return await response.json();
     },
     onSuccess: (response) => {
-      toast({
-        title: "Analysis Complete",
-        description: `GeoJSON analysis completed successfully. Processing ${response.data?.features?.length || 0} plots.`
-      });
+      const processedFeatures = response.data?.features?.length || 0;
+      const originalFeatures = response.file_info?.features_count || 0;
+      
+      if (response.warning) {
+        toast({
+          title: "Analysis Completed with Warning",
+          description: response.warning.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Analysis Complete", 
+          description: `GeoJSON analysis completed successfully. Processing ${processedFeatures} plots.`
+        });
+      }
       
       // Transform real API response to our expected format
       if (response.data?.features) {

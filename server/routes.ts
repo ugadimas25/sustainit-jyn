@@ -1382,8 +1382,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysisResults = await response.json();
       
-      // Log the response for debugging
-      console.log('RapidAPI Response:', JSON.stringify(analysisResults, null, 2));
+      // Log both request and response for debugging
+      const inputFeatures = JSON.parse(geojsonFile).features?.length || 0;
+      const outputFeatures = analysisResults.data?.features?.length || 0;
+      console.log(`=== DEBUGGING FEATURE COUNT ===`);
+      console.log(`Input features sent to API: ${inputFeatures}`);
+      console.log(`Output features received from API: ${outputFeatures}`);
+      console.log(`Processing stats:`, analysisResults.processing_stats);
+      console.log(`File info from API:`, analysisResults.file_info);
+      console.log(`Analysis summary:`, analysisResults.analysis_summary);
+      
+      if (inputFeatures !== outputFeatures) {
+        console.log(`⚠️  FEATURE MISMATCH: Sent ${inputFeatures} but received ${outputFeatures}`);
+        console.log(`This appears to be an API-side processing limitation when handling large files.`);
+        console.log(`Recommendation: Split large files into smaller batches (5-10 features each) for complete processing.`);
+        
+        // Add a warning to the response for users
+        analysisResults.warning = {
+          message: `Only ${outputFeatures} out of ${inputFeatures} features were processed successfully.`,
+          recommendation: "For better results, split large files into smaller batches of 5-10 features each."
+        };
+      }
       
       // Return the response directly as it already has the expected structure
       res.json(analysisResults);
