@@ -82,12 +82,35 @@ export default function Dashboard() {
   useEffect(() => {
     const checkForUpdatedResults = () => {
       try {
+        const hasRealData = localStorage.getItem('hasRealAnalysisData') === 'true';
         const storedResults = localStorage.getItem('currentAnalysisResults');
-        if (storedResults) {
+        
+        if (hasRealData && storedResults) {
           const analysisResults = JSON.parse(storedResults);
           if (analysisResults && Array.isArray(analysisResults) && analysisResults.length > 0) {
+            // Only calculate metrics if we have real analysis data
             calculateMetricsMutation.mutate(analysisResults);
+          } else {
+            // Set metrics to zero if real data is empty
+            setCurrentMetrics({
+              totalPlots: "0",
+              compliantPlots: "0",
+              highRiskPlots: "0",
+              mediumRiskPlots: "0",
+              deforestedPlots: "0",
+              totalArea: "0"
+            });
           }
+        } else {
+          // No real data available, keep dashboard at zero
+          setCurrentMetrics({
+            totalPlots: "0",
+            compliantPlots: "0",
+            highRiskPlots: "0",
+            mediumRiskPlots: "0",
+            deforestedPlots: "0",
+            totalArea: "0"
+          });
         }
       } catch (error) {
         console.error("Error parsing stored analysis results:", error);
@@ -102,7 +125,7 @@ export default function Dashboard() {
     
     // Listen for storage changes
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'currentAnalysisResults') {
+      if (e.key === 'currentAnalysisResults' || e.key === 'hasRealAnalysisData') {
         checkForUpdatedResults();
       }
     };

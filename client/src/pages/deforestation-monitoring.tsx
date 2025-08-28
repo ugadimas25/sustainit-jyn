@@ -61,16 +61,22 @@ export default function DeforestationMonitoring() {
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(100);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>(defaultAnalysisResults);
-  const [totalRecords, setTotalRecords] = useState(20);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [showMapViewer, setShowMapViewer] = useState(false);
+  const [hasRealData, setHasRealData] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Initialize localStorage with default data on component mount
+  // Initialize localStorage with empty data for dashboard - dashboard starts at 0
   useEffect(() => {
-    // Store default analysis results in localStorage for dashboard reactivity
-    localStorage.setItem('currentAnalysisResults', JSON.stringify(defaultAnalysisResults));
+    // Clear any existing data and start with empty state for dashboard metrics
+    localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
+    localStorage.setItem('hasRealAnalysisData', 'false');
+    
+    // Load sample data in table for UI demonstration, but keep dashboard at zero
+    setAnalysisResults(defaultAnalysisResults);
+    setTotalRecords(defaultAnalysisResults.length);
   }, []);
 
   // GeoJSON upload mutation
@@ -114,9 +120,11 @@ export default function DeforestationMonitoring() {
         
         setAnalysisResults(transformedResults);
         setTotalRecords(transformedResults.length);
+        setHasRealData(true);
         
-        // Store results in localStorage for dashboard reactivity
+        // Store real analysis results in localStorage for dashboard reactivity
         localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
+        localStorage.setItem('hasRealAnalysisData', 'true');
       }
       
       setIsAnalyzing(false);
@@ -172,6 +180,12 @@ export default function DeforestationMonitoring() {
     setAnalysisResults([]);
     setTotalRecords(0);
     setAnalysisProgress(0);
+    setHasRealData(false);
+    
+    // Reset dashboard to zero when clearing upload
+    localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
+    localStorage.setItem('hasRealAnalysisData', 'false');
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
