@@ -159,6 +159,193 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               70% { box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 15px rgba(16, 185, 129, 0); }
               100% { box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 0 rgba(16, 185, 129, 0); }
             }
+
+            /* Modern Popup Styling */
+            .leaflet-popup-content-wrapper {
+              background: transparent !important;
+              border-radius: 16px !important;
+              box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) !important;
+              padding: 0 !important;
+              overflow: hidden !important;
+              backdrop-filter: blur(20px) !important;
+            }
+
+            .leaflet-popup-content {
+              margin: 0 !important;
+              line-height: 1.5 !important;
+            }
+
+            .leaflet-popup-tip {
+              background: rgba(26, 26, 26, 0.95) !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            .leaflet-popup-close-button {
+              color: #fff !important;
+              font-size: 20px !important;
+              font-weight: 300 !important;
+              right: 12px !important;
+              top: 12px !important;
+              width: 32px !important;
+              height: 32px !important;
+              background: rgba(255, 255, 255, 0.1) !important;
+              border: 1px solid rgba(255, 255, 255, 0.2) !important;
+              border-radius: 50% !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+              text-decoration: none !important;
+              backdrop-filter: blur(10px) !important;
+            }
+
+            .leaflet-popup-close-button:hover {
+              background: rgba(255, 255, 255, 0.2) !important;
+              border-color: rgba(255, 255, 255, 0.3) !important;
+              transform: scale(1.1) rotate(90deg) !important;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            }
+
+            .modern-popup-content {
+              background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(42, 42, 42, 0.95)) !important;
+              backdrop-filter: blur(20px) !important;
+              padding: 24px !important;
+              color: white !important;
+              min-width: 280px !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+              border-radius: 16px !important;
+              position: relative !important;
+              overflow: hidden !important;
+            }
+
+            .modern-popup-content::before {
+              content: '' !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              right: 0 !important;
+              height: 3px !important;
+              background: linear-gradient(90deg, #dc2626, #f59e0b, #10b981, #3b82f6) !important;
+            }
+
+            .popup-header {
+              display: flex !important;
+              align-items: center !important;
+              gap: 12px !important;
+              margin-bottom: 16px !important;
+              padding-bottom: 12px !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            .popup-icon {
+              width: 40px !important;
+              height: 40px !important;
+              border-radius: 50% !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              font-size: 18px !important;
+              font-weight: bold !important;
+              text-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+            }
+
+            .popup-title {
+              margin: 0 !important;
+              font-size: 18px !important;
+              font-weight: 600 !important;
+              color: #fff !important;
+              flex: 1 !important;
+            }
+
+            .popup-body {
+              display: grid !important;
+              gap: 12px !important;
+            }
+
+            .popup-row {
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              padding: 8px 0 !important;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            }
+
+            .popup-row:last-child {
+              border-bottom: none !important;
+            }
+
+            .popup-label {
+              font-weight: 500 !important;
+              color: rgba(255, 255, 255, 0.7) !important;
+              font-size: 13px !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+            }
+
+            .popup-value {
+              font-weight: 600 !important;
+              color: #fff !important;
+              font-size: 14px !important;
+              text-align: right !important;
+            }
+
+            .risk-badge {
+              padding: 4px 12px !important;
+              border-radius: 20px !important;
+              font-size: 12px !important;
+              font-weight: 700 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.5px !important;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            }
+
+            .risk-high {
+              background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+              color: white !important;
+            }
+
+            .risk-low {
+              background: linear-gradient(135deg, #10b981, #059669) !important;
+              color: white !important;
+            }
+
+            .compliance-badge {
+              padding: 4px 12px !important;
+              border-radius: 20px !important;
+              font-size: 12px !important;
+              font-weight: 600 !important;
+              text-transform: uppercase !important;
+            }
+
+            .compliance-compliant {
+              background: rgba(16, 185, 129, 0.2) !important;
+              color: #10b981 !important;
+              border: 1px solid rgba(16, 185, 129, 0.3) !important;
+            }
+
+            .compliance-non-compliant {
+              background: rgba(220, 38, 38, 0.2) !important;
+              color: #dc2626 !important;
+              border: 1px solid rgba(220, 38, 38, 0.3) !important;
+            }
+
+            .datasets-list {
+              margin-top: 8px !important;
+              padding: 12px !important;
+              background: rgba(0, 0, 0, 0.3) !important;
+              border-radius: 8px !important;
+              border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+
+            .dataset-item {
+              font-size: 12px !important;
+              color: rgba(255, 255, 255, 0.8) !important;
+              margin-bottom: 4px !important;
+            }
+
+            .dataset-item:last-child {
+              margin-bottom: 0 !important;
+            }
           </style>
         </head>
         <body>
@@ -271,18 +458,65 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 fillOpacity: 0.9
               }).addTo(map);
               
-              // Add popup with plot information to both polygon and center marker
+              // Add modern popup with enhanced styling
               const popupContent = \`
-                <div style="background: linear-gradient(135deg, #1a1a1a, #2a2a2a); padding: 15px; border-radius: 8px; color: white; min-width: 200px;">
-                  <h3 style="margin: 0 0 10px 0; color: #4da6ff;">\${result.plotId}</h3>
-                  <p><strong>Country:</strong> \${result.country}</p>
-                  <p><strong>Area:</strong> \${result.area} ha</p>
-                  <p><strong>Overall Risk:</strong> <span style="color: \${color}; font-weight: bold;">\${result.overallRisk}</span></p>
-                  <p><strong>Compliance:</strong> \${result.complianceStatus}</p>
-                  <p><strong>GFW Loss:</strong> \${result.gfwLoss}</p>
-                  <p><strong>JRC Loss:</strong> \${result.jrcLoss}</p>
-                  <p><strong>SBTN Loss:</strong> \${result.sbtnLoss}</p>
-                  \${result.highRiskDatasets.length > 0 ? \`<p><strong>High Risk Datasets:</strong> \${result.highRiskDatasets.join(', ')}</p>\` : ''}
+                <div class="modern-popup-content">
+                  <div class="popup-header">
+                    <div class="popup-icon" style="background: \${color};">
+                      \${isHighRisk ? '⚠️' : '✅'}
+                    </div>
+                    <h3 class="popup-title">\${result.plotId}</h3>
+                  </div>
+                  
+                  <div class="popup-body">
+                    <div class="popup-row">
+                      <span class="popup-label">Location</span>
+                      <span class="popup-value">\${result.country}</span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">Area</span>
+                      <span class="popup-value">\${result.area} ha</span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">Overall Risk</span>
+                      <span class="popup-value">
+                        <span class="risk-badge \${isHighRisk ? 'risk-high' : 'risk-low'}">\${result.overallRisk}</span>
+                      </span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">Compliance Status</span>
+                      <span class="popup-value">
+                        <span class="compliance-badge \${result.complianceStatus === 'COMPLIANT' ? 'compliance-compliant' : 'compliance-non-compliant'}">\${result.complianceStatus}</span>
+                      </span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">GFW Forest Loss</span>
+                      <span class="popup-value" style="color: \${result.gfwLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.gfwLoss}</span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">JRC Forest Loss</span>
+                      <span class="popup-value" style="color: \${result.jrcLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.jrcLoss}</span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">SBTN Natural Loss</span>
+                      <span class="popup-value" style="color: \${result.sbtnLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.sbtnLoss}</span>
+                    </div>
+                    
+                    \${result.highRiskDatasets.length > 0 ? \`
+                      <div style="margin-top: 16px;">
+                        <div class="popup-label" style="margin-bottom: 8px;">High Risk Indicators</div>
+                        <div class="datasets-list">
+                          \${result.highRiskDatasets.map(dataset => \`<div class="dataset-item">• \${dataset}</div>\`).join('')}
+                        </div>
+                      </div>
+                    \` : ''}
+                  </div>
                 </div>
               \`;
               
