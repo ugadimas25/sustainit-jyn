@@ -161,6 +161,16 @@ export default function DeforestationMonitoring() {
     localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
     localStorage.setItem('hasRealAnalysisData', 'false');
     
+    // Clear any existing analysis results from database to ensure dashboard starts at 0
+    const clearDatabaseResults = async () => {
+      try {
+        await apiRequest('DELETE', '/api/analysis-results');
+      } catch (error) {
+        console.warn('Could not clear database analysis results:', error);
+      }
+    };
+    clearDatabaseResults();
+    
     // Load sample data in table for UI demonstration, but keep dashboard at zero
     setAnalysisResults(defaultAnalysisResults);
     setFilteredResults(defaultAnalysisResults);

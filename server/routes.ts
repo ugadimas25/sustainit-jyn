@@ -1475,5 +1475,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear analysis results endpoint for dashboard reset
+  app.delete('/api/analysis-results', async (req, res) => {
+    try {
+      await storage.clearAnalysisResults();
+      res.json({ success: true, message: 'Analysis results cleared' });
+    } catch (error) {
+      console.error('Error clearing analysis results:', error);
+      res.status(500).json({ error: 'Failed to clear analysis results' });
+    }
+  });
+
   return httpServer;
 }

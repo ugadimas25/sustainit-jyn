@@ -58,9 +58,10 @@ export default function Dashboard() {
     }
   };
   
-  // Default metrics query
+  // Default metrics query - disabled initially since we want to start with 0 values
   const { data: metrics, isLoading } = useQuery({
     queryKey: ["/api/dashboard/metrics"],
+    enabled: false, // Disable automatic loading of server metrics
   });
 
   const { data: alerts } = useQuery({
@@ -117,7 +118,17 @@ export default function Dashboard() {
       }
     };
 
-    // Check immediately
+    // Initialize with zero values first, then check for real data
+    setCurrentMetrics({
+      totalPlots: "0",
+      compliantPlots: "0",
+      highRiskPlots: "0", 
+      mediumRiskPlots: "0",
+      deforestedPlots: "0",
+      totalArea: "0"
+    });
+    
+    // Then check for real data
     checkForUpdatedResults();
     
     // Set up periodic checking for updates
@@ -138,8 +149,15 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Use current metrics if available, otherwise fall back to default metrics
-  const displayMetrics = currentMetrics || metrics;
+  // Use current metrics if available, otherwise start with zero values
+  const displayMetrics = currentMetrics || {
+    totalPlots: "0",
+    compliantPlots: "0", 
+    highRiskPlots: "0",
+    mediumRiskPlots: "0",
+    deforestedPlots: "0",
+    totalArea: "0"
+  };
 
   if (isLoading) {
     return (
