@@ -6,6 +6,21 @@ The platform combines advanced traceability technology with AI-powered complianc
 
 ## Recent Changes (August 2025)
 
+- **Enhanced Data Persistence and Dashboard Zero State** (August 28, 2025): Complete data flow synchronization:
+  - Fixed dashboard to start with all zeros by default instead of showing sample data
+  - Dashboard metrics now directly correspond to analysis results in database (zero when empty, calculated values when data exists)
+  - Table Result, Dashboard values, and map polygons persist across page navigation until explicit clear or browser refresh
+  - Implemented proper localStorage and database synchronization for seamless user experience
+  - Added visual persistence indicator showing when analysis data is actively stored
+  - Users can navigate between modules without losing uploaded GeoJSON analysis results
+
+- **Map Visual Design System Integration** (August 28, 2025): Professional light theme alignment:
+  - Updated map interface from dark theme to clean white design matching application style
+  - Applied consistent HSL color palette (hsl(207, 90%, 54%) primary, hsl(0, 0%, 88%) borders)
+  - Map controls, legend panels, and popup windows now use same card styling as dashboard
+  - Interactive elements follow application's design system with proper hover states and transitions
+  - Professional popup styling with application typography and spacing standards
+
 - **EUDR Multilayer API Integration** (August 28, 2025): Real-time deforestation analysis with authentic satellite data:
   - Successfully migrated to EUDR Multilayer API (https://eudr-multilayer-api.fly.dev) for unlimited usage
   - Connected real-time satellite data processing (GFW, JRC, SBTN datasets) without quota restrictions

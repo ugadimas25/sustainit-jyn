@@ -155,28 +155,53 @@ export default function DeforestationMonitoring() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Initialize localStorage with empty data for dashboard - dashboard starts at 0
+  // Initialize from persisted data or empty state
   useEffect(() => {
-    // Clear any existing data and start with empty state for dashboard metrics
-    localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
-    localStorage.setItem('hasRealAnalysisData', 'false');
-    
-    // Clear any existing analysis results from database to ensure dashboard starts at 0
-    const clearDatabaseResults = async () => {
+    // Try to restore persisted data from localStorage and database
+    const loadPersistedData = async () => {
       try {
+        // Check if we have persisted analysis results
+        const storedResults = localStorage.getItem('currentAnalysisResults');
+        const hasRealData = localStorage.getItem('hasRealAnalysisData') === 'true';
+        
+        if (hasRealData && storedResults) {
+          const parsedResults = JSON.parse(storedResults);
+          if (Array.isArray(parsedResults) && parsedResults.length > 0) {
+            // Restore persisted data to UI
+            setAnalysisResults(parsedResults);
+            setFilteredResults(parsedResults);
+            setTotalRecords(parsedResults.length);
+            setHasRealData(true);
+            console.log(`Restored ${parsedResults.length} analysis results from storage`);
+            return; // Exit early, don't clear data
+          }
+        }
+        
+        // Only clear if no persisted data exists
+        localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
+        localStorage.setItem('hasRealAnalysisData', 'false');
+        
+        // Clear database results only if no persisted data
         await apiRequest('DELETE', '/api/analysis-results');
+        
+        // Initialize with empty state
+        setAnalysisResults([]);
+        setFilteredResults([]);
+        setTotalRecords(0);
+        setHasRealData(false);
+        
+        console.log("Table Result initialized as empty - dashboard will start with zero values");
       } catch (error) {
-        console.warn('Could not clear database analysis results:', error);
+        console.error("Error loading persisted data:", error);
+        // Fallback to empty state
+        setAnalysisResults([]);
+        setFilteredResults([]);
+        setTotalRecords(0);
+        setHasRealData(false);
       }
     };
-    clearDatabaseResults();
     
-    // Initialize with empty table - no sample data
-    setAnalysisResults([]);
-    setFilteredResults([]);
-    setTotalRecords(0);
-    
-    console.log("Table Result initialized as empty - dashboard will start with zero values");
+    loadPersistedData();
   }, []);
 
   // GeoJSON upload mutation
@@ -276,7 +301,7 @@ export default function DeforestationMonitoring() {
     reader.readAsText(file);
   };
 
-  const clearUpload = () => {
+  const clearUpload = async () => {
     setUploadedFile(null);
     setAnalysisResults([]);
     setFilteredResults([]);
@@ -289,9 +314,19 @@ export default function DeforestationMonitoring() {
     setComplianceFilter('all');
     setCountryFilter('all');
     
-    // Reset dashboard to zero when clearing upload
+    // Clear both localStorage and database when user explicitly clears
     localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
     localStorage.setItem('hasRealAnalysisData', 'false');
+    
+    try {
+      await apiRequest('DELETE', '/api/analysis-results');
+      toast({
+        title: "Data Cleared",
+        description: "All analysis results and dashboard metrics have been cleared"
+      });
+    } catch (error) {
+      console.error('Error clearing database results:', error);
+    }
     
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
