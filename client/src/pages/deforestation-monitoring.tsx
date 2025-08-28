@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { EudrMapViewer } from "@/components/maps/eudr-map-viewer";
 
 interface AnalysisResult {
   plotId: string;
@@ -60,6 +61,7 @@ export default function DeforestationMonitoring() {
     { plotId: "PLOT_014", country: "Nigeria", area: 1.01, overallRisk: "LOW", complianceStatus: "COMPLIANT", gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [] }
   ]);
   const [totalRecords, setTotalRecords] = useState(20);
+  const [showMapViewer, setShowMapViewer] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -411,6 +413,7 @@ export default function DeforestationMonitoring() {
                   <Button 
                     variant="outline" 
                     className="flex items-center gap-2"
+                    onClick={() => setShowMapViewer(true)}
                     data-testid="view-in-map"
                   >
                     <Map className="h-4 w-4" />
@@ -498,6 +501,14 @@ export default function DeforestationMonitoring() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* EUDR Map Viewer Modal */}
+        {showMapViewer && (
+          <EudrMapViewer 
+            analysisResults={analysisResults}
+            onClose={() => setShowMapViewer(false)}
+          />
         )}
       </div>
     </div>
