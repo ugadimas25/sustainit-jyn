@@ -242,10 +242,10 @@ export default function DeforestationMonitoring() {
           gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
           jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
           sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
-          // Calculate actual loss area (percentage * total area)
-          gfwLossArea: Number(feature.properties.gfw_loss?.gfw_loss_area || 0) * (feature.properties.total_area_hectares || 0),
-          jrcLossArea: Number(feature.properties.jrc_loss?.jrc_loss_area || 0) * (feature.properties.total_area_hectares || 0),
-          sbtnLossArea: Number(feature.properties.sbtn_loss?.sbtn_loss_area || 0) * (feature.properties.total_area_hectares || 0),
+          // Calculate actual loss area (percentage * total area, use 0.01 minimum for HIGH status)
+          gfwLossArea: (Number(feature.properties.gfw_loss?.gfw_loss_area || 0) || (feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
+          jrcLossArea: (Number(feature.properties.jrc_loss?.jrc_loss_area || 0) || (feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
+          sbtnLossArea: (Number(feature.properties.sbtn_loss?.sbtn_loss_area || 0) || (feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
           highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
           // Preserve the actual geometry data from GeoJSON
           geometry: feature.geometry
