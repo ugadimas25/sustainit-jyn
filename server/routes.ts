@@ -21,7 +21,7 @@ import {
   insertSupplierWorkflowLinkSchema,
   insertWorkflowShipmentSchema,
   insertDdsReportSchema,
-
+  insertEudrAssessmentSchema,
   insertMillSchema
 } from "@shared/schema";
 import { z } from "zod";
@@ -1269,6 +1269,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ error: 'Failed to create bulking data collection' });
       }
+    }
+  });
+
+  // EUDR Assessment endpoints
+  app.get('/api/eudr-assessments', isAuthenticated, async (req, res) => {
+    try {
+      const assessments = await storage.getEudrAssessments();
+      res.json(assessments);
+    } catch (error) {
+      console.error('Error fetching EUDR assessments:', error);
+      res.status(500).json({ error: 'Failed to fetch EUDR assessments' });
+    }
+  });
+
+  app.get('/api/eudr-assessments/:id', isAuthenticated, async (req, res) => {
+    try {
+      const assessment = await storage.getEudrAssessment(req.params.id);
+      if (assessment) {
+        res.json(assessment);
+      } else {
+        res.status(404).json({ error: 'EUDR assessment not found' });
+      }
+    } catch (error) {
+      console.error('Error fetching EUDR assessment:', error);
+      res.status(500).json({ error: 'Failed to fetch EUDR assessment' });
+    }
+  });
+
+  app.post('/api/eudr-assessments', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertEudrAssessmentSchema.parse(req.body);
+      const assessment = await storage.createEudrAssessment(validatedData);
+      res.status(201).json(assessment);
+    } catch (error) {
+      console.error('Error creating EUDR assessment:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create EUDR assessment' });
+      }
+    }
+  });
+
+  app.put('/api/eudr-assessments/:id', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertEudrAssessmentSchema.partial().parse(req.body);
+      const assessment = await storage.updateEudrAssessment(req.params.id, validatedData);
+      res.json(assessment);
+    } catch (error) {
+      console.error('Error updating EUDR assessment:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to update EUDR assessment' });
+      }
+    }
+  });
+
+  app.delete('/api/eudr-assessments/:id', isAuthenticated, async (req, res) => {
+    try {
+      await storage.deleteEudrAssessment(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting EUDR assessment:', error);
+      res.status(500).json({ error: 'Failed to delete EUDR assessment' });
     }
   });
 

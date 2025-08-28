@@ -15,6 +15,11 @@ export const businessStepEnum = pgEnum("business_step", ["harvesting", "processi
 export const dispositionEnum = pgEnum("disposition", ["active", "inactive", "in_transit", "stored", "processed", "shipped"]);
 export const relationshipTypeEnum = pgEnum("relationship_type", ["supplier", "customer", "processor", "transporter"]);
 export const riskLevelEnum = pgEnum("risk_level", ["low", "medium", "high", "critical"]);
+export const supplierTypeEnum = pgEnum("supplier_type", ["Estate", "Mill", "Bulking Station", "KCP", "Smallholder", "Other"]);
+export const assessmentStatusEnum = pgEnum("assessment_status", ["Draft", "In Progress", "Submitted", "Under Review", "Complete"]);
+export const tenureTypeEnum = pgEnum("tenure_type", ["HGU", "HGB", "State Forest Permit", "Customary Land", "Other"]);
+export const permitTypeEnum = pgEnum("permit_type", ["AMDAL", "UKL-UPL", "SPPL", "None Required"]);
+export const forestStatusEnum = pgEnum("forest_status", ["Ex-Forest Area", "Forest Area", "Non-Forest Area"]);
 
 // Users table for authentication
 export const users = pgTable("users", {
@@ -1013,3 +1018,158 @@ export type KcpDataCollection = typeof kcpDataCollection.$inferSelect;
 export type InsertKcpDataCollection = typeof kcpDataCollection.$inferInsert;
 export type BulkingDataCollection = typeof bulkingDataCollection.$inferSelect;
 export type InsertBulkingDataCollection = typeof bulkingDataCollection.$inferInsert;
+
+// EUDR Legality Assessment Schema - Comprehensive 8-indicator compliance audit
+export const eudrAssessments = pgTable("eudr_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Supplier/Business Details
+  supplierType: supplierTypeEnum("supplier_type").notNull(),
+  supplierName: text("supplier_name").notNull(),
+  supplierID: text("supplier_id").notNull(),
+  location: text("location").notNull(),
+  ownership: text("ownership"),
+  
+  // Contact Details
+  contactName: text("contact_name"),
+  contactPosition: text("contact_position"),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  
+  // Assessment metadata
+  status: assessmentStatusEnum("status").default("Draft"),
+  assignedAuditor: text("assigned_auditor"),
+  
+  // 1. Land Tenure
+  landTitleNumber: text("land_title_number"),
+  titleIssuanceDate: date("title_issuance_date"),
+  tenureType: tenureTypeEnum("tenure_type").notNull(),
+  landArea: decimal("land_area", { precision: 10, scale: 2 }).notNull(), // hectares
+  gpsCoordinates: text("gps_coordinates"),
+  plotMapReference: text("plot_map_reference"),
+  landTenureDocuments: jsonb("land_tenure_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // 2. Environmental Laws
+  permitType: permitTypeEnum("permit_type").notNull(),
+  permitNumber: text("permit_number"),
+  issuanceYear: integer("issuance_year"),
+  environmentalStatus: text("environmental_status").notNull(), // AMDAL/UKL-UPL/SPPL
+  monitoringReportDetails: text("monitoring_report_details"),
+  environmentalDocuments: jsonb("environmental_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // 3. Forest-Related Regulations
+  forestLicenseNumber: text("forest_license_number"),
+  forestStatus: forestStatusEnum("forest_status").notNull(),
+  impactAssessmentID: text("impact_assessment_id"),
+  protectedAreaStatus: boolean("protected_area_status").default(false),
+  forestDocuments: jsonb("forest_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // 4. Third-Party Rights (including FPIC)
+  fpicStatus: boolean("fpic_status").default(false),
+  fpicDate: date("fpic_date"),
+  communalRights: boolean("communal_rights").default(false),
+  landConflict: boolean("land_conflict").default(false),
+  conflictDescription: text("conflict_description"),
+  communityPermits: integer("community_permits").default(0),
+  thirdPartyDocuments: jsonb("third_party_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // 5. Labour
+  employeeCount: integer("employee_count").default(0),
+  permanentEmployees: integer("permanent_employees").default(0),
+  contractualEmployees: integer("contractual_employees").default(0),
+  hasWorkerContracts: boolean("has_worker_contracts").default(false),
+  bpjsKetenagakerjaanNumber: text("bpjs_ketenagakerjaan_number"),
+  bpjsKesehatanNumber: text("bpjs_kesehatan_number"),
+  lastK3AuditDate: date("last_k3_audit_date"),
+  labourDocuments: jsonb("labour_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // 6. Human Rights
+  policyAdherence: boolean("policy_adherence").default(false),
+  grievanceRecords: boolean("grievance_records").default(false),
+  grievanceDescription: text("grievance_description"),
+  certification: text("certification"),
+  humanRightsViolations: boolean("human_rights_violations").default(false),
+  humanRightsDocuments: jsonb("human_rights_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // 7. Tax/Anti-Corruption
+  npwpNumber: text("npwp_number"), // 15 digits
+  lastTaxReturnYear: integer("last_tax_return_year"),
+  pbbPaymentProof: boolean("pbb_payment_proof").default(false),
+  antiBriberyPolicy: boolean("anti_bribery_policy").default(false),
+  codeOfEthics: boolean("code_of_ethics").default(false),
+  whistleblowerMechanism: boolean("whistleblower_mechanism").default(false),
+  taxAntiCorruptionDocuments: jsonb("tax_anti_corruption_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // 8. Other National Laws
+  tradeLicenses: jsonb("trade_licenses").$type<string[]>().default([]),
+  corporateRegistration: text("corporate_registration"),
+  customsRegistration: text("customs_registration"),
+  dinasAgricultureRegistry: text("dinas_agriculture_registry"),
+  businessLicense: text("business_license"),
+  otherLawsDocuments: jsonb("other_laws_documents").$type<Array<{
+    id: string;
+    name: string;
+    size: number;
+    uploadDate: string;
+    description?: string;
+    url: string;
+  }>>().default([]),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Export EUDR Assessment types
+export type EudrAssessment = typeof eudrAssessments.$inferSelect;
+export type InsertEudrAssessment = typeof eudrAssessments.$inferInsert;
+export const insertEudrAssessmentSchema = createInsertSchema(eudrAssessments);

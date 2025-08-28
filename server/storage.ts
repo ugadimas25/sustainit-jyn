@@ -17,7 +17,8 @@ import {
   workflowShipments, type WorkflowShipment, type InsertWorkflowShipment,
   ddsReports, type DdsReport, type InsertDdsReport,
 
-  mills, type Mill, type InsertMill
+  mills, type Mill, type InsertMill,
+  eudrAssessments, type EudrAssessment, type InsertEudrAssessment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
@@ -136,6 +137,13 @@ export interface IStorage {
   getBulkingDataCollections(): Promise<import("@shared/schema").BulkingDataCollection[]>;
   getBulkingDataCollectionById(id: string): Promise<import("@shared/schema").BulkingDataCollection | undefined>;
   createBulkingDataCollection(insertData: import("@shared/schema").InsertBulkingDataCollection): Promise<import("@shared/schema").BulkingDataCollection>;
+
+  // EUDR Assessment methods
+  getEudrAssessments(): Promise<EudrAssessment[]>;
+  getEudrAssessment(id: string): Promise<EudrAssessment | undefined>;
+  createEudrAssessment(insertEudrAssessment: InsertEudrAssessment): Promise<EudrAssessment>;
+  updateEudrAssessment(id: string, updates: Partial<EudrAssessment>): Promise<EudrAssessment>;
+  deleteEudrAssessment(id: string): Promise<void>;
 }
 
 // Database implementation of IStorage
@@ -724,6 +732,37 @@ export class DatabaseStorage implements IStorage {
       console.error("Error creating bulking data collection:", error);
       throw error;
     }
+  }
+
+  // EUDR Assessment implementation
+  async getEudrAssessments(): Promise<EudrAssessment[]> {
+    return await db.select().from(eudrAssessments).orderBy(desc(eudrAssessments.updatedAt));
+  }
+
+  async getEudrAssessment(id: string): Promise<EudrAssessment | undefined> {
+    const [assessment] = await db.select().from(eudrAssessments).where(eq(eudrAssessments.id, id));
+    return assessment || undefined;
+  }
+
+  async createEudrAssessment(insertEudrAssessment: InsertEudrAssessment): Promise<EudrAssessment> {
+    const [assessment] = await db
+      .insert(eudrAssessments)
+      .values(insertEudrAssessment)
+      .returning();
+    return assessment;
+  }
+
+  async updateEudrAssessment(id: string, updates: Partial<EudrAssessment>): Promise<EudrAssessment> {
+    const [assessment] = await db
+      .update(eudrAssessments)
+      .set({ ...updates, updatedAt: sql`NOW()` })
+      .where(eq(eudrAssessments.id, id))
+      .returning();
+    return assessment;
+  }
+
+  async deleteEudrAssessment(id: string): Promise<void> {
+    await db.delete(eudrAssessments).where(eq(eudrAssessments.id, id));
   }
 }
 
