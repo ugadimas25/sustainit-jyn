@@ -242,6 +242,10 @@ export default function DeforestationMonitoring() {
           gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
           jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
           sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
+          // Include intersection area data for high-risk datasets
+          gfwLossArea: Number(feature.properties.gfw_loss?.gfw_loss_area || 0),
+          jrcLossArea: Number(feature.properties.jrc_loss?.jrc_loss_area || 0),
+          sbtnLossArea: Number(feature.properties.sbtn_loss?.sbtn_loss_area || 0),
           highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
           // Preserve the actual geometry data from GeoJSON
           geometry: feature.geometry
