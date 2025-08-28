@@ -545,6 +545,23 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               polygon.bindPopup(popupContent, popupOptions);
               centerMarker.bindPopup(popupContent, popupOptions);
               
+              // Add click event to zoom to polygon bounds
+              polygon.on('click', function(e) {
+                const bounds = polygon.getBounds();
+                map.fitBounds(bounds, {
+                  padding: [50, 50],
+                  maxZoom: 16
+                });
+              });
+              
+              centerMarker.on('click', function(e) {
+                const bounds = polygon.getBounds();
+                map.fitBounds(bounds, {
+                  padding: [50, 50],
+                  maxZoom: 16
+                });
+              });
+              
               // Add pulsing animation to center marker
               const animation = isHighRisk ? 'pulse-red 2s infinite' : 'pulse-green 2s infinite';
               setTimeout(() => {
