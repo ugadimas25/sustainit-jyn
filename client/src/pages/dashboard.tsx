@@ -82,43 +82,38 @@ export default function Dashboard() {
     }
   });
 
-  // Listen for analysis results updates from localStorage or global state
+  // Monitor for data changes and refresh dashboard metrics
   useEffect(() => {
-    const checkForUpdatedResults = () => {
+    // Force fresh metrics on mount
+    queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+    
+    // Check for Table Result updates from localStorage 
+    const checkForTableUpdates = () => {
       try {
         const hasRealData = localStorage.getItem('hasRealAnalysisData') === 'true';
         const storedResults = localStorage.getItem('currentAnalysisResults');
         
         if (hasRealData && storedResults) {
-          const analysisResults = JSON.parse(storedResults);
-          if (analysisResults && Array.isArray(analysisResults) && analysisResults.length > 0) {
-            // Only calculate metrics if we have real analysis data
-            calculateMetricsMutation.mutate(analysisResults);
-          }
+          // Data exists in table - refresh dashboard from server
+          queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+        } else {
+          // No data in table - dashboard should show zeros (handled by server)
+          queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
         }
-        // Removed the setting of currentMetrics to null/zero - let server metrics handle this
       } catch (error) {
-        console.error("Error parsing stored analysis results:", error);
+        console.error("Error checking table updates:", error);
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
       }
     };
 
-    // Clear React Query cache for dashboard metrics
-    queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
-    queryClient.removeQueries({ queryKey: ["/api/dashboard/metrics"] });
+    // Initial check and periodic updates
+    checkForTableUpdates();
+    const interval = setInterval(checkForTableUpdates, 3000);
     
-    // Clear any cached browser data
-    localStorage.removeItem('dashboard-cache');
-    
-    // Check for real data
-    checkForUpdatedResults();
-    
-    // Set up periodic checking for updates
-    const interval = setInterval(checkForUpdatedResults, 2000);
-    
-    // Listen for storage changes
+    // Listen for storage changes (when Table Result updates)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'currentAnalysisResults' || e.key === 'hasRealAnalysisData') {
-        checkForUpdatedResults();
+        checkForTableUpdates();
       }
     };
     
@@ -130,14 +125,14 @@ export default function Dashboard() {
     };
   }, []);
 
-  // Force use of server metrics (which are now guaranteed to be zeros) or explicit zeros
+  // Use server metrics directly - server now handles zero state properly
   const displayMetrics = metrics || {
     totalPlots: "0",
     compliantPlots: "0", 
     highRiskPlots: "0",
     mediumRiskPlots: "0",
     deforestedPlots: "0",
-    totalArea: "0"
+    totalArea: "0.00"
   };
 
   if (isLoading) {

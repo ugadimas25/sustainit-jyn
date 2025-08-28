@@ -772,14 +772,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard metrics for backward compatibility - now using analysis results
+  // Dashboard metrics - only return data if there are current analysis results
   app.get("/api/dashboard/metrics", async (req, res) => {
     try {
-      const metrics = await storage.calculateDashboardMetrics();
+      // Check if we have current analysis results in the database
+      const analysisResults = await storage.getAnalysisResults();
+      
+      if (!analysisResults || analysisResults.length === 0) {
+        // Return zeros if no current analysis data
+        const zeroMetrics = {
+          totalPlots: "0",
+          compliantPlots: "0",
+          highRiskPlots: "0",
+          mediumRiskPlots: "0",
+          deforestedPlots: "0",
+          totalArea: "0.00"
+        };
+        return res.json(zeroMetrics);
+      }
+      
+      // Calculate metrics from current analysis results
+      const totalPlots = analysisResults.length;
+      const compliantPlots = analysisResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
+      const highRiskPlots = analysisResults.filter(r => r.overallRisk === 'HIGH').length;
+      const mediumRiskPlots = analysisResults.filter(r => r.overallRisk === 'MEDIUM').length;
+      const deforestedPlots = analysisResults.filter(r => 
+        r.highRiskDatasets?.includes('GFW Forest Loss') || 
+        r.highRiskDatasets?.includes('JRC Forest Loss')
+      ).length;
+      const totalArea = analysisResults.reduce((sum, r) => sum + (Number(r.area) || 0), 0).toFixed(2);
+
+      const metrics = {
+        totalPlots: totalPlots.toString(),
+        compliantPlots: compliantPlots.toString(),
+        highRiskPlots: highRiskPlots.toString(),
+        mediumRiskPlots: mediumRiskPlots.toString(),
+        deforestedPlots: deforestedPlots.toString(),
+        totalArea: totalArea
+      };
+      
       res.json(metrics);
     } catch (error) {
       console.error("Error fetching dashboard metrics:", error);
-      res.status(500).json({ error: "Failed to fetch dashboard metrics" });
+      // Return zeros in case of error to maintain zero state
+      res.json({
+        totalPlots: "0",
+        compliantPlots: "0",
+        highRiskPlots: "0",
+        mediumRiskPlots: "0",
+        deforestedPlots: "0",
+        totalArea: "0.00"
+      });
     }
   });
 
