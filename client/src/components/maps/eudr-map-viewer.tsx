@@ -520,8 +520,8 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Deforestation layers from multiple sources
             const deforestationLayers = {
-              gfw: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/gfw_deforestation/{z}/{x}/{y}', {
-                attribution: '© GFW',
+              gfw: L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.10/dynamic/{z}/{x}/{y}.png', {
+                attribution: '© Global Forest Watch',
                 opacity: 0.7
               }),
               jrc: L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
@@ -743,9 +743,19 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Deforestation layer controls
             document.getElementById('gfwLayer').addEventListener('change', function(e) {
               if (e.target.checked) {
-                deforestationLayers.gfw.addTo(map);
+                try {
+                  deforestationLayers.gfw.addTo(map);
+                  console.log('GFW tree cover loss layer added to map');
+                } catch (error) {
+                  console.error('Error adding GFW layer:', error);
+                }
               } else {
-                map.removeLayer(deforestationLayers.gfw);
+                try {
+                  map.removeLayer(deforestationLayers.gfw);
+                  console.log('GFW tree cover loss layer removed from map');
+                } catch (error) {
+                  console.error('Error removing GFW layer:', error);
+                }
               }
             });
 
