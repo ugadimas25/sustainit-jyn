@@ -1486,9 +1486,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const feature of analysisResults.data.features) {
           try {
             // Debug logging for intersection area values
-            const gfwArea = feature.properties.gfw_loss?.intersection_area_hectares;
-            const jrcArea = feature.properties.jrc_loss?.intersection_area_hectares;
-            const sbtnArea = feature.properties.sbtn_loss?.intersection_area_hectares;
+            const gfwArea = feature.properties.gfw_loss?.gfw_loss_area;
+            const jrcArea = feature.properties.jrc_loss?.jrc_loss_area;
+            const sbtnArea = feature.properties.sbtn_loss?.sbtn_loss_area;
             
             console.log(`🔍 Plot ${feature.properties.plot_id} - GFW: ${gfwArea}ha, JRC: ${jrcArea}ha, SBTN: ${sbtnArea}ha`);
             
