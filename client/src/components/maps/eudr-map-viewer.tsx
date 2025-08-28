@@ -111,6 +111,59 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               font-size: 14px;
             }
 
+            .layer-controls {
+              margin-top: 10px;
+            }
+
+            .layer-checkbox {
+              display: flex !important;
+              align-items: center !important;
+              gap: 8px !important;
+              cursor: pointer !important;
+              margin-bottom: 8px !important;
+              padding: 6px !important;
+              border-radius: 4px !important;
+              transition: background-color 0.2s ease !important;
+            }
+
+            .layer-checkbox:hover {
+              background-color: rgba(255, 255, 255, 0.05) !important;
+            }
+
+            .layer-checkbox input[type="checkbox"] {
+              display: none !important;
+            }
+
+            .checkmark {
+              width: 16px !important;
+              height: 16px !important;
+              border: 2px solid #666 !important;
+              border-radius: 3px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              transition: all 0.3s ease !important;
+              flex-shrink: 0 !important;
+            }
+
+            .layer-checkbox input[type="checkbox"]:checked + .checkmark {
+              background-color: #4da6ff !important;
+              border-color: #4da6ff !important;
+            }
+
+            .layer-checkbox input[type="checkbox"]:checked + .checkmark::after {
+              content: '✓' !important;
+              color: white !important;
+              font-weight: bold !important;
+              font-size: 12px !important;
+            }
+
+            .layer-name {
+              color: #ccc !important;
+              font-size: 13px !important;
+              flex: 1 !important;
+            }
+
             .legend-panel {
               position: absolute;
               bottom: 20px;
@@ -385,6 +438,32 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   <option value="low">Low Risk Only</option>
                 </select>
               </div>
+              
+              <div class="control-group">
+                <label>Deforestation Layers</label>
+                <div class="layer-controls">
+                  <label class="layer-checkbox">
+                    <input type="checkbox" id="gfwLayer">
+                    <span class="checkmark"></span>
+                    <span class="layer-name">GFW Forest Loss</span>
+                  </label>
+                  <label class="layer-checkbox">
+                    <input type="checkbox" id="jrcLayer">
+                    <span class="checkmark"></span>
+                    <span class="layer-name">JRC Deforestation</span>
+                  </label>
+                  <label class="layer-checkbox">
+                    <input type="checkbox" id="sbtnLayer">
+                    <span class="checkmark"></span>
+                    <span class="layer-name">SBTN Natural Loss</span>
+                  </label>
+                  <label class="layer-checkbox">
+                    <input type="checkbox" id="primaryForestLayer">
+                    <span class="checkmark"></span>
+                    <span class="layer-name">Primary Forest 2020</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div class="legend-panel">
@@ -398,6 +477,22 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               <div class="legend-item">
                 <div class="legend-color" style="background-color: #10b981; animation: pulse-green 2s infinite;"></div>
                 <span>Low Risk - Compliant</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff4444;"></div>
+                <span>GFW Forest Loss</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff8800;"></div>
+                <span>JRC Deforestation</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff00ff;"></div>
+                <span>SBTN Natural Loss</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background-color: #00ff00;"></div>
+                <span>Primary Forest 2020</span>
               </div>
             </div>
           </div>
@@ -422,6 +517,26 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Set default base layer
             baseLayers.satellite.addTo(map);
+
+            // Deforestation layers from Koltiva API
+            const deforestationLayers = {
+              gfw: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/gfw_deforestation/{z}/{x}/{y}', {
+                attribution: '© GFW',
+                opacity: 0.7
+              }),
+              jrc: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/jrc_deforestation/{z}/{x}/{y}', {
+                attribution: '© JRC',
+                opacity: 0.7
+              }),
+              sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
+                attribution: '© SBTN',
+                opacity: 0.7
+              }),
+              primaryForest: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/primary_forest_2020/{z}/{x}/{y}', {
+                attribution: '© Primary Forest',
+                opacity: 0.6
+              })
+            };
 
             // Analysis results from React (contains actual polygon geometries)
             const analysisResults = ${JSON.stringify(analysisResults)};
@@ -619,6 +734,39 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   map.removeLayer(centerMarker);
                 }
               });
+            });
+
+            // Deforestation layer controls
+            document.getElementById('gfwLayer').addEventListener('change', function(e) {
+              if (e.target.checked) {
+                deforestationLayers.gfw.addTo(map);
+              } else {
+                map.removeLayer(deforestationLayers.gfw);
+              }
+            });
+
+            document.getElementById('jrcLayer').addEventListener('change', function(e) {
+              if (e.target.checked) {
+                deforestationLayers.jrc.addTo(map);
+              } else {
+                map.removeLayer(deforestationLayers.jrc);
+              }
+            });
+
+            document.getElementById('sbtnLayer').addEventListener('change', function(e) {
+              if (e.target.checked) {
+                deforestationLayers.sbtn.addTo(map);
+              } else {
+                map.removeLayer(deforestationLayers.sbtn);
+              }
+            });
+
+            document.getElementById('primaryForestLayer').addEventListener('change', function(e) {
+              if (e.target.checked) {
+                deforestationLayers.primaryForest.addTo(map);
+              } else {
+                map.removeLayer(deforestationLayers.primaryForest);
+              }
             });
 
             console.log('EUDR Map loaded with', analysisResults.length, 'plots');
