@@ -22,7 +22,6 @@ const navigation = [
   { name: 'Legality Compliance', href: '/legality-compliance', icon: Scale, testId: 'nav-legality-compliance' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
-  { name: 'Compliance Reports', href: '/compliance-reports', icon: TrendingUp, testId: 'nav-compliance-reports' },
 ];
 
 export function Sidebar() {

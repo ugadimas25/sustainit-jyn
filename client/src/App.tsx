@@ -16,7 +16,7 @@ import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import MapViewer from "@/pages/map-viewer";
 import DDSReports from "@/pages/dds-reports";
-import ComplianceReports from "@/pages/compliance-reports";
+
 function Router() {
   return (
     <Switch>
@@ -27,7 +27,7 @@ function Router() {
       <ProtectedRoute path="/legality-compliance" component={LegalityCompliance} />
       <ProtectedRoute path="/supply-chain" component={SupplyChainSimple} />
       <ProtectedRoute path="/reports" component={DDSReports} />
-      <ProtectedRoute path="/compliance-reports" component={ComplianceReports} />
+
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>

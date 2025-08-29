@@ -38,7 +38,7 @@ Preferred communication style: Simple, everyday language.
 ## System Design Choices
 - **Comprehensive Traceability**: EPCIS 2.0-compliant platform providing end-to-end provenance.
 - **AI-powered Compliance Monitoring**: Real-time supply chain mapping and risk assessment.
-- **Integrated Modules**: Consolidated functionality into core modules: Dashboard, Deforestation Monitoring, Legality Assessment, Supply Chain, DDS Reports.
+- **Integrated Modules**: Consolidated functionality into 6 core modules: Dashboard, Deforestation Monitoring, Data Collection, Legality Compliance, Supply Chain, DDS Reports.
 - **Supply Chain Management**: Unified platform for workflow management, traceability, and analytics, featuring a 3-step workflow.
 - **Deforestation Monitoring**: Integrated satellite monitoring and plot management with interactive spatial mapping, alerts from multiple sources (GLAD, RADD, FORMA, Terra-i), and a layer analysis system (WDPA, KLHK, GFW).
 - **Scalability**: Designed for real-time data synchronization and scalable cloud infrastructure.
