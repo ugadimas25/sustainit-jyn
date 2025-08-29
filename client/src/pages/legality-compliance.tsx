@@ -2307,6 +2307,261 @@ export default function LegalityCompliance() {
                         </div>
                       </div>
                     </div>
+
+                    {/* VI. Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">VI. Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai</h3>
+                      <div className="space-y-4">
+                        <Label className="font-medium">Jelaskan Komitmen Perusahaan Terhadap Kebijakan Terkait Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai</Label>
+                        
+                        {/* a. Kebijakan */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">a. Kebijakan</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="kebijakanPerpajakan-yes"
+                                name="kebijakanPerpajakan"
+                                value="yes"
+                                checked={supplierComplianceForm.kebijakanPerpajakan === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerpajakan: e.target.value }))}
+                              />
+                              <Label htmlFor="kebijakanPerpajakan-yes">Ya</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="kebijakanPerpajakan-no"
+                                name="kebijakanPerpajakan"
+                                value="no"
+                                checked={supplierComplianceForm.kebijakanPerpajakan === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerpajakan: e.target.value }))}
+                              />
+                              <Label htmlFor="kebijakanPerpajakan-no">Tidak</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.kebijakanPerpajakanKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerpajakanKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanPerpajakanDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* b. SOP/Mekanisme Kode Etik Bisnis */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">b. SOP/Mekanisme yang berhubungan dengan Kode etik bisnis (Penanganan Laporan Terkait dengan Kode Etik Bisnis seperti: Korupsi, Kolusi)</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="sopKodeEtikBisnis-yes"
+                                name="sopKodeEtikBisnis"
+                                value="yes"
+                                checked={supplierComplianceForm.sopKodeEtikBisnis === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtikBisnis: e.target.value }))}
+                              />
+                              <Label htmlFor="sopKodeEtikBisnis-yes">Ya</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="sopKodeEtikBisnis-no"
+                                name="sopKodeEtikBisnis"
+                                value="no"
+                                checked={supplierComplianceForm.sopKodeEtikBisnis === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtikBisnis: e.target.value }))}
+                              />
+                              <Label htmlFor="sopKodeEtikBisnis-no">Tidak</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.sopKodeEtikBisnisKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtikBisnisKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'sopKodeEtikBisnisDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* c. Saluran Pengaduan */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">c. Saluran Pengaduan yang dapat diakses Publik</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="saluranPengaduan-yes"
+                                name="saluranPengaduan"
+                                value="yes"
+                                checked={supplierComplianceForm.saluranPengaduan === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduan: e.target.value }))}
+                              />
+                              <Label htmlFor="saluranPengaduan-yes">Ya</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="saluranPengaduan-no"
+                                name="saluranPengaduan"
+                                value="no"
+                                checked={supplierComplianceForm.saluranPengaduan === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduan: e.target.value }))}
+                              />
+                              <Label htmlFor="saluranPengaduan-no">Tidak</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.saluranPengaduanKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduanKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'saluranPengaduanDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bukti Terdaftar Pajak dan pemenuhan persyaratan eksport */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">Bukti Terdaftar Pajak dan pemenuhan persyaratan eksport</h3>
+                      <div className="space-y-4">
+                        
+                        {/* a. Surat keterangan Terdaftar Pajak */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">a. Surat keterangan Terdaftar Pajak</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="suratTerdaftarPajak-yes"
+                                name="suratTerdaftarPajak"
+                                value="yes"
+                                checked={supplierComplianceForm.suratTerdaftarPajak === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajak: e.target.value }))}
+                              />
+                              <Label htmlFor="suratTerdaftarPajak-yes">Ya</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="suratTerdaftarPajak-no"
+                                name="suratTerdaftarPajak"
+                                value="no"
+                                checked={supplierComplianceForm.suratTerdaftarPajak === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajak: e.target.value }))}
+                              />
+                              <Label htmlFor="suratTerdaftarPajak-no">Tidak</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.suratTerdaftarPajakKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajakKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'suratTerdaftarPajakDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* b. NPWP */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">b. NPWP</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="npwp-yes"
+                                name="npwp"
+                                value="yes"
+                                checked={supplierComplianceForm.npwp === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwp: e.target.value }))}
+                              />
+                              <Label htmlFor="npwp-yes">Ya</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="npwp-no"
+                                name="npwp"
+                                value="no"
+                                checked={supplierComplianceForm.npwp === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwp: e.target.value }))}
+                              />
+                              <Label htmlFor="npwp-no">Tidak</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.npwpKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwpKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'npwpDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-end space-x-4 pt-6">
