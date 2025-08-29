@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,13 +13,250 @@ import { ObjectUploader } from '@/components/ObjectUploader';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, FileText, Upload, Download, Eye } from 'lucide-react';
+import { Plus, Trash2, FileText, Upload, Download, Eye, ChevronDown } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
 
 
 export default function LegalityCompliance() {
   const [activeTab, setActiveTab] = useState('supplier-compliance');
   const { toast } = useToast();
+
+  // Fetch data from Data Collection forms for suggestions
+  const { data: estateData = [] } = useQuery({
+    queryKey: ['/api/estate-data-collection'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/estate-data-collection');
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  const { data: millData = [] } = useQuery({
+    queryKey: ['/api/mill-data-collection'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/mill-data-collection');
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  const { data: traceabilityData = [] } = useQuery({
+    queryKey: ['/api/traceability-data-collection'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/traceability-data-collection');
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  const { data: kcpData = [] } = useQuery({
+    queryKey: ['/api/kcp-data-collection'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/kcp-data-collection');
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  const { data: bulkingData = [] } = useQuery({
+    queryKey: ['/api/bulking-data-collection'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/bulking-data-collection');
+      return Array.isArray(response) ? response : [];
+    },
+  });
+
+  // Helper functions to extract suggestions from data collection forms
+  const getSupplierSuggestions = (): string[] => {
+    const suggestions: string[] = [];
+    
+    // Get supplier names from estate data
+    if (Array.isArray(estateData)) {
+      estateData.forEach((estate: any) => {
+        if (estate.supplierName) suggestions.push(estate.supplierName);
+        if (estate.groupName) suggestions.push(estate.groupName);
+      });
+    }
+    
+    // Get supplier names from mill data
+    if (Array.isArray(millData)) {
+      millData.forEach((mill: any) => {
+        if (mill.supplierName) suggestions.push(mill.supplierName);
+      });
+    }
+    
+    // Get supplier names from traceability data
+    if (Array.isArray(traceabilityData)) {
+      traceabilityData.forEach((traceability: any) => {
+        if (traceability.supplierName) suggestions.push(traceability.supplierName);
+      });
+    }
+    
+    return Array.from(new Set(suggestions));
+  };
+
+  const getAddressSuggestions = (): string[] => {
+    const suggestions: string[] = [];
+    
+    // Get addresses from all forms
+    const allData = [
+      ...(Array.isArray(estateData) ? estateData : []),
+      ...(Array.isArray(millData) ? millData : []),
+      ...(Array.isArray(traceabilityData) ? traceabilityData : []),
+      ...(Array.isArray(kcpData) ? kcpData : []),
+      ...(Array.isArray(bulkingData) ? bulkingData : [])
+    ];
+    
+    allData.forEach((item: any) => {
+      if (item.officeAddress) suggestions.push(item.officeAddress);
+      if (item.facilityAddress) suggestions.push(item.facilityAddress);
+      if (item.address) suggestions.push(item.address);
+      if (item.estateAddress) suggestions.push(item.estateAddress);
+    });
+    
+    return Array.from(new Set(suggestions));
+  };
+
+  const getCoordinateSuggestions = (): string[] => {
+    const suggestions: string[] = [];
+    
+    const allData = [
+      ...(Array.isArray(estateData) ? estateData : []),
+      ...(Array.isArray(millData) ? millData : []),
+      ...(Array.isArray(traceabilityData) ? traceabilityData : []),
+      ...(Array.isArray(kcpData) ? kcpData : []),
+      ...(Array.isArray(bulkingData) ? bulkingData : [])
+    ];
+    
+    allData.forEach((item: any) => {
+      if (item.coordinates) suggestions.push(item.coordinates);
+      if (item.gpsCoordinates) suggestions.push(item.gpsCoordinates);
+      if (item.latitude && item.longitude) {
+        suggestions.push(`${item.latitude}, ${item.longitude}`);
+      }
+    });
+    
+    return Array.from(new Set(suggestions));
+  };
+
+  const getContactPersonSuggestions = (): string[] => {
+    const suggestions: string[] = [];
+    
+    const allData = [
+      ...(Array.isArray(estateData) ? estateData : []),
+      ...(Array.isArray(millData) ? millData : []),
+      ...(Array.isArray(traceabilityData) ? traceabilityData : []),
+      ...(Array.isArray(kcpData) ? kcpData : []),
+      ...(Array.isArray(bulkingData) ? bulkingData : [])
+    ];
+    
+    allData.forEach((item: any) => {
+      if (item.contactPersonName) suggestions.push(item.contactPersonName);
+      if (item.responsiblePerson) suggestions.push(item.responsiblePerson);
+      if (item.managerName) suggestions.push(item.managerName);
+    });
+    
+    return Array.from(new Set(suggestions));
+  };
+
+  // AutocompleteInput component
+  const AutocompleteInput = ({ 
+    value, 
+    onChange, 
+    suggestions, 
+    placeholder, 
+    className,
+    ...props 
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    suggestions: string[];
+    placeholder?: string;
+    className?: string;
+  } & React.InputHTMLAttributes<HTMLInputElement>) => {
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (value) {
+        const filtered = suggestions.filter(suggestion => 
+          suggestion.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredSuggestions(filtered);
+      } else {
+        setFilteredSuggestions(suggestions);
+      }
+    }, [value, suggestions]);
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (
+          dropdownRef.current && 
+          !dropdownRef.current.contains(event.target as Node) &&
+          !inputRef.current?.contains(event.target as Node)
+        ) {
+          setShowSuggestions(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+      <div className="relative">
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onFocus={() => setShowSuggestions(true)}
+            placeholder={placeholder}
+            className={className}
+            {...props}
+          />
+          {suggestions.length > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-muted-foreground hover:bg-transparent"
+              onClick={() => setShowSuggestions(!showSuggestions)}
+            >
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div
+            ref={dropdownRef}
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto"
+          >
+            {filteredSuggestions.map((suggestion, index) => (
+              <div
+                key={index}
+                className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+                onClick={() => {
+                  onChange(suggestion);
+                  setShowSuggestions(false);
+                }}
+              >
+                {suggestion}
+              </div>
+            ))}
+          </div>
+        )}
+        {showSuggestions && filteredSuggestions.length === 0 && value && (
+          <div
+            ref={dropdownRef}
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg"
+          >
+            <div className="px-3 py-2 text-sm text-gray-500">
+              Tidak ada saran yang ditemukan
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const [supplierComplianceForm, setSupplierComplianceForm] = useState({
     // Basic Information
@@ -291,17 +528,33 @@ export default function LegalityCompliance() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="font-medium">Nama Supplier :</Label>
-                        <Input
+                        <AutocompleteInput
                           value={supplierComplianceForm.namaSupplier}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, namaSupplier: e.target.value }))}
+                          onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaSupplier: value }))}
+                          suggestions={getSupplierSuggestions()}
+                          placeholder="Pilih dari data yang tersedia atau ketik manual"
+                          data-testid="input-nama-supplier"
                         />
+                        {getSupplierSuggestions().length > 0 && (
+                          <div className="text-xs text-blue-600">
+                            💡 {getSupplierSuggestions().length} saran tersedia dari data collection
+                          </div>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label className="font-medium">Nama Group / Parent Company Name :</Label>
-                        <Input
+                        <AutocompleteInput
                           value={supplierComplianceForm.namaGroup}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, namaGroup: e.target.value }))}
+                          onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaGroup: value }))}
+                          suggestions={getSupplierSuggestions()}
+                          placeholder="Pilih dari data yang tersedia atau ketik manual"
+                          data-testid="input-nama-group"
                         />
+                        {getSupplierSuggestions().length > 0 && (
+                          <div className="text-xs text-blue-600">
+                            💡 {getSupplierSuggestions().length} saran tersedia dari data collection
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -349,7 +602,24 @@ export default function LegalityCompliance() {
                             value={supplierComplianceForm.alamatKantor}
                             onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
                             rows={3}
+                            placeholder="Pilih dari saran yang tersedia atau ketik manual"
+                            data-testid="textarea-alamat-kantor"
                           />
+                          {getAddressSuggestions().length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              <span className="text-xs text-blue-600">💡 Saran alamat:</span>
+                              {getAddressSuggestions().slice(0, 3).map((addr, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"
+                                  onClick={() => setSupplierComplianceForm(prev => ({ ...prev, alamatKantor: addr }))}
+                                >
+                                  {addr.length > 30 ? addr.substring(0, 30) + '...' : addr}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label className="font-medium">Kebun :</Label>
@@ -357,7 +627,24 @@ export default function LegalityCompliance() {
                             value={supplierComplianceForm.alamatKebun}
                             onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, alamatKebun: e.target.value }))}
                             rows={3}
+                            placeholder="Pilih dari saran yang tersedia atau ketik manual"
+                            data-testid="textarea-alamat-kebun"
                           />
+                          {getAddressSuggestions().length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              <span className="text-xs text-blue-600">💡 Saran alamat:</span>
+                              {getAddressSuggestions().slice(0, 3).map((addr, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"
+                                  onClick={() => setSupplierComplianceForm(prev => ({ ...prev, alamatKebun: addr }))}
+                                >
+                                  {addr.length > 30 ? addr.substring(0, 30) + '...' : addr}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -367,17 +654,33 @@ export default function LegalityCompliance() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label className="font-medium">Kebun :</Label>
-                          <Input
+                          <AutocompleteInput
                             value={supplierComplianceForm.koordinatKebun}
-                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKebun: e.target.value }))}
+                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKebun: value }))}
+                            suggestions={getCoordinateSuggestions()}
+                            placeholder="Format: latitude, longitude atau pilih dari saran"
+                            data-testid="input-koordinat-kebun"
                           />
+                          {getCoordinateSuggestions().length > 0 && (
+                            <div className="text-xs text-blue-600">
+                              💡 {getCoordinateSuggestions().length} koordinat tersedia dari data collection
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label className="font-medium">Kantor :</Label>
-                          <Input
+                          <AutocompleteInput
                             value={supplierComplianceForm.koordinatKantor}
-                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKantor: e.target.value }))}
+                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKantor: value }))}
+                            suggestions={getCoordinateSuggestions()}
+                            placeholder="Format: latitude, longitude atau pilih dari saran"
+                            data-testid="input-koordinat-kantor"
                           />
+                          {getCoordinateSuggestions().length > 0 && (
+                            <div className="text-xs text-blue-600">
+                              💡 {getCoordinateSuggestions().length} koordinat tersedia dari data collection
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -426,16 +729,25 @@ export default function LegalityCompliance() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label className="font-medium">Nama :</Label>
-                          <Input
+                          <AutocompleteInput
                             value={supplierComplianceForm.namaPenanggungJawab}
-                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, namaPenanggungJawab: e.target.value }))}
+                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaPenanggungJawab: value }))}
+                            suggestions={getContactPersonSuggestions()}
+                            placeholder="Pilih dari data yang tersedia atau ketik manual"
+                            data-testid="input-nama-penanggung-jawab"
                           />
+                          {getContactPersonSuggestions().length > 0 && (
+                            <div className="text-xs text-blue-600">
+                              💡 {getContactPersonSuggestions().length} kontak tersedia dari data collection
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label className="font-medium">Jabatan :</Label>
                           <Input
                             value={supplierComplianceForm.jabatanPenanggungJawab}
                             onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, jabatanPenanggungJawab: e.target.value }))}
+                            data-testid="input-jabatan-penanggung-jawab"
                           />
                         </div>
                       </div>
@@ -463,16 +775,25 @@ export default function LegalityCompliance() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label className="font-medium">Nama :</Label>
-                          <Input
+                          <AutocompleteInput
                             value={supplierComplianceForm.namaTimInternal}
-                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, namaTimInternal: e.target.value }))}
+                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaTimInternal: value }))}
+                            suggestions={getContactPersonSuggestions()}
+                            placeholder="Pilih dari data yang tersedia atau ketik manual"
+                            data-testid="input-nama-tim-internal"
                           />
+                          {getContactPersonSuggestions().length > 0 && (
+                            <div className="text-xs text-blue-600">
+                              💡 {getContactPersonSuggestions().length} kontak tersedia dari data collection
+                            </div>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label className="font-medium">Jabatan :</Label>
                           <Input
                             value={supplierComplianceForm.jabatanTimInternal}
                             onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, jabatanTimInternal: e.target.value }))}
+                            data-testid="input-jabatan-tim-internal"
                           />
                         </div>
                       </div>

@@ -117,6 +117,13 @@ export interface IStorage {
   updateDdsReport(id: string, updates: Partial<DdsReport>): Promise<DdsReport | undefined>;
 
 
+  // Estate Data Collection management
+  getEstateDataCollection(): Promise<import("@shared/schema").EstateDataCollection[]>;
+  getEstateDataCollectionById(id: string): Promise<import("@shared/schema").EstateDataCollection | undefined>;
+  createEstateDataCollection(insertEstateData: import("@shared/schema").InsertEstateDataCollection): Promise<import("@shared/schema").EstateDataCollection>;
+  updateEstateDataCollection(id: string, updates: Partial<import("@shared/schema").EstateDataCollection>): Promise<import("@shared/schema").EstateDataCollection | undefined>;
+  deleteEstateDataCollection(id: string): Promise<boolean>;
+
   // Mill Data Collection management
   getMillDataCollection(): Promise<import("@shared/schema").MillDataCollection[]>;
   getMillDataCollectionById(id: string): Promise<import("@shared/schema").MillDataCollection | undefined>;
@@ -578,7 +585,67 @@ export class DatabaseStorage implements IStorage {
     return updatedReport || undefined;
   }
 
+  // Estate Data Collection management
+  async getEstateDataCollection(): Promise<import("@shared/schema").EstateDataCollection[]> {
+    try {
+      const { estateDataCollection } = await import("@shared/schema");
+      return await db.select().from(estateDataCollection).orderBy(desc(estateDataCollection.createdAt));
+    } catch (error) {
+      console.error("Error getting estate data collections:", error);
+      return [];
+    }
+  }
 
+  async getEstateDataCollectionById(id: string): Promise<import("@shared/schema").EstateDataCollection | undefined> {
+    try {
+      const { estateDataCollection } = await import("@shared/schema");
+      const [result] = await db.select().from(estateDataCollection).where(eq(estateDataCollection.id, id));
+      return result || undefined;
+    } catch (error) {
+      console.error("Error getting estate data collection by id:", error);
+      return undefined;
+    }
+  }
+
+  async createEstateDataCollection(insertEstateData: import("@shared/schema").InsertEstateDataCollection): Promise<import("@shared/schema").EstateDataCollection> {
+    try {
+      const { estateDataCollection } = await import("@shared/schema");
+      const [result] = await db
+        .insert(estateDataCollection)
+        .values(insertEstateData)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error("Error creating estate data collection:", error);
+      throw error;
+    }
+  }
+
+  async updateEstateDataCollection(id: string, updates: Partial<import("@shared/schema").EstateDataCollection>): Promise<import("@shared/schema").EstateDataCollection | undefined> {
+    try {
+      const { estateDataCollection } = await import("@shared/schema");
+      const [result] = await db
+        .update(estateDataCollection)
+        .set(updates)
+        .where(eq(estateDataCollection.id, id))
+        .returning();
+      return result || undefined;
+    } catch (error) {
+      console.error("Error updating estate data collection:", error);
+      return undefined;
+    }
+  }
+
+  async deleteEstateDataCollection(id: string): Promise<boolean> {
+    try {
+      const { estateDataCollection } = await import("@shared/schema");
+      const result = await db.delete(estateDataCollection).where(eq(estateDataCollection.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting estate data collection:", error);
+      return false;
+    }
+  }
 
   // Mill Data Collection management
   async getMillDataCollection(): Promise<import("@shared/schema").MillDataCollection[]> {

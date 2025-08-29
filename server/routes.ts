@@ -1197,6 +1197,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
+  // Estate Data Collection API routes
+  app.get("/api/estate-data-collection", isAuthenticated, async (req, res) => {
+    try {
+      const estates = await storage.getEstateDataCollection();
+      res.json(estates);
+    } catch (error) {
+      console.error('Error fetching estate data collections:', error);
+      res.status(500).json({ error: "Failed to fetch estate data collections" });
+    }
+  });
+
+  app.post("/api/estate-data-collection", isAuthenticated, async (req, res) => {
+    try {
+      const { insertEstateDataCollectionSchema } = await import("@shared/schema");
+      const validatedData = insertEstateDataCollectionSchema.parse(req.body);
+      const estate = await storage.createEstateDataCollection(validatedData);
+      res.status(201).json(estate);
+    } catch (error) {
+      console.error('Error creating estate data collection:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid estate data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create estate data collection" });
+      }
+    }
+  });
+
   // Mill Data Collection API routes
   app.get("/api/mill-data-collection", isAuthenticated, async (req, res) => {
     try {
