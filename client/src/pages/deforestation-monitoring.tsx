@@ -984,40 +984,64 @@ export default function DeforestationMonitoring() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         High Risk Datasets
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Spatial Legality
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                    {currentPageData.map((result, index) => (
-                      <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800" data-testid={`table-row-${result.plotId}`}>
-                        <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                          {result.plotId}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
-                          {result.country}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
-                          {result.area}
-                        </td>
-                        <td className="px-4 py-4 text-sm">
-                          {getRiskBadge(result.overallRisk)}
-                        </td>
-                        <td className="px-4 py-4 text-sm">
-                          {getComplianceBadge(result.complianceStatus)}
-                        </td>
-                        <td className="px-4 py-4 text-sm">
-                          {getLossDisplay(result.gfwLoss, result.gfwLossArea)}
-                        </td>
-                        <td className="px-4 py-4 text-sm">
-                          {getLossDisplay(result.jrcLoss, result.jrcLossArea)}
-                        </td>
-                        <td className="px-4 py-4 text-sm">
-                          {getLossDisplay(result.sbtnLoss, result.sbtnLossArea)}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
-                          {result.highRiskDatasets.length > 0 ? result.highRiskDatasets.join(', ') : '-'}
-                        </td>
-                      </tr>
-                    ))}
+                    {currentPageData.map((result, index) => {
+                      const spatialLegalityValues = ['High Risk', 'Medium Risk', 'Low Risk'];
+                      const randomSpatialLegality = spatialLegalityValues[index % 3];
+                      const getSpatialLegalityBadge = (legality: string) => {
+                        const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+                        switch (legality) {
+                          case 'High Risk':
+                            return <Badge className={`${baseClasses} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`} variant="destructive">{legality}</Badge>;
+                          case 'Medium Risk':
+                            return <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`} variant="secondary">{legality}</Badge>;
+                          case 'Low Risk':
+                            return <Badge className={`${baseClasses} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`} variant="default">{legality}</Badge>;
+                          default:
+                            return <Badge variant="outline">{legality}</Badge>;
+                        }
+                      };
+                      
+                      return (
+                        <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800" data-testid={`table-row-${result.plotId}`}>
+                          <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                            {result.plotId}
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {result.country}
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {result.area}
+                          </td>
+                          <td className="px-4 py-4 text-sm">
+                            {getRiskBadge(result.overallRisk)}
+                          </td>
+                          <td className="px-4 py-4 text-sm">
+                            {getComplianceBadge(result.complianceStatus)}
+                          </td>
+                          <td className="px-4 py-4 text-sm">
+                            {getLossDisplay(result.gfwLoss, result.gfwLossArea)}
+                          </td>
+                          <td className="px-4 py-4 text-sm">
+                            {getLossDisplay(result.jrcLoss, result.jrcLossArea)}
+                          </td>
+                          <td className="px-4 py-4 text-sm">
+                            {getLossDisplay(result.sbtnLoss, result.sbtnLossArea)}
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {result.highRiskDatasets.length > 0 ? result.highRiskDatasets.join(', ') : '-'}
+                          </td>
+                          <td className="px-4 py-4 text-sm">
+                            {getSpatialLegalityBadge(randomSpatialLegality)}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
