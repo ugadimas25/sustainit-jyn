@@ -578,12 +578,29 @@ export default function MapViewer() {
           
           // Convert coordinates for Leaflet
           let coordinates = result.geometry.coordinates;
-          if (result.geometry.type === 'Polygon') {
-            coordinates = coordinates[0].map(coord => [coord[1], coord[0]]);
+          let leafletPolygons = [];
+          
+          try {
+            if (result.geometry.type === 'Polygon') {
+              // Polygon: coordinates = [[lat, lng], [lat, lng], ...]
+              coordinates = coordinates[0].map(coord => [coord[1], coord[0]]);
+              leafletPolygons = coordinates;
+            } else if (result.geometry.type === 'MultiPolygon') {
+              // MultiPolygon: coordinates = [[[lat, lng], [lat, lng], ...], [[lat, lng], ...]]
+              // Take the first polygon from MultiPolygon
+              coordinates = result.geometry.coordinates[0][0].map(coord => [coord[1], coord[0]]);
+              leafletPolygons = coordinates;
+            } else {
+              console.warn('Unsupported geometry type for plot:', result.plotId, result.geometry.type);
+              return;
+            }
+          } catch (error) {
+            console.error('Error parsing coordinates for plot:', result.plotId, error);
+            return;
           }
           
           // Create polygon
-          const polygon = L.polygon(coordinates, {
+          const polygon = L.polygon(leafletPolygons, {
             fillColor: color,
             color: isHighRisk ? '#dc2626' : '#10b981',
             weight: 2,
