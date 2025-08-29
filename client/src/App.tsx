@@ -9,7 +9,8 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
-import LegalityAssessment from "@/pages/legality-assessment-expanded";
+import LegalityAssessment from "@/pages/data-collection";
+import LegalityCompliance from "@/pages/legality-compliance";
 import UnifiedMonitoring from "@/pages/unified-monitoring";
 import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
@@ -22,7 +23,8 @@ function Router() {
       <ProtectedRoute path="/" component={Dashboard} />
       <ProtectedRoute path="/deforestation-monitoring" component={DeforestationMonitoring} />
       <ProtectedRoute path="/map-viewer" component={MapViewer} />
-      <ProtectedRoute path="/legality-assessment" component={LegalityAssessment} />
+      <ProtectedRoute path="/data-collection" component={LegalityAssessment} />
+      <ProtectedRoute path="/legality-compliance" component={LegalityCompliance} />
       <ProtectedRoute path="/supply-chain" component={SupplyChainSimple} />
       <ProtectedRoute path="/reports" component={DDSReports} />
       <ProtectedRoute path="/compliance-reports" component={ComplianceReports} />

@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { 
   BarChart3, 
   Shield, 
+  Scale,
   Satellite, 
   Link, 
   FileText, 
@@ -17,7 +18,8 @@ import { Button } from "@/components/ui/button";
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3, testId: 'nav-dashboard' },
   { name: 'Deforestation Monitoring', href: '/deforestation-monitoring', icon: Satellite, testId: 'nav-deforestation-monitoring' },
-  { name: 'Legality Assessment', href: '/legality-assessment', icon: Shield, testId: 'nav-legality' },
+  { name: 'Data Collection', href: '/data-collection', icon: Shield, testId: 'nav-data-collection' },
+  { name: 'Legality Compliance', href: '/legality-compliance', icon: Scale, testId: 'nav-legality-compliance' },
   { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
   { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
   { name: 'Compliance Reports', href: '/compliance-reports', icon: TrendingUp, testId: 'nav-compliance-reports' },
