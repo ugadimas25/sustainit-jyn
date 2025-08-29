@@ -16,17 +16,97 @@ import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import MapViewer from "@/pages/map-viewer";
 import DDSReports from "@/pages/dds-reports";
+import Sidebar from "@/components/sidebar";
+import TopBar from "@/components/top-bar";
+import VoiceAssistantToggle from "@/components/voice-assistant-toggle";
 
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={Dashboard} />
-      <ProtectedRoute path="/deforestation-monitoring" component={DeforestationMonitoring} />
-      <ProtectedRoute path="/map-viewer" component={MapViewer} />
-      <ProtectedRoute path="/data-collection" component={LegalityAssessment} />
-      <ProtectedRoute path="/legality-compliance" component={LegalityCompliance} />
-      <ProtectedRoute path="/supply-chain" component={SupplyChainSimple} />
-      <ProtectedRoute path="/reports" component={DDSReports} />
+      <Route path="/">
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              <Dashboard />
+            </main>
+            <VoiceAssistantToggle />
+          </div>
+        </div>
+      </Route>
+      <Route path="/deforestation-monitoring">
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              <DeforestationMonitoring />
+            </main>
+            <VoiceAssistantToggle />
+          </div>
+        </div>
+      </Route>
+      <Route path="/map-viewer">
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              <MapViewer />
+            </main>
+            <VoiceAssistantToggle />
+          </div>
+        </div>
+      </Route>
+      <Route path="/data-collection">
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              <LegalityAssessment />
+            </main>
+            <VoiceAssistantToggle />
+          </div>
+        </div>
+      </Route>
+      <Route path="/legality-compliance">
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              <LegalityCompliance />
+            </main>
+            <VoiceAssistantToggle />
+          </div>
+        </div>
+      </Route>
+      <Route path="/supply-chain">
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              <SupplyChainSimple />
+            </main>
+            <VoiceAssistantToggle />
+          </div>
+        </div>
+      </Route>
+      <Route path="/reports">
+        <div className="flex h-screen bg-gray-50">
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <TopBar />
+            <main className="flex-1 overflow-auto">
+              <DDSReports />
+            </main>
+            <VoiceAssistantToggle />
+          </div>
+        </div>
+      </Route>
 
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
