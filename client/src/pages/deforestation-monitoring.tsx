@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Upload, File, Download, Trash2, Play, Map, AlertTriangle, 
@@ -155,6 +156,10 @@ export default function DeforestationMonitoring() {
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [complianceFilter, setComplianceFilter] = useState<string>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
+  
+  // Row selection state
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -494,6 +499,16 @@ export default function DeforestationMonitoring() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const currentPageData = filteredResults.slice(startIndex, endIndex);
+
+  // Update select all state when current page data changes
+  useEffect(() => {
+    if (currentPageData.length === 0) {
+      setSelectAll(false);
+    } else {
+      const allCurrentPageSelected = currentPageData.every(row => selectedRows.has(row.plotId));
+      setSelectAll(allCurrentPageSelected && selectedRows.size > 0);
+    }
+  }, [currentPageData, selectedRows]);
 
   const getSortIcon = (column: keyof AnalysisResult) => {
     if (sortColumn !== column) {
@@ -900,6 +915,23 @@ export default function DeforestationMonitoring() {
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        <Checkbox 
+                          checked={selectAll}
+                          onCheckedChange={(checked) => {
+                            setSelectAll(!!checked);
+                            if (checked) {
+                              // Select all current page rows
+                              const allPlotIds = currentPageData.map(row => row.plotId);
+                              setSelectedRows(new Set(allPlotIds));
+                            } else {
+                              // Deselect all
+                              setSelectedRows(new Set());
+                            }
+                          }}
+                          data-testid="select-all-checkbox"
+                        />
+                      </th>
                       <th 
                         className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         onClick={() => handleSort('plotId')}
@@ -1005,6 +1037,25 @@ export default function DeforestationMonitoring() {
                       
                       return (
                         <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800" data-testid={`table-row-${result.plotId}`}>
+                          <td className="px-4 py-4 text-sm">
+                            <Checkbox 
+                              checked={selectedRows.has(result.plotId)}
+                              onCheckedChange={(checked) => {
+                                const newSelectedRows = new Set(selectedRows);
+                                if (checked) {
+                                  newSelectedRows.add(result.plotId);
+                                } else {
+                                  newSelectedRows.delete(result.plotId);
+                                }
+                                setSelectedRows(newSelectedRows);
+                                
+                                // Update select all state
+                                const allCurrentPageSelected = currentPageData.every(row => newSelectedRows.has(row.plotId));
+                                setSelectAll(allCurrentPageSelected && newSelectedRows.size > 0);
+                              }}
+                              data-testid={`checkbox-${result.plotId}`}
+                            />
+                          </td>
                           <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
                             {result.plotId}
                           </td>
