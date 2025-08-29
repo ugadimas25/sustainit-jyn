@@ -500,121 +500,90 @@ export default function LegalityCompliance() {
 
                   {/* Legal Compliance Section */}
                   <div className="space-y-8">
-                    <h2 className="text-xl font-bold text-center">Legal Compliance</h2>
-                    <p className="text-center font-medium">Berlaku Untuk Perusahaan Yang Belum Sertifikasi ISPO</p>
+                    <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                      <h3 className="text-xl font-bold text-blue-800">Legal Compliance</h3>
+                      <p className="text-sm text-blue-600 mt-2">Berlaku Untuk Perusahaan Yang Belum Sertifikasi ISPO</p>
+                    </div>
 
-                    {/* 3.1 Hak Penggunaan Tanah */}
+                    {/* I. Hak Penggunaan Tanah */}
                     <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">Hak Penggunaan Tanah</h3>
+                      <h3 className="text-lg font-bold">I. Hak Penggunaan Tanah</h3>
                       <div className="space-y-4">
-                        <Label className="font-medium">3.1 Apakah Perusahaan Memiliki Historis Perolehan Tanah</Label>
-                        <div className="space-y-2">
-                          <Label>Keterangan:</Label>
-                          <Textarea
-                            value={supplierComplianceForm.historisKeterangan}
-                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, historisKeterangan: e.target.value }))}
-                            rows={2}
-                          />
-                          <div className="space-y-2">
-                            <Label>Upload Dokumen Pendukung:</Label>
-                            <ObjectUploader
-                              onGetUploadParameters={handleGetUploadParameters}
-                              onComplete={(result) => handleDocumentUploadComplete(result, 'historisKeteranganDokumen')}
-                              maxFileSize={50 * 1024 * 1024}
-                            >
-                              <Upload className="h-4 w-4 mr-2" />
-                              Upload PDF Dokumen
-                            </ObjectUploader>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Lampirkan Dokumen: (dalam Bentuk Google Drive)</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'historisPerolehanTanah')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      {/* Izin Pencadangan Lahan */}
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Izin Pencadangan Lahan</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="izinPencadangan-ya"
-                              name="izinPencadanganLahan"
-                              value="ya"
-                              checked={supplierComplianceForm.izinPencadanganLahan === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganLahan: e.target.value }))}
-                            />
-                            <Label htmlFor="izinPencadangan-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="izinPencadangan-tidak"
-                              name="izinPencadanganLahan"
-                              value="tidak"
-                              checked={supplierComplianceForm.izinPencadanganLahan === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganLahan: e.target.value }))}
-                            />
-                            <Label htmlFor="izinPencadangan-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Keterangan:</Label>
-                          <Textarea
-                            value={supplierComplianceForm.izinPencadanganKeterangan}
-                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganKeterangan: e.target.value }))}
-                            rows={2}
-                          />
-                          <div className="space-y-2">
-                            <Label>Upload Dokumen Pendukung:</Label>
-                            <ObjectUploader
-                              onGetUploadParameters={handleGetUploadParameters}
-                              onComplete={(result) => handleDocumentUploadComplete(result, 'izinPencadanganKeteranganDokumen')}
-                              maxFileSize={50 * 1024 * 1024}
-                            >
-                              <Upload className="h-4 w-4 mr-2" />
-                              Upload PDF Dokumen
-                            </ObjectUploader>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Continue with all sections from the document... */}
-                      <div className="grid grid-cols-1 gap-6">
-                        {/* PKKPR */}
+                        <Label className="font-medium">Apakah Perusahaan Memiliki Historis Perolehan Tanah</Label>
+                        
+                        {/* a. Izin Pencadangan Lahan */}
                         <div className="space-y-4 border-t pt-4">
-                          <Label className="font-medium">Persetujuan Kesesuaian Kegiatan Pemanfaatan Ruang (PKKPR) / Izin Lokasi</Label>
+                          <Label className="font-medium">a. Izin Pencadangan Lahan</Label>
                           <div className="flex space-x-4">
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="pkkpr-ya"
-                                name="persetujuanPKKPR"
-                                value="ya"
-                                checked={supplierComplianceForm.persetujuanPKKPR === 'ya'}
-                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanPKKPR: e.target.value }))}
+                                id="izinPencadangan-yes"
+                                name="izinPencadanganLahan"
+                                value="yes"
+                                checked={supplierComplianceForm.izinPencadanganLahan === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganLahan: e.target.value }))}
                               />
-                              <Label htmlFor="pkkpr-ya">☑ Ya</Label>
+                              <Label htmlFor="izinPencadangan-yes">Yes</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="pkkpr-tidak"
+                                id="izinPencadangan-no"
+                                name="izinPencadanganLahan"
+                                value="no"
+                                checked={supplierComplianceForm.izinPencadanganLahan === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganLahan: e.target.value }))}
+                              />
+                              <Label htmlFor="izinPencadangan-no">No</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.izinPencadanganKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinPencadanganDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* b. PKKPR / Izin Lokasi */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">b. Persetujuan Kesesuaian Kegiatan Pemanfaatan Ruang (PKKPR) / Izin Lokasi</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="pkkpr-yes"
                                 name="persetujuanPKKPR"
-                                value="tidak"
-                                checked={supplierComplianceForm.persetujuanPKKPR === 'tidak'}
+                                value="yes"
+                                checked={supplierComplianceForm.persetujuanPKKPR === 'yes'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanPKKPR: e.target.value }))}
                               />
-                              <Label htmlFor="pkkpr-tidak">☑ Tidak</Label>
+                              <Label htmlFor="pkkpr-yes">Yes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="pkkpr-no"
+                                name="persetujuanPKKPR"
+                                value="no"
+                                checked={supplierComplianceForm.persetujuanPKKPR === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanPKKPR: e.target.value }))}
+                              />
+                              <Label htmlFor="pkkpr-no">No</Label>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -628,7 +597,7 @@ export default function LegalityCompliance() {
                               <Label>Upload Dokumen Pendukung:</Label>
                               <ObjectUploader
                                 onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'persetujuanPKKPRKeteranganDokumen')}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'pkkprDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
@@ -638,31 +607,31 @@ export default function LegalityCompliance() {
                           </div>
                         </div>
 
-                        {/* Izin Usaha Perkebunan */}
+                        {/* c. Izin Usaha Perkebunan */}
                         <div className="space-y-4 border-t pt-4">
-                          <Label className="font-medium">Izin Usaha Perkebunan</Label>
+                          <Label className="font-medium">c. Izin Usaha Perkebunan</Label>
                           <div className="flex space-x-4">
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="izinUsaha-ya"
+                                id="izinUsaha-yes"
                                 name="izinUsahaPerkebunan"
-                                value="ya"
-                                checked={supplierComplianceForm.izinUsahaPerkebunan === 'ya'}
+                                value="yes"
+                                checked={supplierComplianceForm.izinUsahaPerkebunan === 'yes'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinUsahaPerkebunan: e.target.value }))}
                               />
-                              <Label htmlFor="izinUsaha-ya">☑ Ya</Label>
+                              <Label htmlFor="izinUsaha-yes">Yes</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="izinUsaha-tidak"
+                                id="izinUsaha-no"
                                 name="izinUsahaPerkebunan"
-                                value="tidak"
-                                checked={supplierComplianceForm.izinUsahaPerkebunan === 'tidak'}
+                                value="no"
+                                checked={supplierComplianceForm.izinUsahaPerkebunan === 'no'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinUsahaPerkebunan: e.target.value }))}
                               />
-                              <Label htmlFor="izinUsaha-tidak">☑ Tidak</Label>
+                              <Label htmlFor="izinUsaha-no">No</Label>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -676,7 +645,7 @@ export default function LegalityCompliance() {
                               <Label>Upload Dokumen Pendukung:</Label>
                               <ObjectUploader
                                 onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinUsahaPerkebunanKeteranganDokumen')}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinUsahaDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
@@ -686,31 +655,31 @@ export default function LegalityCompliance() {
                           </div>
                         </div>
 
-                        {/* SK HGU */}
+                        {/* d. SK HGU */}
                         <div className="space-y-4 border-t pt-4">
-                          <Label className="font-medium">SK HGU</Label>
+                          <Label className="font-medium">d. SK HGU</Label>
                           <div className="flex space-x-4">
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="skHGU-ya"
+                                id="skHGU-yes"
                                 name="skHGU"
-                                value="ya"
-                                checked={supplierComplianceForm.skHGU === 'ya'}
+                                value="yes"
+                                checked={supplierComplianceForm.skHGU === 'yes'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skHGU: e.target.value }))}
                               />
-                              <Label htmlFor="skHGU-ya">☑ Ya</Label>
+                              <Label htmlFor="skHGU-yes">Yes</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="skHGU-tidak"
+                                id="skHGU-no"
                                 name="skHGU"
-                                value="tidak"
-                                checked={supplierComplianceForm.skHGU === 'tidak'}
+                                value="no"
+                                checked={supplierComplianceForm.skHGU === 'no'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skHGU: e.target.value }))}
                               />
-                              <Label htmlFor="skHGU-tidak">☑ Tidak</Label>
+                              <Label htmlFor="skHGU-no">No</Label>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -724,7 +693,7 @@ export default function LegalityCompliance() {
                               <Label>Upload Dokumen Pendukung:</Label>
                               <ObjectUploader
                                 onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'skHGUKeteranganDokumen')}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'skHGUDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
@@ -734,31 +703,31 @@ export default function LegalityCompliance() {
                           </div>
                         </div>
 
-                        {/* Sertifikat HGU */}
+                        {/* e. Sertifikat HGU */}
                         <div className="space-y-4 border-t pt-4">
-                          <Label className="font-medium">Sertifikat HGU</Label>
+                          <Label className="font-medium">e. Sertifikat HGU</Label>
                           <div className="flex space-x-4">
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="sertifikatHGU-ya"
+                                id="sertifikatHGU-yes"
                                 name="sertifikatHGU"
-                                value="ya"
-                                checked={supplierComplianceForm.sertifikatHGU === 'ya'}
+                                value="yes"
+                                checked={supplierComplianceForm.sertifikatHGU === 'yes'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sertifikatHGU: e.target.value }))}
                               />
-                              <Label htmlFor="sertifikatHGU-ya">☑ Ya</Label>
+                              <Label htmlFor="sertifikatHGU-yes">Yes</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="sertifikatHGU-tidak"
+                                id="sertifikatHGU-no"
                                 name="sertifikatHGU"
-                                value="tidak"
-                                checked={supplierComplianceForm.sertifikatHGU === 'tidak'}
+                                value="no"
+                                checked={supplierComplianceForm.sertifikatHGU === 'no'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sertifikatHGU: e.target.value }))}
                               />
-                              <Label htmlFor="sertifikatHGU-tidak">☑ Tidak</Label>
+                              <Label htmlFor="sertifikatHGU-no">No</Label>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -772,7 +741,103 @@ export default function LegalityCompliance() {
                               <Label>Upload Dokumen Pendukung:</Label>
                               <ObjectUploader
                                 onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'sertifikatHGUKeteranganDokumen')}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'sertifikatHGUDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* f. Laporan Pemanfaatan HGU */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">f. Laporan Pemanfaatan HGU</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="laporanHGU-yes"
+                                name="laporanPemanfaatanHGU"
+                                value="yes"
+                                checked={supplierComplianceForm.laporanPemanfaatanHGU === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPemanfaatanHGU: e.target.value }))}
+                              />
+                              <Label htmlFor="laporanHGU-yes">Yes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="laporanHGU-no"
+                                name="laporanPemanfaatanHGU"
+                                value="no"
+                                checked={supplierComplianceForm.laporanPemanfaatanHGU === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPemanfaatanHGU: e.target.value }))}
+                              />
+                              <Label htmlFor="laporanHGU-no">No</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.laporanPemanfaatanHGUKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPemanfaatanHGUKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'laporanHGUDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* g. Laporan Perkembangan Usaha Perkebunan (LPUP) */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">g. Laporan Perkembangan Usaha Perkebunan (LPUP)</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="lpup-yes"
+                                name="laporanLPUP"
+                                value="yes"
+                                checked={supplierComplianceForm.laporanLPUP === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanLPUP: e.target.value }))}
+                              />
+                              <Label htmlFor="lpup-yes">Yes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="lpup-no"
+                                name="laporanLPUP"
+                                value="no"
+                                checked={supplierComplianceForm.laporanLPUP === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanLPUP: e.target.value }))}
+                              />
+                              <Label htmlFor="lpup-no">No</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.laporanLPUPKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanLPUPKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'lpupDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
@@ -784,37 +849,37 @@ export default function LegalityCompliance() {
                       </div>
                     </div>
 
-                    {/* 3.2 Perlindungan Lingkungan Hidup */}
+                    {/* II. Perlindungan Lingkungan Hidup */}
                     <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">Perlindungan Lingkungan Hidup</h3>
+                      <h3 className="text-lg font-bold">II. Perlindungan Lingkungan Hidup</h3>
                       <div className="space-y-4">
-                        <Label className="font-medium">3.2 Apakah Perusahaan Memiliki Perizinan Lingkungan Sesuai dengan Regulasi yang Relevan</Label>
+                        <Label className="font-medium">Apakah Perusahaan Memiliki Perizinan Lingkungan Sesuai dengan Regulasi yang Relevan</Label>
                         
-                        {/* Izin Lingkungan dan Dokumen Terkait */}
+                        {/* a. Izin Lingkungan dan Dokumen Terkait */}
                         <div className="space-y-4 border-t pt-4">
-                          <Label className="font-medium">Izin Lingkungan dan Dokumen Terkait</Label>
+                          <Label className="font-medium">a. Izin Lingkungan dan Dokumen Terkait</Label>
                           <div className="flex space-x-4">
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="izinLingkungan-ya"
+                                id="izinLingkungan-yes"
                                 name="izinLingkungan"
-                                value="ya"
-                                checked={supplierComplianceForm.izinLingkungan === 'ya'}
+                                value="yes"
+                                checked={supplierComplianceForm.izinLingkungan === 'yes'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinLingkungan: e.target.value }))}
                               />
-                              <Label htmlFor="izinLingkungan-ya">☑ Ya</Label>
+                              <Label htmlFor="izinLingkungan-yes">Yes</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="izinLingkungan-tidak"
+                                id="izinLingkungan-no"
                                 name="izinLingkungan"
-                                value="tidak"
-                                checked={supplierComplianceForm.izinLingkungan === 'tidak'}
+                                value="no"
+                                checked={supplierComplianceForm.izinLingkungan === 'no'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinLingkungan: e.target.value }))}
                               />
-                              <Label htmlFor="izinLingkungan-tidak">☑ Tidak</Label>
+                              <Label htmlFor="izinLingkungan-no">No</Label>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -828,7 +893,7 @@ export default function LegalityCompliance() {
                               <Label>Upload Dokumen Pendukung:</Label>
                               <ObjectUploader
                                 onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinLingkunganKeteranganDokumen')}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinLingkunganDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
@@ -838,31 +903,31 @@ export default function LegalityCompliance() {
                           </div>
                         </div>
 
-                        {/* Izin/Rintek TPS Limbah B3 */}
+                        {/* b. Izin / Rintek TPS Limbah B3 */}
                         <div className="space-y-4 border-t pt-4">
-                          <Label className="font-medium">Izin / Rintek TPS Limbah B3</Label>
+                          <Label className="font-medium">b. Izin / Rintek TPS Limbah B3</Label>
                           <div className="flex space-x-4">
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="izinRintek-ya"
+                                id="izinRintek-yes"
                                 name="izinRintekTPS"
-                                value="ya"
-                                checked={supplierComplianceForm.izinRintekTPS === 'ya'}
+                                value="yes"
+                                checked={supplierComplianceForm.izinRintekTPS === 'yes'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinRintekTPS: e.target.value }))}
                               />
-                              <Label htmlFor="izinRintek-ya">☑ Ya</Label>
+                              <Label htmlFor="izinRintek-yes">Yes</Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <input
                                 type="radio"
-                                id="izinRintek-tidak"
+                                id="izinRintek-no"
                                 name="izinRintekTPS"
-                                value="tidak"
-                                checked={supplierComplianceForm.izinRintekTPS === 'tidak'}
+                                value="no"
+                                checked={supplierComplianceForm.izinRintekTPS === 'no'}
                                 onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinRintekTPS: e.target.value }))}
                               />
-                              <Label htmlFor="izinRintek-tidak">☑ Tidak</Label>
+                              <Label htmlFor="izinRintek-no">No</Label>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -876,7 +941,7 @@ export default function LegalityCompliance() {
                               <Label>Upload Dokumen Pendukung:</Label>
                               <ObjectUploader
                                 onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinRintekTPSKeteranganDokumen')}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinRintekDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
@@ -886,996 +951,375 @@ export default function LegalityCompliance() {
                           </div>
                         </div>
 
-                        {/* Document Upload for All Sections */}
+                        {/* c. Izin / Pertek Pengelolaan Limbah Cair Industri */}
                         <div className="space-y-4 border-t pt-4">
-                          <Label className="font-medium">Upload Dokumen Pendukung</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'dokumenLingkungan')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen Lingkungan
-                          </ObjectUploader>
+                          <Label className="font-medium">c. Izin / Pertek Pengelolaan Limbah Cair Industri</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="izinLimbahCair-yes"
+                                name="izinLimbahCair"
+                                value="yes"
+                                checked={supplierComplianceForm.izinLimbahCair === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinLimbahCair: e.target.value }))}
+                              />
+                              <Label htmlFor="izinLimbahCair-yes">Yes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="izinLimbahCair-no"
+                                name="izinLimbahCair"
+                                value="no"
+                                checked={supplierComplianceForm.izinLimbahCair === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinLimbahCair: e.target.value }))}
+                              />
+                              <Label htmlFor="izinLimbahCair-no">No</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.izinLimbahCairKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinLimbahCairKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinLimbahCairDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* d. Persetujuan Teknis ANDALALIN */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">d. Persetujuan Teknis ANDALALIN</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="andalalin-yes"
+                                name="persetujuanAndalalin"
+                                value="yes"
+                                checked={supplierComplianceForm.persetujuanAndalalin === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanAndalalin: e.target.value }))}
+                              />
+                              <Label htmlFor="andalalin-yes">Yes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="andalalin-no"
+                                name="persetujuanAndalalin"
+                                value="no"
+                                checked={supplierComplianceForm.persetujuanAndalalin === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanAndalalin: e.target.value }))}
+                              />
+                              <Label htmlFor="andalalin-no">No</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.persetujuanAndalalinKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanAndalalinKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'andalalinDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* e. Daftar pestisida dan izin edar yang masih berlaku */}
+                        <div className="space-y-4 border-t pt-4">
+                          <Label className="font-medium">e. Daftar pestisida dan izin edar yang masih berlaku</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="daftarPestisida-yes"
+                                name="daftarPestisida"
+                                value="yes"
+                                checked={supplierComplianceForm.daftarPestisida === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarPestisida: e.target.value }))}
+                              />
+                              <Label htmlFor="daftarPestisida-yes">Yes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="daftarPestisida-no"
+                                name="daftarPestisida"
+                                value="no"
+                                checked={supplierComplianceForm.daftarPestisida === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarPestisida: e.target.value }))}
+                              />
+                              <Label htmlFor="daftarPestisida-no">No</Label>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Keterangan:</Label>
+                            <Textarea
+                              value={supplierComplianceForm.daftarPestisidaKeterangan}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarPestisidaKeterangan: e.target.value }))}
+                              rows={2}
+                            />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'daftarPestisidaDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Berikan Bukti Pelaksanaan prosedur */}
+                        <div className="space-y-6 border-t pt-4 mt-6">
+                          <Label className="font-medium text-blue-700">Berikan Bukti Pelaksanaan prosedur point II diatas</Label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="buktiPelaksanaanII-yes"
+                                name="buktiPelaksanaanII"
+                                value="yes"
+                                checked={supplierComplianceForm.buktiPelaksanaanII === 'yes'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaanII: e.target.value }))}
+                              />
+                              <Label htmlFor="buktiPelaksanaanII-yes">Yes</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                id="buktiPelaksanaanII-no"
+                                name="buktiPelaksanaanII"
+                                value="no"
+                                checked={supplierComplianceForm.buktiPelaksanaanII === 'no'}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaanII: e.target.value }))}
+                              />
+                              <Label htmlFor="buktiPelaksanaanII-no">No</Label>
+                            </div>
+                          </div>
+
+                          {/* a. Laporan Pelaksanaan RKL/RPL */}
+                          <div className="space-y-4 border-t pt-4">
+                            <Label className="font-medium">a. Laporan Pelaksanaan RKL/RPL</Label>
+                            <div className="flex space-x-4">
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="radio"
+                                  id="laporanRKLRPL-yes"
+                                  name="laporanRKLRPL"
+                                  value="yes"
+                                  checked={supplierComplianceForm.laporanRKLRPL === 'yes'}
+                                  onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPL: e.target.value }))}
+                                />
+                                <Label htmlFor="laporanRKLRPL-yes">Yes</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="radio"
+                                  id="laporanRKLRPL-no"
+                                  name="laporanRKLRPL"
+                                  value="no"
+                                  checked={supplierComplianceForm.laporanRKLRPL === 'no'}
+                                  onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPL: e.target.value }))}
+                                />
+                                <Label htmlFor="laporanRKLRPL-no">No</Label>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Keterangan:</Label>
+                              <Textarea
+                                value={supplierComplianceForm.laporanRKLRPLKeterangan}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPLKeterangan: e.target.value }))}
+                                rows={2}
+                              />
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'laporanRKLRPLDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* b. Laporan Penggunaan Pestisida */}
+                          <div className="space-y-4 border-t pt-4">
+                            <Label className="font-medium">b. Laporan Penggunaan Pestisida</Label>
+                            <div className="flex space-x-4">
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="radio"
+                                  id="laporanPestisida-yes"
+                                  name="laporanPestisida"
+                                  value="yes"
+                                  checked={supplierComplianceForm.laporanPestisida === 'yes'}
+                                  onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisida: e.target.value }))}
+                                />
+                                <Label htmlFor="laporanPestisida-yes">Yes</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="radio"
+                                  id="laporanPestisida-no"
+                                  name="laporanPestisida"
+                                  value="no"
+                                  checked={supplierComplianceForm.laporanPestisida === 'no'}
+                                  onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisida: e.target.value }))}
+                                />
+                                <Label htmlFor="laporanPestisida-no">No</Label>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Keterangan:</Label>
+                              <Textarea
+                                value={supplierComplianceForm.laporanPestisidaKeterangan}
+                                onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisidaKeterangan: e.target.value }))}
+                                rows={2}
+                              />
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'laporanPestisidaDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* 3.3 Bukti Pelaksanaan */}
+                    {/* III. Peraturan Kehutanan */}
                     <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.3 Bukti Pelaksanaan</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Bukti Pelaksanaan RKL-RPL</Label>
+                      <h3 className="text-lg font-bold">III. Peraturan Kehutanan</h3>
+                      <div className="space-y-4">
+                        <Label className="font-medium">Apakah lokasi konsesi perkebunan berada di areal yang telah memperoleh pelepasan kawasan hutan atau di luar kawasan hutan sesuai dengan ketentuan peraturan perundang-undangan</Label>
                         <div className="flex space-x-4">
                           <div className="flex items-center space-x-2">
                             <input
                               type="radio"
-                              id="buktiPelaksanaan-ya"
-                              name="buktiPelaksanaan"
-                              value="ya"
-                              checked={supplierComplianceForm.buktiPelaksanaan === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaan: e.target.value }))}
+                              id="peraturanKehutanan-yes"
+                              name="peraturanKehutanan"
+                              value="yes"
+                              checked={supplierComplianceForm.peraturanKehutanan === 'yes'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, peraturanKehutanan: e.target.value }))}
                             />
-                            <Label htmlFor="buktiPelaksanaan-ya">☑ Ya</Label>
+                            <Label htmlFor="peraturanKehutanan-yes">Yes</Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <input
                               type="radio"
-                              id="buktiPelaksanaan-tidak"
-                              name="buktiPelaksanaan"
-                              value="tidak"
-                              checked={supplierComplianceForm.buktiPelaksanaan === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaan: e.target.value }))}
+                              id="peraturanKehutanan-no"
+                              name="peraturanKehutanan"
+                              value="no"
+                              checked={supplierComplianceForm.peraturanKehutanan === 'no'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, peraturanKehutanan: e.target.value }))}
                             />
-                            <Label htmlFor="buktiPelaksanaan-tidak">☑ Tidak</Label>
+                            <Label htmlFor="peraturanKehutanan-no">No</Label>
                           </div>
                         </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.buktiPelaksanaanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
                         <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiPelaksanaanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Laporan RKL-RPL</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="laporanRKLRPL-ya"
-                              name="laporanRKLRPL"
-                              value="ya"
-                              checked={supplierComplianceForm.laporanRKLRPL === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPL: e.target.value }))}
-                            />
-                            <Label htmlFor="laporanRKLRPL-ya">☑ Ya</Label>
+                          <Label>Keterangan:</Label>
+                          <Textarea
+                            value={supplierComplianceForm.peraturanKehutananKeterangan}
+                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, peraturanKehutananKeterangan: e.target.value }))}
+                            rows={2}
+                          />
+                          <div className="space-y-2">
+                            <Label>Upload Dokumen Pendukung:</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'peraturanKehutananDokumen')}
+                              maxFileSize={50 * 1024 * 1024}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload PDF Dokumen
+                            </ObjectUploader>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="laporanRKLRPL-tidak"
-                              name="laporanRKLRPL"
-                              value="tidak"
-                              checked={supplierComplianceForm.laporanRKLRPL === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPL: e.target.value }))}
-                            />
-                            <Label htmlFor="laporanRKLRPL-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.laporanRKLRPLKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPLKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanRKLRPLKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Laporan Penggunaan Pestisida</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="laporanPestisida-ya"
-                              name="laporanPestisida"
-                              value="ya"
-                              checked={supplierComplianceForm.laporanPestisida === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisida: e.target.value }))}
-                            />
-                            <Label htmlFor="laporanPestisida-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="laporanPestisida-tidak"
-                              name="laporanPestisida"
-                              value="tidak"
-                              checked={supplierComplianceForm.laporanPestisida === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisida: e.target.value }))}
-                            />
-                            <Label htmlFor="laporanPestisida-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.laporanPestisidaKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisidaKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanPestisidaKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
                         </div>
                       </div>
                     </div>
 
-                    {/* 3.4 Peraturan Kehutanan */}
+                    {/* IV. Hak Pihak Ke 3 termasuk Masyarakat Adat */}
                     <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.4 Peraturan Kehutanan</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Area Sesuai Peruntukan</Label>
+                      <h3 className="text-lg font-bold">IV. Hak Pihak Ke 3 termasuk Masyarakat Adat</h3>
+                      <div className="space-y-4">
+                        <Label className="font-medium">Apakah dalam pembukaan atau pengembangan kebun kelapa sawit terdapat konflik dengan pihak ke 3 termasuk masyarakat adat</Label>
                         <div className="flex space-x-4">
                           <div className="flex items-center space-x-2">
                             <input
                               type="radio"
-                              id="areaSesuaiPeruntukan-ya"
-                              name="areaSesuaiPeruntukan"
-                              value="ya"
-                              checked={supplierComplianceForm.areaSesuaiPeruntukan === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, areaSesuaiPeruntukan: e.target.value }))}
+                              id="hakPihakKetiga-yes"
+                              name="hakPihakKetiga"
+                              value="yes"
+                              checked={supplierComplianceForm.hakPihakKetiga === 'yes'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, hakPihakKetiga: e.target.value }))}
                             />
-                            <Label htmlFor="areaSesuaiPeruntukan-ya">☑ Ya</Label>
+                            <Label htmlFor="hakPihakKetiga-yes">Yes</Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <input
                               type="radio"
-                              id="areaSesuaiPeruntukan-tidak"
-                              name="areaSesuaiPeruntukan"
-                              value="tidak"
-                              checked={supplierComplianceForm.areaSesuaiPeruntukan === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, areaSesuaiPeruntukan: e.target.value }))}
+                              id="hakPihakKetiga-no"
+                              name="hakPihakKetiga"
+                              value="no"
+                              checked={supplierComplianceForm.hakPihakKetiga === 'no'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, hakPihakKetiga: e.target.value }))}
                             />
-                            <Label htmlFor="areaSesuaiPeruntukan-tidak">☑ Tidak</Label>
+                            <Label htmlFor="hakPihakKetiga-no">No</Label>
                           </div>
                         </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.areaSesuaiPeruntukanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, areaSesuaiPeruntukanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
                         <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'areaSesuaiPeruntukanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">SK Pelepasan Hutan</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="skPelepasanHutan-ya"
-                              name="skPelepasanHutan"
-                              value="ya"
-                              checked={supplierComplianceForm.skPelepasanHutan === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skPelepasanHutan: e.target.value }))}
-                            />
-                            <Label htmlFor="skPelepasanHutan-ya">☑ Ya</Label>
+                          <Label>Keterangan:</Label>
+                          <Textarea
+                            value={supplierComplianceForm.hakPihakKetigaKeterangan}
+                            onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, hakPihakKetigaKeterangan: e.target.value }))}
+                            rows={2}
+                          />
+                          <div className="space-y-2">
+                            <Label>Upload Dokumen Pendukung:</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'hakPihakKetigaDokumen')}
+                              maxFileSize={50 * 1024 * 1024}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload PDF Dokumen
+                            </ObjectUploader>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="skPelepasanHutan-tidak"
-                              name="skPelepasanHutan"
-                              value="tidak"
-                              checked={supplierComplianceForm.skPelepasanHutan === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skPelepasanHutan: e.target.value }))}
-                            />
-                            <Label htmlFor="skPelepasanHutan-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.skPelepasanHutanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skPelepasanHutanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'skPelepasanHutanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Dokumen Instansi Relevan</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="dokumenInstansiRelevant-ya"
-                              name="dokumenInstansiRelevant"
-                              value="ya"
-                              checked={supplierComplianceForm.dokumenInstansiRelevant === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, dokumenInstansiRelevant: e.target.value }))}
-                            />
-                            <Label htmlFor="dokumenInstansiRelevant-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="dokumenInstansiRelevant-tidak"
-                              name="dokumenInstansiRelevant"
-                              value="tidak"
-                              checked={supplierComplianceForm.dokumenInstansiRelevant === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, dokumenInstansiRelevant: e.target.value }))}
-                            />
-                            <Label htmlFor="dokumenInstansiRelevant-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.dokumenInstansiRelevanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, dokumenInstansiRelevanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'dokumenInstansiRelevanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.5 Hak Pihak Ketiga dan Masyarakat Adat */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.5 Hak Pihak Ketiga dan Masyarakat Adat</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Kebijakan Hak Pihak Ketiga</Label>
-                        <Input
-                          value={supplierComplianceForm.kebijakanHakPihakKetiga}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakPihakKetiga: e.target.value }))}
-                          placeholder="Masukkan kebijakan hak pihak ketiga"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.kebijakanHakPihakKetigaKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakPihakKetigaKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanHakPihakKetigaKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Kebijakan Perusahaan</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="kebijakanPerusahaan-ya"
-                              name="kebijakanPerusahaan"
-                              value="ya"
-                              checked={supplierComplianceForm.kebijakanPerusahaan === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerusahaan: e.target.value }))}
-                            />
-                            <Label htmlFor="kebijakanPerusahaan-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="kebijakanPerusahaan-tidak"
-                              name="kebijakanPerusahaan"
-                              value="tidak"
-                              checked={supplierComplianceForm.kebijakanPerusahaan === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerusahaan: e.target.value }))}
-                            />
-                            <Label htmlFor="kebijakanPerusahaan-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.kebijakanPerusahaanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerusahaanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanPerusahaanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">SOP GRTT</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="sopGRTT-ya"
-                              name="sopGRTT"
-                              value="ya"
-                              checked={supplierComplianceForm.sopGRTT === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopGRTT: e.target.value }))}
-                            />
-                            <Label htmlFor="sopGRTT-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="sopGRTT-tidak"
-                              name="sopGRTT"
-                              value="tidak"
-                              checked={supplierComplianceForm.sopGRTT === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopGRTT: e.target.value }))}
-                            />
-                            <Label htmlFor="sopGRTT-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.sopGRTTKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopGRTTKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopGRTTKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.6-3.12 Additional Sections */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.6 Kewajiban Pengembangan Plasma</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">MOU Kerjasama</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="mouKerjaSama-ya"
-                              name="mouKerjaSama"
-                              value="ya"
-                              checked={supplierComplianceForm.mouKerjaSama === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, mouKerjaSama: e.target.value }))}
-                            />
-                            <Label htmlFor="mouKerjaSama-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="mouKerjaSama-tidak"
-                              name="mouKerjaSama"
-                              value="tidak"
-                              checked={supplierComplianceForm.mouKerjaSama === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, mouKerjaSama: e.target.value }))}
-                            />
-                            <Label htmlFor="mouKerjaSama-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.mouKerjaSamaKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, mouKerjaSamaKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'mouKerjaSamaKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">SK CPCL</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="skCPCL-ya"
-                              name="skCPCL"
-                              value="ya"
-                              checked={supplierComplianceForm.skCPCL === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skCPCL: e.target.value }))}
-                            />
-                            <Label htmlFor="skCPCL-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="skCPCL-tidak"
-                              name="skCPCL"
-                              value="tidak"
-                              checked={supplierComplianceForm.skCPCL === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skCPCL: e.target.value }))}
-                            />
-                            <Label htmlFor="skCPCL-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.skCPCLKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skCPCLKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'skCPCLKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Laporan Realisasi Plasma</Label>
-                        <div className="flex space-x-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="laporanRealisasiPlasma-ya"
-                              name="laporanRealisasiPlasma"
-                              value="ya"
-                              checked={supplierComplianceForm.laporanRealisasiPlasma === 'ya'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRealisasiPlasma: e.target.value }))}
-                            />
-                            <Label htmlFor="laporanRealisasiPlasma-ya">☑ Ya</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="radio"
-                              id="laporanRealisasiPlasma-tidak"
-                              name="laporanRealisasiPlasma"
-                              value="tidak"
-                              checked={supplierComplianceForm.laporanRealisasiPlasma === 'tidak'}
-                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRealisasiPlasma: e.target.value }))}
-                            />
-                            <Label htmlFor="laporanRealisasiPlasma-tidak">☑ Tidak</Label>
-                          </div>
-                        </div>
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.laporanRealisasiPlasmaKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRealisasiPlasmaKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanRealisasiPlasmaKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.7 Bukti Implementasi */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.7 Bukti Implementasi</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Bukti GRTT</Label>
-                        <Input
-                          value={supplierComplianceForm.buktiGRTT}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiGRTT: e.target.value }))}
-                          placeholder="Masukkan bukti GRTT"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.buktiGRTTKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiGRTTKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiGRTTKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Bukti FPIC</Label>
-                        <Input
-                          value={supplierComplianceForm.buktiFPIC}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiFPIC: e.target.value }))}
-                          placeholder="Masukkan bukti FPIC"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.buktiFPICKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiFPICKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiFPICKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.8 Sengketa Lahan */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.8 Sengketa Lahan</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Laporan Sengketa Lahan</Label>
-                        <Input
-                          value={supplierComplianceForm.laporanSengketaLahan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanSengketaLahan: e.target.value }))}
-                          placeholder="Masukkan laporan sengketa lahan"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.laporanSengketaLahanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanSengketaLahanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanSengketaLahanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.9 Hak Buruh dan HAM */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.9 Hak Buruh dan HAM</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Komitmen Hak Buruh</Label>
-                        <Input
-                          value={supplierComplianceForm.komitmenHakBuruh}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, komitmenHakBuruh: e.target.value }))}
-                          placeholder="Masukkan komitmen hak buruh"
-                        />
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Kebijakan Hak Buruh</Label>
-                        <Input
-                          value={supplierComplianceForm.kebijakanHakBuruh}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakBuruh: e.target.value }))}
-                          placeholder="Masukkan kebijakan hak buruh"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.kebijakanHakBuruhKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakBuruhKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanHakBuruhKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">SOP Ketenagakerjaan</Label>
-                        <Input
-                          value={supplierComplianceForm.sopKetenagakerjaan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKetenagakerjaan: e.target.value }))}
-                          placeholder="Masukkan SOP ketenagakerjaan"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.sopKetenagakerjaanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKetenagakerjaanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopKetenagakerjaanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">SOP K3</Label>
-                        <Input
-                          value={supplierComplianceForm.sopK3}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopK3: e.target.value }))}
-                          placeholder="Masukkan SOP K3"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.sopK3Keterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopK3Keterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopK3KeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.10 Bukti Pelaksanaan HAM */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.10 Bukti Pelaksanaan HAM</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Bukti Perjanjian Kerja</Label>
-                        <Input
-                          value={supplierComplianceForm.buktiPerjanjianKerja}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPerjanjianKerja: e.target.value }))}
-                          placeholder="Masukkan bukti perjanjian kerja"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.buktiPerjanjianKerjaKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPerjanjianKerjaKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiPerjanjianKerjaKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Daftar Karyawan</Label>
-                        <Input
-                          value={supplierComplianceForm.daftarKaryawan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarKaryawan: e.target.value }))}
-                          placeholder="Masukkan daftar karyawan"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.daftarKaryawanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarKaryawanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'daftarKaryawanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">SK UMR</Label>
-                        <Input
-                          value={supplierComplianceForm.skUMR}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skUMR: e.target.value }))}
-                          placeholder="Masukkan SK UMR"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.skUMRKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skUMRKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'skUMRKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Bukti BPJS</Label>
-                        <Input
-                          value={supplierComplianceForm.buktiBPJS}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiBPJS: e.target.value }))}
-                          placeholder="Masukkan bukti BPJS"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.buktiBPJSKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiBPJSKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiBPJSKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.11 Perpajakan dan Antikorupsi */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.11 Perpajakan dan Antikorupsi</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Komitmen Antikorupsi</Label>
-                        <Input
-                          value={supplierComplianceForm.komitmenAntikorupsi}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, komitmenAntikorupsi: e.target.value }))}
-                          placeholder="Masukkan komitmen antikorupsi"
-                        />
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Kebijakan Antikorupsi</Label>
-                        <Input
-                          value={supplierComplianceForm.kebijakanAntikorupsi}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanAntikorupsi: e.target.value }))}
-                          placeholder="Masukkan kebijakan antikorupsi"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.kebijakanAntikorupsiKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanAntikorupsiKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanAntikorupsiKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">SOP Kode Etik</Label>
-                        <Input
-                          value={supplierComplianceForm.sopKodeEtik}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtik: e.target.value }))}
-                          placeholder="Masukkan SOP kode etik"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.sopKodeEtikKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtikKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopKodeEtikKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Saluran Pengaduan</Label>
-                        <Input
-                          value={supplierComplianceForm.saluranPengaduan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduan: e.target.value }))}
-                          placeholder="Masukkan saluran pengaduan"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.saluranPengaduanKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduanKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'saluranPengaduanKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 3.12 Bukti Pajak dan Ekspor */}
-                    <div className="space-y-6 border p-6 rounded-lg">
-                      <h3 className="text-lg font-bold">3.12 Bukti Pajak dan Ekspor</h3>
-                      
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">Surat Terdaftar Pajak</Label>
-                        <Input
-                          value={supplierComplianceForm.suratTerdaftarPajak}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajak: e.target.value }))}
-                          placeholder="Masukkan surat terdaftar pajak"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.suratTerdaftarPajakKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajakKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'suratTerdaftarPajakKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 border-t pt-4">
-                        <Label className="font-medium">NPWP</Label>
-                        <Input
-                          value={supplierComplianceForm.npwp}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwp: e.target.value }))}
-                          placeholder="Masukkan NPWP"
-                        />
-                        <Textarea
-                          placeholder="Keterangan"
-                          value={supplierComplianceForm.npwpKeterangan}
-                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwpKeterangan: e.target.value }))}
-                          rows={2}
-                        />
-                        <div className="space-y-2">
-                          <Label>Upload Dokumen Pendukung:</Label>
-                          <ObjectUploader
-                            onGetUploadParameters={handleGetUploadParameters}
-                            onComplete={(result) => handleDocumentUploadComplete(result, 'npwpKeteranganDokumen')}
-                            maxFileSize={50 * 1024 * 1024}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload PDF Dokumen
-                          </ObjectUploader>
                         </div>
                       </div>
                     </div>
@@ -1948,7 +1392,7 @@ export default function LegalityCompliance() {
                           </TableCell>
                           <TableCell>
                             <Button variant="ghost" size="sm">
-                              <Eye className="w-4 h-4" />
+                              <Eye className="w-4 w-4" />
                             </Button>
                           </TableCell>
                         </TableRow>
