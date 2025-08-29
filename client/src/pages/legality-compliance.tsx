@@ -391,7 +391,7 @@ export default function LegalityCompliance() {
   });
 
   const createSupplierComplianceMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/supplier-compliance', 'POST', data),
+    mutationFn: (data: any) => apiRequest('POST', '/api/supplier-compliance', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/supplier-compliance'] });
       toast({
