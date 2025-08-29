@@ -688,7 +688,7 @@ export default function DataCollection() {
               <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="estate" data-testid="tab-estate">Data Estate</TabsTrigger>
                 <TabsTrigger value="mill" data-testid="tab-mill">Mill</TabsTrigger>
-                <TabsTrigger value="traceability" data-testid="tab-traceability">Traceability TBS</TabsTrigger>
+                <TabsTrigger value="traceability" data-testid="tab-traceability">Smallholders</TabsTrigger>
                 <TabsTrigger value="kcp" data-testid="tab-kcp">KCP</TabsTrigger>
                 <TabsTrigger value="bulking" data-testid="tab-bulking">Bulking</TabsTrigger>
                 <TabsTrigger value="results" data-testid="tab-results">Hasil Koleksi Data</TabsTrigger>
