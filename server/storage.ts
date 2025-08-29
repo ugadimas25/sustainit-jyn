@@ -12,7 +12,6 @@ import {
   plots, type Plot, type InsertPlot,
   custodyChains, type CustodyChain, type InsertCustodyChain,
   massBalanceRecords, type MassBalanceRecord, type InsertMassBalanceRecord,
-  suppliers, type Supplier, type InsertSupplier,
   supplierWorkflowLinks, type SupplierWorkflowLink, type InsertSupplierWorkflowLink,
   workflowShipments, type WorkflowShipment, type InsertWorkflowShipment,
   ddsReports, type DdsReport, type InsertDdsReport,

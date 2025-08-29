@@ -39,6 +39,8 @@ const samplePlotData = {
 };
 
 export default function Dashboard() {
+  console.log('Dashboard component rendered at:', new Date().toISOString());
+  
   const [selectedModal, setSelectedModal] = useState<string | null>(null);
   const [currentMetrics, setCurrentMetrics] = useState<any>(null);
   const queryClient = useQueryClient();
