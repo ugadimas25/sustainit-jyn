@@ -23,43 +23,23 @@ export default function LegalityCompliance() {
 
   // Fetch data from Data Collection forms for suggestions
   const { data: estateData = [] } = useQuery({
-    queryKey: ['/api/estate-data-collection'],
-    queryFn: async () => {
-      const response = await apiRequest('/api/estate-data-collection');
-      return Array.isArray(response) ? response : [];
-    },
+    queryKey: ['/api', 'estate-data-collection'],
   });
 
   const { data: millData = [] } = useQuery({
-    queryKey: ['/api/mill-data-collection'],
-    queryFn: async () => {
-      const response = await apiRequest('/api/mill-data-collection');
-      return Array.isArray(response) ? response : [];
-    },
+    queryKey: ['/api', 'mill-data-collection'],
   });
 
   const { data: traceabilityData = [] } = useQuery({
-    queryKey: ['/api/traceability-data-collection'],
-    queryFn: async () => {
-      const response = await apiRequest('/api/traceability-data-collection');
-      return Array.isArray(response) ? response : [];
-    },
+    queryKey: ['/api', 'traceability-data-collection'],
   });
 
   const { data: kcpData = [] } = useQuery({
-    queryKey: ['/api/kcp-data-collection'],
-    queryFn: async () => {
-      const response = await apiRequest('/api/kcp-data-collection');
-      return Array.isArray(response) ? response : [];
-    },
+    queryKey: ['/api', 'kcp-data-collection'],
   });
 
   const { data: bulkingData = [] } = useQuery({
-    queryKey: ['/api/bulking-data-collection'],
-    queryFn: async () => {
-      const response = await apiRequest('/api/bulking-data-collection');
-      return Array.isArray(response) ? response : [];
-    },
+    queryKey: ['/api', 'bulking-data-collection'],
   });
 
   // Helper functions to extract suggestions from data collection forms
@@ -69,26 +49,29 @@ export default function LegalityCompliance() {
     // Get supplier names from estate data
     if (Array.isArray(estateData)) {
       estateData.forEach((estate: any) => {
-        if (estate.supplierName) suggestions.push(estate.supplierName);
-        if (estate.groupName) suggestions.push(estate.groupName);
+        if (estate?.supplierName) suggestions.push(estate.supplierName);
+        if (estate?.groupName) suggestions.push(estate.groupName);
+        if (estate?.companyName) suggestions.push(estate.companyName);
       });
     }
     
     // Get supplier names from mill data
     if (Array.isArray(millData)) {
       millData.forEach((mill: any) => {
-        if (mill.supplierName) suggestions.push(mill.supplierName);
+        if (mill?.supplierName) suggestions.push(mill.supplierName);
+        if (mill?.companyName) suggestions.push(mill.companyName);
       });
     }
     
     // Get supplier names from traceability data
     if (Array.isArray(traceabilityData)) {
       traceabilityData.forEach((traceability: any) => {
-        if (traceability.supplierName) suggestions.push(traceability.supplierName);
+        if (traceability?.supplierName) suggestions.push(traceability.supplierName);
+        if (traceability?.companyName) suggestions.push(traceability.companyName);
       });
     }
     
-    return Array.from(new Set(suggestions));
+    return Array.from(new Set(suggestions.filter(Boolean)));
   };
 
   const getAddressSuggestions = (): string[] => {
@@ -104,13 +87,14 @@ export default function LegalityCompliance() {
     ];
     
     allData.forEach((item: any) => {
-      if (item.officeAddress) suggestions.push(item.officeAddress);
-      if (item.facilityAddress) suggestions.push(item.facilityAddress);
-      if (item.address) suggestions.push(item.address);
-      if (item.estateAddress) suggestions.push(item.estateAddress);
+      if (item?.officeAddress) suggestions.push(item.officeAddress);
+      if (item?.facilityAddress) suggestions.push(item.facilityAddress);
+      if (item?.address) suggestions.push(item.address);
+      if (item?.estateAddress) suggestions.push(item.estateAddress);
+      if (item?.location) suggestions.push(item.location);
     });
     
-    return Array.from(new Set(suggestions));
+    return Array.from(new Set(suggestions.filter(Boolean)));
   };
 
   const getCoordinateSuggestions = (): string[] => {
@@ -125,14 +109,14 @@ export default function LegalityCompliance() {
     ];
     
     allData.forEach((item: any) => {
-      if (item.coordinates) suggestions.push(item.coordinates);
-      if (item.gpsCoordinates) suggestions.push(item.gpsCoordinates);
-      if (item.latitude && item.longitude) {
+      if (item?.coordinates) suggestions.push(item.coordinates);
+      if (item?.gpsCoordinates) suggestions.push(item.gpsCoordinates);
+      if (item?.latitude && item?.longitude) {
         suggestions.push(`${item.latitude}, ${item.longitude}`);
       }
     });
     
-    return Array.from(new Set(suggestions));
+    return Array.from(new Set(suggestions.filter(Boolean)));
   };
 
   const getContactPersonSuggestions = (): string[] => {
@@ -147,12 +131,13 @@ export default function LegalityCompliance() {
     ];
     
     allData.forEach((item: any) => {
-      if (item.contactPersonName) suggestions.push(item.contactPersonName);
-      if (item.responsiblePerson) suggestions.push(item.responsiblePerson);
-      if (item.managerName) suggestions.push(item.managerName);
+      if (item?.contactPersonName) suggestions.push(item.contactPersonName);
+      if (item?.responsiblePerson) suggestions.push(item.responsiblePerson);
+      if (item?.managerName) suggestions.push(item.managerName);
+      if (item?.personInCharge) suggestions.push(item.personInCharge);
     });
     
-    return Array.from(new Set(suggestions));
+    return Array.from(new Set(suggestions.filter(Boolean)));
   };
 
   // AutocompleteInput component
