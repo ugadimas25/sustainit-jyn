@@ -1540,5 +1540,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Supply Chain Analytics endpoint
+  app.get('/api/supply-chain/analytics', isAuthenticated, async (req, res) => {
+    try {
+      const { range = '6months' } = req.query;
+      
+      // Mock analytics data with renamed external suppliers
+      const analyticsData = {
+        suppliers: [
+          {
+            supplierId: "coop-001",
+            supplierName: "Cooperative 1",
+            complianceScore: {
+              overallScore: 85,
+              riskLevel: 'low',
+              confidence: 0.92,
+              factors: [
+                { name: "Documentation", impact: 15, trend: 'improving' },
+                { name: "Geolocation", impact: 10, trend: 'stable' },
+                { name: "Deforestation Risk", impact: -2, trend: 'improving' },
+                { name: "Traceability", impact: 12, trend: 'stable' }
+              ],
+              recommendations: [
+                "Maintain current documentation standards",
+                "Continue regular monitoring protocols",
+                "Review quarterly compliance metrics"
+              ],
+              nextReviewDate: "2024-12-15"
+            },
+            trends: [
+              { period: "Jan", score: 78, alerts: 2, violations: 0 },
+              { period: "Feb", score: 82, alerts: 1, violations: 0 },
+              { period: "Mar", score: 85, alerts: 0, violations: 0 },
+              { period: "Apr", score: 84, alerts: 1, violations: 0 },
+              { period: "May", score: 87, alerts: 0, violations: 0 },
+              { period: "Jun", score: 85, alerts: 0, violations: 0 }
+            ],
+            riskFactors: [
+              {
+                category: "Location Risk",
+                severity: 'low',
+                description: "Minimal deforestation risk in operational area",
+                mitigation: "Continue quarterly satellite monitoring"
+              }
+            ]
+          },
+          {
+            supplierId: "kud-002",
+            supplierName: "KUD 2",
+            complianceScore: {
+              overallScore: 72,
+              riskLevel: 'medium',
+              confidence: 0.87,
+              factors: [
+                { name: "Documentation", impact: 8, trend: 'stable' },
+                { name: "Geolocation", impact: -5, trend: 'declining' },
+                { name: "Deforestation Risk", impact: -8, trend: 'stable' },
+                { name: "Traceability", impact: 5, trend: 'improving' }
+              ],
+              recommendations: [
+                "Improve geolocation accuracy for plots",
+                "Enhance documentation processes",
+                "Implement additional monitoring controls"
+              ],
+              nextReviewDate: "2024-11-30"
+            },
+            trends: [
+              { period: "Jan", score: 75, alerts: 3, violations: 1 },
+              { period: "Feb", score: 73, alerts: 2, violations: 0 },
+              { period: "Mar", score: 71, alerts: 3, violations: 1 },
+              { period: "Apr", score: 74, alerts: 2, violations: 0 },
+              { period: "May", score: 72, alerts: 2, violations: 0 },
+              { period: "Jun", score: 72, alerts: 1, violations: 0 }
+            ],
+            riskFactors: [
+              {
+                category: "Documentation Gap",
+                severity: 'medium',
+                description: "Some plot records lack complete geolocation data",
+                mitigation: "Conduct field verification within 60 days"
+              },
+              {
+                category: "Monitoring",
+                severity: 'low',
+                description: "Infrequent satellite monitoring updates",
+                mitigation: "Increase monitoring frequency to monthly"
+              }
+            ]
+          },
+          {
+            supplierId: "cv-001",
+            supplierName: "CV 1",
+            complianceScore: {
+              overallScore: 91,
+              riskLevel: 'low',
+              confidence: 0.95,
+              factors: [
+                { name: "Documentation", impact: 18, trend: 'improving' },
+                { name: "Geolocation", impact: 15, trend: 'stable' },
+                { name: "Deforestation Risk", impact: 12, trend: 'improving' },
+                { name: "Traceability", impact: 16, trend: 'improving' }
+              ],
+              recommendations: [
+                "Excellent compliance - maintain current standards",
+                "Consider best practice sharing with other suppliers",
+                "Continue leadership in sustainable practices"
+              ],
+              nextReviewDate: "2025-01-15"
+            },
+            trends: [
+              { period: "Jan", score: 88, alerts: 0, violations: 0 },
+              { period: "Feb", score: 89, alerts: 0, violations: 0 },
+              { period: "Mar", score: 90, alerts: 0, violations: 0 },
+              { period: "Apr", score: 91, alerts: 0, violations: 0 },
+              { period: "May", score: 92, alerts: 0, violations: 0 },
+              { period: "Jun", score: 91, alerts: 0, violations: 0 }
+            ],
+            riskFactors: []
+          },
+          {
+            supplierId: "coop-003",
+            supplierName: "Cooperative 3",
+            complianceScore: {
+              overallScore: 68,
+              riskLevel: 'medium',
+              confidence: 0.83,
+              factors: [
+                { name: "Documentation", impact: 5, trend: 'stable' },
+                { name: "Geolocation", impact: -3, trend: 'declining' },
+                { name: "Deforestation Risk", impact: -12, trend: 'declining' },
+                { name: "Traceability", impact: 8, trend: 'improving' }
+              ],
+              recommendations: [
+                "Urgent: Address deforestation risk areas",
+                "Improve plot boundary documentation",
+                "Implement enhanced monitoring protocols"
+              ],
+              nextReviewDate: "2024-10-31"
+            },
+            trends: [
+              { period: "Jan", score: 72, alerts: 4, violations: 2 },
+              { period: "Feb", score: 70, alerts: 3, violations: 1 },
+              { period: "Mar", score: 68, alerts: 5, violations: 2 },
+              { period: "Apr", score: 69, alerts: 3, violations: 1 },
+              { period: "May", score: 67, alerts: 4, violations: 1 },
+              { period: "Jun", score: 68, alerts: 3, violations: 1 }
+            ],
+            riskFactors: [
+              {
+                category: "Deforestation Risk",
+                severity: 'high',
+                description: "Some plots located near high-risk deforestation areas",
+                mitigation: "Immediate field assessment and buffer zone establishment"
+              },
+              {
+                category: "Documentation Gap",
+                severity: 'medium',
+                description: "Incomplete plot boundary records",
+                mitigation: "Complete GPS mapping within 30 days"
+              }
+            ]
+          }
+        ],
+        insights: {
+          summary: "Overall supplier network shows good compliance with 75% scoring above 70. Key focus areas include improving documentation accuracy and addressing deforestation risks.",
+          keyFindings: [
+            "CV 1 demonstrates exemplary compliance practices",
+            "Cooperative 3 requires immediate attention for deforestation risk",
+            "Documentation quality varies significantly across suppliers",
+            "Traceability systems show consistent improvement trends"
+          ],
+          actionItems: [
+            "Conduct urgent field assessment for Cooperative 3",
+            "Implement standardized documentation training",
+            "Share CV 1 best practices across network",
+            "Increase monitoring frequency for medium-risk suppliers"
+          ]
+        }
+      };
+      
+      res.json(analyticsData);
+    } catch (error) {
+      console.error('Error fetching supply chain analytics:', error);
+      res.status(500).json({ error: 'Failed to fetch analytics data' });
+    }
+  });
+
   return httpServer;
 }
