@@ -16,9 +16,9 @@ import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import MapViewer from "@/pages/map-viewer";
 import DDSReports from "@/pages/dds-reports";
-import Sidebar from "@/components/sidebar";
-import TopBar from "@/components/top-bar";
-import VoiceAssistantToggle from "@/components/voice-assistant-toggle";
+import { Sidebar } from "@/components/layout/sidebar";
+import { TopBar } from "@/components/layout/top-bar";
+import { VoiceAssistantToggle } from "@/components/voice-assistant/VoiceAssistantToggle";
 
 function Router() {
   return (
