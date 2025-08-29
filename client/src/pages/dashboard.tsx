@@ -13,28 +13,28 @@ import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
 // Sample plot data for the modals
 const samplePlotData = {
   highRisk: [
-    { plotNumber: "HR001", business: "PT Sinar Mas Agro", village: "Kampung Baru", district: "Riau Timur", coordinates: "1.234, 103.567", area: "45.2" },
-    { plotNumber: "HR002", business: "PT Wilmar International", village: "Desa Makmur", district: "Jambi Selatan", coordinates: "1.456, 103.789", area: "67.8" },
-    { plotNumber: "HR003", business: "PT Astra Agro Lestari", village: "Sumber Jaya", district: "Kalimantan Tengah", coordinates: "0.987, 114.123", area: "23.4" },
-    { plotNumber: "HR004", business: "PT IOI Corporation", village: "Tanjung Harapan", district: "Sumatra Utara", coordinates: "2.345, 99.456", area: "89.1" },
-    { plotNumber: "HR005", business: "PT Musim Mas", village: "Bangun Rejo", district: "Riau Tengah", coordinates: "0.567, 102.234", area: "34.5" }
+    { plotNumber: "HR001", business: "Estate 1", village: "Kampung Baru", district: "Riau Timur", coordinates: "1.234, 103.567", area: "45.2" },
+    { plotNumber: "HR002", business: "Estate 2", village: "Desa Makmur", district: "Jambi Selatan", coordinates: "1.456, 103.789", area: "67.8" },
+    { plotNumber: "HR003", business: "3rd Party Supplier 1", village: "Sumber Jaya", district: "Kalimantan Tengah", coordinates: "0.987, 114.123", area: "23.4" },
+    { plotNumber: "HR004", business: "3rd Party Supplier 2", village: "Tanjung Harapan", district: "Sumatra Utara", coordinates: "2.345, 99.456", area: "89.1" },
+    { plotNumber: "HR005", business: "Smallholder 1", village: "Bangun Rejo", district: "Riau Tengah", coordinates: "0.567, 102.234", area: "34.5" }
   ],
   mediumRisk: [
-    { plotNumber: "MR001", business: "Smallholder Cooperatives", village: "Desa Sejahtera", district: "Jambi Utara", coordinates: "1.789, 103.012", area: "12.3" },
-    { plotNumber: "MR002", business: "PT Sinar Mas Agro", village: "Kampung Damai", district: "Riau Selatan", coordinates: "0.234, 102.789", area: "56.7" },
-    { plotNumber: "MR003", business: "PT Wilmar International", village: "Suka Maju", district: "Sumatra Selatan", coordinates: "2.123, 104.567", area: "78.9" },
-    { plotNumber: "MR004", business: "PT Astra Agro Lestari", village: "Berkat Jaya", district: "Kalimantan Barat", coordinates: "1.567, 109.234", area: "43.2" },
-    { plotNumber: "MR005", business: "PT IOI Corporation", village: "Harapan Baru", district: "Sumatra Barat", coordinates: "0.890, 100.456", area: "21.8" }
+    { plotNumber: "MR001", business: "Smallholder 1", village: "Desa Sejahtera", district: "Jambi Utara", coordinates: "1.789, 103.012", area: "12.3" },
+    { plotNumber: "MR002", business: "Estate 1", village: "Kampung Damai", district: "Riau Selatan", coordinates: "0.234, 102.789", area: "56.7" },
+    { plotNumber: "MR003", business: "Estate 2", village: "Suka Maju", district: "Sumatra Selatan", coordinates: "2.123, 104.567", area: "78.9" },
+    { plotNumber: "MR004", business: "3rd Party Supplier 1", village: "Berkat Jaya", district: "Kalimantan Barat", coordinates: "1.567, 109.234", area: "43.2" },
+    { plotNumber: "MR005", business: "3rd Party Supplier 2", village: "Harapan Baru", district: "Sumatra Barat", coordinates: "0.890, 100.456", area: "21.8" }
   ],
   deforested: [
-    { plotNumber: "DF001", business: "PT Sinar Mas Agro", village: "Rimba Hilang", district: "Riau Timur", coordinates: "1.345, 103.678", area: "15.6" },
-    { plotNumber: "DF002", business: "PT Wilmar International", village: "Hutan Baru", district: "Jambi Tengah", coordinates: "1.567, 103.890", area: "28.4" },
-    { plotNumber: "DF003", business: "Smallholder Cooperatives", village: "Desa Terbuka", district: "Sumatra Tengah", coordinates: "0.678, 101.234", area: "9.7" }
+    { plotNumber: "DF001", business: "Estate 1", village: "Rimba Hilang", district: "Riau Timur", coordinates: "1.345, 103.678", area: "15.6" },
+    { plotNumber: "DF002", business: "Estate 2", village: "Hutan Baru", district: "Jambi Tengah", coordinates: "1.567, 103.890", area: "28.4" },
+    { plotNumber: "DF003", business: "Smallholder 2", village: "Desa Terbuka", district: "Sumatra Tengah", coordinates: "0.678, 101.234", area: "9.7" }
   ],
   noPermit: [
-    { plotNumber: "NP001", business: "PT Musim Mas", village: "Tanah Terlarang", district: "Kalimantan Tengah", coordinates: "0.456, 114.567", area: "32.1" },
-    { plotNumber: "NP002", business: "PT IOI Corporation", village: "Zona Lindung", district: "Sumatra Utara", coordinates: "2.789, 99.123", area: "18.9" },
-    { plotNumber: "NP003", business: "PT Astra Agro Lestari", village: "Kawasan Khusus", district: "Riau Tengah", coordinates: "1.012, 102.567", area: "41.3" }
+    { plotNumber: "NP001", business: "Smallholder 1", village: "Tanah Terlarang", district: "Kalimantan Tengah", coordinates: "0.456, 114.567", area: "32.1" },
+    { plotNumber: "NP002", business: "3rd Party Supplier 1", village: "Zona Lindung", district: "Sumatra Utara", coordinates: "2.789, 99.123", area: "18.9" },
+    { plotNumber: "NP003", business: "3rd Party Supplier 2", village: "Kawasan Khusus", district: "Riau Tengah", coordinates: "1.012, 102.567", area: "41.3" }
   ]
 };
 
