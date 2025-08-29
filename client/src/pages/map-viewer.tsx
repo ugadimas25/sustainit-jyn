@@ -482,7 +482,6 @@ export default function MapViewer() {
       </div>
 
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-      <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
       <script>
         // Initialize map
         const map = L.map('map').setView([0, 0], 2);
@@ -522,42 +521,12 @@ export default function MapViewer() {
             attribution: '© SBTN',
             opacity: 0.7
           }),
-          spatialLegality: L.esri.featureLayer({
-            url: 'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/arcgis/rest/services/WDPA_v0/FeatureServer/0',
-            style: function(feature) {
-              return {
-                color: '#3388ff',
-                weight: 2,
-                opacity: 0.8,
-                fillColor: '#3388ff',
-                fillOpacity: 0.3,
-                dashArray: null
-              };
-            },
-            onEachFeature: function(feature, layer) {
-              if (feature.properties) {
-                const props = feature.properties;
-                const popupContent = '<div style="font-family: Arial, sans-serif;">' +
-                  '<h4 style="margin: 0 0 10px 0; color: #3388ff;">' + (props.NAME || 'Protected Area') + '</h4>' +
-                  '<p><strong>Type:</strong> ' + (props.DESIG_ENG || props.DESIG || 'Protected Area') + '</p>' +
-                  '<p><strong>Status:</strong> ' + (props.STATUS || 'N/A') + '</p>' +
-                  '<p><strong>Area:</strong> ' + (props.REP_AREA ? props.REP_AREA + ' km²' : 'N/A') + '</p>' +
-                  (props.COUNTRY ? '<p><strong>Country:</strong> ' + props.COUNTRY + '</p>' : '') +
-                  '</div>';
-                layer.bindPopup(popupContent);
-              }
-            },
-            pointToLayer: function(feature, latlng) {
-              // This ensures points are rendered as small circles if any exist
-              return L.circleMarker(latlng, {
-                radius: 5,
-                fillColor: '#3388ff',
-                color: '#3388ff',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.6
-              });
-            },
+          spatialLegality: L.tileLayer.wms('https://geoserver.koltivaapi.com/geoserver/Koltiva-Internal/wms', {
+            layers: 'Koltiva-Internal:gis_int_wdpa_ia_strict_nature_reserved',
+            format: 'image/png',
+            transparent: true,
+            version: '1.1.0',
+            opacity: 0.7,
             attribution: '© WDPA - World Database on Protected Areas'
           })
         };
