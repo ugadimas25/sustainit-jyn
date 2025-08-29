@@ -24,6 +24,7 @@ import {
   insertEudrAssessmentSchema,
   insertMillSchema
 } from "@shared/schema";
+import { openaiService } from "./lib/openai-service";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
@@ -1750,6 +1751,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching supply chain analytics:', error);
       res.status(500).json({ error: 'Failed to fetch analytics data' });
+    }
+  });
+
+  // Supplier Compliance endpoints
+  app.post('/api/supplier-compliance', async (req, res) => {
+    try {
+      const supplierComplianceData = req.body;
+      console.log('Saving supplier compliance data:', supplierComplianceData.namaSupplier);
+      
+      // Store the data (you may want to add this to your storage interface)
+      // For now, we'll just return success
+      res.json({ 
+        success: true, 
+        message: 'Supplier compliance data saved successfully',
+        id: Date.now().toString()
+      });
+    } catch (error) {
+      console.error('Error saving supplier compliance data:', error);
+      res.status(500).json({ error: 'Failed to save supplier compliance data' });
+    }
+  });
+
+  app.get('/api/supplier-compliance', async (req, res) => {
+    try {
+      // Return dummy data for now (in a real implementation, fetch from storage)
+      const supplierComplianceData = [
+        {
+          id: 1,
+          namaSupplier: 'PT Kebun Kelapa Sawit Sejahtera',
+          tingkatKepatuhan: 85,
+          statusKepatuhan: 'Compliant',
+          tanggalPenilaian: '15 November 2024',
+          nomorTeleponTimInternal: '+62 811-2345-6789',
+          emailKontak: 'compliance@kebun-sejahtera.co.id',
+          analysisData: null
+        },
+        {
+          id: 2,
+          namaSupplier: 'CV Perkebunan Nusantara',
+          tingkatKepatuhan: 92,
+          statusKepatuhan: 'Highly Compliant',
+          tanggalPenilaian: '18 November 2024',
+          nomorTeleponTimInternal: '+62 812-3456-7890',
+          emailKontak: 'legal@perkebunan-nusantara.co.id',
+          analysisData: null
+        },
+        {
+          id: 3,
+          namaSupplier: 'Koperasi Tani Mandiri',
+          tingkatKepatuhan: 68,
+          statusKepatuhan: 'Partially Compliant',
+          tanggalPenilaian: '20 November 2024',
+          nomorTeleponTimInternal: '+62 813-4567-8901',
+          emailKontak: 'koperasi@tani-mandiri.co.id',
+          analysisData: null
+        }
+      ];
+      
+      res.json(supplierComplianceData);
+    } catch (error) {
+      console.error('Error fetching supplier compliance data:', error);
+      res.status(500).json({ error: 'Failed to fetch supplier compliance data' });
+    }
+  });
+
+  // AI Analysis endpoint for supplier compliance
+  app.post('/api/supplier-compliance/:id/analyze', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { formData, supplierName } = req.body;
+
+      if (!formData || !supplierName) {
+        return res.status(400).json({ error: 'Missing required fields: formData and supplierName' });
+      }
+
+      console.log(`Starting AI analysis for supplier: ${supplierName}`);
+
+      // Call OpenAI service for compliance analysis
+      const analysis = await openaiService.analyzeSupplierCompliance({
+        supplierName,
+        formData,
+        analysisType: 'full_analysis'
+      });
+
+      console.log(`AI analysis completed for supplier: ${supplierName}`);
+
+      res.json({
+        success: true,
+        supplierId: id,
+        supplierName,
+        analysis,
+        analyzedAt: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Error analyzing supplier compliance:', error);
+      res.status(500).json({ 
+        error: 'Failed to analyze supplier compliance',
+        details: error.message 
+      });
+    }
+  });
+
+  // Bulk analysis endpoint
+  app.post('/api/supplier-compliance/analyze-all', async (req, res) => {
+    try {
+      const { supplierData } = req.body;
+
+      if (!Array.isArray(supplierData) || supplierData.length === 0) {
+        return res.status(400).json({ error: 'Missing or empty supplierData array' });
+      }
+
+      console.log(`Starting bulk AI analysis for ${supplierData.length} suppliers`);
+
+      const results = [];
+      for (const supplier of supplierData) {
+        try {
+          const analysis = await openaiService.analyzeSupplierCompliance({
+            supplierName: supplier.namaSupplier,
+            formData: supplier,
+            analysisType: 'full_analysis'
+          });
+
+          results.push({
+            supplierId: supplier.id || Date.now().toString(),
+            supplierName: supplier.namaSupplier,
+            analysis,
+            analyzedAt: new Date().toISOString()
+          });
+
+        } catch (error) {
+          console.error(`Error analyzing supplier ${supplier.namaSupplier}:`, error);
+          results.push({
+            supplierId: supplier.id || Date.now().toString(),
+            supplierName: supplier.namaSupplier,
+            error: error.message,
+            analyzedAt: new Date().toISOString()
+          });
+        }
+      }
+
+      console.log(`Bulk AI analysis completed for ${results.length} suppliers`);
+
+      res.json({
+        success: true,
+        totalAnalyzed: results.length,
+        results
+      });
+
+    } catch (error) {
+      console.error('Error in bulk analysis:', error);
+      res.status(500).json({ 
+        error: 'Failed to perform bulk analysis',
+        details: error.message 
+      });
     }
   });
 

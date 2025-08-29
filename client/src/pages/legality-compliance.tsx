@@ -13,13 +13,16 @@ import { ObjectUploader } from '@/components/ObjectUploader';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, FileText, Upload, Download, Eye, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, FileText, Upload, Download, Eye, ChevronDown, Brain, AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
 
 
 export default function LegalityCompliance() {
   const [activeTab, setActiveTab] = useState('supplier-compliance');
   const { toast } = useToast();
+  const [analysisResults, setAnalysisResults] = useState<any[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
 
   // Fetch data from Data Collection forms for suggestions
   const { data: estateData = [] } = useQuery({
@@ -40,6 +43,11 @@ export default function LegalityCompliance() {
 
   const { data: bulkingData = [] } = useQuery({
     queryKey: ['/api', 'bulking-data-collection'],
+  });
+
+  // Fetch supplier compliance data
+  const { data: supplierComplianceData = [] } = useQuery({
+    queryKey: ['/api/supplier-compliance'],
   });
 
   // Helper functions to extract suggestions from data collection forms
@@ -391,12 +399,29 @@ export default function LegalityCompliance() {
   });
 
   const createSupplierComplianceMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('POST', '/api/supplier-compliance', data),
-    onSuccess: () => {
+    mutationFn: async (data: any) => {
+      // First save the data
+      const saveResponse = await apiRequest('POST', '/api/supplier-compliance', data);
+      
+      // Then analyze it with AI
+      const analysisResponse = await apiRequest('POST', `/api/supplier-compliance/${saveResponse.id}/analyze`, {
+        formData: data,
+        supplierName: data.namaSupplier
+      });
+      
+      return { saveResponse, analysisResponse };
+    },
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['/api/supplier-compliance'] });
+      
+      // Store analysis results
+      if (result.analysisResponse.analysis) {
+        setAnalysisResults(prev => [...prev, result.analysisResponse]);
+      }
+      
       toast({
-        title: "Data Supplier Compliance berhasil disimpan",
-        description: "Data Kepatuhan Hukum Supplier telah berhasil disimpan ke sistem.",
+        title: "Data Supplier Compliance berhasil disimpan dan dianalisis",
+        description: "Data telah disimpan dan analisis AI telah selesai.",
       });
       setActiveTab('results');
     },
@@ -404,6 +429,26 @@ export default function LegalityCompliance() {
       toast({
         title: "Gagal menyimpan data",
         description: error.message || "Terjadi kesalahan saat menyimpan data supplier compliance.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for analyzing individual supplier
+  const analyzeSupplierMutation = useMutation({
+    mutationFn: ({ supplierId, formData, supplierName }: { supplierId: string, formData: any, supplierName: string }) => 
+      apiRequest('POST', `/api/supplier-compliance/${supplierId}/analyze`, { formData, supplierName }),
+    onSuccess: (result) => {
+      setAnalysisResults(prev => [...prev.filter(r => r.supplierId !== result.supplierId), result]);
+      toast({
+        title: "Analisis AI selesai",
+        description: `Analisis kepatuhan untuk ${result.supplierName} telah selesai.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Gagal menganalisis",
+        description: error.message || "Terjadi kesalahan saat menganalisis supplier.",
         variant: "destructive",
       });
     },
@@ -2939,8 +2984,10 @@ export default function LegalityCompliance() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {dummySupplierComplianceData.map((compliance) => (
-                        <TableRow key={compliance.id}>
+                      {supplierComplianceData.map((compliance: any) => {
+                        const analysis = analysisResults.find(r => r.supplierId === compliance.id?.toString());
+                        return (
+                          <TableRow key={compliance.id}>
                           <TableCell className="font-medium">{compliance.namaSupplier}</TableCell>
                           <TableCell>
                             <div className="flex items-center space-x-2">
@@ -2972,7 +3019,8 @@ export default function LegalityCompliance() {
                             </Button>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
