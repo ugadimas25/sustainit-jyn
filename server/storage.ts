@@ -25,6 +25,7 @@ import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
 import MemoryStore from "memorystore";
 import session from "express-session";
+import ConnectPgSimple from "connect-pg-simple";
 
 // Enhanced IStorage interface for EPCIS-compliant traceability
 export interface IStorage {
@@ -174,10 +175,20 @@ export class DatabaseStorage implements IStorage {
   public sessionStore: session.Store;
 
   constructor() {
-    // Initialize in-memory session store for development
-    this.sessionStore = new (MemoryStore(session))({
-      checkPeriod: 86400000, // prune expired entries every 24h
-    });
+    // Use database session store in production, memory store in development
+    if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+      const PgSession = ConnectPgSimple(session);
+      this.sessionStore = new PgSession({
+        conString: process.env.DATABASE_URL,
+        tableName: 'session',
+        createTableIfMissing: true,
+      });
+    } else {
+      // Fallback to memory store for development
+      this.sessionStore = new (MemoryStore(session))({
+        checkPeriod: 86400000, // prune expired entries every 24h
+      });
+    }
   }
 
   // User management

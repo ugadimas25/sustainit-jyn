@@ -12,13 +12,16 @@ export function ProtectedRoute({
   path: string;
   component: () => React.JSX.Element;
 }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, error } = useAuth();
 
   return (
     <Route path={path}>
       {isLoading ? (
-        <div className="flex h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="flex h-screen items-center justify-center bg-gray-50">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
+            <p className="text-gray-600">Loading your dashboard...</p>
+          </div>
         </div>
       ) : user ? (
         <div className="flex h-screen bg-gray-50">
