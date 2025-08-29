@@ -393,7 +393,19 @@ export default function LegalityAssessmentExpanded() {
     skCPCL: false,
     skCPCLKeterangan: '',
     laporanRealisasiPlasma: false,
-    laporanRealisasiPlasmaKeterangan: ''
+    laporanRealisasiPlasmaKeterangan: '',
+    // Section 3.11 - Taxation, Anti-corruption, Trade and Customs
+    kebijakanPerpajakanAntikorupsi: false,
+    kebijakanPerpajakanAntikorupsiKeterangan: '',
+    sopKodeEtikBisnis: false,
+    sopKodeEtikBisnisKeterangan: '',
+    saluranPengaduanPublik: false,
+    saluranPengaduanPublikKeterangan: '',
+    // Section 3.12 - Tax Registration and Export Evidence
+    suratKeteranganTerdaftarPajak: false,
+    suratKeteranganTerdaftarPajakKeterangan: '',
+    npwp: false,
+    npwpKeterangan: ''
   });
 
   // Sample dummy data for demonstration
@@ -4940,6 +4952,103 @@ export default function LegalityAssessmentExpanded() {
                               </Card>
                             ))}
                           </div>
+                        </div>
+
+                        {/* Section 3.11 - Taxation, Anti-corruption, Trade and Customs */}
+                        <div className="space-y-6">
+                          <h4 className="text-lg font-semibold border-b pb-2">3.11 Jelaskan Komitmen Perusahaan Terhadap Kebijakan Terkait Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai</h4>
+                          
+                          {[
+                            { key: 'kebijakanPerpajakanAntikorupsi', label: 'a. Kebijakan' },
+                            { key: 'sopKodeEtikBisnis', label: 'b. SOP/Mekanisme yang berhubungan dengan Kode etik bisnis (Penanganan Laporan Terkait dengan Kode Etik Bisnis seperti: Korupsi, Kolusi)' },
+                            { key: 'saluranPengaduanPublik', label: 'c. Saluran Pengaduan yang dapat diakses Publik' }
+                          ].map((item) => (
+                            <Card key={item.key} className="bg-violet-50">
+                              <CardContent className="p-4">
+                                <div className="space-y-4">
+                                  <Label className="text-base font-medium">{item.label}</Label>
+                                  <div className="flex items-center space-x-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="radio"
+                                        id={`${item.key}-ya`}
+                                        name={item.key}
+                                        checked={supplierComplianceForm[item.key as keyof typeof supplierComplianceForm] as boolean}
+                                        onChange={() => setSupplierComplianceForm(prev => ({ ...prev, [item.key]: true }))}
+                                      />
+                                      <Label htmlFor={`${item.key}-ya`}>Ya</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="radio"
+                                        id={`${item.key}-tidak`}
+                                        name={item.key}
+                                        checked={!(supplierComplianceForm[item.key as keyof typeof supplierComplianceForm] as boolean)}
+                                        onChange={() => setSupplierComplianceForm(prev => ({ ...prev, [item.key]: false }))}
+                                      />
+                                      <Label htmlFor={`${item.key}-tidak`}>Tidak</Label>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Keterangan:</Label>
+                                    <Input
+                                      value={supplierComplianceForm[`${item.key}Keterangan` as keyof typeof supplierComplianceForm] as string}
+                                      onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, [`${item.key}Keterangan`]: e.target.value }))}
+                                      placeholder="Masukkan keterangan..."
+                                    />
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+
+                        {/* Section 3.12 - Tax Registration and Export Evidence */}
+                        <div className="space-y-6">
+                          <h4 className="text-lg font-semibold border-b pb-2">3.12 Bukti Terdaftar Pajak dan pemenuhan persyaratan eksport</h4>
+                          
+                          {[
+                            { key: 'suratKeteranganTerdaftarPajak', label: 'a. Surat keterangan Terdaftar Pajak' },
+                            { key: 'npwp', label: 'b. NPWP' }
+                          ].map((item) => (
+                            <Card key={item.key} className="bg-indigo-50">
+                              <CardContent className="p-4">
+                                <div className="space-y-4">
+                                  <Label className="text-base font-medium">{item.label}</Label>
+                                  <div className="flex items-center space-x-4">
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="radio"
+                                        id={`${item.key}-ya`}
+                                        name={item.key}
+                                        checked={supplierComplianceForm[item.key as keyof typeof supplierComplianceForm] as boolean}
+                                        onChange={() => setSupplierComplianceForm(prev => ({ ...prev, [item.key]: true }))}
+                                      />
+                                      <Label htmlFor={`${item.key}-ya`}>Ya</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="radio"
+                                        id={`${item.key}-tidak`}
+                                        name={item.key}
+                                        checked={!(supplierComplianceForm[item.key as keyof typeof supplierComplianceForm] as boolean)}
+                                        onChange={() => setSupplierComplianceForm(prev => ({ ...prev, [item.key]: false }))}
+                                      />
+                                      <Label htmlFor={`${item.key}-tidak`}>Tidak</Label>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Keterangan:</Label>
+                                    <Input
+                                      value={supplierComplianceForm[`${item.key}Keterangan` as keyof typeof supplierComplianceForm] as string}
+                                      onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, [`${item.key}Keterangan`]: e.target.value }))}
+                                      placeholder="Masukkan keterangan..."
+                                    />
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
                         </div>
                       </div>
 
