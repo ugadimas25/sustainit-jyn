@@ -349,6 +349,8 @@ export default function LegalityAssessmentExpanded() {
     sopPenangananInformasiKeterangan: '',
     sopPenangananKeluhan: false,
     sopPenangananKeluhanKeterangan: '',
+    buktiImplementasiHakPihakKetiga: false,
+    buktiImplementasiHakPihakKetigaKeterangan: '',
     mouKerjaSama: false,
     mouKerjaSamaKeterangan: '',
     skCPCL: false,
@@ -4542,6 +4544,49 @@ export default function LegalityAssessmentExpanded() {
                               </CardContent>
                             </Card>
                           ))}
+                        </div>
+
+                        {/* Bukti Implementasi Point 3.5 */}
+                        <div className="space-y-6">
+                          <h4 className="text-lg font-semibold border-b pb-2">3.7 Bukti Implementasi Point 3.5</h4>
+                          
+                          <Card className="bg-indigo-50">
+                            <CardContent className="p-4">
+                              <div className="space-y-4">
+                                <Label className="text-base font-medium">Bukti Implementasi Point 3.5</Label>
+                                <div className="flex items-center space-x-4">
+                                  <div className="flex items-center space-x-2">
+                                    <input
+                                      type="radio"
+                                      id="buktiImplementasiHak-ya"
+                                      name="buktiImplementasiHakPihakKetiga"
+                                      checked={supplierComplianceForm.buktiImplementasiHakPihakKetiga}
+                                      onChange={() => setSupplierComplianceForm(prev => ({ ...prev, buktiImplementasiHakPihakKetiga: true }))}
+                                    />
+                                    <Label htmlFor="buktiImplementasiHak-ya">Ya</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <input
+                                      type="radio"
+                                      id="buktiImplementasiHak-tidak"
+                                      name="buktiImplementasiHakPihakKetiga"
+                                      checked={!supplierComplianceForm.buktiImplementasiHakPihakKetiga}
+                                      onChange={() => setSupplierComplianceForm(prev => ({ ...prev, buktiImplementasiHakPihakKetiga: false }))}
+                                    />
+                                    <Label htmlFor="buktiImplementasiHak-tidak">Tidak</Label>
+                                  </div>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label>Keterangan:</Label>
+                                  <Input
+                                    value={supplierComplianceForm.buktiImplementasiHakPihakKetigaKeterangan}
+                                    onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiImplementasiHakPihakKetigaKeterangan: e.target.value }))}
+                                    placeholder="Masukkan keterangan..."
+                                  />
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
                         </div>
 
                         {/* Kewajiban Plasma */}
