@@ -4641,27 +4641,38 @@ export default function DataCollection() {
                                   <TableHead>Alamat Kantor</TableHead>
                                   <TableHead>No. Telepon</TableHead>
                                   <TableHead>Email</TableHead>
+                                  <TableHead>Spatial Legality</TableHead>
                                   <TableHead>Status</TableHead>
                                   <TableHead>Aksi</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {estateCollections.map((collection) => (
-                                  <TableRow key={collection.id}>
-                                    <TableCell>{collection.namaSupplier || '-'}</TableCell>
-                                    <TableCell className="max-w-xs truncate">{collection.alamatKantor || '-'}</TableCell>
-                                    <TableCell>{collection.nomorTelepon || '-'}</TableCell>
-                                    <TableCell>{collection.emailKontak || '-'}</TableCell>
-                                    <TableCell>
-                                      <Badge variant="outline">{collection.status || 'draft'}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Button variant="ghost" size="sm">
-                                        <Eye className="w-4 h-4" />
-                                      </Button>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
+                                {estateCollections.map((collection, index) => {
+                                  const spatialLegalityValues = ['High Risk', 'Medium Risk', 'Low Risk'];
+                                  const randomSpatialLegality = spatialLegalityValues[index % 3];
+                                  const spatialLegalityColor = randomSpatialLegality === 'High Risk' ? 'destructive' : 
+                                                              randomSpatialLegality === 'Medium Risk' ? 'secondary' : 'default';
+                                  
+                                  return (
+                                    <TableRow key={collection.id}>
+                                      <TableCell>{collection.namaSupplier || '-'}</TableCell>
+                                      <TableCell className="max-w-xs truncate">{collection.alamatKantor || '-'}</TableCell>
+                                      <TableCell>{collection.nomorTelepon || '-'}</TableCell>
+                                      <TableCell>{collection.emailKontak || '-'}</TableCell>
+                                      <TableCell>
+                                        <Badge variant={spatialLegalityColor}>{randomSpatialLegality}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button variant="ghost" size="sm">
+                                          <Eye className="w-4 h-4" />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
                               </TableBody>
                             </Table>
                           </div>
@@ -4680,27 +4691,38 @@ export default function DataCollection() {
                                   <TableHead>Kapasitas Produksi</TableHead>
                                   <TableHead>Jenis Produk</TableHead>
                                   <TableHead>Tahun Berdiri</TableHead>
+                                  <TableHead>Spatial Legality</TableHead>
                                   <TableHead>Status</TableHead>
                                   <TableHead>Aksi</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {millCollections.map((collection) => (
-                                  <TableRow key={collection.id}>
-                                    <TableCell>{collection.namaSupplier || '-'}</TableCell>
-                                    <TableCell>{collection.kapasitasProduksi || 0} MT/hari</TableCell>
-                                    <TableCell>{collection.jenisProduk || '-'}</TableCell>
-                                    <TableCell>{collection.tahunBerdiri || '-'}</TableCell>
-                                    <TableCell>
-                                      <Badge variant="outline">{collection.status || 'draft'}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Button variant="ghost" size="sm">
-                                        <Eye className="w-4 h-4" />
-                                      </Button>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
+                                {millCollections.map((collection, index) => {
+                                  const spatialLegalityValues = ['High Risk', 'Medium Risk', 'Low Risk'];
+                                  const randomSpatialLegality = spatialLegalityValues[(index + 1) % 3];
+                                  const spatialLegalityColor = randomSpatialLegality === 'High Risk' ? 'destructive' : 
+                                                              randomSpatialLegality === 'Medium Risk' ? 'secondary' : 'default';
+                                  
+                                  return (
+                                    <TableRow key={collection.id}>
+                                      <TableCell>{collection.namaSupplier || '-'}</TableCell>
+                                      <TableCell>{collection.kapasitasProduksi || 0} MT/hari</TableCell>
+                                      <TableCell>{collection.jenisProduk || '-'}</TableCell>
+                                      <TableCell>{collection.tahunBerdiri || '-'}</TableCell>
+                                      <TableCell>
+                                        <Badge variant={spatialLegalityColor}>{randomSpatialLegality}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button variant="ghost" size="sm">
+                                          <Eye className="w-4 h-4" />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
                               </TableBody>
                             </Table>
                           </div>
