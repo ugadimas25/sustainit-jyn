@@ -4954,7 +4954,7 @@ export default function LegalityAssessmentExpanded() {
                           </div>
                         </div>
 
-                        {/* Section 3.11 - Taxation, Anti-corruption, Trade and Customs */}
+                        {/* Section 3.11 - Taxation, Anti-corruption, Trade and Customs - Updated */}
                         <div className="space-y-6">
                           <h4 className="text-lg font-semibold border-b pb-2">3.11 Jelaskan Komitmen Perusahaan Terhadap Kebijakan Terkait Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai</h4>
                           
