@@ -441,6 +441,11 @@ export default function MapViewer() {
                 <span class="checkmark"></span>
                 <span class="layer-name">SBTN Natural Loss</span>
               </label>
+              <label class="layer-checkbox">
+                <input type="checkbox" id="spatialLegalityLayer">
+                <span class="checkmark"></span>
+                <span class="layer-name">Spatial Legality (WDPA)</span>
+              </label>
             </div>
           </div>
         </div>
@@ -469,10 +474,15 @@ export default function MapViewer() {
             <div class="legend-color" style="background-color: #ff00ff;"></div>
             <span>SBTN Natural Loss</span>
           </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #3388ff;"></div>
+            <span>Protected Areas (WDPA)</span>
+          </div>
         </div>
       </div>
 
       <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+      <script src="https://unpkg.com/esri-leaflet@3.0.12/dist/esri-leaflet.js"></script>
       <script>
         // Initialize map
         const map = L.map('map').setView([0, 0], 2);
@@ -511,6 +521,17 @@ export default function MapViewer() {
           sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
             attribution: '© SBTN',
             opacity: 0.7
+          }),
+          spatialLegality: L.esri.featureLayer({
+            url: 'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/arcgis/rest/services/WDPA_v0/FeatureServer/0',
+            style: {
+              color: '#3388ff',
+              weight: 2,
+              opacity: 0.8,
+              fillColor: '#3388ff',
+              fillOpacity: 0.3
+            },
+            attribution: '© WDPA - World Database on Protected Areas'
           })
         };
 
@@ -693,6 +714,14 @@ export default function MapViewer() {
             deforestationLayers.sbtn.addTo(map);
           } else {
             map.removeLayer(deforestationLayers.sbtn);
+          }
+        });
+
+        document.getElementById('spatialLegalityLayer').addEventListener('change', function(e) {
+          if (e.target.checked) {
+            deforestationLayers.spatialLegality.addTo(map);
+          } else {
+            map.removeLayer(deforestationLayers.spatialLegality);
           }
         });
 
