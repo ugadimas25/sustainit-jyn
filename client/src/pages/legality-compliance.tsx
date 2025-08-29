@@ -394,8 +394,18 @@ export default function LegalityCompliance() {
     // 3.12 Bukti Pajak dan Ekspor
     suratTerdaftarPajak: '',
     suratTerdaftarPajakKeterangan: '',
+    suratTerdaftarPajakStatus: '',
     npwp: '',
     npwpKeterangan: '',
+    npwpStatus: '',
+    
+    // Status fields for conditional rendering
+    izinPencadanganStatus: '',
+    persetujuanPKKPRStatus: '',
+    izinUsahaPerkebunanStatus: '',
+    izinRintekTPSStatus: '',
+    izinLimbahCairStatus: '',
+    persetujuanAndalalinStatus: '',
   });
 
   const createSupplierComplianceMutation = useMutation({
@@ -896,18 +906,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinPencadanganDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.izinPencadangan === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'izinPencadanganDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.izinPencadangan === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.izinPencadanganStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -945,18 +974,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanPKKPRKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'pkkprDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.persetujuanPKKPR === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'pkkprDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.persetujuanPKKPR === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.persetujuanPKKPRStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanPKKPRStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -994,18 +1042,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinUsahaPerkebunanKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinUsahaDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.izinUsahaPerkebunan === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'izinUsahaDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.izinUsahaPerkebunan === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.izinUsahaPerkebunanStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, izinUsahaPerkebunanStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -1296,18 +1363,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinRintekTPSKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinRintekDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.izinRintekTPS === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'izinRintekDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.izinRintekTPS === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.izinRintekTPSStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, izinRintekTPSStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -1345,18 +1431,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinLimbahCairKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinLimbahCairDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.izinLimbahCair === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'izinLimbahCairDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.izinLimbahCair === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.izinLimbahCairStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, izinLimbahCairStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -1394,18 +1499,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanAndalalinKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'andalalinDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.persetujuanAndalalin === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'andalalinDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.persetujuanAndalalin === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.persetujuanAndalalinStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanAndalalinStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -2879,18 +3003,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajakKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'suratTerdaftarPajakDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.suratTerdaftarPajak === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'suratTerdaftarPajakDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.suratTerdaftarPajak === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.suratTerdaftarPajakStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajakStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
 
@@ -2928,18 +3071,37 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwpKeterangan: e.target.value }))}
                               rows={2}
                             />
-                            <div className="space-y-2">
-                              <Label>Upload Dokumen Pendukung:</Label>
-                              <ObjectUploader
-                                onGetUploadParameters={handleGetUploadParameters}
-                                onComplete={(result) => handleDocumentUploadComplete(result, 'npwpDokumen')}
-                                maxFileSize={50 * 1024 * 1024}
-                                maxNumberOfFiles={10}
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                Upload PDF Dokumen
-                              </ObjectUploader>
-                            </div>
+                            {supplierComplianceForm.npwp === 'yes' ? (
+                              <div className="space-y-2">
+                                <Label>Upload Dokumen Pendukung:</Label>
+                                <ObjectUploader
+                                  onGetUploadParameters={handleGetUploadParameters}
+                                  onComplete={(result) => handleDocumentUploadComplete(result, 'npwpDokumen')}
+                                  maxFileSize={50 * 1024 * 1024}
+                                  maxNumberOfFiles={10}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Upload PDF Dokumen
+                                </ObjectUploader>
+                              </div>
+                            ) : supplierComplianceForm.npwp === 'no' ? (
+                              <div className="space-y-2">
+                                <Label>Status:</Label>
+                                <Select 
+                                  value={supplierComplianceForm.npwpStatus || ''} 
+                                  onValueChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, npwpStatus: value }))}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Pilih status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="tidak-ada">Tidak ada</SelectItem>
+                                    <SelectItem value="dalam-proses">Dalam proses</SelectItem>
+                                    <SelectItem value="tidak-relevan">Tidak relevan</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       </div>
