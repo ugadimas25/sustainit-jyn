@@ -515,6 +515,17 @@ export default function LegalityCompliance() {
                             onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, historisKeterangan: e.target.value }))}
                             rows={2}
                           />
+                          <div className="space-y-2">
+                            <Label>Upload Dokumen Pendukung:</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'historisKeteranganDokumen')}
+                              maxFileSize={50 * 1024 * 1024}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload PDF Dokumen
+                            </ObjectUploader>
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label>Lampirkan Dokumen: (dalam Bentuk Google Drive)</Label>
@@ -563,6 +574,17 @@ export default function LegalityCompliance() {
                             onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinPencadanganKeterangan: e.target.value }))}
                             rows={2}
                           />
+                          <div className="space-y-2">
+                            <Label>Upload Dokumen Pendukung:</Label>
+                            <ObjectUploader
+                              onGetUploadParameters={handleGetUploadParameters}
+                              onComplete={(result) => handleDocumentUploadComplete(result, 'izinPencadanganKeteranganDokumen')}
+                              maxFileSize={50 * 1024 * 1024}
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload PDF Dokumen
+                            </ObjectUploader>
+                          </div>
                         </div>
                       </div>
 
@@ -602,6 +624,17 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, persetujuanPKKPRKeterangan: e.target.value }))}
                               rows={2}
                             />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'persetujuanPKKPRKeteranganDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
                           </div>
                         </div>
 
@@ -639,6 +672,17 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinUsahaPerkebunanKeterangan: e.target.value }))}
                               rows={2}
                             />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinUsahaPerkebunanKeteranganDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
                           </div>
                         </div>
 
@@ -676,6 +720,17 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skHGUKeterangan: e.target.value }))}
                               rows={2}
                             />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'skHGUKeteranganDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
                           </div>
                         </div>
 
@@ -713,6 +768,17 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sertifikatHGUKeterangan: e.target.value }))}
                               rows={2}
                             />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'sertifikatHGUKeteranganDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -758,6 +824,17 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinLingkunganKeterangan: e.target.value }))}
                               rows={2}
                             />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinLingkunganKeteranganDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
                           </div>
                         </div>
 
@@ -795,6 +872,17 @@ export default function LegalityCompliance() {
                               onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, izinRintekTPSKeterangan: e.target.value }))}
                               rows={2}
                             />
+                            <div className="space-y-2">
+                              <Label>Upload Dokumen Pendukung:</Label>
+                              <ObjectUploader
+                                onGetUploadParameters={handleGetUploadParameters}
+                                onComplete={(result) => handleDocumentUploadComplete(result, 'izinRintekTPSKeteranganDokumen')}
+                                maxFileSize={50 * 1024 * 1024}
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF Dokumen
+                              </ObjectUploader>
+                            </div>
                           </div>
                         </div>
 
@@ -849,6 +937,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiPelaksanaanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -883,6 +982,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPLKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanRKLRPLKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -917,6 +1027,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisidaKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanPestisidaKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -956,6 +1077,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, areaSesuaiPeruntukanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'areaSesuaiPeruntukanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -990,6 +1122,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skPelepasanHutanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'skPelepasanHutanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1024,6 +1167,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, dokumenInstansiRelevanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'dokumenInstansiRelevanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1044,6 +1198,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakPihakKetigaKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanHakPihakKetigaKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1078,6 +1243,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerusahaanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanPerusahaanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1112,6 +1288,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopGRTTKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopGRTTKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1151,6 +1338,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, mouKerjaSamaKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'mouKerjaSamaKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1185,6 +1383,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skCPCLKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'skCPCLKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1219,6 +1428,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRealisasiPlasmaKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanRealisasiPlasmaKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1239,6 +1459,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiGRTTKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiGRTTKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1254,6 +1485,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiFPICKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiFPICKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1274,6 +1516,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanSengketaLahanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'laporanSengketaLahanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1303,6 +1556,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakBuruhKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanHakBuruhKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1318,6 +1582,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKetenagakerjaanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopKetenagakerjaanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1333,6 +1608,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopK3Keterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopK3KeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1353,6 +1639,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPerjanjianKerjaKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiPerjanjianKerjaKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1368,6 +1665,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarKaryawanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'daftarKaryawanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1383,6 +1691,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skUMRKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'skUMRKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1398,6 +1717,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiBPJSKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'buktiBPJSKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1427,6 +1757,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanAntikorupsiKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanAntikorupsiKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1442,6 +1783,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtikKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'sopKodeEtikKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1457,6 +1809,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduanKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'saluranPengaduanKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
 
@@ -1477,6 +1840,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajakKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'suratTerdaftarPajakKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
 
                       <div className="space-y-4 border-t pt-4">
@@ -1492,6 +1866,17 @@ export default function LegalityCompliance() {
                           onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwpKeterangan: e.target.value }))}
                           rows={2}
                         />
+                        <div className="space-y-2">
+                          <Label>Upload Dokumen Pendukung:</Label>
+                          <ObjectUploader
+                            onGetUploadParameters={handleGetUploadParameters}
+                            onComplete={(result) => handleDocumentUploadComplete(result, 'npwpKeteranganDokumen')}
+                            maxFileSize={50 * 1024 * 1024}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload PDF Dokumen
+                          </ObjectUploader>
+                        </div>
                       </div>
                     </div>
                   </div>
