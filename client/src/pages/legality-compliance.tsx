@@ -276,6 +276,7 @@ export default function LegalityCompliance() {
     // 3.1 Hak Penggunaan Tanah
     historisPerolehanTanah: '',
     historisKeterangan: '',
+    izinPencadangan: '',
     izinPencadanganLahan: '',
     izinPencadanganKeterangan: '',
     persetujuanPKKPR: '',
@@ -296,6 +297,8 @@ export default function LegalityCompliance() {
     izinLingkunganKeterangan: '',
     izinRintekTPS: '',
     izinRintekTPSKeterangan: '',
+    izinLimbahCair: '',
+    izinLimbahCairKeterangan: '',
     izinPertekLimbah: '',
     izinPertekLimbahKeterangan: '',
     persetujuanAndalalin: '',
