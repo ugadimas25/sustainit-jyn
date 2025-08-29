@@ -551,6 +551,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'izinPencadanganDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -599,6 +600,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'pkkprDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -647,6 +649,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'izinUsahaDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -695,6 +698,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'skHGUDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -743,6 +747,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'sertifikatHGUDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -791,6 +796,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'laporanHGUDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -839,6 +845,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'lpupDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -895,6 +902,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'izinLingkunganDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -943,6 +951,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'izinRintekDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -991,6 +1000,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'izinLimbahCairDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1039,6 +1049,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'andalalinDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1087,6 +1098,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'daftarPestisidaDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1369,6 +1381,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'mouKerjasamaDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1417,6 +1430,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'skCPCLDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1465,6 +1479,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'laporanRealisasiPlasmaDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1520,6 +1535,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'buktiGRTTDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1568,6 +1584,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'buktiFPICDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1876,6 +1893,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanHAMDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1937,6 +1955,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'sopKetenagakerjaanDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -1996,6 +2015,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'sopK3Dokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2051,6 +2071,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'buktiDisnakerDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2106,6 +2127,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'daftarKaryawanDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2154,6 +2176,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'skUMRDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2202,6 +2225,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'skSerikatPekerjaDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2250,6 +2274,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'buktiBPJSDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2298,6 +2323,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'laporanP2K3Dokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2354,6 +2380,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'kebijakanPerpajakanDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2402,6 +2429,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'sopKodeEtikBisnisDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2450,6 +2478,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'saluranPengaduanDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2505,6 +2534,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'suratTerdaftarPajakDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
@@ -2553,6 +2583,7 @@ export default function LegalityCompliance() {
                                 onGetUploadParameters={handleGetUploadParameters}
                                 onComplete={(result) => handleDocumentUploadComplete(result, 'npwpDokumen')}
                                 maxFileSize={50 * 1024 * 1024}
+                                maxNumberOfFiles={10}
                               >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Upload PDF Dokumen
