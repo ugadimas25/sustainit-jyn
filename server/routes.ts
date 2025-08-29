@@ -1557,6 +1557,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get analysis results endpoint for map viewer
+  app.get('/api/analysis-results', async (req, res) => {
+    try {
+      const results = await storage.getAnalysisResults();
+      res.json(results);
+    } catch (error) {
+      console.error('Error fetching analysis results:', error);
+      res.status(500).json({ error: 'Failed to fetch analysis results' });
+    }
+  });
+
   // Clear analysis results endpoint for dashboard reset
   app.delete('/api/analysis-results', async (req, res) => {
     try {

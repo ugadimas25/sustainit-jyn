@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, RotateCcw, Layers, BarChart3 } from 'lucide-react';
 
@@ -21,33 +22,60 @@ interface AnalysisResult {
 
 export default function MapViewer() {
   const [, setLocation] = useLocation();
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
 
+  // Fetch analysis results directly from database API
+  const { data: dbAnalysisResults = [], isLoading, isError } = useQuery<any[]>({
+    queryKey: ['/api/analysis-results'],
+  });
+
+  // Transform database results to match expected format
+  const analysisResults: AnalysisResult[] = dbAnalysisResults.map(result => ({
+    plotId: result.plotId,
+    country: result.country,
+    area: Number(result.area) || 0,
+    overallRisk: result.overallRisk || 'UNKNOWN',
+    complianceStatus: result.complianceStatus || 'UNKNOWN',
+    gfwLoss: result.gfwLoss || 'UNKNOWN',
+    jrcLoss: result.jrcLoss || 'UNKNOWN',
+    sbtnLoss: result.sbtnLoss || 'UNKNOWN',
+    highRiskDatasets: result.highRiskDatasets || [],
+    geometry: result.geometry // This contains the actual polygon coordinates
+  }));
+
+  // Redirect if no analysis data available
   useEffect(() => {
-    // Load analysis results from localStorage
-    const loadAnalysisData = () => {
-      try {
-        const storedResults = localStorage.getItem('currentAnalysisResults');
-        const hasRealData = localStorage.getItem('hasRealAnalysisData') === 'true';
-        
-        if (hasRealData && storedResults) {
-          const parsedResults = JSON.parse(storedResults);
-          if (Array.isArray(parsedResults) && parsedResults.length > 0) {
-            setAnalysisResults(parsedResults);
-            return;
-          }
-        }
-        
-        // No data available, redirect back
-        setLocation('/deforestation-monitoring');
-      } catch (error) {
-        console.error('Error loading analysis data for map:', error);
-        setLocation('/deforestation-monitoring');
-      }
-    };
+    if (!isLoading && !isError && analysisResults.length === 0) {
+      console.log('No analysis results found, redirecting to deforestation monitoring');
+      setLocation('/deforestation-monitoring');
+    }
+  }, [isLoading, isError, analysisResults.length, setLocation]);
 
-    loadAnalysisData();
-  }, [setLocation]);
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-neutral-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-professional mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading analysis data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-neutral-bg flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">Error loading analysis data</p>
+          <Button onClick={() => setLocation('/deforestation-monitoring')}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Monitoring
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate statistics
   const totalPlots = analysisResults.length;
