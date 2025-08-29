@@ -812,6 +812,688 @@ export default function LegalityCompliance() {
                         </div>
                       </div>
                     </div>
+
+                    {/* 3.3 Bukti Pelaksanaan */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.3 Bukti Pelaksanaan</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Bukti Pelaksanaan RKL-RPL</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="buktiPelaksanaan-ya"
+                              name="buktiPelaksanaan"
+                              value="ya"
+                              checked={supplierComplianceForm.buktiPelaksanaan === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaan: e.target.value }))}
+                            />
+                            <Label htmlFor="buktiPelaksanaan-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="buktiPelaksanaan-tidak"
+                              name="buktiPelaksanaan"
+                              value="tidak"
+                              checked={supplierComplianceForm.buktiPelaksanaan === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaan: e.target.value }))}
+                            />
+                            <Label htmlFor="buktiPelaksanaan-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.buktiPelaksanaanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPelaksanaanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Laporan RKL-RPL</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="laporanRKLRPL-ya"
+                              name="laporanRKLRPL"
+                              value="ya"
+                              checked={supplierComplianceForm.laporanRKLRPL === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPL: e.target.value }))}
+                            />
+                            <Label htmlFor="laporanRKLRPL-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="laporanRKLRPL-tidak"
+                              name="laporanRKLRPL"
+                              value="tidak"
+                              checked={supplierComplianceForm.laporanRKLRPL === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPL: e.target.value }))}
+                            />
+                            <Label htmlFor="laporanRKLRPL-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.laporanRKLRPLKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRKLRPLKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Laporan Penggunaan Pestisida</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="laporanPestisida-ya"
+                              name="laporanPestisida"
+                              value="ya"
+                              checked={supplierComplianceForm.laporanPestisida === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisida: e.target.value }))}
+                            />
+                            <Label htmlFor="laporanPestisida-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="laporanPestisida-tidak"
+                              name="laporanPestisida"
+                              value="tidak"
+                              checked={supplierComplianceForm.laporanPestisida === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisida: e.target.value }))}
+                            />
+                            <Label htmlFor="laporanPestisida-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.laporanPestisidaKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanPestisidaKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.4 Peraturan Kehutanan */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.4 Peraturan Kehutanan</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Area Sesuai Peruntukan</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="areaSesuaiPeruntukan-ya"
+                              name="areaSesuaiPeruntukan"
+                              value="ya"
+                              checked={supplierComplianceForm.areaSesuaiPeruntukan === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, areaSesuaiPeruntukan: e.target.value }))}
+                            />
+                            <Label htmlFor="areaSesuaiPeruntukan-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="areaSesuaiPeruntukan-tidak"
+                              name="areaSesuaiPeruntukan"
+                              value="tidak"
+                              checked={supplierComplianceForm.areaSesuaiPeruntukan === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, areaSesuaiPeruntukan: e.target.value }))}
+                            />
+                            <Label htmlFor="areaSesuaiPeruntukan-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.areaSesuaiPeruntukanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, areaSesuaiPeruntukanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">SK Pelepasan Hutan</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="skPelepasanHutan-ya"
+                              name="skPelepasanHutan"
+                              value="ya"
+                              checked={supplierComplianceForm.skPelepasanHutan === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skPelepasanHutan: e.target.value }))}
+                            />
+                            <Label htmlFor="skPelepasanHutan-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="skPelepasanHutan-tidak"
+                              name="skPelepasanHutan"
+                              value="tidak"
+                              checked={supplierComplianceForm.skPelepasanHutan === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skPelepasanHutan: e.target.value }))}
+                            />
+                            <Label htmlFor="skPelepasanHutan-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.skPelepasanHutanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skPelepasanHutanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Dokumen Instansi Relevan</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="dokumenInstansiRelevant-ya"
+                              name="dokumenInstansiRelevant"
+                              value="ya"
+                              checked={supplierComplianceForm.dokumenInstansiRelevant === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, dokumenInstansiRelevant: e.target.value }))}
+                            />
+                            <Label htmlFor="dokumenInstansiRelevant-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="dokumenInstansiRelevant-tidak"
+                              name="dokumenInstansiRelevant"
+                              value="tidak"
+                              checked={supplierComplianceForm.dokumenInstansiRelevant === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, dokumenInstansiRelevant: e.target.value }))}
+                            />
+                            <Label htmlFor="dokumenInstansiRelevant-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.dokumenInstansiRelevanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, dokumenInstansiRelevanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.5 Hak Pihak Ketiga dan Masyarakat Adat */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.5 Hak Pihak Ketiga dan Masyarakat Adat</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Kebijakan Hak Pihak Ketiga</Label>
+                        <Input
+                          value={supplierComplianceForm.kebijakanHakPihakKetiga}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakPihakKetiga: e.target.value }))}
+                          placeholder="Masukkan kebijakan hak pihak ketiga"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.kebijakanHakPihakKetigaKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakPihakKetigaKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Kebijakan Perusahaan</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="kebijakanPerusahaan-ya"
+                              name="kebijakanPerusahaan"
+                              value="ya"
+                              checked={supplierComplianceForm.kebijakanPerusahaan === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerusahaan: e.target.value }))}
+                            />
+                            <Label htmlFor="kebijakanPerusahaan-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="kebijakanPerusahaan-tidak"
+                              name="kebijakanPerusahaan"
+                              value="tidak"
+                              checked={supplierComplianceForm.kebijakanPerusahaan === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerusahaan: e.target.value }))}
+                            />
+                            <Label htmlFor="kebijakanPerusahaan-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.kebijakanPerusahaanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanPerusahaanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">SOP GRTT</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="sopGRTT-ya"
+                              name="sopGRTT"
+                              value="ya"
+                              checked={supplierComplianceForm.sopGRTT === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopGRTT: e.target.value }))}
+                            />
+                            <Label htmlFor="sopGRTT-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="sopGRTT-tidak"
+                              name="sopGRTT"
+                              value="tidak"
+                              checked={supplierComplianceForm.sopGRTT === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopGRTT: e.target.value }))}
+                            />
+                            <Label htmlFor="sopGRTT-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.sopGRTTKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopGRTTKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.6-3.12 Additional Sections */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.6 Kewajiban Pengembangan Plasma</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">MOU Kerjasama</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="mouKerjaSama-ya"
+                              name="mouKerjaSama"
+                              value="ya"
+                              checked={supplierComplianceForm.mouKerjaSama === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, mouKerjaSama: e.target.value }))}
+                            />
+                            <Label htmlFor="mouKerjaSama-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="mouKerjaSama-tidak"
+                              name="mouKerjaSama"
+                              value="tidak"
+                              checked={supplierComplianceForm.mouKerjaSama === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, mouKerjaSama: e.target.value }))}
+                            />
+                            <Label htmlFor="mouKerjaSama-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.mouKerjaSamaKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, mouKerjaSamaKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">SK CPCL</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="skCPCL-ya"
+                              name="skCPCL"
+                              value="ya"
+                              checked={supplierComplianceForm.skCPCL === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skCPCL: e.target.value }))}
+                            />
+                            <Label htmlFor="skCPCL-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="skCPCL-tidak"
+                              name="skCPCL"
+                              value="tidak"
+                              checked={supplierComplianceForm.skCPCL === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skCPCL: e.target.value }))}
+                            />
+                            <Label htmlFor="skCPCL-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.skCPCLKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skCPCLKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Laporan Realisasi Plasma</Label>
+                        <div className="flex space-x-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="laporanRealisasiPlasma-ya"
+                              name="laporanRealisasiPlasma"
+                              value="ya"
+                              checked={supplierComplianceForm.laporanRealisasiPlasma === 'ya'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRealisasiPlasma: e.target.value }))}
+                            />
+                            <Label htmlFor="laporanRealisasiPlasma-ya">☑ Ya</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="laporanRealisasiPlasma-tidak"
+                              name="laporanRealisasiPlasma"
+                              value="tidak"
+                              checked={supplierComplianceForm.laporanRealisasiPlasma === 'tidak'}
+                              onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRealisasiPlasma: e.target.value }))}
+                            />
+                            <Label htmlFor="laporanRealisasiPlasma-tidak">☑ Tidak</Label>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.laporanRealisasiPlasmaKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanRealisasiPlasmaKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.7 Bukti Implementasi */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.7 Bukti Implementasi</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Bukti GRTT</Label>
+                        <Input
+                          value={supplierComplianceForm.buktiGRTT}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiGRTT: e.target.value }))}
+                          placeholder="Masukkan bukti GRTT"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.buktiGRTTKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiGRTTKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Bukti FPIC</Label>
+                        <Input
+                          value={supplierComplianceForm.buktiFPIC}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiFPIC: e.target.value }))}
+                          placeholder="Masukkan bukti FPIC"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.buktiFPICKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiFPICKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.8 Sengketa Lahan */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.8 Sengketa Lahan</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Laporan Sengketa Lahan</Label>
+                        <Input
+                          value={supplierComplianceForm.laporanSengketaLahan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanSengketaLahan: e.target.value }))}
+                          placeholder="Masukkan laporan sengketa lahan"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.laporanSengketaLahanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, laporanSengketaLahanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.9 Hak Buruh dan HAM */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.9 Hak Buruh dan HAM</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Komitmen Hak Buruh</Label>
+                        <Input
+                          value={supplierComplianceForm.komitmenHakBuruh}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, komitmenHakBuruh: e.target.value }))}
+                          placeholder="Masukkan komitmen hak buruh"
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Kebijakan Hak Buruh</Label>
+                        <Input
+                          value={supplierComplianceForm.kebijakanHakBuruh}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakBuruh: e.target.value }))}
+                          placeholder="Masukkan kebijakan hak buruh"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.kebijakanHakBuruhKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanHakBuruhKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">SOP Ketenagakerjaan</Label>
+                        <Input
+                          value={supplierComplianceForm.sopKetenagakerjaan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKetenagakerjaan: e.target.value }))}
+                          placeholder="Masukkan SOP ketenagakerjaan"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.sopKetenagakerjaanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKetenagakerjaanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">SOP K3</Label>
+                        <Input
+                          value={supplierComplianceForm.sopK3}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopK3: e.target.value }))}
+                          placeholder="Masukkan SOP K3"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.sopK3Keterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopK3Keterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.10 Bukti Pelaksanaan HAM */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.10 Bukti Pelaksanaan HAM</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Bukti Perjanjian Kerja</Label>
+                        <Input
+                          value={supplierComplianceForm.buktiPerjanjianKerja}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPerjanjianKerja: e.target.value }))}
+                          placeholder="Masukkan bukti perjanjian kerja"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.buktiPerjanjianKerjaKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiPerjanjianKerjaKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Daftar Karyawan</Label>
+                        <Input
+                          value={supplierComplianceForm.daftarKaryawan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarKaryawan: e.target.value }))}
+                          placeholder="Masukkan daftar karyawan"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.daftarKaryawanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, daftarKaryawanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">SK UMR</Label>
+                        <Input
+                          value={supplierComplianceForm.skUMR}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skUMR: e.target.value }))}
+                          placeholder="Masukkan SK UMR"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.skUMRKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, skUMRKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Bukti BPJS</Label>
+                        <Input
+                          value={supplierComplianceForm.buktiBPJS}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiBPJS: e.target.value }))}
+                          placeholder="Masukkan bukti BPJS"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.buktiBPJSKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, buktiBPJSKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.11 Perpajakan dan Antikorupsi */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.11 Perpajakan dan Antikorupsi</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Komitmen Antikorupsi</Label>
+                        <Input
+                          value={supplierComplianceForm.komitmenAntikorupsi}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, komitmenAntikorupsi: e.target.value }))}
+                          placeholder="Masukkan komitmen antikorupsi"
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Kebijakan Antikorupsi</Label>
+                        <Input
+                          value={supplierComplianceForm.kebijakanAntikorupsi}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanAntikorupsi: e.target.value }))}
+                          placeholder="Masukkan kebijakan antikorupsi"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.kebijakanAntikorupsiKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, kebijakanAntikorupsiKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">SOP Kode Etik</Label>
+                        <Input
+                          value={supplierComplianceForm.sopKodeEtik}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtik: e.target.value }))}
+                          placeholder="Masukkan SOP kode etik"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.sopKodeEtikKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, sopKodeEtikKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Saluran Pengaduan</Label>
+                        <Input
+                          value={supplierComplianceForm.saluranPengaduan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduan: e.target.value }))}
+                          placeholder="Masukkan saluran pengaduan"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.saluranPengaduanKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, saluranPengaduanKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3.12 Bukti Pajak dan Ekspor */}
+                    <div className="space-y-6 border p-6 rounded-lg">
+                      <h3 className="text-lg font-bold">3.12 Bukti Pajak dan Ekspor</h3>
+                      
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">Surat Terdaftar Pajak</Label>
+                        <Input
+                          value={supplierComplianceForm.suratTerdaftarPajak}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajak: e.target.value }))}
+                          placeholder="Masukkan surat terdaftar pajak"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.suratTerdaftarPajakKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, suratTerdaftarPajakKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-4 border-t pt-4">
+                        <Label className="font-medium">NPWP</Label>
+                        <Input
+                          value={supplierComplianceForm.npwp}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwp: e.target.value }))}
+                          placeholder="Masukkan NPWP"
+                        />
+                        <Textarea
+                          placeholder="Keterangan"
+                          value={supplierComplianceForm.npwpKeterangan}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, npwpKeterangan: e.target.value }))}
+                          rows={2}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-end space-x-4 pt-6">
