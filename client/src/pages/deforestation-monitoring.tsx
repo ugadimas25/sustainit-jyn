@@ -982,10 +982,10 @@ export default function DeforestationMonitoring() {
                         </div>
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        High Risk Datasets
+                        Spatial Legality
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Spatial Legality
+                        High Risk Datasets
                       </th>
                     </tr>
                   </thead>
@@ -1033,11 +1033,11 @@ export default function DeforestationMonitoring() {
                           <td className="px-4 py-4 text-sm">
                             {getLossDisplay(result.sbtnLoss, result.sbtnLossArea)}
                           </td>
-                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
-                            {result.highRiskDatasets.length > 0 ? result.highRiskDatasets.join(', ') : '-'}
-                          </td>
                           <td className="px-4 py-4 text-sm">
                             {getSpatialLegalityBadge(randomSpatialLegality)}
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {result.highRiskDatasets.length > 0 ? result.highRiskDatasets.join(', ') : '-'}
                           </td>
                         </tr>
                       );
