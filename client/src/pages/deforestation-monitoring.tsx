@@ -9,9 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { 
   Upload, File, Download, Trash2, Play, Map, AlertTriangle, 
   CheckCircle2, XCircle, Clock, Eye, Info, Zap, ChevronUp, ChevronDown,
-  Search, Filter, ChevronLeft, ChevronRight
+  Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal, Edit, 
+  RefreshCw, CheckSquare
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -828,24 +835,57 @@ export default function DeforestationMonitoring() {
                   <Map className="h-4 w-4 mr-2" />
                   View in EUDR Map
                 </Button>
-                <Button 
-                  onClick={() => downloadExcel()}
-                  variant="outline"
-                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                  data-testid="download-excel"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Excel
-                </Button>
-                <Button 
-                  onClick={() => downloadGeoJSON()}
-                  variant="outline"
-                  className="text-purple-600 border-purple-300 hover:bg-purple-50"
-                  data-testid="download-geojson"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  GeoJSON
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                      data-testid="download-dropdown"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                      <ChevronDown className="h-4 w-4 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => downloadExcel()} data-testid="download-excel-option">
+                      <File className="h-4 w-4 mr-2" />
+                      Excel CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => downloadGeoJSON()} data-testid="download-geojson-option">
+                      <Map className="h-4 w-4 mr-2" />
+                      GeoJSON
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline"
+                      className="text-gray-600 border-gray-300 hover:bg-gray-50"
+                      data-testid="action-dropdown"
+                    >
+                      <MoreHorizontal className="h-4 w-4 mr-2" />
+                      Action
+                      <ChevronDown className="h-4 w-4 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem data-testid="action-edit-polygon">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Polygon
+                    </DropdownMenuItem>
+                    <DropdownMenuItem data-testid="action-revalidation">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Revalidation
+                    </DropdownMenuItem>
+                    <DropdownMenuItem data-testid="action-verification">
+                      <CheckSquare className="h-4 w-4 mr-2" />
+                      Verification
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
               </div>
             </CardHeader>
