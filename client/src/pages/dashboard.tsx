@@ -408,7 +408,7 @@ export default function Dashboard() {
                     </thead>
                     <tbody>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">PT Sinar Mas Agro</td>
+                        <td className="py-3 px-4 font-medium">Estate 1</td>
                         <td className="py-3 px-4 text-right">2,847</td>
                         <td className="py-3 px-4 text-right text-green-600">2,765</td>
                         <td className="py-3 px-4 text-right">2,765</td>
@@ -418,7 +418,7 @@ export default function Dashboard() {
                         <td className="py-3 px-4 text-right text-green-600 font-semibold">97.1%</td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">PT Astra Agro Lestari</td>
+                        <td className="py-3 px-4 font-medium">Estate 2</td>
                         <td className="py-3 px-4 text-right">3,256</td>
                         <td className="py-3 px-4 text-right text-green-600">3,198</td>
                         <td className="py-3 px-4 text-right">3,198</td>
@@ -428,7 +428,7 @@ export default function Dashboard() {
                         <td className="py-3 px-4 text-right text-green-600 font-semibold">98.2%</td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">PT Wilmar International</td>
+                        <td className="py-3 px-4 font-medium">3rd Party Supplier 1</td>
                         <td className="py-3 px-4 text-right">2,134</td>
                         <td className="py-3 px-4 text-right text-green-600">2,067</td>
                         <td className="py-3 px-4 text-right">2,067</td>
@@ -438,7 +438,7 @@ export default function Dashboard() {
                         <td className="py-3 px-4 text-right text-green-600 font-semibold">96.9%</td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">PT IOI Corporation</td>
+                        <td className="py-3 px-4 font-medium">3rd Party Supplier 2</td>
                         <td className="py-3 px-4 text-right">1,892</td>
                         <td className="py-3 px-4 text-right text-green-600">1,834</td>
                         <td className="py-3 px-4 text-right">1,834</td>
@@ -448,7 +448,7 @@ export default function Dashboard() {
                         <td className="py-3 px-4 text-right text-green-600 font-semibold">96.9%</td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">PT Musim Mas</td>
+                        <td className="py-3 px-4 font-medium">Smallholder 1</td>
                         <td className="py-3 px-4 text-right">1,567</td>
                         <td className="py-3 px-4 text-right text-green-600">1,498</td>
                         <td className="py-3 px-4 text-right">1,498</td>
@@ -458,7 +458,7 @@ export default function Dashboard() {
                         <td className="py-3 px-4 text-right text-green-600 font-semibold">95.6%</td>
                       </tr>
                       <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">Smallholder Cooperatives</td>
+                        <td className="py-3 px-4 font-medium">Smallholder 2</td>
                         <td className="py-3 px-4 text-right">2,318</td>
                         <td className="py-3 px-4 text-right text-green-600">1,905</td>
                         <td className="py-3 px-4 text-right">1,905</td>
