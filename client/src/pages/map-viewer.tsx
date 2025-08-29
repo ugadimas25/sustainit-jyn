@@ -531,8 +531,8 @@ export default function MapViewer() {
           })
         };
 
-        // Analysis results from React
-        const analysisResults = ${JSON.stringify(analysisResults)};
+        // Analysis results from React - safely embedded
+        const analysisResults = JSON.parse(${JSON.stringify(JSON.stringify(analysisResults))});
         
         // Add polygons for each plot using actual geometry data
         const polygons = [];
