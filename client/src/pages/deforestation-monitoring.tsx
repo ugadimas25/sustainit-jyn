@@ -872,7 +872,24 @@ export default function DeforestationMonitoring() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setLocation('/edit-polygon')} data-testid="action-edit-polygon">
+                    <DropdownMenuItem onClick={() => {
+                      if (selectedRows.size === 0) {
+                        toast({
+                          title: "No Polygons Selected",
+                          description: "Please select at least one polygon to edit.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      // Filter selected polygons from analysis results
+                      const selectedPolygons = filteredResults.filter(result => 
+                        selectedRows.has(result.plotId)
+                      );
+                      
+                      // Navigate with selected data
+                      setLocation('/edit-polygon', { state: { selectedPolygons } });
+                    }} data-testid="action-edit-polygon">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Polygon
                     </DropdownMenuItem>

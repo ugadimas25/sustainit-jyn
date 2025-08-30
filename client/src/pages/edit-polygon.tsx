@@ -4,68 +4,23 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, X, RotateCcw } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, useRouter } from "wouter";
 
-// Sample polygon entities data matching the image
-const polygonEntities = [
-  {
-    id: "C",
-    entityId: "ENTITY1012456788309",
-    plotNumber: 1,
-    status: "Major Overlapping",
-    statusColor: "destructive",
-    overlap: "86% Overlap with adjacent polygon",
-    area: "2300 m²",
-    lastUpdated: "2024-01-13",
-    coordinates: [[-5.547945, 7.539989], [-5.510712, 7.539989], [-5.510712, 7.577221], [-5.547945, 7.577221], [-5.547945, 7.539989]]
-  },
-  {
-    id: "A",
-    entityId: "ENTITY1012456788390",
-    plotNumber: 1,
-    status: "New Data",
-    statusColor: "secondary",
-    statusBg: "Unproblematic",
-    overlap: "No issues detected",
-    area: "2300 m²",
-    lastUpdated: "2024-01-13",
-    coordinates: [[113.921327, -2.147871], [113.943567, -2.147871], [113.943567, -2.169234], [113.921327, -2.169234], [113.921327, -2.147871]]
-  },
-  {
-    id: "B",
-    entityId: "ENTITY1012456788390",
-    plotNumber: 1,
-    status: "New Data",
-    statusColor: "secondary",
-    statusBg: "Unproblematic",
-    overlap: "No issues detected",
-    area: "2300 m²",
-    lastUpdated: "2024-01-13",
-    coordinates: [[8.675277, 9.081999], [8.677777, 9.081999], [8.677777, 9.084499], [8.675277, 9.084499], [8.675277, 9.081999]]
-  },
-  {
-    id: "D",
-    entityId: "ENTITY1012456788309",
-    plotNumber: 1,
-    status: "Major Overlapping",
-    statusColor: "destructive",
-    overlap: "86% Overlap with adjacent polygon",
-    area: "2300 m²",
-    lastUpdated: "2024-01-13",
-    coordinates: [[18.555696, 4.361002], [18.655696, 4.361002], [18.655696, 4.461002], [18.555696, 4.461002], [18.555696, 4.361002]]
-  },
-  {
-    id: "E",
-    entityId: "ENTITY1012456788309",
-    plotNumber: 1,
-    status: "Minor Overlapping",
-    statusColor: "outline",
-    overlap: "15% Overlap with adjacent polygon",
-    area: "2300 m²",
-    lastUpdated: "2024-01-13",
-    coordinates: [[-1.094512, 7.946527], [-1.092012, 7.946527], [-1.092012, 7.949027], [-1.094512, 7.949027], [-1.094512, 7.946527]]
-  }
-];
+interface AnalysisResult {
+  plotId: string;
+  country: string;
+  area: number;
+  overallRisk: 'LOW' | 'MEDIUM' | 'HIGH';
+  complianceStatus: 'COMPLIANT' | 'NON-COMPLIANT';
+  gfwLoss: 'LOW' | 'MEDIUM' | 'HIGH';
+  jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH';
+  sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH';
+  highRiskDatasets: string[];
+  gfwLossArea?: number;
+  jrcLossArea?: number;
+  sbtnLossArea?: number;
+  geometry?: any;
+}
 
 const legendCategories = [
   { name: "Unproblematic", color: "#10b981", enabled: true },
@@ -82,10 +37,54 @@ const legendCategories = [
 
 export default function EditPolygon() {
   const [, setLocation] = useLocation();
+  const router = useRouter();
   const [mapType, setMapType] = useState<'Map' | 'Satellite' | 'Silver' | 'Dark'>('Map');
   const [legendVisible, setLegendVisible] = useState(true);
   const [categories, setCategories] = useState(legendCategories);
+  const [polygonEntities, setPolygonEntities] = useState<any[]>([]);
   const mapRef = useRef<HTMLDivElement>(null);
+
+  // Get selected polygons from navigation state
+  useEffect(() => {
+    const state = router.state as any;
+    const selectedPolygons: AnalysisResult[] = state?.selectedPolygons || [];
+    
+    if (selectedPolygons.length === 0) {
+      // No selected polygons, redirect back or show message
+      setLocation('/deforestation-monitoring');
+      return;
+    }
+
+    // Transform analysis results to polygon entities format
+    const transformedEntities = selectedPolygons.map((result, index) => {
+      const statusMapping = {
+        'HIGH': 'Major Overlapping',
+        'MEDIUM': 'Minor Overlapping', 
+        'LOW': 'Unproblematic'
+      };
+      
+      const colorMapping = {
+        'HIGH': 'destructive',
+        'MEDIUM': 'outline',
+        'LOW': 'default'
+      };
+
+      return {
+        id: String.fromCharCode(65 + index), // A, B, C, etc.
+        entityId: `ENTITY${result.plotId.replace('PLOT_', '')}2456788309`,
+        plotNumber: 1,
+        status: statusMapping[result.overallRisk] || 'Unproblematic',
+        statusColor: colorMapping[result.overallRisk] || 'default',
+        statusBg: result.complianceStatus === 'COMPLIANT' ? 'Unproblematic' : undefined,
+        overlap: result.overallRisk === 'HIGH' ? '86% Overlap with adjacent polygon' : 'No issues detected',
+        area: `${Math.round(result.area)} m²`,
+        lastUpdated: '2024-01-13',
+        coordinates: result.geometry?.coordinates?.[0] || []
+      };
+    });
+
+    setPolygonEntities(transformedEntities);
+  }, [router.state, setLocation]);
 
   const getStatusBadge = (status: string, variant: any) => {
     const baseClasses = "inline-flex items-center px-2 py-1 rounded text-xs font-medium";
@@ -290,7 +289,7 @@ export default function EditPolygon() {
             </Button>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            Showing 100 data of polygon map
+            Showing {polygonEntities.length} selected polygon{polygonEntities.length !== 1 ? 's' : ''}
           </p>
         </div>
 
