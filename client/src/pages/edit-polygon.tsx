@@ -69,15 +69,31 @@ export default function EditPolygon() {
         'LOW': 'default'
       };
 
+      // Determine polygon issues based on analysis
+      let polygonIssues = 'No issues detected';
+      if (result.overallRisk === 'HIGH') {
+        const issues = [];
+        if (result.highRiskDatasets.includes('GFW')) issues.push('GFW deforestation');
+        if (result.highRiskDatasets.includes('JRC')) issues.push('JRC alerts');
+        if (result.highRiskDatasets.includes('SBTN')) issues.push('SBTN forest loss');
+        if (issues.length > 0) {
+          polygonIssues = issues.join(', ');
+        } else {
+          polygonIssues = 'High risk detected';
+        }
+      } else if (result.overallRisk === 'MEDIUM') {
+        polygonIssues = 'Medium risk - requires monitoring';
+      }
+
       return {
         id: String.fromCharCode(65 + index), // A, B, C, etc.
-        entityId: `ENTITY${result.plotId.replace('PLOT_', '')}2456788309`,
-        plotNumber: 1,
+        plotId: result.plotId,
+        country: result.country,
         status: statusMapping[result.overallRisk] || 'Unproblematic',
         statusColor: colorMapping[result.overallRisk] || 'default',
         statusBg: result.complianceStatus === 'COMPLIANT' ? 'Unproblematic' : undefined,
-        overlap: result.overallRisk === 'HIGH' ? '86% Overlap with adjacent polygon' : 'No issues detected',
-        area: `${Math.round(result.area)} m²`,
+        polygonIssues: polygonIssues,
+        area: result.area, // Keep as hectares
         lastUpdated: '2024-01-13',
         coordinates: result.geometry?.coordinates?.[0] || []
       };
@@ -308,7 +324,7 @@ export default function EditPolygon() {
           {polygonEntities.map((entity) => (
             <Card key={entity.id} className="border border-gray-200 dark:border-gray-700">
               <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
+                <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-lg text-gray-900 dark:text-white">
                       Entity {entity.id}
@@ -322,25 +338,26 @@ export default function EditPolygon() {
                   </div>
                 </div>
                 
-                <p className="text-xs text-gray-500 mb-2">{entity.entityId}</p>
-                
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Plot {entity.plotNumber}</span>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Plot ID</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{entity.plotId}</div>
                   </div>
                   
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {entity.overlap}
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Country</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{entity.country}</div>
                   </div>
                   
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700">
-                    <div>
-                      <div className="text-xs text-gray-500">Area</div>
-                      <div className="font-medium">{entity.area}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500">Last Updated</div>
-                      <div className="text-xs">{entity.lastUpdated}</div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Area (HA)</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{entity.area.toFixed(2)} ha</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Polygon Issues</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      {entity.polygonIssues}
                     </div>
                   </div>
                 </div>
