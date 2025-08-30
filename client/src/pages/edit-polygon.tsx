@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, X, RotateCcw } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ArrowLeft, X, RotateCcw, ChevronDown } from "lucide-react";
 import { useLocation, useRouter } from "wouter";
 
 interface AnalysisResult {
@@ -20,6 +21,7 @@ interface AnalysisResult {
   jrcLossArea?: number;
   sbtnLossArea?: number;
   geometry?: any;
+  polygonIssues?: string;
 }
 
 const legendCategories = [
@@ -254,8 +256,8 @@ export default function EditPolygon() {
             maxWidth: 400,
             minWidth: 300,
             autoPan: true,
-            autoPanPaddingTopLeft: [20, 20],
-            autoPanPaddingBottomRight: [20, 20],
+            autoPanPaddingTopLeft: [20, 20] as [number, number],
+            autoPanPaddingBottomRight: [20, 20] as [number, number],
             keepInView: true
           };
 
@@ -378,9 +380,22 @@ export default function EditPolygon() {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
               Editing Polygon
             </h2>
-            <Button variant="outline" size="sm" data-testid="see-all">
-              See all
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-2" data-testid="action-dropdown">
+                  Action
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="cursor-pointer" data-testid="edit-polygon-option">
+                  Edit Polygon
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" data-testid="follow-ccw-option">
+                  Follow ccw orientation
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <p className="text-sm text-gray-500 mt-1">
             Showing {polygonEntities.length} selected polygon{polygonEntities.length !== 1 ? 's' : ''}
