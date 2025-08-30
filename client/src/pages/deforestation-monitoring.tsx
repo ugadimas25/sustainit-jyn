@@ -872,7 +872,7 @@ export default function DeforestationMonitoring() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem data-testid="action-edit-polygon">
+                    <DropdownMenuItem onClick={() => setLocation('/edit-polygon')} data-testid="action-edit-polygon">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Polygon
                     </DropdownMenuItem>
