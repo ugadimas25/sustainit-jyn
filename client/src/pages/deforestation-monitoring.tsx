@@ -1273,8 +1273,16 @@ export default function DeforestationMonitoring() {
                           <td className="px-4 py-4 text-sm">
                             {getSpatialLegalityBadge(randomSpatialLegality)}
                           </td>
-                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
-                            {result.polygonIssues || 'No Analysis Run Yet'}
+                          <td className="px-4 py-4 text-sm">
+                            <span className={`font-medium ${
+                              result.polygonIssues === 'No Issues Found' 
+                                ? 'text-green-600 dark:text-green-400'
+                                : result.polygonIssues === 'No Analysis Run Yet'
+                                ? 'text-gray-600 dark:text-gray-300'
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {result.polygonIssues || 'No Analysis Run Yet'}
+                            </span>
                           </td>
                         </tr>
                       );
