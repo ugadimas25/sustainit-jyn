@@ -103,6 +103,7 @@ export default function LegalityCompliance() {
     
     // 3.3 Bukti Pelaksanaan
     buktiPelaksanaan: '',
+    buktiPelaksanaanII: '',
     buktiPelaksanaanKeterangan: '',
     laporanRKLRPL: '',
     laporanRKLRPLKeterangan: '',
@@ -110,6 +111,8 @@ export default function LegalityCompliance() {
     laporanPestisidaKeterangan: '',
     
     // 3.4 Peraturan Kehutanan
+    peraturanKehutanan: '',
+    peraturanKehutananKeterangan: '',
     areaSesuaiPeruntukan: '',
     areaSesuaiPeruntukanKeterangan: '',
     skPelepasanHutan: '',
@@ -118,6 +121,8 @@ export default function LegalityCompliance() {
     dokumenInstansiRelevanKeterangan: '',
     
     // 3.5 Hak Pihak Ketiga dan Masyarakat Adat
+    hakPihakKetiga: '',
+    hakPihakKetigaKeterangan: '',
     kebijakanHakPihakKetiga: '',
     kebijakanHakPihakKetigaKeterangan: '',
     kebijakanPerusahaan: '',
@@ -132,6 +137,8 @@ export default function LegalityCompliance() {
     sopKeluhanStakeholderKeterangan: '',
     
     // 3.6 Kewajiban Pengembangan Plasma
+    mouKerjasama: '',
+    mouKerjasamaKeterangan: '',
     mouKerjaSama: '',
     mouKerjaSamaKeterangan: '',
     skCPCL: '',
@@ -140,6 +147,10 @@ export default function LegalityCompliance() {
     laporanRealisasiPlasmaKeterangan: '',
     
     // 3.7 Bukti Implementasi
+    suratMasukInformasi: '',
+    suratMasukInformasiKeterangan: '',
+    suratKeluarInformasi: '',
+    suratKeluarInformasiKeterangan: '',
     buktiGRTT: '',
     buktiGRTTKeterangan: '',
     buktiFPIC: '',
@@ -158,6 +169,8 @@ export default function LegalityCompliance() {
     laporanSengketaLahanKeterangan: '',
     
     // 3.9 Hak Buruh dan HAM
+    kebijakanHAM: '',
+    kebijakanHAMKeterangan: '',
     komitmenHakBuruh: '',
     kebijakanHakBuruh: '',
     kebijakanHakBuruhKeterangan: '',
@@ -167,6 +180,8 @@ export default function LegalityCompliance() {
     sopK3Keterangan: '',
     
     // 3.10 Bukti Pelaksanaan HAM
+    buktiDisnaker: '',
+    buktiDisnakerKeterangan: '',
     buktiPerjanjianKerja: '',
     buktiPerjanjianKerjaKeterangan: '',
     daftarKaryawan: '',
@@ -181,6 +196,10 @@ export default function LegalityCompliance() {
     laporanP2K3Keterangan: '',
     
     // 3.11 Perpajakan dan Antikorupsi
+    kebijakanPerpajakan: '',
+    kebijakanPerpajakanKeterangan: '',
+    sopKodeEtikBisnis: '',
+    sopKodeEtikBisnisKeterangan: '',
     komitmenAntikorupsi: '',
     kebijakanAntikorupsi: '',
     kebijakanAntikorupsiKeterangan: '',
@@ -207,35 +226,59 @@ export default function LegalityCompliance() {
   });
 
   // Helper functions for progress calculation
-  const calculateSectionProgress = (fields: string[]) => {
+  const calculateSectionProgress = (fields: string[], formData: any) => {
     const totalFields = fields.length;
     const completedFields = fields.filter(field => 
-      supplierComplianceForm[field as keyof typeof supplierComplianceForm] !== ''
+      formData[field as keyof typeof formData] !== ''
     ).length;
     return totalFields > 0 ? (completedFields / totalFields) * 100 : 0;
   };
 
-  const calculateOverallProgress = () => {
+  const calculateOverallProgress = (formData: any) => {
     const sectionFields = {
       landRights: ['historisPerolehanTanah', 'izinPencadangan', 'persetujuanPKKPR', 'izinUsahaPerkebunan', 'skHGU'],
       environmental: ['izinLingkungan', 'izinRintekTPS', 'izinLimbahCair', 'persetujuanAndalalin', 'daftarPestisida'],
-      implementation: ['buktiPelaksanaan', 'buktiPelaksanaanII'],
-      forestry: ['peraturanKehutanan'],
-      thirdParty: ['hakPihakKetiga'],
-      cooperation: ['mouKerjasama'],
-      information: ['suratMasukInformasi', 'suratKeluarInformasi'],
-      humanRights: ['kebijakanHAM'],
+      implementation: ['buktiPelaksanaan', 'laporanRKLRPL', 'laporanPestisida'],
+      forestry: ['areaSesuaiPeruntukan', 'skPelepasanHutan', 'dokumenInstansiRelevant'],
+      thirdParty: ['kebijakanHakPihakKetiga', 'kebijakanPerusahaan', 'sopGRTT'],
+      cooperation: ['mouKerjaSama', 'skCPCL', 'laporanRealisasiPlasma'],
+      information: ['suratMasukPermintaan', 'suratKeluarPermintaan', 'suratMasukKeluhan'],
+      humanRights: ['komitmenHakBuruh', 'kebijakanHakBuruh', 'sopKetenagakerjaan'],
       labor: ['daftarKaryawan', 'skUMR', 'skSerikatPekerja', 'buktiBPJS', 'laporanP2K3'],
       antiCorruption: ['komitmenAntikorupsi', 'kebijakanAntikorupsi', 'sopKodeEtik', 'saluranPengaduan'],
       taxation: ['suratTerdaftarPajak', 'npwp']
     };
 
-    const sectionProgress = {};
+    const sectionProgress: {
+      landRights: number;
+      environmental: number;
+      implementation: number;
+      forestry: number;
+      thirdParty: number;
+      cooperation: number;
+      information: number;
+      humanRights: number;
+      labor: number;
+      antiCorruption: number;
+      taxation: number;
+    } = {
+      landRights: 0,
+      environmental: 0,
+      implementation: 0,
+      forestry: 0,
+      thirdParty: 0,
+      cooperation: 0,
+      information: 0,
+      humanRights: 0,
+      labor: 0,
+      antiCorruption: 0,
+      taxation: 0
+    };
     let totalProgress = 0;
     
     Object.entries(sectionFields).forEach(([section, fields]) => {
-      const progress = calculateSectionProgress(fields);
-      sectionProgress[section] = progress;
+      const progress = calculateSectionProgress(fields, formData);
+      sectionProgress[section as keyof typeof sectionProgress] = progress;
       totalProgress += progress;
     });
 
@@ -342,7 +385,7 @@ export default function LegalityCompliance() {
 
   // Update progress when form changes
   useEffect(() => {
-    const newProgress = calculateOverallProgress();
+    const newProgress = calculateOverallProgress(supplierComplianceForm);
     setComplianceProgress(newProgress);
   }, [supplierComplianceForm]);
 
@@ -368,7 +411,7 @@ export default function LegalityCompliance() {
   });
 
   // Fetch supplier compliance data
-  const { data: supplierComplianceData = [] } = useQuery({
+  const { data: supplierComplianceData = [] } = useQuery<any[]>({
     queryKey: ['/api/supplier-compliance'],
   });
 
@@ -576,13 +619,13 @@ export default function LegalityCompliance() {
   const createSupplierComplianceMutation = useMutation({
     mutationFn: async (data: any) => {
       // First save the data
-      const saveResponse = await apiRequest('POST', '/api/supplier-compliance', data);
+      const saveResponse = await apiRequest('POST', '/api/supplier-compliance', data) as any;
       
       // Then analyze it with AI
       const analysisResponse = await apiRequest('POST', `/api/supplier-compliance/${saveResponse.id}/analyze`, {
         formData: data,
         supplierName: data.namaSupplier
-      });
+      }) as any;
       
       return { saveResponse, analysisResponse };
     },
@@ -590,7 +633,7 @@ export default function LegalityCompliance() {
       queryClient.invalidateQueries({ queryKey: ['/api/supplier-compliance'] });
       
       // Store analysis results
-      if (result.analysisResponse.analysis) {
+      if (result.analysisResponse?.analysis) {
         setAnalysisResults(prev => [...prev, result.analysisResponse]);
       }
       
@@ -612,12 +655,12 @@ export default function LegalityCompliance() {
   // Mutation for analyzing individual supplier
   const analyzeSupplierMutation = useMutation({
     mutationFn: ({ supplierId, formData, supplierName }: { supplierId: string, formData: any, supplierName: string }) => 
-      apiRequest('POST', `/api/supplier-compliance/${supplierId}/analyze`, { formData, supplierName }),
-    onSuccess: (result) => {
+      apiRequest('POST', `/api/supplier-compliance/${supplierId}/analyze`, { formData, supplierName }) as Promise<any>,
+    onSuccess: (result: any) => {
       setAnalysisResults(prev => [...prev.filter(r => r.supplierId !== result.supplierId), result]);
       toast({
         title: "Analisis AI selesai",
-        description: `Analisis kepatuhan untuk ${result.supplierName} telah selesai.`,
+        description: `Analisis kepatuhan untuk ${result?.supplierName || 'supplier'} telah selesai.`,
       });
     },
     onError: (error: any) => {
@@ -856,7 +899,7 @@ export default function LegalityCompliance() {
                         <Label className="font-medium">Nama Supplier :</Label>
                         <AutocompleteInput
                           value={supplierComplianceForm.namaSupplier}
-                          onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaSupplier: value }))}
+                          onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaSupplier: value }))}
                           suggestions={getSupplierSuggestions()}
                           placeholder="Pilih dari data yang tersedia atau ketik manual"
                           data-testid="input-nama-supplier"
@@ -871,7 +914,7 @@ export default function LegalityCompliance() {
                         <Label className="font-medium">Nama Group / Parent Company Name :</Label>
                         <AutocompleteInput
                           value={supplierComplianceForm.namaGroup}
-                          onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaGroup: value }))}
+                          onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaGroup: value }))}
                           suggestions={getSupplierSuggestions()}
                           placeholder="Pilih dari data yang tersedia atau ketik manual"
                           data-testid="input-nama-group"
@@ -982,7 +1025,7 @@ export default function LegalityCompliance() {
                           <Label className="font-medium">Kebun :</Label>
                           <AutocompleteInput
                             value={supplierComplianceForm.koordinatKebun}
-                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKebun: value }))}
+                            onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKebun: value }))}
                             suggestions={getCoordinateSuggestions()}
                             placeholder="Format: latitude, longitude atau pilih dari saran"
                             data-testid="input-koordinat-kebun"
@@ -997,7 +1040,7 @@ export default function LegalityCompliance() {
                           <Label className="font-medium">Kantor :</Label>
                           <AutocompleteInput
                             value={supplierComplianceForm.koordinatKantor}
-                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKantor: value }))}
+                            onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, koordinatKantor: value }))}
                             suggestions={getCoordinateSuggestions()}
                             placeholder="Format: latitude, longitude atau pilih dari saran"
                             data-testid="input-koordinat-kantor"
@@ -1057,7 +1100,7 @@ export default function LegalityCompliance() {
                           <Label className="font-medium">Nama :</Label>
                           <AutocompleteInput
                             value={supplierComplianceForm.namaPenanggungJawab}
-                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaPenanggungJawab: value }))}
+                            onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaPenanggungJawab: value }))}
                             suggestions={getContactPersonSuggestions()}
                             placeholder="Pilih dari data yang tersedia atau ketik manual"
                             data-testid="input-nama-penanggung-jawab"
@@ -1103,7 +1146,7 @@ export default function LegalityCompliance() {
                           <Label className="font-medium">Nama :</Label>
                           <AutocompleteInput
                             value={supplierComplianceForm.namaTimInternal}
-                            onChange={(value) => setSupplierComplianceForm(prev => ({ ...prev, namaTimInternal: value }))}
+                            onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaTimInternal: value }))}
                             suggestions={getContactPersonSuggestions()}
                             placeholder="Pilih dari data yang tersedia atau ketik manual"
                             data-testid="input-nama-tim-internal"
