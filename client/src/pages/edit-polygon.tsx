@@ -354,7 +354,11 @@ export default function EditPolygon() {
                   {/* Polygon Issues */}
                   <div>
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">POLYGON ISSUES</div>
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                    <div className={`text-sm font-medium ${
+                      entity.polygonIssues === 'No Issues Found' || entity.polygonIssues === 'No issues detected'
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
                       {entity.polygonIssues}
                     </div>
                   </div>
