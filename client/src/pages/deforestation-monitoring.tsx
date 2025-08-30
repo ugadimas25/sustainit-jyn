@@ -628,15 +628,15 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  // Update select all state when current page data changes
+  // Update select all state when filtered data changes
   useEffect(() => {
-    if (currentPageData.length === 0) {
+    if (filteredResults.length === 0) {
       setSelectAll(false);
     } else {
-      const allCurrentPageSelected = currentPageData.every(row => selectedRows.has(row.plotId));
-      setSelectAll(allCurrentPageSelected && selectedRows.size > 0);
+      const allSelected = filteredResults.every(row => selectedRows.has(row.plotId));
+      setSelectAll(allSelected && selectedRows.size > 0);
     }
-  }, [currentPageData, selectedRows]);
+  }, [filteredResults, selectedRows]);
 
   const getSortIcon = (column: keyof AnalysisResult) => {
     if (sortColumn !== column) {
@@ -1108,8 +1108,8 @@ export default function DeforestationMonitoring() {
                           onCheckedChange={(checked) => {
                             setSelectAll(!!checked);
                             if (checked) {
-                              // Select all current page rows
-                              const allPlotIds = currentPageData.map(row => row.plotId);
+                              // Select all rows across all pages
+                              const allPlotIds = filteredResults.map(row => row.plotId);
                               setSelectedRows(new Set(allPlotIds));
                             } else {
                               // Deselect all
@@ -1240,8 +1240,8 @@ export default function DeforestationMonitoring() {
                                 setSelectedRows(newSelectedRows);
                                 
                                 // Update select all state
-                                const allCurrentPageSelected = currentPageData.every(row => newSelectedRows.has(row.plotId));
-                                setSelectAll(allCurrentPageSelected && newSelectedRows.size > 0);
+                                const allSelected = filteredResults.every(row => newSelectedRows.has(row.plotId));
+                                setSelectAll(allSelected && newSelectedRows.size > 0);
                               }}
                               data-testid={`checkbox-${result.plotId}`}
                             />
