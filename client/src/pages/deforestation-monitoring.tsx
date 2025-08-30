@@ -527,17 +527,12 @@ export default function DeforestationMonitoring() {
       issues.push('Duplicate Vertices');
     }
     
-    // 2. Check for self intersection (simplified check)
-    if (coordinates.length > 4 && hasSelfIntersection(coordinates)) {
-      issues.push('Self Intersection');
-    }
-    
-    // 3. Check right hand rule (should be counter-clockwise)
+    // 2. Check right hand rule (should be counter-clockwise)
     if (!isCounterClockwise(coordinates)) {
       issues.push('Wrong Orientation');
     }
     
-    // 4. Check for overlaps with other polygons (simplified)
+    // 3. Check for overlaps with other polygons (simplified)
     const hasOverlap = allResults.some(other => {
       if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
       return polygonsOverlap(coordinates, other.geometry.coordinates[0]);
@@ -546,7 +541,7 @@ export default function DeforestationMonitoring() {
       issues.push('Overlap Detected');
     }
     
-    // 5. Check for duplicate polygons
+    // 4. Check for duplicate polygons
     const isDuplicate = allResults.some(other => {
       if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
       return JSON.stringify(coordinates) === JSON.stringify(other.geometry.coordinates[0]);
@@ -556,28 +551,6 @@ export default function DeforestationMonitoring() {
     }
     
     return issues;
-  };
-  
-  const hasSelfIntersection = (coords: number[][]) => {
-    // Simplified self-intersection check
-    for (let i = 0; i < coords.length - 3; i++) {
-      for (let j = i + 2; j < coords.length - 1; j++) {
-        if (linesIntersect(coords[i], coords[i + 1], coords[j], coords[j + 1])) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-  
-  const linesIntersect = (p1: number[], p2: number[], p3: number[], p4: number[]) => {
-    const denom = (p4[1] - p3[1]) * (p2[0] - p1[0]) - (p4[0] - p3[0]) * (p2[1] - p1[1]);
-    if (denom === 0) return false;
-    
-    const ua = ((p4[0] - p3[0]) * (p1[1] - p3[1]) - (p4[1] - p3[1]) * (p1[0] - p3[0])) / denom;
-    const ub = ((p2[0] - p1[0]) * (p1[1] - p3[1]) - (p2[1] - p1[1]) * (p1[0] - p3[0])) / denom;
-    
-    return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1;
   };
   
   const isCounterClockwise = (coords: number[][]) => {
