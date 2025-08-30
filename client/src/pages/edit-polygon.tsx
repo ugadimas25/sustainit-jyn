@@ -322,30 +322,32 @@ export default function EditPolygon() {
 
         <div className="p-4 space-y-4">
           {polygonEntities.map((entity) => (
-            <Card key={entity.id} className="border border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4">
-                <div className="space-y-4">
+            <Card key={entity.id} className="border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-0">
+                {/* Status Badge Header */}
+                <div className="p-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex justify-center">
+                    {getStatusBadge(entity.status, entity.statusColor)}
+                  </div>
+                </div>
+                
+                <div className="p-4 space-y-4">
                   {/* Plot ID */}
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
                     <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1">Plot ID</div>
-                    <div className="font-bold text-lg text-blue-900 dark:text-blue-100">{entity.plotId}</div>
+                    <div className="font-bold text-base text-blue-900 dark:text-blue-100">{entity.plotId}</div>
                   </div>
                   
                   {/* Country */}
                   <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800">
                     <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide mb-1">Country</div>
-                    <div className="font-semibold text-emerald-900 dark:text-emerald-100">{entity.country}</div>
+                    <div className="font-semibold text-base text-emerald-900 dark:text-emerald-100">{entity.country}</div>
                   </div>
                   
                   {/* Area */}
                   <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-3 rounded-lg border border-orange-100 dark:border-orange-800">
                     <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-1">Area (HA)</div>
-                    <div className="font-bold text-xl text-orange-900 dark:text-orange-100">{entity.area.toFixed(2)} ha</div>
-                  </div>
-                  
-                  {/* Status Badge */}
-                  <div className="flex justify-center">
-                    {getStatusBadge(entity.status, entity.statusColor)}
+                    <div className="font-bold text-base text-orange-900 dark:text-orange-100">{entity.area.toFixed(2)} ha</div>
                   </div>
                   
                   {/* Polygon Issues */}
