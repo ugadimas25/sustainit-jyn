@@ -112,86 +112,97 @@ export default function EditPolygon() {
   // Initialize map
   useEffect(() => {
     const initializeMap = async () => {
-      if (!mapRef.current) return;
+      if (!mapRef.current || polygonEntities.length === 0) return;
 
-      // Dynamic import of Leaflet to avoid SSR issues
-      const L = (await import('leaflet')).default;
-      
-      // Initialize map
-      const map = L.map(mapRef.current, {
-        center: [-2.5, 107.5], // Center on Indonesia
-        zoom: 6,
-        zoomControl: true
-      });
+      try {
+        // Dynamic import of Leaflet to avoid SSR issues
+        const L = (await import('leaflet')).default;
+        
+        // Clear any existing map
+        if (mapRef.current._leaflet_id) {
+          return;
+        }
+        
+        // Initialize map
+        const map = L.map(mapRef.current, {
+          center: [-2.5, 107.5], // Center on Indonesia
+          zoom: 6,
+          zoomControl: true
+        });
 
-      // Add tile layer based on map type
-      let tileLayer;
-      switch (mapType) {
-        case 'Satellite':
-          tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: '&copy; Esri'
-          });
-          break;
-        case 'Silver':
-          tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-          });
-          break;
-        case 'Dark':
-          tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; CartoDB'
-          });
-          break;
-        default:
-          tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-          });
-      }
-      
-      tileLayer.addTo(map);
-
-      // Add polygons
-      polygonEntities.forEach((entity) => {
-        let color;
-        switch (entity.status) {
-          case 'Major Overlapping':
-            color = '#dc2626';
+        // Add tile layer based on map type
+        let tileLayer;
+        switch (mapType) {
+          case 'Satellite':
+            tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+              attribution: '&copy; Esri'
+            });
             break;
-          case 'Minor Overlapping':
-            color = '#3b82f6';
+          case 'Silver':
+            tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap contributors'
+            });
             break;
-          case 'Unproblematic':
-            color = '#10b981';
+          case 'Dark':
+            tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+              attribution: '&copy; CartoDB'
+            });
             break;
           default:
-            color = '#6b7280';
+            tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; OpenStreetMap contributors'
+            });
         }
+        
+        tileLayer.addTo(map);
 
-        const polygon = L.polygon(entity.coordinates.map(coord => [coord[1], coord[0]]), {
-          fillColor: color,
-          color: color,
-          weight: 2,
-          opacity: 0.8,
-          fillOpacity: 0.6
-        }).addTo(map);
+        // Add polygons
+        polygonEntities.forEach((entity) => {
+          if (!entity.coordinates || entity.coordinates.length === 0) return;
+          
+          let color;
+          switch (entity.status) {
+            case 'Major Overlapping':
+              color = '#dc2626';
+              break;
+            case 'Minor Overlapping':
+              color = '#3b82f6';
+              break;
+            case 'Unproblematic':
+              color = '#10b981';
+              break;
+            default:
+              color = '#6b7280';
+          }
 
-        polygon.bindPopup(`
-          <div class="p-2">
-            <strong>Entity ${entity.id}</strong><br/>
-            <span class="text-sm text-gray-600">${entity.entityId}</span><br/>
-            <span class="text-sm">${entity.status}</span><br/>
-            <span class="text-sm">Area: ${entity.area}</span>
-          </div>
-        `);
-      });
+          const polygon = L.polygon(entity.coordinates.map(coord => [coord[1], coord[0]]), {
+            fillColor: color,
+            color: color,
+            weight: 2,
+            opacity: 0.8,
+            fillOpacity: 0.6
+          }).addTo(map);
 
-      return () => {
-        map.remove();
-      };
+          polygon.bindPopup(`
+            <div class="p-2">
+              <strong>Entity ${entity.id}</strong><br/>
+              <span class="text-sm text-gray-600">${entity.entityId}</span><br/>
+              <span class="text-sm">${entity.status}</span><br/>
+              <span class="text-sm">Area: ${entity.area}</span>
+            </div>
+          `);
+        });
+
+        return () => {
+          map.remove();
+        };
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
     };
 
     initializeMap();
-  }, [mapType]);
+  }, [mapType, polygonEntities]);
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
