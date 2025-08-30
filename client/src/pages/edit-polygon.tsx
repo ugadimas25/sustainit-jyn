@@ -69,29 +69,36 @@ export default function EditPolygon() {
         'LOW': 'default'
       };
 
-      // Determine polygon issues based on analysis
-      let polygonIssues = 'No issues detected';
-      if (result.overallRisk === 'HIGH') {
-        const issues = [];
-        if (result.highRiskDatasets.includes('GFW')) issues.push('GFW deforestation');
-        if (result.highRiskDatasets.includes('JRC')) issues.push('JRC alerts');
-        if (result.highRiskDatasets.includes('SBTN')) issues.push('SBTN forest loss');
-        if (issues.length > 0) {
-          polygonIssues = issues.join(', ');
-        } else {
-          polygonIssues = 'High risk detected';
-        }
-      } else if (result.overallRisk === 'MEDIUM') {
-        polygonIssues = 'Medium risk - requires monitoring';
+      // Use actual polygonIssues from the result data
+      const polygonIssues = result.polygonIssues || 'No Issues Found';
+      
+      // Map polygon issues to status categories
+      let status = 'Unproblematic';
+      let statusColor = 'default';
+      
+      if (polygonIssues.includes('Overlap Detected') || polygonIssues.includes('Major Overlap')) {
+        status = 'Major Overlapping';
+        statusColor = 'destructive';
+      } else if (polygonIssues.includes('Minor Overlap') || polygonIssues.includes('Duplicate Vertices')) {
+        status = 'Minor Overlapping';
+        statusColor = 'outline';
+      } else if (polygonIssues.includes('Duplicate Polygon')) {
+        status = 'Duplicate/Major Overlapping';
+        statusColor = 'destructive';
+      } else if (polygonIssues.includes('Wrong Orientation') || polygonIssues.includes('Invalid Geometry')) {
+        status = 'Malformed';
+        statusColor = 'secondary';
+      } else if (polygonIssues === 'No Issues Found' || polygonIssues === 'No issues detected') {
+        status = 'Unproblematic';
+        statusColor = 'default';
       }
 
       return {
         id: String.fromCharCode(65 + index), // A, B, C, etc.
         plotId: result.plotId,
         country: result.country,
-        status: statusMapping[result.overallRisk] || 'Unproblematic',
-        statusColor: colorMapping[result.overallRisk] || 'default',
-        statusBg: result.complianceStatus === 'COMPLIANT' ? 'Unproblematic' : undefined,
+        status: status,
+        statusColor: statusColor,
         polygonIssues: polygonIssues,
         area: result.area, // Keep as hectares
         lastUpdated: '2024-01-13',
