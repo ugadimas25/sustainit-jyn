@@ -12,6 +12,7 @@ import {
   plots, type Plot, type InsertPlot,
   custodyChains, type CustodyChain, type InsertCustodyChain,
   massBalanceRecords, type MassBalanceRecord, type InsertMassBalanceRecord,
+  suppliers, type Supplier, type InsertSupplier,
   supplierWorkflowLinks, type SupplierWorkflowLink, type InsertSupplierWorkflowLink,
   workflowShipments, type WorkflowShipment, type InsertWorkflowShipment,
   ddsReports, type DdsReport, type InsertDdsReport,
@@ -265,7 +266,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFacilitiesByType(type: string): Promise<Facility[]> {
-    return await db.select().from(facilities).where(eq(facilities.type, type));
+    return await db.select().from(facilities).where(eq(facilities.type, type as any));
   }
 
   async createFacility(insertFacility: InsertFacility): Promise<Facility> {
@@ -511,7 +512,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSupplier(id: string): Promise<boolean> {
     const result = await db.delete(suppliers).where(eq(suppliers.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Supplier workflow link methods
@@ -537,7 +538,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSupplierWorkflowLink(id: string): Promise<boolean> {
     const result = await db.delete(supplierWorkflowLinks).where(eq(supplierWorkflowLinks.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Workflow shipment methods
@@ -561,7 +562,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWorkflowShipment(id: string): Promise<boolean> {
     const result = await db.delete(workflowShipments).where(eq(workflowShipments.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getMills(): Promise<Mill[]> {
@@ -650,7 +651,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const { estateDataCollection } = await import("@shared/schema");
       const result = await db.delete(estateDataCollection).where(eq(estateDataCollection.id, id));
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("Error deleting estate data collection:", error);
       return false;
@@ -712,7 +713,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const { millDataCollection } = await import("@shared/schema");
       const result = await db.delete(millDataCollection).where(eq(millDataCollection.id, id));
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("Error deleting mill data collection:", error);
       return false;
@@ -733,7 +734,7 @@ export class DatabaseStorage implements IStorage {
   async getTraceabilityDataCollectionById(id: string): Promise<import("@shared/schema").TraceabilityDataCollection | undefined> {
     try {
       const { traceabilityDataCollection } = await import("@shared/schema");
-      const [result] = await db.select().from(traceabilityDataCollection).where(eq(traceabilityDataCollection.id, id));
+      const [result] = await db.select().from(traceabilityDataCollection).where(eq(traceabilityDataCollection.id, parseInt(id)));
       return result || undefined;
     } catch (error) {
       console.error("Error getting traceability data collection by id:", error);
