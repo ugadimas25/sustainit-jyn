@@ -135,7 +135,7 @@ export default function EditPolygon() {
         const L = (await import('leaflet')).default;
         
         // Clear any existing map
-        if (mapRef.current._leaflet_id) {
+        if ((mapRef.current as any)._leaflet_id) {
           return;
         }
         
@@ -191,7 +191,7 @@ export default function EditPolygon() {
               color = '#6b7280';
           }
 
-          const polygon = L.polygon(entity.coordinates.map(coord => [coord[1], coord[0]]), {
+          const polygon = L.polygon(entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]), {
             fillColor: color,
             color: color,
             weight: 2,
@@ -324,39 +324,34 @@ export default function EditPolygon() {
           {polygonEntities.map((entity) => (
             <Card key={entity.id} className="border border-gray-200 dark:border-gray-700">
               <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-lg text-gray-900 dark:text-white">
-                      Entity {entity.id}
-                    </span>
+                <div className="space-y-4">
+                  {/* Plot ID */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+                    <div className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wide mb-1">Plot ID</div>
+                    <div className="font-bold text-lg text-blue-900 dark:text-blue-100">{entity.plotId}</div>
+                  </div>
+                  
+                  {/* Country */}
+                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-3 rounded-lg border border-emerald-100 dark:border-emerald-800">
+                    <div className="text-xs font-medium text-emerald-700 dark:text-emerald-300 uppercase tracking-wide mb-1">Country</div>
+                    <div className="font-semibold text-emerald-900 dark:text-emerald-100">{entity.country}</div>
+                  </div>
+                  
+                  {/* Area */}
+                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-3 rounded-lg border border-orange-100 dark:border-orange-800">
+                    <div className="text-xs font-medium text-orange-700 dark:text-orange-300 uppercase tracking-wide mb-1">Area (HA)</div>
+                    <div className="font-bold text-xl text-orange-900 dark:text-orange-100">{entity.area.toFixed(2)} ha</div>
+                  </div>
+                  
+                  {/* Status Badge */}
+                  <div className="flex justify-center">
                     {getStatusBadge(entity.status, entity.statusColor)}
-                    {entity.statusBg && (
-                      <Badge variant="default" className="bg-green-100 text-green-700">
-                        {entity.statusBg}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Plot ID</div>
-                    <div className="font-medium text-gray-900 dark:text-white">{entity.plotId}</div>
                   </div>
                   
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Country</div>
-                    <div className="font-medium text-gray-900 dark:text-white">{entity.country}</div>
-                  </div>
-                  
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Area (HA)</div>
-                    <div className="font-medium text-gray-900 dark:text-white">{entity.area.toFixed(2)} ha</div>
-                  </div>
-                  
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">Polygon Issues</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                  {/* Polygon Issues */}
+                  <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800/50 dark:to-gray-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="text-xs font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-2">Polygon Issues</div>
+                    <div className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed">
                       {entity.polygonIssues}
                     </div>
                   </div>
