@@ -26,6 +26,7 @@ export default function LegalityCompliance() {
   const [analysisResults, setAnalysisResults] = useState<any[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   
   // Progress tracking
   const [complianceProgress, setComplianceProgress] = useState({
@@ -637,6 +638,9 @@ export default function LegalityCompliance() {
         setAnalysisResults(prev => [...prev, result.analysisResponse]);
       }
       
+      // Mark form as submitted to show progress tracker
+      setIsFormSubmitted(true);
+      
       toast({
         title: "Data Supplier Compliance berhasil disimpan dan dianalisis",
         description: "Data telah disimpan dan analisis AI telah selesai.",
@@ -771,8 +775,9 @@ export default function LegalityCompliance() {
                 </CardDescription>
               </CardHeader>
               
-              {/* Interactive Compliance Progress Tracker */}
-              <div className="px-6 pb-4">
+              {/* Interactive Compliance Progress Tracker - Only show after form submission */}
+              {isFormSubmitted && (
+                <div className="px-6 pb-4">
                 <Card className="border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
@@ -888,7 +893,8 @@ export default function LegalityCompliance() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+                </div>
+              )}
 
               <CardContent>
                 <form onSubmit={handleSupplierComplianceSubmit} className="space-y-8">
