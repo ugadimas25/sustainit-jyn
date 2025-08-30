@@ -37,6 +37,7 @@ interface AnalysisResult {
   gfwLossArea?: number;
   jrcLossArea?: number;
   sbtnLossArea?: number;
+  polygonIssues?: string;
 }
 
 interface UploadedFile {
@@ -584,7 +585,8 @@ export default function DeforestationMonitoring() {
         'JRC Forest Loss': result.jrcLoss,
         'JRC Loss Area (ha)': result.jrcLossArea || 0,
         'SBTN Natural Loss': result.sbtnLoss,
-        'SBTN Loss Area (ha)': result.sbtnLossArea || 0
+        'SBTN Loss Area (ha)': result.sbtnLossArea || 0,
+        'Polygon Issues': result.polygonIssues || 'No Analysis Run Yet'
       }));
 
       // Convert to CSV format for Excel compatibility
@@ -644,6 +646,7 @@ export default function DeforestationMonitoring() {
           jrcLossArea: result.jrcLossArea,
           sbtnLoss: result.sbtnLoss,
           sbtnLossArea: result.sbtnLossArea,
+          polygonIssues: result.polygonIssues || 'No Analysis Run Yet',
           highRiskDatasets: result.highRiskDatasets
         },
         geometry: result.geometry || null
@@ -1075,6 +1078,9 @@ export default function DeforestationMonitoring() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Spatial Legality
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Polygon Issues
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -1142,6 +1148,9 @@ export default function DeforestationMonitoring() {
                           </td>
                           <td className="px-4 py-4 text-sm">
                             {getSpatialLegalityBadge(randomSpatialLegality)}
+                          </td>
+                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                            {result.polygonIssues || 'No Analysis Run Yet'}
                           </td>
                         </tr>
                       );
