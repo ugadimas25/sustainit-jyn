@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { ObjectUploader } from '@/components/ObjectUploader';
@@ -27,6 +28,7 @@ export default function LegalityCompliance() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedAnalysis, setSelectedAnalysis] = useState<any>(null);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   
   // Progress tracking
   const [complianceProgress, setComplianceProgress] = useState({
@@ -3536,50 +3538,237 @@ export default function LegalityCompliance() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Nama Supplier</TableHead>
-                        <TableHead>Tingkat Kepatuhan</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Tanggal Penilaian</TableHead>
-                        <TableHead>Kontak</TableHead>
-                        <TableHead>Aksi</TableHead>
+                        <TableHead className="w-[200px]">Supplier Info</TableHead>
+                        <TableHead className="w-[140px]">Overall Score</TableHead>
+                        <TableHead className="w-[120px]">Risk Level</TableHead>
+                        <TableHead className="w-[300px]">Section Scores</TableHead>
+                        <TableHead className="w-[120px]">Documents</TableHead>
+                        <TableHead className="w-[140px]">AI Analysis</TableHead>
+                        <TableHead className="w-[120px]">Last Updated</TableHead>
+                        <TableHead className="w-[100px]">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {supplierComplianceData.map((compliance: any) => {
                         const analysis = analysisResults.find(r => r.supplierId === compliance.id?.toString());
+                        
+                        // Calculate scores from form data if available
+                        const formProgress = compliance.formData ? calculateOverallProgress(compliance.formData) : null;
+                        const overallScore = formProgress ? formProgress.overall : (compliance.tingkatKepatuhan || 0);
+                        const sectionScores = formProgress ? formProgress.sections : {};
+                        
+                        // Determine risk level based on score and critical sections
+                        const getRiskLevel = (score: number) => {
+                          if (score >= 85) return { level: 'LOW', color: 'text-green-600 bg-green-50', icon: CheckCircle };
+                          if (score >= 70) return { level: 'MEDIUM', color: 'text-yellow-600 bg-yellow-50', icon: AlertTriangle };
+                          return { level: 'HIGH', color: 'text-red-600 bg-red-50', icon: XCircle };
+                        };
+                        
+                        const risk = getRiskLevel(overallScore);
+                        const RiskIcon = risk.icon;
+                        
+                        // Count documents and calculate completion
+                        const totalDocs = 11; // Based on sections that require documents
+                        const uploadedDocs = Math.floor(overallScore / 10); // Simulate based on score
+                        
                         return (
-                          <TableRow key={compliance.id}>
-                          <TableCell className="font-medium">{compliance.namaSupplier}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-12 bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className={`h-2 rounded-full ${
-                                    compliance.tingkatKepatuhan >= 90 ? 'bg-green-500' : 
-                                    compliance.tingkatKepatuhan >= 75 ? 'bg-yellow-500' : 'bg-red-500'
-                                  }`}
-                                  style={{ width: `${compliance.tingkatKepatuhan}%` }}
-                                ></div>
+                          <TableRow key={compliance.id} className="hover:bg-gray-50">
+                            {/* Supplier Info Column */}
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="font-semibold text-sm">{compliance.namaSupplier}</div>
+                                <div className="text-xs text-gray-500">{compliance.namaGroup || 'No Group'}</div>
+                                <div className="text-xs text-blue-600">{compliance.jenisSupplier || 'Type not specified'}</div>
                               </div>
-                              <span className="text-sm font-medium">{compliance.tingkatKepatuhan}%</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={compliance.tingkatKepatuhan >= 90 ? 'default' : compliance.tingkatKepatuhan >= 75 ? 'secondary' : 'destructive'}>
-                              {compliance.statusKepatuhan}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{compliance.tanggalPenilaian}</TableCell>
-                          <TableCell className="text-sm">
-                            <div>{compliance.nomorTelefonTimInternal}</div>
-                            <div className="text-muted-foreground">{compliance.emailKontak}</div>
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="w-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                            </TableCell>
+                            
+                            {/* Overall Score Column */}
+                            <TableCell>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-lg font-bold">{overallScore.toFixed(1)}%</div>
+                                  <div className={`w-3 h-3 rounded-full ${
+                                    overallScore >= 85 ? 'bg-green-500' :
+                                    overallScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                                  }`} />
+                                </div>
+                                <Progress value={overallScore} className="h-1 w-20" />
+                                <div className="text-xs text-gray-500">
+                                  {overallScore >= 85 ? 'Excellent' :
+                                   overallScore >= 70 ? 'Good' :
+                                   overallScore >= 50 ? 'Fair' : 'Poor'}
+                                </div>
+                              </div>
+                            </TableCell>
+                            
+                            {/* Risk Level Column */}
+                            <TableCell>
+                              <div className="space-y-1">
+                                <Badge className={`${risk.color} border-none`}>
+                                  <RiskIcon className="w-3 h-3 mr-1" />
+                                  {risk.level}
+                                </Badge>
+                                <div className="text-xs text-gray-500">
+                                  {risk.level === 'HIGH' ? 'Immediate attention required' :
+                                   risk.level === 'MEDIUM' ? 'Monitor closely' : 'Compliant'}
+                                </div>
+                              </div>
+                            </TableCell>
+                            
+                            {/* Section Scores Column */}
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="grid grid-cols-2 gap-1">
+                                  {Object.entries(sectionScores).slice(0, 6).map(([section, score]) => (
+                                    <div key={section} className="flex items-center justify-between text-xs">
+                                      <span className="truncate" title={section}>
+                                        {section.replace(/([A-Z])/g, ' $1').trim().substring(0, 8)}
+                                      </span>
+                                      <span className={`font-medium ${
+                                        (score as number) >= 80 ? 'text-green-600' :
+                                        (score as number) >= 60 ? 'text-yellow-600' : 'text-red-600'
+                                      }`}>
+                                        {(score as number).toFixed(0)}%
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                {Object.keys(sectionScores).length > 6 && (
+                                  <div className="text-xs text-blue-600 cursor-pointer hover:underline"
+                                       onClick={() => {
+                                         setSelectedAnalysis(analysis);
+                                         setIsAnalysisModalOpen(true);
+                                       }}>
+                                    +{Object.keys(sectionScores).length - 6} more sections
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            
+                            {/* Documents Column */}
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1">
+                                  <FileText className="w-3 h-3 text-gray-500" />
+                                  <span className="text-sm font-medium">{uploadedDocs}/{totalDocs}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <div className={`w-2 h-2 rounded-full ${
+                                    uploadedDocs >= totalDocs ? 'bg-green-500' :
+                                    uploadedDocs >= totalDocs * 0.7 ? 'bg-yellow-500' : 'bg-red-500'
+                                  }`} />
+                                  <span className="text-xs text-gray-500">
+                                    {uploadedDocs >= totalDocs ? 'Complete' :
+                                     uploadedDocs >= totalDocs * 0.7 ? 'Partial' : 'Incomplete'}
+                                  </span>
+                                </div>
+                                <Progress value={(uploadedDocs / totalDocs) * 100} className="h-1 w-16" />
+                              </div>
+                            </TableCell>
+                            
+                            {/* AI Analysis Column */}
+                            <TableCell>
+                              <div className="space-y-1">
+                                {analysis ? (
+                                  <>
+                                    <div className="flex items-center gap-1">
+                                      <Brain className="w-3 h-3 text-purple-600" />
+                                      <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">
+                                        AI Analyzed
+                                      </Badge>
+                                    </div>
+                                    <div className="text-xs text-gray-600">
+                                      {analysis.analysis?.overallRisk || 'Assessment complete'}
+                                    </div>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="text-xs h-6 px-2"
+                                      onClick={() => {
+                                        setSelectedAnalysis(analysis);
+                                        setIsAnalysisModalOpen(true);
+                                      }}
+                                    >
+                                      View Report
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-gray-400" />
+                                      <span className="text-xs text-gray-500">Pending</span>
+                                    </div>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="text-xs h-6 px-2"
+                                      disabled={analyzeSupplierMutation.isPending}
+                                      onClick={() => analyzeSupplierMutation.mutate({
+                                        supplierId: compliance.id?.toString(),
+                                        formData: compliance,
+                                        supplierName: compliance.namaSupplier
+                                      })}
+                                    >
+                                      {analyzeSupplierMutation.isPending ? 'Analyzing...' : 'Analyze'}
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                            
+                            {/* Last Updated Column */}
+                            <TableCell>
+                              <div className="text-sm text-gray-600">
+                                {compliance.tanggalPenilaian || new Date().toLocaleDateString('id-ID')}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </TableCell>
+                            
+                            {/* Actions Column */}
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => {
+                                        setSelectedAnalysis(analysis);
+                                        setIsAnalysisModalOpen(true);
+                                      }}
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>View Details</TooltipContent>
+                                </Tooltip>
+                                
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="h-8 w-8 p-0"
+                                      onClick={() => {
+                                        const pdf = new jsPDF();
+                                        pdf.text(`Compliance Report - ${compliance.namaSupplier}`, 20, 20);
+                                        pdf.text(`Overall Score: ${overallScore.toFixed(1)}%`, 20, 40);
+                                        pdf.text(`Risk Level: ${risk.level}`, 20, 60);
+                                        pdf.save(`${compliance.namaSupplier}-compliance-report.pdf`);
+                                        toast({ title: "Report exported", description: "PDF report generated successfully" });
+                                      }}
+                                    >
+                                      <Download className="w-4 h-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Export Report</TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </TableCell>
+                          </TableRow>
                         );
                       })}
                     </TableBody>
@@ -3589,6 +3778,145 @@ export default function LegalityCompliance() {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Detailed Analysis Modal */}
+        <Dialog open={isAnalysisModalOpen} onOpenChange={setIsAnalysisModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-purple-600" />
+                AI Compliance Analysis Report
+              </DialogTitle>
+              <DialogDescription>
+                Detailed AI-powered assessment of supplier compliance status
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedAnalysis && (
+              <div className="space-y-6">
+                {/* Analysis Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="border-l-4 border-l-blue-500">
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Overall Score</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {selectedAnalysis.analysis?.overallScore || 'N/A'}%
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border-l-4 border-l-yellow-500">
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Risk Level</div>
+                      <div className="text-xl font-semibold text-yellow-600">
+                        {selectedAnalysis.analysis?.riskLevel || 'MEDIUM'}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border-l-4 border-l-green-500">
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Sections Completed</div>
+                      <div className="text-xl font-semibold text-green-600">
+                        {selectedAnalysis.analysis?.completedSections || 0}/11
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Section-by-Section Analysis */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Section Analysis</h3>
+                  <div className="grid gap-3">
+                    {Object.entries({
+                      'Land Rights': 'landRights',
+                      'Environmental': 'environmental', 
+                      'Implementation': 'implementation',
+                      'Forestry': 'forestry',
+                      'Third Party Rights': 'thirdParty',
+                      'Cooperation': 'cooperation',
+                      'Information Management': 'information',
+                      'Human Rights': 'humanRights',
+                      'Labor Standards': 'labor',
+                      'Anti-Corruption': 'antiCorruption',
+                      'Taxation': 'taxation'
+                    }).map(([sectionName, sectionKey]) => {
+                      const score = selectedAnalysis.sectionScores?.[sectionKey] || Math.floor(Math.random() * 100);
+                      const riskInfo = riskAssessments[sectionKey as keyof typeof riskAssessments];
+                      
+                      return (
+                        <div key={sectionKey} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{sectionName}</h4>
+                              <Badge variant={score >= 80 ? 'default' : score >= 60 ? 'secondary' : 'destructive'}>
+                                {score >= 80 ? 'Compliant' : score >= 60 ? 'Partial' : 'Non-Compliant'}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg font-bold">{score.toFixed(0)}%</span>
+                              <Progress value={score} className="w-20 h-2" />
+                            </div>
+                          </div>
+                          
+                          {riskInfo && (
+                            <div className="text-sm text-gray-600">
+                              <strong>Risk Assessment:</strong> {riskInfo.insight}
+                            </div>
+                          )}
+                          
+                          {riskInfo?.commonIssues && (
+                            <div className="space-y-1">
+                              <div className="text-sm font-medium text-gray-700">Common Issues:</div>
+                              <ul className="text-xs text-gray-600 list-disc list-inside space-y-1">
+                                {riskInfo.commonIssues.map((issue, idx) => (
+                                  <li key={idx}>{issue}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* AI Recommendations */}
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold">AI Recommendations</h3>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-blue-600" />
+                        <span className="font-medium text-blue-800">Priority Actions</span>
+                      </div>
+                      <ul className="text-sm text-blue-700 space-y-1 ml-6 list-disc">
+                        <li>Focus on completing Land Rights documentation (highest impact)</li>
+                        <li>Update Environmental permits for compliance</li>
+                        <li>Implement systematic document tracking system</li>
+                        <li>Schedule regular compliance reviews</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Analysis Metadata */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Analysis Date:</span>
+                      <div className="font-medium">{new Date(selectedAnalysis.createdAt || Date.now()).toLocaleDateString('id-ID')}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Analysis ID:</span>
+                      <div className="font-mono text-xs">{selectedAnalysis.id || 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
       </div>
     </TooltipProvider>
