@@ -46,6 +46,62 @@ export default function EditPolygon() {
   const [polygonEntities, setPolygonEntities] = useState<any[]>([]);
   const mapRef = useRef<HTMLDivElement>(null);
 
+  // Function to handle autocorrection of polygon orientation
+  const handleAutocorrection = () => {
+    // Find polygons with "Wrong Orientation" issues
+    const polygonsToFix = polygonEntities.filter(entity => 
+      entity.polygonIssues === 'Wrong Orientation'
+    );
+
+    if (polygonsToFix.length === 0) {
+      alert('No polygons with orientation issues found.');
+      return;
+    }
+
+    // Fix polygon orientation (reverse coordinates for ccw)
+    const fixedEntities = polygonEntities.map(entity => {
+      if (entity.polygonIssues === 'Wrong Orientation') {
+        // Reverse coordinates to fix orientation
+        const reversedCoordinates = [...entity.coordinates].reverse();
+        
+        return {
+          ...entity,
+          coordinates: reversedCoordinates,
+          polygonIssues: 'No Issues Found',
+          status: 'Unproblematic',
+          statusColor: 'default'
+        };
+      }
+      return entity;
+    });
+
+    // Update state and localStorage
+    setPolygonEntities(fixedEntities);
+    
+    // Update localStorage with fixed polygons
+    const storedPolygons = localStorage.getItem('selectedPolygonsForEdit');
+    if (storedPolygons) {
+      const selectedPolygons = JSON.parse(storedPolygons);
+      const updatedPolygons = selectedPolygons.map((polygon: AnalysisResult) => {
+        const fixedEntity = fixedEntities.find(entity => entity.plotId === polygon.plotId);
+        if (fixedEntity && polygon.polygonIssues === 'Wrong Orientation') {
+          return {
+            ...polygon,
+            polygonIssues: 'No Issues Found',
+            geometry: {
+              ...polygon.geometry,
+              coordinates: [fixedEntity.coordinates.map((coord: number[]) => [coord[1], coord[0]])]
+            }
+          };
+        }
+        return polygon;
+      });
+      localStorage.setItem('selectedPolygonsForEdit', JSON.stringify(updatedPolygons));
+    }
+
+    alert(`Fixed ${polygonsToFix.length} polygon(s) with orientation issues.`);
+  };
+
   // Get selected polygons from localStorage
   useEffect(() => {
     const storedPolygons = localStorage.getItem('selectedPolygonsForEdit');
@@ -391,8 +447,12 @@ export default function EditPolygon() {
                 <DropdownMenuItem className="cursor-pointer" data-testid="edit-polygon-option">
                   Edit Polygon
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer" data-testid="follow-ccw-option">
-                  Follow ccw orientation
+                <DropdownMenuItem 
+                  className="cursor-pointer" 
+                  data-testid="autocorrection-option"
+                  onClick={handleAutocorrection}
+                >
+                  Autocorrection
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
