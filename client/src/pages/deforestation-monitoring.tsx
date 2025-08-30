@@ -169,6 +169,9 @@ export default function DeforestationMonitoring() {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
   
+  // Revalidation state
+  const [isValidating, setIsValidating] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -507,6 +510,150 @@ export default function DeforestationMonitoring() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const currentPageData = filteredResults.slice(startIndex, endIndex);
+
+  // Polygon validation functions
+  const validatePolygon = (result: AnalysisResult, allResults: AnalysisResult[]) => {
+    const issues: string[] = [];
+    
+    if (!result.geometry?.coordinates?.[0]) {
+      return ['Invalid Geometry'];
+    }
+    
+    const coordinates = result.geometry.coordinates[0];
+    
+    // 1. Check for duplicate vertices
+    const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
+    if (uniqueCoords.size < coordinates.length - 1) { // -1 because first and last should be same
+      issues.push('Duplicate Vertices');
+    }
+    
+    // 2. Check for self intersection (simplified check)
+    if (coordinates.length > 4 && hasSelfIntersection(coordinates)) {
+      issues.push('Self Intersection');
+    }
+    
+    // 3. Check right hand rule (should be counter-clockwise)
+    if (!isCounterClockwise(coordinates)) {
+      issues.push('Wrong Orientation');
+    }
+    
+    // 4. Check for overlaps with other polygons (simplified)
+    const hasOverlap = allResults.some(other => {
+      if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
+      return polygonsOverlap(coordinates, other.geometry.coordinates[0]);
+    });
+    if (hasOverlap) {
+      issues.push('Overlap Detected');
+    }
+    
+    // 5. Check for duplicate polygons
+    const isDuplicate = allResults.some(other => {
+      if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
+      return JSON.stringify(coordinates) === JSON.stringify(other.geometry.coordinates[0]);
+    });
+    if (isDuplicate) {
+      issues.push('Duplicate Polygon');
+    }
+    
+    return issues;
+  };
+  
+  const hasSelfIntersection = (coords: number[][]) => {
+    // Simplified self-intersection check
+    for (let i = 0; i < coords.length - 3; i++) {
+      for (let j = i + 2; j < coords.length - 1; j++) {
+        if (linesIntersect(coords[i], coords[i + 1], coords[j], coords[j + 1])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+  
+  const linesIntersect = (p1: number[], p2: number[], p3: number[], p4: number[]) => {
+    const denom = (p4[1] - p3[1]) * (p2[0] - p1[0]) - (p4[0] - p3[0]) * (p2[1] - p1[1]);
+    if (denom === 0) return false;
+    
+    const ua = ((p4[0] - p3[0]) * (p1[1] - p3[1]) - (p4[1] - p3[1]) * (p1[0] - p3[0])) / denom;
+    const ub = ((p2[0] - p1[0]) * (p1[1] - p3[1]) - (p2[1] - p1[1]) * (p1[0] - p3[0])) / denom;
+    
+    return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1;
+  };
+  
+  const isCounterClockwise = (coords: number[][]) => {
+    let sum = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+      sum += (coords[i + 1][0] - coords[i][0]) * (coords[i + 1][1] + coords[i][1]);
+    }
+    return sum < 0;
+  };
+  
+  const polygonsOverlap = (coords1: number[][], coords2: number[][]) => {
+    // Simplified overlap check - check if any point of one polygon is inside the other
+    return pointInPolygon(coords1[0], coords2) || pointInPolygon(coords2[0], coords1);
+  };
+  
+  const pointInPolygon = (point: number[], polygon: number[][]) => {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      if (((polygon[i][1] > point[1]) !== (polygon[j][1] > point[1])) &&
+          (point[0] < (polygon[j][0] - polygon[i][0]) * (point[1] - polygon[i][1]) / (polygon[j][1] - polygon[i][1]) + polygon[i][0])) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  };
+  
+  const runPolygonValidation = async () => {
+    if (selectedRows.size === 0) {
+      toast({
+        title: "No Polygons Selected",
+        description: "Please select at least one polygon to validate.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsValidating(true);
+    
+    try {
+      // Simulate validation process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const updatedResults = analysisResults.map(result => {
+        if (selectedRows.has(result.plotId)) {
+          const issues = validatePolygon(result, analysisResults);
+          return {
+            ...result,
+            polygonIssues: issues.length > 0 ? issues.join(', ') : 'No Issues Found'
+          };
+        }
+        return result;
+      });
+      
+      setAnalysisResults(updatedResults);
+      setFilteredResults(updatedResults);
+      
+      // Update localStorage
+      localStorage.setItem('currentAnalysisResults', JSON.stringify(updatedResults));
+      
+      toast({
+        title: "Validation Complete",
+        description: `Validated ${selectedRows.size} polygon(s) successfully.`,
+        variant: "default",
+      });
+      
+    } catch (error) {
+      console.error('Validation error:', error);
+      toast({
+        title: "Validation Error",
+        description: "Failed to validate polygons. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   // Update select all state when current page data changes
   useEffect(() => {
@@ -899,9 +1046,13 @@ export default function DeforestationMonitoring() {
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Polygon
                     </DropdownMenuItem>
-                    <DropdownMenuItem data-testid="action-revalidation">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Revalidation
+                    <DropdownMenuItem 
+                      onClick={runPolygonValidation}
+                      disabled={selectedRows.size === 0 || isValidating}
+                      data-testid="action-revalidation"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
+                      {isValidating ? 'Validating...' : 'Revalidation'}
                     </DropdownMenuItem>
                     <DropdownMenuItem data-testid="action-verification">
                       <CheckSquare className="h-4 w-4 mr-2" />
