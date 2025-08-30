@@ -331,11 +331,6 @@ export default function EditPolygon() {
           {polygonEntities.map((entity) => (
             <Card key={entity.id} className="border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-4">
-                {/* Status Badge */}
-                <div className="flex justify-center mb-4">
-                  {getStatusBadge(entity.status, entity.statusColor)}
-                </div>
-                
                 {/* All Information in One Card */}
                 <div className="space-y-3">
                   {/* Plot ID */}
