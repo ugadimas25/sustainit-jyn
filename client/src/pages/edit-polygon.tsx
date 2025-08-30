@@ -179,11 +179,13 @@ export default function EditPolygon() {
         
         tileLayer.addTo(map);
 
-        // Add polygons
+        // Add polygons with center markers like EUDR Map Viewer
         polygonEntities.forEach((entity) => {
           if (!entity.coordinates || entity.coordinates.length === 0) return;
           
           let color;
+          const isHighRisk = entity.polygonIssues !== 'No Issues Found' && entity.polygonIssues !== 'No issues detected';
+          
           switch (entity.status) {
             case 'Major Overlapping':
               color = '#dc2626';
@@ -198,22 +200,80 @@ export default function EditPolygon() {
               color = '#6b7280';
           }
 
+          // Create polygon
           const polygon = L.polygon(entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]), {
             fillColor: color,
             color: color,
             weight: 2,
             opacity: 0.8,
-            fillOpacity: 0.6
+            fillOpacity: 0.4
           }).addTo(map);
 
-          polygon.bindPopup(`
-            <div class="p-2">
-              <strong>Entity ${entity.id}</strong><br/>
-              <span class="text-sm text-gray-600">${entity.entityId}</span><br/>
-              <span class="text-sm">${entity.status}</span><br/>
-              <span class="text-sm">Area: ${entity.area}</span>
+          // Add center marker for better visibility and interaction
+          const center = polygon.getBounds().getCenter();
+          const centerMarker = L.circleMarker(center, {
+            radius: 8,
+            fillColor: color,
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+          }).addTo(map);
+
+          // Enhanced popup content
+          const popupContent = `
+            <div style="padding: 16px; min-width: 280px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: ${color}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                  ${isHighRisk ? '⚠️' : '✅'}
+                </div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: #1f2937;">${entity.plotId}</h3>
+              </div>
+              
+              <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #6b7280; font-size: 14px;">Country</span>
+                  <span style="font-weight: 600; color: #1f2937;">${entity.country}</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #6b7280; font-size: 14px;">Area</span>
+                  <span style="font-weight: 600; color: #1f2937;">${entity.area.toFixed(2)} ha</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #6b7280; font-size: 14px;">Issues</span>
+                  <span style="font-weight: 600; color: ${isHighRisk ? '#dc2626' : '#10b981'};">${entity.polygonIssues}</span>
+                </div>
+              </div>
             </div>
-          `);
+          `;
+
+          // Popup options
+          const popupOptions = {
+            maxWidth: 400,
+            minWidth: 300,
+            autoPan: true,
+            autoPanPaddingTopLeft: [20, 20],
+            autoPanPaddingBottomRight: [20, 20],
+            keepInView: true
+          };
+
+          // Bind popup to both polygon and center marker
+          polygon.bindPopup(popupContent, popupOptions);
+          centerMarker.bindPopup(popupContent, popupOptions);
+
+          // Add click events to zoom to polygon bounds
+          const zoomToPolygon = () => {
+            const bounds = polygon.getBounds();
+            map.fitBounds(bounds, {
+              padding: [50, 50],
+              maxZoom: 16
+            });
+          };
+
+          polygon.on('click', zoomToPolygon);
+          centerMarker.on('click', zoomToPolygon);
         });
 
         return () => {
