@@ -45,6 +45,167 @@ export default function LegalityCompliance() {
     }
   });
 
+  // Supplier compliance form state - moved here to avoid initialization error
+  const [supplierComplianceForm, setSupplierComplianceForm] = useState({
+    // Basic Information
+    namaSupplier: '',
+    namaGroup: '',
+    aktaPendirianPerusahaan: '',
+    aktaPerubahan: '',
+    izinBerusaha: '',
+    tipeSertifikat: '',
+    alamatKantor: '',
+    alamatKebun: '',
+    koordinatKebun: '',
+    koordinatKantor: '',
+    jenisSupplier: '',
+    namaPenanggungJawab: '',
+    jabatanPenanggungJawab: '',
+    emailPenanggungJawab: '',
+    nomorTelefonPenanggungJawab: '',
+    namaTimInternal: '',
+    jabatanTimInternal: '',
+    emailTimInternal: '',
+    nomorTeleponTimInternal: '',
+    
+    // 3.1 Hak Penggunaan Tanah
+    historisPerolehanTanah: '',
+    historisKeterangan: '',
+    izinPencadangan: '',
+    izinPencadanganLahan: '',
+    izinPencadanganKeterangan: '',
+    persetujuanPKKPR: '',
+    persetujuanPKKPRKeterangan: '',
+    izinUsahaPerkebunan: '',
+    izinUsahaPerkebunanKeterangan: '',
+    skHGU: '',
+    skHGUKeterangan: '',
+    sertifikatHGU: '',
+    sertifikatHGUKeterangan: '',
+    laporanPemanfaatanHGU: '',
+    laporanPemanfaatanHGUKeterangan: '',
+    laporanLPUP: '',
+    laporanLPUPKeterangan: '',
+    
+    // 3.2 Perlindungan Lingkungan Hidup
+    izinLingkungan: '',
+    izinLingkunganKeterangan: '',
+    izinRintekTPS: '',
+    izinRintekTPSKeterangan: '',
+    izinLimbahCair: '',
+    izinLimbahCairKeterangan: '',
+    izinPertekLimbah: '',
+    izinPertekLimbahKeterangan: '',
+    persetujuanAndalalin: '',
+    persetujuanAndalalinKeterangan: '',
+    daftarPestisida: '',
+    daftarPestisidaKeterangan: '',
+    
+    // 3.3 Bukti Pelaksanaan
+    buktiPelaksanaan: '',
+    buktiPelaksanaanKeterangan: '',
+    laporanRKLRPL: '',
+    laporanRKLRPLKeterangan: '',
+    laporanPestisida: '',
+    laporanPestisidaKeterangan: '',
+    
+    // 3.4 Peraturan Kehutanan
+    areaSesuaiPeruntukan: '',
+    areaSesuaiPeruntukanKeterangan: '',
+    skPelepasanHutan: '',
+    skPelepasanHutanKeterangan: '',
+    dokumenInstansiRelevant: '',
+    dokumenInstansiRelevanKeterangan: '',
+    
+    // 3.5 Hak Pihak Ketiga dan Masyarakat Adat
+    kebijakanHakPihakKetiga: '',
+    kebijakanHakPihakKetigaKeterangan: '',
+    kebijakanPerusahaan: '',
+    kebijakanPerusahaanKeterangan: '',
+    sopGRTT: '',
+    sopGRTTKeterangan: '',
+    sopPADIATAPA: '',
+    sopPADIATAPAKeterangan: '',
+    sopPermintaanInformasi: '',
+    sopPermintaanInformasiKeterangan: '',
+    sopKeluhanStakeholder: '',
+    sopKeluhanStakeholderKeterangan: '',
+    
+    // 3.6 Kewajiban Pengembangan Plasma
+    mouKerjaSama: '',
+    mouKerjaSamaKeterangan: '',
+    skCPCL: '',
+    skCPCLKeterangan: '',
+    laporanRealisasiPlasma: '',
+    laporanRealisasiPlasmaKeterangan: '',
+    
+    // 3.7 Bukti Implementasi
+    buktiGRTT: '',
+    buktiGRTTKeterangan: '',
+    buktiFPIC: '',
+    buktiFPICKeterangan: '',
+    suratMasukPermintaan: '',
+    suratMasukPermintaanKeterangan: '',
+    suratKeluarPermintaan: '',
+    suratKeluarPermintaanKeterangan: '',
+    suratMasukKeluhan: '',
+    suratMasukKeluhanKeterangan: '',
+    suratKeluarKeluhan: '',
+    suratKeluarKeluhanKeterangan: '',
+    
+    // 3.8 Sengketa Lahan
+    laporanSengketaLahan: '',
+    laporanSengketaLahanKeterangan: '',
+    
+    // 3.9 Hak Buruh dan HAM
+    komitmenHakBuruh: '',
+    kebijakanHakBuruh: '',
+    kebijakanHakBuruhKeterangan: '',
+    sopKetenagakerjaan: '',
+    sopKetenagakerjaanKeterangan: '',
+    sopK3: '',
+    sopK3Keterangan: '',
+    
+    // 3.10 Bukti Pelaksanaan HAM
+    buktiPerjanjianKerja: '',
+    buktiPerjanjianKerjaKeterangan: '',
+    daftarKaryawan: '',
+    daftarKaryawanKeterangan: '',
+    skUMR: '',
+    skUMRKeterangan: '',
+    skSerikatPekerja: '',
+    skSerikatPekerjaKeterangan: '',
+    buktiBPJS: '',
+    buktiBPJSKeterangan: '',
+    laporanP2K3: '',
+    laporanP2K3Keterangan: '',
+    
+    // 3.11 Perpajakan dan Antikorupsi
+    komitmenAntikorupsi: '',
+    kebijakanAntikorupsi: '',
+    kebijakanAntikorupsiKeterangan: '',
+    sopKodeEtik: '',
+    sopKodeEtikKeterangan: '',
+    saluranPengaduan: '',
+    saluranPengaduanKeterangan: '',
+    
+    // 3.12 Bukti Pajak dan Ekspor
+    suratTerdaftarPajak: '',
+    suratTerdaftarPajakKeterangan: '',
+    suratTerdaftarPajakStatus: '',
+    npwp: '',
+    npwpKeterangan: '',
+    npwpStatus: '',
+    
+    // Status fields for conditional rendering
+    izinPencadanganStatus: '',
+    persetujuanPKKPRStatus: '',
+    izinUsahaPerkebunanStatus: '',
+    izinRintekTPSStatus: '',
+    izinLimbahCairStatus: '',
+    persetujuanAndalalinStatus: '',
+  });
+
   // Helper functions for progress calculation
   const calculateSectionProgress = (fields: string[]) => {
     const totalFields = fields.length;
@@ -411,166 +572,6 @@ export default function LegalityCompliance() {
       </div>
     );
   };
-
-  const [supplierComplianceForm, setSupplierComplianceForm] = useState({
-    // Basic Information
-    namaSupplier: '',
-    namaGroup: '',
-    aktaPendirianPerusahaan: '',
-    aktaPerubahan: '',
-    izinBerusaha: '',
-    tipeSertifikat: '',
-    alamatKantor: '',
-    alamatKebun: '',
-    koordinatKebun: '',
-    koordinatKantor: '',
-    jenisSupplier: '',
-    namaPenanggungJawab: '',
-    jabatanPenanggungJawab: '',
-    emailPenanggungJawab: '',
-    nomorTelefonPenanggungJawab: '',
-    namaTimInternal: '',
-    jabatanTimInternal: '',
-    emailTimInternal: '',
-    nomorTeleponTimInternal: '',
-    
-    // 3.1 Hak Penggunaan Tanah
-    historisPerolehanTanah: '',
-    historisKeterangan: '',
-    izinPencadangan: '',
-    izinPencadanganLahan: '',
-    izinPencadanganKeterangan: '',
-    persetujuanPKKPR: '',
-    persetujuanPKKPRKeterangan: '',
-    izinUsahaPerkebunan: '',
-    izinUsahaPerkebunanKeterangan: '',
-    skHGU: '',
-    skHGUKeterangan: '',
-    sertifikatHGU: '',
-    sertifikatHGUKeterangan: '',
-    laporanPemanfaatanHGU: '',
-    laporanPemanfaatanHGUKeterangan: '',
-    laporanLPUP: '',
-    laporanLPUPKeterangan: '',
-    
-    // 3.2 Perlindungan Lingkungan Hidup
-    izinLingkungan: '',
-    izinLingkunganKeterangan: '',
-    izinRintekTPS: '',
-    izinRintekTPSKeterangan: '',
-    izinLimbahCair: '',
-    izinLimbahCairKeterangan: '',
-    izinPertekLimbah: '',
-    izinPertekLimbahKeterangan: '',
-    persetujuanAndalalin: '',
-    persetujuanAndalalinKeterangan: '',
-    daftarPestisida: '',
-    daftarPestisidaKeterangan: '',
-    
-    // 3.3 Bukti Pelaksanaan
-    buktiPelaksanaan: '',
-    buktiPelaksanaanKeterangan: '',
-    laporanRKLRPL: '',
-    laporanRKLRPLKeterangan: '',
-    laporanPestisida: '',
-    laporanPestisidaKeterangan: '',
-    
-    // 3.4 Peraturan Kehutanan
-    areaSesuaiPeruntukan: '',
-    areaSesuaiPeruntukanKeterangan: '',
-    skPelepasanHutan: '',
-    skPelepasanHutanKeterangan: '',
-    dokumenInstansiRelevant: '',
-    dokumenInstansiRelevanKeterangan: '',
-    
-    // 3.5 Hak Pihak Ketiga dan Masyarakat Adat
-    kebijakanHakPihakKetiga: '',
-    kebijakanHakPihakKetigaKeterangan: '',
-    kebijakanPerusahaan: '',
-    kebijakanPerusahaanKeterangan: '',
-    sopGRTT: '',
-    sopGRTTKeterangan: '',
-    sopPADIATAPA: '',
-    sopPADIATAPAKeterangan: '',
-    sopPermintaanInformasi: '',
-    sopPermintaanInformasiKeterangan: '',
-    sopKeluhanStakeholder: '',
-    sopKeluhanStakeholderKeterangan: '',
-    
-    // 3.6 Kewajiban Pengembangan Plasma
-    mouKerjaSama: '',
-    mouKerjaSamaKeterangan: '',
-    skCPCL: '',
-    skCPCLKeterangan: '',
-    laporanRealisasiPlasma: '',
-    laporanRealisasiPlasmaKeterangan: '',
-    
-    // 3.7 Bukti Implementasi
-    buktiGRTT: '',
-    buktiGRTTKeterangan: '',
-    buktiFPIC: '',
-    buktiFPICKeterangan: '',
-    suratMasukPermintaan: '',
-    suratMasukPermintaanKeterangan: '',
-    suratKeluarPermintaan: '',
-    suratKeluarPermintaanKeterangan: '',
-    suratMasukKeluhan: '',
-    suratMasukKeluhanKeterangan: '',
-    suratKeluarKeluhan: '',
-    suratKeluarKeluhanKeterangan: '',
-    
-    // 3.8 Sengketa Lahan
-    laporanSengketaLahan: '',
-    laporanSengketaLahanKeterangan: '',
-    
-    // 3.9 Hak Buruh dan HAM
-    komitmenHakBuruh: '',
-    kebijakanHakBuruh: '',
-    kebijakanHakBuruhKeterangan: '',
-    sopKetenagakerjaan: '',
-    sopKetenagakerjaanKeterangan: '',
-    sopK3: '',
-    sopK3Keterangan: '',
-    
-    // 3.10 Bukti Pelaksanaan HAM
-    buktiPerjanjianKerja: '',
-    buktiPerjanjianKerjaKeterangan: '',
-    daftarKaryawan: '',
-    daftarKaryawanKeterangan: '',
-    skUMR: '',
-    skUMRKeterangan: '',
-    skSerikatPekerja: '',
-    skSerikatPekerjaKeterangan: '',
-    buktiBPJS: '',
-    buktiBPJSKeterangan: '',
-    laporanP2K3: '',
-    laporanP2K3Keterangan: '',
-    
-    // 3.11 Perpajakan dan Antikorupsi
-    komitmenAntikorupsi: '',
-    kebijakanAntikorupsi: '',
-    kebijakanAntikorupsiKeterangan: '',
-    sopKodeEtik: '',
-    sopKodeEtikKeterangan: '',
-    saluranPengaduan: '',
-    saluranPengaduanKeterangan: '',
-    
-    // 3.12 Bukti Pajak dan Ekspor
-    suratTerdaftarPajak: '',
-    suratTerdaftarPajakKeterangan: '',
-    suratTerdaftarPajakStatus: '',
-    npwp: '',
-    npwpKeterangan: '',
-    npwpStatus: '',
-    
-    // Status fields for conditional rendering
-    izinPencadanganStatus: '',
-    persetujuanPKKPRStatus: '',
-    izinUsahaPerkebunanStatus: '',
-    izinRintekTPSStatus: '',
-    izinLimbahCairStatus: '',
-    persetujuanAndalalinStatus: '',
-  });
 
   const createSupplierComplianceMutation = useMutation({
     mutationFn: async (data: any) => {
