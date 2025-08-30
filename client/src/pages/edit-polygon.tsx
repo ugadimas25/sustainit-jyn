@@ -44,10 +44,10 @@ export default function EditPolygon() {
   const [polygonEntities, setPolygonEntities] = useState<any[]>([]);
   const mapRef = useRef<HTMLDivElement>(null);
 
-  // Get selected polygons from navigation state
+  // Get selected polygons from localStorage
   useEffect(() => {
-    const state = router.state as any;
-    const selectedPolygons: AnalysisResult[] = state?.selectedPolygons || [];
+    const storedPolygons = localStorage.getItem('selectedPolygonsForEdit');
+    const selectedPolygons: AnalysisResult[] = storedPolygons ? JSON.parse(storedPolygons) : [];
     
     if (selectedPolygons.length === 0) {
       // No selected polygons, redirect back or show message
@@ -84,7 +84,7 @@ export default function EditPolygon() {
     });
 
     setPolygonEntities(transformedEntities);
-  }, [router.state, setLocation]);
+  }, [setLocation]);
 
   const getStatusBadge = (status: string, variant: any) => {
     const baseClasses = "inline-flex items-center px-2 py-1 rounded text-xs font-medium";

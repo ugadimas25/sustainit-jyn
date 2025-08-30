@@ -887,8 +887,11 @@ export default function DeforestationMonitoring() {
                         selectedRows.has(result.plotId)
                       );
                       
-                      // Navigate with selected data
-                      setLocation('/edit-polygon', { state: { selectedPolygons } });
+                      // Store selected polygons in localStorage
+                      localStorage.setItem('selectedPolygonsForEdit', JSON.stringify(selectedPolygons));
+                      
+                      // Navigate to edit polygon page
+                      setLocation('/edit-polygon');
                     }} data-testid="action-edit-polygon">
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Polygon
