@@ -515,11 +515,15 @@ export default function DeforestationMonitoring() {
   const validatePolygon = (result: AnalysisResult, allResults: AnalysisResult[]) => {
     const issues: string[] = [];
     
+    console.log(`Validating polygon ${result.plotId}:`, result.geometry);
+    
     if (!result.geometry?.coordinates?.[0]) {
+      console.log(`No valid geometry for ${result.plotId}`);
       return ['Invalid Geometry'];
     }
     
     const coordinates = result.geometry.coordinates[0];
+    console.log(`Coordinates for ${result.plotId}:`, coordinates);
     
     // 1. Check for duplicate vertices
     const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
@@ -532,13 +536,20 @@ export default function DeforestationMonitoring() {
       issues.push('Wrong Orientation');
     }
     
-    // 3. Check for overlaps with other polygons (simplified)
+    // 3. Check for overlaps with other polygons
+    console.log(`Checking overlaps for ${result.plotId} against ${allResults.length - 1} other polygons`);
     const hasOverlap = allResults.some(other => {
       if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
-      return polygonsOverlap(coordinates, other.geometry.coordinates[0]);
+      console.log(`Comparing ${result.plotId} with ${other.plotId}`);
+      const overlaps = polygonsOverlap(coordinates, other.geometry.coordinates[0]);
+      if (overlaps) {
+        console.log(`OVERLAP DETECTED: ${result.plotId} overlaps with ${other.plotId}`);
+      }
+      return overlaps;
     });
     if (hasOverlap) {
       issues.push('Overlap Detected');
+      console.log(`Adding overlap issue for ${result.plotId}`);
     }
     
     // 4. Check for duplicate polygons
@@ -562,18 +573,32 @@ export default function DeforestationMonitoring() {
   };
   
   const polygonsOverlap = (coords1: number[][], coords2: number[][]) => {
-    // More comprehensive overlap detection
+    // Debug logging
+    console.log('Checking overlap between:', coords1.length, 'vs', coords2.length, 'points');
+    
+    // More comprehensive overlap detection with bounding box check first
+    const bbox1 = getBoundingBox(coords1);
+    const bbox2 = getBoundingBox(coords2);
+    
+    // Quick bounding box check - if bounding boxes don't overlap, polygons can't overlap
+    if (!boundingBoxesOverlap(bbox1, bbox2)) {
+      return false;
+    }
+    
+    console.log('Bounding boxes overlap, checking detailed overlap...');
     
     // 1. Check if any vertex of polygon1 is inside polygon2
-    for (const point of coords1) {
-      if (pointInPolygon(point, coords2)) {
+    for (let i = 0; i < coords1.length; i++) {
+      if (pointInPolygon(coords1[i], coords2)) {
+        console.log('Found vertex of poly1 inside poly2');
         return true;
       }
     }
     
     // 2. Check if any vertex of polygon2 is inside polygon1
-    for (const point of coords2) {
-      if (pointInPolygon(point, coords1)) {
+    for (let i = 0; i < coords2.length; i++) {
+      if (pointInPolygon(coords2[i], coords1)) {
+        console.log('Found vertex of poly2 inside poly1');
         return true;
       }
     }
@@ -585,12 +610,34 @@ export default function DeforestationMonitoring() {
           coords1[i], coords1[i + 1],
           coords2[j], coords2[j + 1]
         )) {
+          console.log('Found edge intersection');
           return true;
         }
       }
     }
     
     return false;
+  };
+  
+  // Helper function to get bounding box
+  const getBoundingBox = (coords: number[][]) => {
+    let minX = coords[0][0], maxX = coords[0][0];
+    let minY = coords[0][1], maxY = coords[0][1];
+    
+    for (const [x, y] of coords) {
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    
+    return { minX, maxX, minY, maxY };
+  };
+  
+  // Helper function to check if bounding boxes overlap
+  const boundingBoxesOverlap = (box1: any, box2: any) => {
+    return !(box1.maxX < box2.minX || box2.maxX < box1.minX || 
+             box1.maxY < box2.minY || box2.maxY < box1.minY);
   };
   
   // Helper function to check if two line segments intersect
