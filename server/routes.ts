@@ -24,6 +24,7 @@ import {
   insertEudrAssessmentSchema,
   insertMillSchema
 } from "@shared/schema";
+import { sql } from "drizzle-orm";
 import { openaiService } from "./lib/openai-service";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
@@ -1919,6 +1920,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // PostGIS polygon overlap detection endpoint
+  app.post('/api/polygon-overlap-detection', async (req, res) => {
+    try {
+      const { polygons } = req.body;
+
+      if (!Array.isArray(polygons) || polygons.length < 2) {
+        return res.status(400).json({ error: 'At least 2 polygons required for overlap detection' });
+      }
+
+      console.log(`Checking overlaps for ${polygons.length} polygons using PostGIS`);
+
+      // Enable PostGIS extension if not already enabled
+      await storage.db.execute(sql`CREATE EXTENSION IF NOT EXISTS postgis;`);
+
+      const overlaps = [];
+
+      // Check each polygon against all others
+      for (let i = 0; i < polygons.length; i++) {
+        for (let j = i + 1; j < polygons.length; j++) {
+          const polygon1 = polygons[i];
+          const polygon2 = polygons[j];
+
+          try {
+            // Convert coordinates to WKT format for PostGIS
+            const wkt1 = coordinatesToWKT(polygon1.coordinates);
+            const wkt2 = coordinatesToWKT(polygon2.coordinates);
+
+            console.log(`Checking overlap between ${polygon1.plotId} and ${polygon2.plotId}`);
+
+            // Use PostGIS ST_Intersection to detect overlap
+            const result = await storage.db.execute(sql`
+              SELECT 
+                ST_Area(ST_Intersection(
+                  ST_GeomFromText(${wkt1}, 4326),
+                  ST_GeomFromText(${wkt2}, 4326)
+                )) as intersection_area,
+                ST_Intersects(
+                  ST_GeomFromText(${wkt1}, 4326),
+                  ST_GeomFromText(${wkt2}, 4326)
+                ) as intersects
+            `);
+
+            const intersectionArea = parseFloat(result.rows[0]?.intersection_area || '0');
+            const intersects = result.rows[0]?.intersects || false;
+
+            console.log(`Intersection area between ${polygon1.plotId} and ${polygon2.plotId}: ${intersectionArea}`);
+
+            if (intersects && intersectionArea > 0) {
+              overlaps.push({
+                polygon1: polygon1.plotId,
+                polygon2: polygon2.plotId,
+                intersectionArea: intersectionArea,
+                intersectionAreaHa: intersectionArea * 111319.9 * 111319.9 / 10000 // Convert to hectares (approximate)
+              });
+              console.log(`OVERLAP DETECTED: ${polygon1.plotId} overlaps with ${polygon2.plotId}, area: ${intersectionArea}`);
+            }
+          } catch (error) {
+            console.error(`Error checking overlap between ${polygon1.plotId} and ${polygon2.plotId}:`, error);
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        totalPolygons: polygons.length,
+        overlapsDetected: overlaps.length,
+        overlaps: overlaps
+      });
+
+    } catch (error) {
+      console.error('Error in PostGIS overlap detection:', error);
+      res.status(500).json({ 
+        error: 'Failed to detect overlaps using PostGIS',
+        details: error.message 
+      });
+    }
+  });
+
+  // Helper function to convert coordinates array to WKT format
+  function coordinatesToWKT(coordinates) {
+    if (!coordinates || !coordinates[0]) {
+      throw new Error('Invalid coordinates');
+    }
+
+    // Handle both Polygon and MultiPolygon geometries
+    let coords = coordinates;
+    if (Array.isArray(coordinates[0][0][0])) {
+      // MultiPolygon - take first polygon
+      coords = coordinates[0];
+    }
+
+    const ring = coords[0];
+    const wktCoords = ring.map(coord => `${coord[0]} ${coord[1]}`).join(', ');
+    return `POLYGON((${wktCoords}))`;
+  }
 
   return httpServer;
 }

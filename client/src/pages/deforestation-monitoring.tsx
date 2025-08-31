@@ -511,7 +511,49 @@ export default function DeforestationMonitoring() {
   const endIndex = startIndex + rowsPerPage;
   const currentPageData = filteredResults.slice(startIndex, endIndex);
 
-  // Polygon validation functions
+  // New polygon validation function using PostGIS overlap detection
+  const validatePolygonWithPostGIS = (result: AnalysisResult, allResults: AnalysisResult[], overlappingPlots: Set<string>) => {
+    const issues: string[] = [];
+    
+    console.log(`Validating polygon ${result.plotId} with PostGIS results`);
+    
+    if (!result.geometry?.coordinates?.[0]) {
+      console.log(`No valid geometry for ${result.plotId}`);
+      return ['Invalid Geometry'];
+    }
+    
+    const coordinates = result.geometry.coordinates[0];
+    
+    // 1. Check for duplicate vertices
+    const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
+    if (uniqueCoords.size < coordinates.length - 1) { // -1 because first and last should be same
+      issues.push('Duplicate Vertices');
+    }
+    
+    // 2. Check right hand rule (should be counter-clockwise)
+    if (!isCounterClockwise(coordinates)) {
+      issues.push('Wrong Orientation');
+    }
+    
+    // 3. Check for overlaps using PostGIS results
+    if (overlappingPlots.has(result.plotId)) {
+      issues.push('Overlap Detected');
+      console.log(`PostGIS detected overlap for ${result.plotId}`);
+    }
+    
+    // 4. Check for duplicate polygons (keep existing JavaScript logic for this)
+    const isDuplicate = allResults.some(other => {
+      if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
+      return JSON.stringify(coordinates) === JSON.stringify(other.geometry.coordinates[0]);
+    });
+    if (isDuplicate) {
+      issues.push('Duplicate Polygon');
+    }
+    
+    return issues;
+  };
+
+  // Original polygon validation function (keeping for backup)
   const validatePolygon = (result: AnalysisResult, allResults: AnalysisResult[]) => {
     const issues: string[] = [];
     
@@ -694,12 +736,42 @@ export default function DeforestationMonitoring() {
     setIsValidating(true);
     
     try {
-      // Simulate validation process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get selected polygons for validation
+      const selectedPolygons = analysisResults.filter(result => selectedRows.has(result.plotId));
+      
+      // Prepare polygon data for PostGIS overlap detection
+      const polygonData = selectedPolygons
+        .filter(result => result.geometry?.coordinates)
+        .map(result => ({
+          plotId: result.plotId,
+          coordinates: result.geometry.coordinates
+        }));
+
+      console.log('Sending polygons to PostGIS for overlap detection:', polygonData.length);
+
+      // Call PostGIS overlap detection API
+      const overlapResponse = await apiRequest('/api/polygon-overlap-detection', {
+        method: 'POST',
+        body: JSON.stringify({ polygons: polygonData }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('PostGIS overlap detection results:', overlapResponse);
+
+      // Create a set of plot IDs that have overlaps
+      const overlappingPlots = new Set();
+      if (overlapResponse.overlaps) {
+        overlapResponse.overlaps.forEach(overlap => {
+          overlappingPlots.add(overlap.polygon1);
+          overlappingPlots.add(overlap.polygon2);
+        });
+      }
       
       const updatedResults = analysisResults.map(result => {
         if (selectedRows.has(result.plotId)) {
-          const issues = validatePolygon(result, analysisResults);
+          const issues = validatePolygonWithPostGIS(result, analysisResults, overlappingPlots);
           return {
             ...result,
             polygonIssues: issues.length > 0 ? issues.join(', ') : 'No Issues Found'
@@ -716,7 +788,7 @@ export default function DeforestationMonitoring() {
       
       toast({
         title: "Validation Complete",
-        description: `Validated ${selectedRows.size} polygon(s) successfully.`,
+        description: `Validated ${selectedRows.size} polygon(s) successfully. Found ${overlapResponse.overlapsDetected || 0} overlaps.`,
         variant: "default",
       });
       
