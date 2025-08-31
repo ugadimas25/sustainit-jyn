@@ -25,6 +25,7 @@ import {
   insertMillSchema
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
+import { db } from "./db";
 import { openaiService } from "./lib/openai-service";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
@@ -1933,7 +1934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Checking overlaps for ${polygons.length} polygons using PostGIS`);
 
       // Enable PostGIS extension if not already enabled
-      await storage.db.execute(sql`CREATE EXTENSION IF NOT EXISTS postgis;`);
+      await db.execute(sql`CREATE EXTENSION IF NOT EXISTS postgis;`);
 
       const overlaps = [];
 
@@ -1951,7 +1952,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`Checking overlap between ${polygon1.plotId} and ${polygon2.plotId}`);
 
             // Use PostGIS ST_Intersection to detect overlap
-            const result = await storage.db.execute(sql`
+            const result = await db.execute(sql`
               SELECT 
                 ST_Area(ST_Intersection(
                   ST_GeomFromText(${wkt1}, 4326),
