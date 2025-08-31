@@ -562,8 +562,65 @@ export default function DeforestationMonitoring() {
   };
   
   const polygonsOverlap = (coords1: number[][], coords2: number[][]) => {
-    // Simplified overlap check - check if any point of one polygon is inside the other
-    return pointInPolygon(coords1[0], coords2) || pointInPolygon(coords2[0], coords1);
+    // More comprehensive overlap detection
+    
+    // 1. Check if any vertex of polygon1 is inside polygon2
+    for (const point of coords1) {
+      if (pointInPolygon(point, coords2)) {
+        return true;
+      }
+    }
+    
+    // 2. Check if any vertex of polygon2 is inside polygon1
+    for (const point of coords2) {
+      if (pointInPolygon(point, coords1)) {
+        return true;
+      }
+    }
+    
+    // 3. Check if any edges intersect
+    for (let i = 0; i < coords1.length - 1; i++) {
+      for (let j = 0; j < coords2.length - 1; j++) {
+        if (lineSegmentsIntersect(
+          coords1[i], coords1[i + 1],
+          coords2[j], coords2[j + 1]
+        )) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  };
+  
+  // Helper function to check if two line segments intersect
+  const lineSegmentsIntersect = (p1: number[], q1: number[], p2: number[], q2: number[]) => {
+    const orientation = (p: number[], q: number[], r: number[]) => {
+      const val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]);
+      if (val === 0) return 0; // collinear
+      return val > 0 ? 1 : 2; // clockwise or counterclockwise
+    };
+    
+    const onSegment = (p: number[], q: number[], r: number[]) => {
+      return q[0] <= Math.max(p[0], r[0]) && q[0] >= Math.min(p[0], r[0]) &&
+             q[1] <= Math.max(p[1], r[1]) && q[1] >= Math.min(p[1], r[1]);
+    };
+    
+    const o1 = orientation(p1, q1, p2);
+    const o2 = orientation(p1, q1, q2);
+    const o3 = orientation(p2, q2, p1);
+    const o4 = orientation(p2, q2, q1);
+    
+    // General case
+    if (o1 !== o2 && o3 !== o4) return true;
+    
+    // Special cases for collinear points
+    if (o1 === 0 && onSegment(p1, p2, q1)) return true;
+    if (o2 === 0 && onSegment(p1, q2, q1)) return true;
+    if (o3 === 0 && onSegment(p2, p1, q2)) return true;
+    if (o4 === 0 && onSegment(p2, q1, q2)) return true;
+    
+    return false;
   };
   
   const pointInPolygon = (point: number[], polygon: number[][]) => {
