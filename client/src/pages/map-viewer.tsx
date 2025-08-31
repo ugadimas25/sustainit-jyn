@@ -566,11 +566,29 @@ export default function MapViewer() {
         const polygons = [];
         const bounds = [];
         
+        let plotsRendered = 0;
+        let plotsSkipped = 0;
+        
         analysisResults.forEach(result => {
           // Skip if no geometry data available
           if (!result.geometry || !result.geometry.coordinates) {
             console.warn('No geometry data for plot:', result.plotId);
+            plotsSkipped++;
             return;
+          }
+          
+          // Special debugging for PLOT_025 and PLOT_026
+          if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
+            console.log(\`🔍 Debugging \${result.plotId}:\`);
+            console.log('- Geometry type:', result.geometry.type);
+            console.log('- Coordinates structure:', result.geometry.coordinates);
+            console.log('- First level array length:', result.geometry.coordinates.length);
+            if (result.geometry.coordinates[0]) {
+              console.log('- Second level array length:', result.geometry.coordinates[0].length);
+              if (Array.isArray(result.geometry.coordinates[0][0])) {
+                console.log('- First coordinate pair:', result.geometry.coordinates[0][0]);
+              }
+            }
           }
           
           const isHighRisk = result.overallRisk === 'HIGH';
@@ -582,20 +600,47 @@ export default function MapViewer() {
           
           try {
             if (result.geometry.type === 'Polygon') {
-              // Polygon: coordinates = [[lat, lng], [lat, lng], ...]
-              coordinates = coordinates[0].map(coord => [coord[1], coord[0]]);
-              leafletPolygons = coordinates;
+              // Handle standard Polygon structure: [[[lng, lat], [lng, lat], ...]]
+              if (Array.isArray(coordinates[0]) && Array.isArray(coordinates[0][0]) && typeof coordinates[0][0][0] === 'number') {
+                coordinates = coordinates[0].map(coord => [coord[1], coord[0]]);
+                leafletPolygons = coordinates;
+              }
+              // Handle nested structure from some GeoJSON files
+              else if (Array.isArray(coordinates[0]) && Array.isArray(coordinates[0][0]) && Array.isArray(coordinates[0][0][0])) {
+                coordinates = coordinates[0][0].map(coord => [coord[1], coord[0]]);
+                leafletPolygons = coordinates;
+              }
+              else {
+                console.error('Unexpected coordinate structure for plot:', result.plotId, coordinates);
+                plotsSkipped++;
+                return;
+              }
             } else if (result.geometry.type === 'MultiPolygon') {
               // MultiPolygon: coordinates = [[[lat, lng], [lat, lng], ...], [[lat, lng], ...]]
-              // Take the first polygon from MultiPolygon
               coordinates = result.geometry.coordinates[0][0].map(coord => [coord[1], coord[0]]);
               leafletPolygons = coordinates;
             } else {
               console.warn('Unsupported geometry type for plot:', result.plotId, result.geometry.type);
+              plotsSkipped++;
               return;
             }
+            
+            // Special logging for PLOT_025 and PLOT_026
+            if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
+              console.log(\`✅ Successfully parsed \${result.plotId} coordinates:, count: \${leafletPolygons.length}\`);
+              console.log('First few coordinates:', leafletPolygons.slice(0, 3));
+            }
+            
           } catch (error) {
             console.error('Error parsing coordinates for plot:', result.plotId, error);
+            plotsSkipped++;
+            return;
+          }
+          
+          // Validate coordinates before creating polygon
+          if (!leafletPolygons || leafletPolygons.length < 3) {
+            console.error('Invalid polygon coordinates for plot:', result.plotId, 'count:', leafletPolygons?.length);
+            plotsSkipped++;
             return;
           }
           
@@ -618,6 +663,13 @@ export default function MapViewer() {
             opacity: 1,
             fillOpacity: 0.9
           }).addTo(map);
+          
+          // Log successful rendering for PLOT_025 and PLOT_026
+          if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
+            console.log(\`🎯 Successfully rendered \${result.plotId} on map with bounds:\`, polygon.getBounds());
+          }
+          
+          plotsRendered++;
           
           // Add click handler to zoom to polygon
           polygon.on('click', function(e) {
@@ -716,10 +768,21 @@ export default function MapViewer() {
           bounds.push(polygon.getBounds());
         });
 
+        // Log rendering summary
+        console.log(\`📊 Map Rendering Summary: \${plotsRendered} plots rendered successfully, \${plotsSkipped} plots skipped\`);
+        console.log(\`Total analysis results: \${analysisResults.length}\`);
+        
+        if (plotsSkipped > 0) {
+          console.warn(\`⚠️  \${plotsSkipped} plots are missing from the map due to geometry issues\`);
+        }
+
         // Fit map to show all polygons
         if (bounds.length > 0) {
           const group = new L.featureGroup(polygons);
           map.fitBounds(group.getBounds(), { padding: [20, 20] });
+          console.log(\`🗺️  Map fitted to show \${bounds.length} polygon bounds\`);
+        } else {
+          console.warn('No valid polygon bounds found, using default map view');
         }
 
         // Control handlers
