@@ -117,7 +117,9 @@ export default function EditPolygon() {
       saveEditedPolygons();
       setIsEditingMode(false);
       setEditablePolygons([]);
-      alert('Editing mode disabled. Changes have been saved.');
+      // Set flag to refresh table data after editing
+      localStorage.setItem('refreshTableAfterEdit', 'true');
+      alert('Editing mode disabled. Changes have been saved and will be reflected in the table.');
     } else {
       // Enter editing mode
       setIsEditingMode(true);
@@ -165,7 +167,7 @@ export default function EditPolygon() {
 
       setPolygonEntities(updatedEntities);
 
-      // Update localStorage
+      // Update localStorage for selected polygons
       const storedPolygons = localStorage.getItem('selectedPolygonsForEdit');
       if (storedPolygons) {
         const selectedPolygons = JSON.parse(storedPolygons);
@@ -183,6 +185,27 @@ export default function EditPolygon() {
           return polygon;
         });
         localStorage.setItem('selectedPolygonsForEdit', JSON.stringify(updatedPolygons));
+      }
+
+      // Also update the main analysis results to reflect in the table
+      const currentResults = localStorage.getItem('currentAnalysisResults');
+      if (currentResults) {
+        const allResults = JSON.parse(currentResults);
+        const updatedAllResults = allResults.map((result: AnalysisResult) => {
+          const editedEntity = updatedEntities.find(entity => entity.plotId === result.plotId);
+          if (editedEntity) {
+            return {
+              ...result,
+              geometry: {
+                ...result.geometry,
+                coordinates: [editedEntity.coordinates.map((coord: number[]) => [coord[1], coord[0]])]
+              }
+            };
+          }
+          return result;
+        });
+        localStorage.setItem('currentAnalysisResults', JSON.stringify(updatedAllResults));
+        console.log(`✅ Updated ${editablePolygons.length} polygon(s) in main analysis results`);
       }
 
       console.log(`✅ Successfully saved ${editablePolygons.length} edited polygon(s) to database`);
@@ -588,7 +611,11 @@ export default function EditPolygon() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setLocation('/deforestation-monitoring')}
+            onClick={() => {
+              // Set flag to refresh table data when returning
+              localStorage.setItem('refreshTableAfterEdit', 'true');
+              setLocation('/deforestation-monitoring');
+            }}
             className="bg-white dark:bg-gray-800 shadow-lg"
             data-testid="back-to-monitoring"
           >

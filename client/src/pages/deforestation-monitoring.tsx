@@ -180,6 +180,13 @@ export default function DeforestationMonitoring() {
     // Try to restore persisted data from localStorage and database
     const loadPersistedData = async () => {
       try {
+        // Check if table needs refresh after editing
+        const shouldRefresh = localStorage.getItem('refreshTableAfterEdit') === 'true';
+        if (shouldRefresh) {
+          localStorage.removeItem('refreshTableAfterEdit');
+          console.log('🔄 Refreshing table data after polygon editing');
+        }
+
         // Check if we have persisted analysis results
         const storedResults = localStorage.getItem('currentAnalysisResults');
         const hasRealData = localStorage.getItem('hasRealAnalysisData') === 'true';
@@ -193,6 +200,16 @@ export default function DeforestationMonitoring() {
             setTotalRecords(parsedResults.length);
             setHasRealData(true);
             console.log(`Restored ${parsedResults.length} analysis results from storage`);
+            
+            // If refresh flag was set, trigger a toast to show data was updated
+            if (shouldRefresh) {
+              toast({
+                title: "Table Updated",
+                description: "Polygon changes have been applied to the table results.",
+                duration: 3000,
+              });
+            }
+            
             return; // Exit early, don't clear data
           }
         }
@@ -222,7 +239,7 @@ export default function DeforestationMonitoring() {
     };
     
     loadPersistedData();
-  }, []);
+  }, [toast]);
 
   // GeoJSON upload mutation
   const uploadMutation = useMutation({
