@@ -659,32 +659,106 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             const polygons = [];
             const bounds = [];
             
+            let plotsWithGeometry = 0;
+            let plotsWithoutGeometry = 0;
+            
             analysisResults.forEach(result => {
-              // Skip if no geometry data available
-              if (!result.geometry || !result.geometry.coordinates) {
-                console.warn('No geometry data for plot:', result.plotId);
+              // Check if geometry data is available
+              if (!result.geometry || !result.geometry.coordinates || !result.geometry.coordinates[0]) {
+                console.warn('No valid geometry data for plot:', result.plotId, 'geometry:', result.geometry);
+                plotsWithoutGeometry++;
+                
+                // Add a fallback marker for plots without geometry (place them in Indonesia center)
+                const fallbackMarker = L.circleMarker([-2.5, 118], {
+                  radius: 12,
+                  fillColor: '#ff6b35',
+                  color: '#fff',
+                  weight: 2,
+                  opacity: 1,
+                  fillOpacity: 0.8,
+                  className: 'missing-geometry-marker'
+                }).addTo(map);
+                
+                // Add popup for missing geometry plots
+                const popupContent = \`
+                  <div class="modern-popup-content">
+                    <div class="popup-header">
+                      <div class="popup-icon" style="background: #ff6b35;">
+                        ❌
+                      </div>
+                      <h3 class="popup-title">\${result.plotId}</h3>
+                    </div>
+                    
+                    <div class="popup-body">
+                      <div class="popup-row">
+                        <span class="popup-label">Status</span>
+                        <span class="popup-value" style="color: #ff6b35;">Missing Geometry Data</span>
+                      </div>
+                      <div class="popup-row">
+                        <span class="popup-label">Location</span>
+                        <span class="popup-value">\${result.country}</span>
+                      </div>
+                      <div class="popup-row">
+                        <span class="popup-label">Area</span>
+                        <span class="popup-value">\${result.area} ha</span>
+                      </div>
+                    </div>
+                  </div>
+                \`;
+                
+                fallbackMarker.bindPopup(popupContent, {
+                  maxWidth: 400,
+                  minWidth: 300,
+                  className: 'modern-popup'
+                });
+                
                 return;
               }
+              
+              plotsWithGeometry++;
               
               const isHighRisk = result.overallRisk === 'HIGH';
               const color = isHighRisk ? '#dc2626' : '#10b981';
               
-              // Convert coordinates for Leaflet (handle polygon structure)
-              let coordinates = result.geometry.coordinates;
-              if (result.geometry.type === 'Polygon') {
-                // Polygon coordinates are [[[lng, lat], [lng, lat], ...]]
-                coordinates = coordinates[0].map(coord => [coord[1], coord[0]]); // Convert [lng, lat] to [lat, lng]
+              try {
+                // Convert coordinates for Leaflet (handle polygon structure)
+                let coordinates = result.geometry.coordinates;
+                if (result.geometry.type === 'Polygon') {
+                  // Polygon coordinates are [[[lng, lat], [lng, lat], ...]]
+                  coordinates = coordinates[0].map(coord => [coord[1], coord[0]]); // Convert [lng, lat] to [lat, lng]
+                } else if (result.geometry.type === 'MultiPolygon') {
+                  // MultiPolygon coordinates are [[[[lng, lat], [lng, lat], ...]], ...]
+                  coordinates = coordinates[0][0].map(coord => [coord[1], coord[0]]); // Take first polygon and convert
+                }
+                
+                // Validate coordinates before creating polygon
+                if (!coordinates || coordinates.length < 3) {
+                  console.warn('Invalid coordinates for plot:', result.plotId, 'coordinates:', coordinates);
+                  plotsWithoutGeometry++;
+                  return;
+                }
+                
+                // Create polygon with styling
+                const polygon = L.polygon(coordinates, {
+                  fillColor: color,
+                  color: isHighRisk ? '#dc2626' : '#10b981',
+                  weight: 2,
+                  opacity: 0.8,
+                  fillOpacity: 0.4,
+                  className: isHighRisk ? 'high-risk-polygon' : 'low-risk-polygon'
+                }).addTo(map);
+                
+                // Validate that polygon was created successfully
+                if (!polygon.getBounds || !polygon.getBounds().isValid()) {
+                  console.warn('Invalid polygon bounds for plot:', result.plotId);
+                  plotsWithoutGeometry++;
+                  return;
+                }
+              } catch (error) {
+                console.error('Error creating polygon for plot:', result.plotId, error);
+                plotsWithoutGeometry++;
+                return;
               }
-              
-              // Create polygon with styling
-              const polygon = L.polygon(coordinates, {
-                fillColor: color,
-                color: isHighRisk ? '#dc2626' : '#10b981',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.4,
-                className: isHighRisk ? 'high-risk-polygon' : 'low-risk-polygon'
-              }).addTo(map);
               
               // Add center marker for better visibility
               const center = polygon.getBounds().getCenter();
@@ -808,6 +882,13 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               
               bounds.push(polygon.getBounds());
             });
+
+            // Log polygon rendering summary
+            console.log(\`📊 Map Rendering Summary: \${plotsWithGeometry} plots rendered successfully, \${plotsWithoutGeometry} plots with missing/invalid geometry\`);
+            
+            if (plotsWithoutGeometry > 0) {
+              console.warn(\`⚠️  \${plotsWithoutGeometry} plots are missing from the map due to invalid geometry data. These plots will show as orange markers in Indonesia.\`);
+            }
 
             // Fit map to show all polygons
             if (bounds.length > 0) {
