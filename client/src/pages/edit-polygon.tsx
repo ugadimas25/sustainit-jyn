@@ -44,7 +44,10 @@ export default function EditPolygon() {
   const [legendVisible, setLegendVisible] = useState(true);
   const [categories, setCategories] = useState(legendCategories);
   const [polygonEntities, setPolygonEntities] = useState<any[]>([]);
+  const [isEditingMode, setIsEditingMode] = useState(false);
+  const [editablePolygons, setEditablePolygons] = useState<any[]>([]);
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
 
   // Function to handle autocorrection of polygon orientation
   const handleAutocorrection = () => {
@@ -100,6 +103,93 @@ export default function EditPolygon() {
     }
 
     alert(`Fixed ${polygonsToFix.length} polygon(s) with orientation issues.`);
+  };
+
+  // Function to handle interactive polygon editing
+  const handleEditPolygon = () => {
+    if (!mapInstanceRef.current) {
+      alert('Map not initialized yet. Please wait a moment and try again.');
+      return;
+    }
+
+    if (isEditingMode) {
+      // Exit editing mode and save changes
+      saveEditedPolygons();
+      setIsEditingMode(false);
+      setEditablePolygons([]);
+      alert('Editing mode disabled. Changes have been saved.');
+    } else {
+      // Enter editing mode
+      setIsEditingMode(true);
+      alert('Editing mode enabled! Click and drag polygon vertices to modify their shape. Click "Edit Polygon" again to save changes.');
+    }
+  };
+
+  // Function to save edited polygon coordinates
+  const saveEditedPolygons = async () => {
+    if (editablePolygons.length === 0) return;
+
+    try {
+      // Save to database via API
+      const savePromises = editablePolygons.map(async (editedPolygon) => {
+        const response = await fetch(`/api/analysis-results/${editedPolygon.plotId}/geometry`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            coordinates: editedPolygon.coordinates
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to update ${editedPolygon.plotId}: ${response.statusText}`);
+        }
+
+        return response.json();
+      });
+
+      await Promise.all(savePromises);
+
+      // Update local state with new coordinates
+      const updatedEntities = polygonEntities.map(entity => {
+        const editedPolygon = editablePolygons.find(ep => ep.plotId === entity.plotId);
+        if (editedPolygon) {
+          return {
+            ...entity,
+            coordinates: editedPolygon.coordinates
+          };
+        }
+        return entity;
+      });
+
+      setPolygonEntities(updatedEntities);
+
+      // Update localStorage
+      const storedPolygons = localStorage.getItem('selectedPolygonsForEdit');
+      if (storedPolygons) {
+        const selectedPolygons = JSON.parse(storedPolygons);
+        const updatedPolygons = selectedPolygons.map((polygon: AnalysisResult) => {
+          const editedEntity = updatedEntities.find(entity => entity.plotId === polygon.plotId);
+          if (editedEntity) {
+            return {
+              ...polygon,
+              geometry: {
+                ...polygon.geometry,
+                coordinates: [editedEntity.coordinates.map((coord: number[]) => [coord[1], coord[0]])]
+              }
+            };
+          }
+          return polygon;
+        });
+        localStorage.setItem('selectedPolygonsForEdit', JSON.stringify(updatedPolygons));
+      }
+
+      console.log(`✅ Successfully saved ${editablePolygons.length} edited polygon(s) to database`);
+    } catch (error) {
+      console.error('Error saving edited polygons:', error);
+      alert('Error saving polygon changes to database. Please try again.');
+    }
   };
 
   // Get selected polygons from localStorage
@@ -211,6 +301,9 @@ export default function EditPolygon() {
           zoomControl: true
         });
 
+        // Store map instance reference
+        mapInstanceRef.current = map;
+
         // Add tile layer based on map type
         let tileLayer;
         switch (mapType) {
@@ -238,6 +331,8 @@ export default function EditPolygon() {
         tileLayer.addTo(map);
 
         // Add polygons with center markers like EUDR Map Viewer
+        const createdPolygons: any[] = [];
+        
         polygonEntities.forEach((entity) => {
           if (!entity.coordinates || entity.coordinates.length === 0) return;
           
@@ -258,14 +353,49 @@ export default function EditPolygon() {
               color = '#6b7280';
           }
 
-          // Create polygon
+          // Create polygon with editing capabilities
           const polygon = L.polygon(entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]), {
             fillColor: color,
             color: color,
-            weight: 2,
+            weight: isEditingMode ? 3 : 2,
             opacity: 0.8,
-            fillOpacity: 0.4
+            fillOpacity: isEditingMode ? 0.6 : 0.4
           }).addTo(map);
+
+          // Store polygon reference with plot info using custom properties
+          (polygon as any).plotId = entity.plotId;
+          (polygon as any).originalCoordinates = entity.coordinates;
+          createdPolygons.push(polygon);
+
+          // Enable editing if in editing mode
+          if (isEditingMode) {
+            // Enable editing with proper typing
+            (polygon as any).editing?.enable();
+            
+            // Listen for vertex drag events
+            polygon.on('edit', function(e: any) {
+              const updatedLatLngs = polygon.getLatLngs();
+              // Handle nested coordinate structure properly
+              const coords = Array.isArray(updatedLatLngs[0]) ? updatedLatLngs[0] : updatedLatLngs;
+              const newCoordinates = coords.map((latlng: any) => [latlng.lat, latlng.lng]);
+              
+              // Update editable polygons state
+              setEditablePolygons(prev => {
+                const existing = prev.find(ep => ep.plotId === entity.plotId);
+                if (existing) {
+                  return prev.map(ep => 
+                    ep.plotId === entity.plotId 
+                      ? { ...ep, coordinates: newCoordinates }
+                      : ep
+                  );
+                } else {
+                  return [...prev, { plotId: entity.plotId, coordinates: newCoordinates }];
+                }
+              });
+              
+              console.log(`📝 Updated coordinates for ${entity.plotId}:`, newCoordinates.length, 'vertices');
+            });
+          }
 
           // Add center marker for better visibility and interaction
           const center = polygon.getBounds().getCenter();
@@ -343,7 +473,31 @@ export default function EditPolygon() {
     };
 
     initializeMap();
-  }, [mapType, polygonEntities]);
+  }, [mapType, polygonEntities, isEditingMode]);
+
+  // Effect to handle editing mode changes
+  useEffect(() => {
+    if (mapInstanceRef.current && polygonEntities.length > 0) {
+      // Clear and reinitialize map when editing mode changes
+      mapInstanceRef.current.eachLayer((layer: any) => {
+        if (layer instanceof (window as any).L?.Polygon) {
+          if (isEditingMode) {
+            layer.editing?.enable();
+            layer.setStyle({
+              weight: 3,
+              fillOpacity: 0.6
+            });
+          } else {
+            layer.editing?.disable();
+            layer.setStyle({
+              weight: 2,
+              fillOpacity: 0.4
+            });
+          }
+        }
+      });
+    }
+  }, [isEditingMode]);
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
@@ -444,8 +598,12 @@ export default function EditPolygon() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="cursor-pointer" data-testid="edit-polygon-option">
-                  Edit Polygon
+                <DropdownMenuItem 
+                  className="cursor-pointer" 
+                  data-testid="edit-polygon-option"
+                  onClick={handleEditPolygon}
+                >
+                  {isEditingMode ? 'Save & Exit Edit' : 'Edit Polygon'}
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   className="cursor-pointer" 
@@ -460,6 +618,16 @@ export default function EditPolygon() {
           <p className="text-sm text-gray-500 mt-1">
             Showing {polygonEntities.length} selected polygon{polygonEntities.length !== 1 ? 's' : ''}
           </p>
+          {isEditingMode && (
+            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                ✏️ Editing Mode Active
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                Drag polygon vertices on the map to modify shapes
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="p-4 space-y-4">

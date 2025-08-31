@@ -159,6 +159,7 @@ export interface IStorage {
   getAnalysisResult(id: string): Promise<AnalysisResult | undefined>;
   getAnalysisResultsBySession(uploadSession: string): Promise<AnalysisResult[]>;
   createAnalysisResult(insertAnalysisResult: InsertAnalysisResult): Promise<AnalysisResult>;
+  updateAnalysisResultGeometry(plotId: string, coordinates: number[][]): Promise<AnalysisResult | undefined>;
   clearAnalysisResults(): Promise<void>;
   calculateDashboardMetrics(): Promise<{
     totalPlots: string;
@@ -901,6 +902,31 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error creating analysis result:", error);
       throw error;
+    }
+  }
+
+  async updateAnalysisResultGeometry(plotId: string, coordinates: number[][]): Promise<AnalysisResult | undefined> {
+    try {
+      // Convert coordinates to GeoJSON Polygon format
+      const geoJsonCoordinates = [coordinates.map(coord => [coord[1], coord[0]])]; // [lng, lat] format
+      const geometry = {
+        type: 'Polygon',
+        coordinates: geoJsonCoordinates
+      };
+
+      const [updatedResult] = await db
+        .update(analysisResults)
+        .set({ 
+          geometry: geometry
+        })
+        .where(eq(analysisResults.plotId, plotId))
+        .returning();
+
+      console.log(`✓ Updated geometry for ${plotId} with ${coordinates.length} coordinates`);
+      return updatedResult;
+    } catch (error) {
+      console.error("Error updating analysis result geometry:", error);
+      return undefined;
     }
   }
 

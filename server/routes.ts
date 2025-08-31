@@ -1581,6 +1581,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update polygon geometry after editing
+  app.patch('/api/analysis-results/:plotId/geometry', async (req, res) => {
+    try {
+      const { plotId } = req.params;
+      const { coordinates } = req.body;
+      
+      if (!coordinates || !Array.isArray(coordinates)) {
+        return res.status(400).json({ error: 'Invalid coordinates provided' });
+      }
+      
+      // Update the geometry in analysis results
+      const result = await storage.updateAnalysisResultGeometry(plotId, coordinates);
+      
+      if (!result) {
+        return res.status(404).json({ error: 'Plot not found' });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Updated geometry for ${plotId}`,
+        plotId,
+        coordinatesCount: coordinates.length
+      });
+    } catch (error) {
+      console.error('Error updating polygon geometry:', error);
+      res.status(500).json({ error: 'Failed to update polygon geometry' });
+    }
+  });
+
   // Supply Chain Analytics endpoint
   app.get('/api/supply-chain/analytics', isAuthenticated, async (req, res) => {
     try {
