@@ -750,13 +750,8 @@ export default function DeforestationMonitoring() {
       console.log('Sending polygons to PostGIS for overlap detection:', polygonData.length);
 
       // Call PostGIS overlap detection API
-      const overlapResponse = await apiRequest('/api/polygon-overlap-detection', {
-        method: 'POST',
-        body: JSON.stringify({ polygons: polygonData }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await apiRequest('POST', '/api/polygon-overlap-detection', { polygons: polygonData });
+      const overlapResponse = await response.json();
 
       console.log('PostGIS overlap detection results:', overlapResponse);
 
