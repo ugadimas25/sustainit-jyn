@@ -721,15 +721,27 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               const color = isHighRisk ? '#dc2626' : '#10b981';
               
               try {
-                // Convert coordinates for Leaflet (handle polygon structure)
+                // Convert coordinates for Leaflet (handle complex polygon structures)
                 let coordinates = result.geometry.coordinates;
+                
+                console.log(\`Processing \${result.plotId} geometry:, type: \${result.geometry.type}, coordinates structure:\`, coordinates);
+                
+                // Handle different coordinate structures
                 if (result.geometry.type === 'Polygon') {
-                  // Polygon coordinates are [[[lng, lat], [lng, lat], ...]]
-                  coordinates = coordinates[0].map(coord => [coord[1], coord[0]]); // Convert [lng, lat] to [lat, lng]
+                  // Standard Polygon: [[[lng, lat], [lng, lat], ...]]
+                  if (Array.isArray(coordinates[0]) && Array.isArray(coordinates[0][0]) && typeof coordinates[0][0][0] === 'number') {
+                    coordinates = coordinates[0].map(coord => [coord[1], coord[0]]); // Convert [lng, lat] to [lat, lng]
+                  }
+                  // Nested structure: [[[[lng, lat], [lng, lat], ...]]]
+                  else if (Array.isArray(coordinates[0]) && Array.isArray(coordinates[0][0]) && Array.isArray(coordinates[0][0][0])) {
+                    coordinates = coordinates[0][0].map(coord => [coord[1], coord[0]]); // Convert nested [lng, lat] to [lat, lng]
+                  }
                 } else if (result.geometry.type === 'MultiPolygon') {
-                  // MultiPolygon coordinates are [[[[lng, lat], [lng, lat], ...]], ...]
+                  // MultiPolygon: [[[[lng, lat], [lng, lat], ...]], ...]
                   coordinates = coordinates[0][0].map(coord => [coord[1], coord[0]]); // Take first polygon and convert
                 }
+                
+                console.log(\`Final coordinates for \${result.plotId}:\`, coordinates.slice(0, 3));
                 
                 // Validate coordinates before creating polygon
                 if (!coordinates || coordinates.length < 3) {
