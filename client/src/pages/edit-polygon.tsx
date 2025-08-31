@@ -304,6 +304,21 @@ export default function EditPolygon() {
         // Store map instance reference
         mapInstanceRef.current = map;
 
+        // Load Leaflet.draw for editing functionality
+        const drawScript = document.createElement('script');
+        drawScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js';
+        const drawCSS = document.createElement('link');
+        drawCSS.rel = 'stylesheet';
+        drawCSS.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css';
+        
+        document.head.appendChild(drawCSS);
+        document.head.appendChild(drawScript);
+        
+        // Wait for Leaflet.draw to load
+        await new Promise((resolve) => {
+          drawScript.onload = resolve;
+        });
+
         // Add tile layer based on map type
         let tileLayer;
         switch (mapType) {
@@ -367,34 +382,68 @@ export default function EditPolygon() {
           (polygon as any).originalCoordinates = entity.coordinates;
           createdPolygons.push(polygon);
 
-          // Enable editing if in editing mode
+          // Enable editing if in editing mode using Leaflet.draw
           if (isEditingMode) {
-            // Enable editing with proper typing
-            (polygon as any).editing?.enable();
+            console.log(`🔧 Enabling editing for ${entity.plotId}`);
             
-            // Listen for vertex drag events
-            polygon.on('edit', function(e: any) {
-              const updatedLatLngs = polygon.getLatLngs();
-              // Handle nested coordinate structure properly
-              const coords = Array.isArray(updatedLatLngs[0]) ? updatedLatLngs[0] : updatedLatLngs;
-              const newCoordinates = coords.map((latlng: any) => [latlng.lat, latlng.lng]);
-              
-              // Update editable polygons state
-              setEditablePolygons(prev => {
-                const existing = prev.find(ep => ep.plotId === entity.plotId);
-                if (existing) {
-                  return prev.map(ep => 
-                    ep.plotId === entity.plotId 
-                      ? { ...ep, coordinates: newCoordinates }
-                      : ep
-                  );
-                } else {
-                  return [...prev, { plotId: entity.plotId, coordinates: newCoordinates }];
-                }
-              });
-              
-              console.log(`📝 Updated coordinates for ${entity.plotId}:`, newCoordinates.length, 'vertices');
-            });
+            // Try to enable editing using Leaflet's built-in editing
+            try {
+              if ((polygon as any).editing) {
+                (polygon as any).editing.enable();
+                console.log(`✅ Enabled built-in editing for ${entity.plotId}`);
+              } else {
+                // Fallback: Create draggable markers for each vertex
+                const coords = entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+                const vertexMarkers: any[] = [];
+                
+                coords.forEach((coord, index) => {
+                  const marker = L.circleMarker(coord, {
+                    radius: 6,
+                    fillColor: '#fff',
+                    color: '#2563eb',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 1,
+                    draggable: true
+                  }).addTo(map);
+                  
+                  // Make vertex draggable
+                  marker.on('drag', function(e: any) {
+                    const newPos = marker.getLatLng();
+                    coords[index] = [newPos.lat, newPos.lng];
+                    
+                    // Update polygon shape
+                    polygon.setLatLngs(coords);
+                    
+                    // Update state
+                    setEditablePolygons(prev => {
+                      const existing = prev.find(ep => ep.plotId === entity.plotId);
+                      if (existing) {
+                        return prev.map(ep => 
+                          ep.plotId === entity.plotId 
+                            ? { ...ep, coordinates: coords }
+                            : ep
+                        );
+                      } else {
+                        return [...prev, { plotId: entity.plotId, coordinates: coords }];
+                      }
+                    });
+                  });
+                  
+                  marker.on('dragend', function(e: any) {
+                    console.log(`📝 Vertex ${index} of ${entity.plotId} moved to:`, marker.getLatLng());
+                  });
+                  
+                  vertexMarkers.push(marker);
+                });
+                
+                // Store vertex markers for cleanup
+                (polygon as any).vertexMarkers = vertexMarkers;
+                console.log(`✅ Created ${vertexMarkers.length} draggable vertices for ${entity.plotId}`);
+              }
+            } catch (error) {
+              console.error(`Error enabling editing for ${entity.plotId}:`, error);
+            }
           }
 
           // Add center marker for better visibility and interaction
@@ -482,13 +531,28 @@ export default function EditPolygon() {
       mapInstanceRef.current.eachLayer((layer: any) => {
         if (layer instanceof (window as any).L?.Polygon) {
           if (isEditingMode) {
-            layer.editing?.enable();
+            // Try built-in editing first
+            if (layer.editing) {
+              layer.editing.enable();
+            }
             layer.setStyle({
               weight: 3,
               fillOpacity: 0.6
             });
           } else {
-            layer.editing?.disable();
+            // Disable editing and cleanup vertex markers
+            if (layer.editing) {
+              layer.editing.disable();
+            }
+            
+            // Remove vertex markers if they exist
+            if (layer.vertexMarkers) {
+              layer.vertexMarkers.forEach((marker: any) => {
+                mapInstanceRef.current.removeLayer(marker);
+              });
+              layer.vertexMarkers = [];
+            }
+            
             layer.setStyle({
               weight: 2,
               fillOpacity: 0.4
