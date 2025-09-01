@@ -712,7 +712,7 @@ export default function DataCollection() {
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="namaSupplier">Nama Supplier</Label>
-                            <p className="text-xs text-red-600 font-medium">🔴 WAJIB - EUDR mensyaratkan data nama supplier atau petani agar rantai pasok dapat ditelusuri</p>
+                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
                             <Input
                               id="namaSupplier"
                               data-testid="input-nama-supplier-estate"
@@ -725,7 +725,6 @@ export default function DataCollection() {
                           
                           <div className="space-y-2">
                             <Label htmlFor="namaGroup">Nama Group / Parent Company Name</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Berguna untuk internal tetapi tidak diminta spesifik oleh EUDR</p>
                             <Input
                               id="namaGroup"
                               data-testid="input-nama-group-estate"
@@ -739,7 +738,7 @@ export default function DataCollection() {
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="izinBerusaha">Izin Berusaha (Nomor Induk Berusaha)</Label>
-                            <p className="text-xs text-red-600 font-medium">🔴 WAJIB - Menunjukkan legalitas operasional perusahaan sesuai peraturan nasional (EUDR mensyaratkan kepatuhan hukum lokal, termasuk izin usaha)</p>
+                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
                             <Input
                               id="izinBerusaha"
                               data-testid="input-izin-berusaha-estate"
@@ -833,7 +832,7 @@ export default function DataCollection() {
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="alamatKantor">Kantor</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Informasi administrasi internal</p>
+
                             <Textarea
                               id="alamatKantor"
                               data-testid="input-alamat-kantor-estate"
@@ -845,7 +844,7 @@ export default function DataCollection() {
                           
                           <div className="space-y-2">
                             <Label htmlFor="alamatKebun">Kebun</Label>
-                            <p className="text-xs text-red-600 font-medium">🔴 WAJIB - Alamat kebun diperlukan untuk identifikasi lokasi produksi (koordinat yang paling kritis)</p>
+                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
                             <Textarea
                               id="alamatKebun"
                               data-testid="input-alamat-kebun-estate"
@@ -863,7 +862,7 @@ export default function DataCollection() {
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="koordinatKebun">Kebun</Label>
-                            <p className="text-xs text-red-600 font-medium">🔴 WAJIB - Regulasi mengharuskan pencatatan koordinat geografi setiap plot produksi. Titik tengah untuk lahan &le;4 ha atau polygon untuk lahan &gt;4 ha</p>
+                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
                             <Input
                               id="koordinatKebun"
                               data-testid="input-koordinat-kebun-estate"
@@ -875,7 +874,7 @@ export default function DataCollection() {
                           
                           <div className="space-y-2">
                             <Label htmlFor="koordinatKantor">Kantor</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Informasi administrasi internal</p>
+
                             <Input
                               id="koordinatKantor"
                               data-testid="input-koordinat-kantor-estate"
@@ -890,7 +889,6 @@ export default function DataCollection() {
                       {/* Jenis Supplier Section */}
                       <div className="space-y-4">
                         <h4 className="text-md font-semibold">Jenis Supplier</h4>
-                        <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Informasi kategorisasi internal</p>
                         <Select
                           value={estateForm.jenisSupplier}
                           onValueChange={(value) => setEstateForm(prev => ({ ...prev, jenisSupplier: value }))}
@@ -909,7 +907,6 @@ export default function DataCollection() {
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="totalProduksiTBSTahun">Total Produksi TBS / Tahun (kurun 1 tahun terakhir)</Label>
-                          <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Bisa berguna untuk analisis, tapi EUDR hanya meminta kuantitas spesifik tiap pengiriman</p>
                           <Input
                             id="totalProduksiTBSTahun"
                             data-testid="input-total-produksi-tbs-estate"
@@ -934,7 +931,6 @@ export default function DataCollection() {
                       {/* Penanggung Jawab Section */}
                       <div className="space-y-6">
                         <h4 className="text-md font-semibold">Penanggung Jawab</h4>
-                        <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Informasi administrasi internal, bukan syarat EUDR</p>
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="namaPenanggungJawab">Nama</Label>
@@ -1127,7 +1123,7 @@ export default function DataCollection() {
                           
                           <div className="space-y-2">
                             <Label htmlFor="namaPabrik">Nama Pabrik</Label>
-                            <p className="text-xs text-red-600 font-medium">🔴 WAJIB - Identitas sumber pengolahan produk</p>
+                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
                             <Input
                               id="namaPabrik"
                               data-testid="input-nama-pabrik-mill"
@@ -1141,7 +1137,6 @@ export default function DataCollection() {
 
                         <div className="space-y-2">
                           <Label htmlFor="namaGroupMill">Nama Group / Parent Company Name</Label>
-                          <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Informasi kategori internal</p>
                           <Input
                             id="namaGroupMill"
                             data-testid="input-nama-group-mill"
@@ -1154,7 +1149,7 @@ export default function DataCollection() {
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="izinBerusahaMill">Izin Berusaha (Nomor Induk Berusaha)</Label>
-                          <p className="text-xs text-red-600 font-medium">🔴 WAJIB - Bukti legalitas pabrik (sesuai pasal legal EUDR)</p>
+                          <p className="text-xs text-red-600 font-medium">WAJIB</p>
                             <Input
                               id="izinBerusahaMill"
                               data-testid="input-izin-berusaha-mill"
@@ -1237,7 +1232,7 @@ export default function DataCollection() {
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="alamatKantorMill">Kantor</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Data internal logistik</p>
+
                             <Textarea
                               id="alamatKantorMill"
                               data-testid="input-alamat-kantor-mill"
@@ -1249,7 +1244,7 @@ export default function DataCollection() {
                           
                           <div className="space-y-2">
                             <Label htmlFor="alamatPabrik">Pabrik</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Data internal logistik; EUDR fokus pada lokasi produksi kebun</p>
+
                             <Textarea
                               id="alamatPabrik"
                               data-testid="input-alamat-pabrik-mill"
@@ -1267,7 +1262,7 @@ export default function DataCollection() {
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label htmlFor="koordinatPabrik">Pabrik</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Data internal logistik; EUDR fokus pada lokasi produksi kebun</p>
+
                             <Input
                               id="koordinatPabrik"
                               data-testid="input-koordinat-pabrik-mill"
@@ -1279,7 +1274,7 @@ export default function DataCollection() {
                           
                           <div className="space-y-2">
                             <Label htmlFor="koordinatKantorMill">Kantor</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Data internal logistik</p>
+
                             <Input
                               id="koordinatKantorMill"
                               data-testid="input-koordinat-kantor-mill"
@@ -1312,7 +1307,7 @@ export default function DataCollection() {
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="kuantitasCPOPK">Kuantitas CPO/PK (M/T)</Label>
-                          <p className="text-xs text-red-600 font-medium">🔴 WAJIB - Menunjukkan kuantitas produk (dibutuhkan dalam DDS)</p>
+                          <p className="text-xs text-red-600 font-medium">WAJIB</p>
                           <Input
                             id="kuantitasCPOPK"
                             data-testid="input-kuantitas-cpo-pk-mill"
