@@ -2591,7 +2591,7 @@ export default function DataCollection() {
                         
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="ublFacilityId">UBL / Facility ID</Label>
+                            <Label htmlFor="ublFacilityId">UBL / Facility ID <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="ublFacilityId"
                               data-testid="input-ubl-facility-id-kcp"
@@ -2603,7 +2603,7 @@ export default function DataCollection() {
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="namaKCP">Nama KCP</Label>
+                            <Label htmlFor="namaKCP">Nama KCP <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="namaKCP"
                               data-testid="input-nama-kcp"
@@ -2628,7 +2628,7 @@ export default function DataCollection() {
 
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="izinBerusahaKCP">Izin Berusaha (Nomor Induk Berusaha)</Label>
+                            <Label htmlFor="izinBerusahaKCP">Izin Berusaha (Nomor Induk Berusaha) <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="izinBerusahaKCP"
                               data-testid="input-izin-berusaha-kcp"
@@ -3300,7 +3300,7 @@ export default function DataCollection() {
                         
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="ublFacilityIdBulking">UBL / Facility ID</Label>
+                            <Label htmlFor="ublFacilityIdBulking">UBL / Facility ID <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="ublFacilityIdBulking"
                               data-testid="input-ubl-facility-id-bulking"
@@ -3337,7 +3337,7 @@ export default function DataCollection() {
 
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="izinBerusahaBulking">Izin Berusaha (Nomor Induk Berusaha)</Label>
+                            <Label htmlFor="izinBerusahaBulking">Izin Berusaha (Nomor Induk Berusaha) <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="izinBerusahaBulking"
                               data-testid="input-izin-berusaha-bulking"
