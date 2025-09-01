@@ -1033,12 +1033,11 @@ export default function DataCollection() {
                       {/* Document Upload Sections */}
                       <div className="space-y-4">
                         <h3 className="text-lg font-semibold">Dokumen</h3>
-                        <p className="text-xs text-red-600 font-medium">⚠️ REKOMENDASI TAMBAHAN - Perlu ditambahkan: Dokumen Kepemilikan/Pemanfaatan Lahan (HGU/HGB/SHM), Izin Lingkungan (AMDAL/UKL-UPL/SPPL), Persetujuan Masyarakat (FPIC)</p>
                         
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
                             <Label>Akta Pendirian Perusahaan</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Bukan persyaratan langsung EUDR</p>
+
                             <ObjectUploader
                               onGetUploadParameters={handleGetUploadParameters}
                               onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
@@ -1057,7 +1056,7 @@ export default function DataCollection() {
 
                           <div className="space-y-2">
                             <Label>Akta Perubahan (Jika Ada)</Label>
-                            <p className="text-xs text-red-600 font-medium">⚪ TIDAK WAJIB - Bukan persyaratan langsung EUDR</p>
+
                             <ObjectUploader
                               onGetUploadParameters={handleGetUploadParameters}
                               onComplete={(result) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
