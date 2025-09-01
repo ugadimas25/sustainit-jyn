@@ -711,8 +711,7 @@ export default function DataCollection() {
                         
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="namaSupplier">Nama Supplier</Label>
-                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
+                            <Label htmlFor="namaSupplier">Nama Supplier <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="namaSupplier"
                               data-testid="input-nama-supplier-estate"
@@ -737,8 +736,7 @@ export default function DataCollection() {
 
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="izinBerusaha">Izin Berusaha (Nomor Induk Berusaha)</Label>
-                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
+                            <Label htmlFor="izinBerusaha">Izin Berusaha (Nomor Induk Berusaha) <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="izinBerusaha"
                               data-testid="input-izin-berusaha-estate"
@@ -843,8 +841,7 @@ export default function DataCollection() {
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="alamatKebun">Kebun</Label>
-                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
+                            <Label htmlFor="alamatKebun">Kebun <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Textarea
                               id="alamatKebun"
                               data-testid="input-alamat-kebun-estate"
@@ -861,8 +858,7 @@ export default function DataCollection() {
                         <h4 className="text-md font-semibold">Koordinat</h4>
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="koordinatKebun">Kebun</Label>
-                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
+                            <Label htmlFor="koordinatKebun">Kebun <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="koordinatKebun"
                               data-testid="input-koordinat-kebun-estate"
@@ -1122,8 +1118,7 @@ export default function DataCollection() {
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="namaPabrik">Nama Pabrik</Label>
-                            <p className="text-xs text-red-600 font-medium">WAJIB</p>
+                            <Label htmlFor="namaPabrik">Nama Pabrik <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="namaPabrik"
                               data-testid="input-nama-pabrik-mill"
@@ -1148,8 +1143,7 @@ export default function DataCollection() {
 
                         <div className="grid grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="izinBerusahaMill">Izin Berusaha (Nomor Induk Berusaha)</Label>
-                          <p className="text-xs text-red-600 font-medium">WAJIB</p>
+                            <Label htmlFor="izinBerusahaMill">Izin Berusaha (Nomor Induk Berusaha) <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                             <Input
                               id="izinBerusahaMill"
                               data-testid="input-izin-berusaha-mill"
@@ -1306,8 +1300,7 @@ export default function DataCollection() {
 
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="kuantitasCPOPK">Kuantitas CPO/PK (M/T)</Label>
-                          <p className="text-xs text-red-600 font-medium">WAJIB</p>
+                          <Label htmlFor="kuantitasCPOPK">Kuantitas CPO/PK (M/T) <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                           <Input
                             id="kuantitasCPOPK"
                             data-testid="input-kuantitas-cpo-pk-mill"
