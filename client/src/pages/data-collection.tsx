@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Trash2, FileText, Upload, Download, Eye, Info, Brain, Star, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, FileText, Upload, Download, Eye, Info, Brain, Star, TrendingUp, Users, Factory, Warehouse, FileCheck, X } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
 import type { EstateDataCollection, MillDataCollection, TraceabilityDataCollection, KcpDataCollection, BulkingDataCollection } from '@shared/schema';
 
@@ -27,34 +27,64 @@ export default function DataCollection() {
   const [selectedItemForInfo, setSelectedItemForInfo] = useState<any>(null);
   const [isAdditionalInfoOpen, setIsAdditionalInfoOpen] = useState(false);
   
-  // AI Scoring function
+  // AI Scoring function based on EUDR mandatory requirements
   const calculateAIScore = (collection: any, type: string) => {
     let score = 0;
     let maxScore = 0;
     
     if (type === 'estate') {
-      // WAJIB fields for Estate
+      // Estate: 4 WAJIB fields per EUDR
       const mandatoryFields = ['namaSupplier', 'izinBerusaha', 'alamatKebun', 'koordinatKebun'];
       mandatoryFields.forEach(field => {
         maxScore += 25;
-        if (collection[field] && collection[field].trim() !== '') {
+        if (collection[field] && collection[field].toString().trim() !== '') {
           score += 25;
         }
       });
     } else if (type === 'mill') {
-      // WAJIB fields for Mill  
+      // Mill: 3 WAJIB fields per EUDR
       const mandatoryFields = ['namaPabrik', 'izinBerusaha', 'kuantitasCPOPK'];
       mandatoryFields.forEach(field => {
         maxScore += 33.33;
-        if (collection[field] && collection[field].trim() !== '') {
+        if (collection[field] && collection[field].toString().trim() !== '') {
           score += 33.33;
+        }
+      });
+    } else if (type === 'smallholder') {
+      // Smallholder: 5 WAJIB fields per EUDR
+      const mandatoryFields = ['namaPetani', 'luasLahan', 'volumeTBS', 'koordinatKebun', 'dokumenLegalitasLahan'];
+      mandatoryFields.forEach(field => {
+        maxScore += 20;
+        if (collection[field] && collection[field].toString().trim() !== '') {
+          score += 20;
+        }
+      });
+    } else if (type === 'kcp') {
+      // KCP: 3 WAJIB fields per EUDR
+      const mandatoryFields = ['namaKCP', 'izinBerusaha', 'kategoriProduk'];
+      mandatoryFields.forEach(field => {
+        maxScore += 33.33;
+        if (collection[field] && collection[field].toString().trim() !== '') {
+          score += 33.33;
+        }
+      });
+    } else if (type === 'bulking') {
+      // Bulking: 6 WAJIB fields per EUDR
+      const mandatoryFields = ['ublFacilityId', 'izinBerusaha', 'tankIdProduk', 'millIdNamaPabrik', 'koordinat', 'volume'];
+      mandatoryFields.forEach(field => {
+        maxScore += 16.67;
+        if (collection[field] && collection[field].toString().trim() !== '') {
+          score += 16.67;
         }
       });
     }
     
-    // Additional AI analysis factors
+    // Additional EUDR compliance factors
     const hasDocuments = collection.aktaPendirian || collection.aktaPerubahan;
-    if (hasDocuments) score += 10;
+    const hasEnvironmentalPermit = collection.izinLingkungan;
+    
+    if (hasDocuments) score += 5;
+    if (hasEnvironmentalPermit) score += 5;
     maxScore += 10;
     
     const completenessScore = Math.round((score / maxScore) * 100);
@@ -4906,8 +4936,219 @@ export default function DataCollection() {
                         </div>
                       )}
 
-                      {/* Traceability Collections */}
+                      {/* Smallholder Collections */}
                       {traceabilityCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            Data Smallholder ({traceabilityCollections.length})
+                          </h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama Petani <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Luas Lahan (Ha) <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Volume TBS <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Koordinat Kebun <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Dokumen Legalitas Lahan <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>AI Score</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Informasi Tambahan</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {traceabilityCollections.map((collection, index) => {
+                                  const aiScore = calculateAIScore(collection, 'smallholder');
+                                  const scoreColor = getScoreColor(aiScore);
+                                  const scoreBadge = getScoreBadge(aiScore);
+                                  
+                                  return (
+                                    <TableRow key={collection.id}>
+                                      <TableCell className="font-medium">{(collection as any).namaPetani || '-'}</TableCell>
+                                      <TableCell>{(collection as any).luasLahan || '-'}</TableCell>
+                                      <TableCell>{(collection as any).volumeTBS || '-'}</TableCell>
+                                      <TableCell>{(collection as any).koordinatKebun || '-'}</TableCell>
+                                      <TableCell>
+                                        {(collection as any).dokumenLegalitasLahan ? (
+                                          <Badge variant="secondary">
+                                            <FileCheck className="w-3 h-3 mr-1" />
+                                            Ada
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="destructive">
+                                            <X className="w-3 h-3 mr-1" />
+                                            Belum
+                                          </Badge>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant={scoreColor}>
+                                            <Star className="w-3 h-3 mr-1" />
+                                            {aiScore}%
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">{scoreBadge}</span>
+                                        </div>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{(collection as any).status || 'draft'}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedItemForInfo(collection);
+                                            setIsAdditionalInfoOpen(true);
+                                          }}
+                                        >
+                                          <Info className="w-4 h-4" />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* KCP Collections */}
+                      {kcpCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <Factory className="w-5 h-5" />
+                            Data KCP ({kcpCollections.length})
+                          </h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Nama KCP <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>NIB (Izin Berusaha) <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Kategori Produk <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>AI Score</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Informasi Tambahan</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {kcpCollections.map((collection, index) => {
+                                  const aiScore = calculateAIScore(collection, 'kcp');
+                                  const scoreColor = getScoreColor(aiScore);
+                                  const scoreBadge = getScoreBadge(aiScore);
+                                  
+                                  return (
+                                    <TableRow key={collection.id}>
+                                      <TableCell className="font-medium">{collection.namaKCP || '-'}</TableCell>
+                                      <TableCell>{collection.izinBerusaha || '-'}</TableCell>
+                                      <TableCell>{(collection as any).kategoriProduk || '-'}</TableCell>
+                                      <TableCell>
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant={scoreColor}>
+                                            <Star className="w-3 h-3 mr-1" />
+                                            {aiScore}%
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">{scoreBadge}</span>
+                                        </div>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{(collection as any).status || 'draft'}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedItemForInfo(collection);
+                                            setIsAdditionalInfoOpen(true);
+                                          }}
+                                        >
+                                          <Info className="w-4 h-4" />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Bulking Collections */}
+                      {bulkingCollections.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <Warehouse className="w-5 h-5" />
+                            Data Bulking ({bulkingCollections.length})
+                          </h3>
+                          <div className="overflow-x-auto">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>UBL/Facility ID <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>NIB (Izin Berusaha) <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Tank ID & Produk <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Mill ID & Nama Pabrik <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Koordinat <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Volume <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>AI Score</TableHead>
+                                  <TableHead>Status</TableHead>
+                                  <TableHead>Informasi Tambahan</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {bulkingCollections.map((collection, index) => {
+                                  const aiScore = calculateAIScore(collection, 'bulking');
+                                  const scoreColor = getScoreColor(aiScore);
+                                  const scoreBadge = getScoreBadge(aiScore);
+                                  
+                                  return (
+                                    <TableRow key={collection.id}>
+                                      <TableCell className="font-medium">{collection.ublFacilityId || '-'}</TableCell>
+                                      <TableCell>{collection.izinBerusaha || '-'}</TableCell>
+                                      <TableCell>{(collection as any).tankIdProduk || '-'}</TableCell>
+                                      <TableCell>{(collection as any).millIdNamaPabrik || '-'}</TableCell>
+                                      <TableCell>{(collection as any).koordinat || '-'}</TableCell>
+                                      <TableCell>{(collection as any).volume || '-'}</TableCell>
+                                      <TableCell>
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant={scoreColor}>
+                                            <Star className="w-3 h-3 mr-1" />
+                                            {aiScore}%
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">{scoreBadge}</span>
+                                        </div>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge variant="outline">{(collection as any).status || 'draft'}</Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedItemForInfo(collection);
+                                            setIsAdditionalInfoOpen(true);
+                                          }}
+                                        >
+                                          <Info className="w-4 h-4" />
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Old Traceability table structure backup - can be removed */}
+                      {false && traceabilityCollections.length > 0 && (
                         <div>
                           <h3 className="text-lg font-semibold mb-4">Data Traceability ({traceabilityCollections.length})</h3>
                           <div className="overflow-x-auto">
