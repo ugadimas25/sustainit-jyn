@@ -2966,7 +2966,7 @@ export default function DataCollection() {
                                 </div>
 
                                 <div className="space-y-2">
-                                  <Label>Kategori (Raw Kernel/CPKO/PKC)</Label>
+                                  <Label>Kategori (Raw Kernel/CPKO/PKC) <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Select
                                     value={tangki.kategori}
                                     onValueChange={(value) => {
@@ -3804,7 +3804,7 @@ export default function DataCollection() {
 
                               <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                  <Label>Mill ID</Label>
+                                  <Label>Mill ID <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={sumber.millId}
                                     onChange={(e) => {
