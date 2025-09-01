@@ -5043,7 +5043,7 @@ export default function DataCollection() {
                                   return (
                                     <TableRow key={collection.id}>
                                       <TableCell className="font-medium">{collection.namaKCP || '-'}</TableCell>
-                                      <TableCell>{collection.izinBerusaha || '-'}</TableCell>
+                                      <TableCell>{(collection as any).izinBerusaha || '-'}</TableCell>
                                       <TableCell>{(collection as any).kategoriProduk || '-'}</TableCell>
                                       <TableCell>
                                         <div className="flex items-center gap-2">
@@ -5108,8 +5108,8 @@ export default function DataCollection() {
                                   
                                   return (
                                     <TableRow key={collection.id}>
-                                      <TableCell className="font-medium">{collection.ublFacilityId || '-'}</TableCell>
-                                      <TableCell>{collection.izinBerusaha || '-'}</TableCell>
+                                      <TableCell className="font-medium">{(collection as any).ublFacilityId || '-'}</TableCell>
+                                      <TableCell>{(collection as any).izinBerusaha || '-'}</TableCell>
                                       <TableCell>{(collection as any).tankIdProduk || '-'}</TableCell>
                                       <TableCell>{(collection as any).millIdNamaPabrik || '-'}</TableCell>
                                       <TableCell>{(collection as any).koordinat || '-'}</TableCell>
