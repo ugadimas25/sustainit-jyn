@@ -14,13 +14,64 @@ import { ObjectUploader } from '@/components/ObjectUploader';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, FileText, Upload, Download, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Trash2, FileText, Upload, Download, Eye, Info, Brain, Star, TrendingUp } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
 import type { EstateDataCollection, MillDataCollection, TraceabilityDataCollection, KcpDataCollection, BulkingDataCollection } from '@shared/schema';
 
 export default function DataCollection() {
   const [activeTab, setActiveTab] = useState('traceability');
   const { toast } = useToast();
+  
+  // State for additional info popup
+  const [selectedItemForInfo, setSelectedItemForInfo] = useState<any>(null);
+  const [isAdditionalInfoOpen, setIsAdditionalInfoOpen] = useState(false);
+  
+  // AI Scoring function
+  const calculateAIScore = (collection: any, type: string) => {
+    let score = 0;
+    let maxScore = 0;
+    
+    if (type === 'estate') {
+      // WAJIB fields for Estate
+      const mandatoryFields = ['namaSupplier', 'izinBerusaha', 'alamatKebun', 'koordinatKebun'];
+      mandatoryFields.forEach(field => {
+        maxScore += 25;
+        if (collection[field] && collection[field].trim() !== '') {
+          score += 25;
+        }
+      });
+    } else if (type === 'mill') {
+      // WAJIB fields for Mill  
+      const mandatoryFields = ['namaPabrik', 'izinBerusaha', 'kuantitasCPOPK'];
+      mandatoryFields.forEach(field => {
+        maxScore += 33.33;
+        if (collection[field] && collection[field].trim() !== '') {
+          score += 33.33;
+        }
+      });
+    }
+    
+    // Additional AI analysis factors
+    const hasDocuments = collection.aktaPendirian || collection.aktaPerubahan;
+    if (hasDocuments) score += 10;
+    maxScore += 10;
+    
+    const completenessScore = Math.round((score / maxScore) * 100);
+    return Math.min(completenessScore, 100);
+  };
+  
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'default'; // Green
+    if (score >= 60) return 'secondary'; // Yellow
+    return 'destructive'; // Red
+  };
+  
+  const getScoreBadge = (score: number) => {
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Good';
+    return 'Needs Improvement';
+  };
 
   // Form states for all collection types
   const [estateForm, setEstateForm] = useState({
@@ -4630,9 +4681,12 @@ export default function DataCollection() {
               <TabsContent value="results" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Hasil Koleksi Data</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Brain className="w-5 h-5" />
+                      Hasil Koleksi Data dengan AI Analysis
+                    </CardTitle>
                     <CardDescription>
-                      Data yang telah dikumpulkan dari semua formulir
+                      Data WAJIB EUDR yang telah dikumpulkan dengan scoring kualitas berbasis AI
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -4640,43 +4694,145 @@ export default function DataCollection() {
                       {/* Estate Collections */}
                       {estateCollections.length > 0 && (
                         <div>
-                          <h3 className="text-lg font-semibold mb-4">Data Estate ({estateCollections.length})</h3>
+                          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5" />
+                            Data Estate ({estateCollections.length})
+                          </h3>
                           <div className="overflow-x-auto">
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead>Nama Supplier</TableHead>
-                                  <TableHead>Alamat Kantor</TableHead>
-                                  <TableHead>No. Telepon</TableHead>
-                                  <TableHead>Email</TableHead>
-                                  <TableHead>Spatial Legality</TableHead>
+                                  <TableHead>Nama Supplier <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Izin Berusaha <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Alamat Kebun <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Koordinat Kebun <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>AI Score</TableHead>
                                   <TableHead>Status</TableHead>
-                                  <TableHead>Aksi</TableHead>
+                                  <TableHead>Informasi Tambahan</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {estateCollections.map((collection, index) => {
-                                  const spatialLegalityValues = ['High Risk', 'Medium Risk', 'Low Risk'];
-                                  const randomSpatialLegality = spatialLegalityValues[index % 3];
-                                  const spatialLegalityColor = randomSpatialLegality === 'High Risk' ? 'destructive' : 
-                                                              randomSpatialLegality === 'Medium Risk' ? 'secondary' : 'default';
+                                  const aiScore = calculateAIScore(collection, 'estate');
+                                  const scoreColor = getScoreColor(aiScore);
+                                  const scoreBadge = getScoreBadge(aiScore);
                                   
                                   return (
                                     <TableRow key={collection.id}>
-                                      <TableCell>{collection.namaSupplier || '-'}</TableCell>
-                                      <TableCell className="max-w-xs truncate">{collection.alamatKantor || '-'}</TableCell>
-                                      <TableCell>{collection.nomorTelepon || '-'}</TableCell>
-                                      <TableCell>{collection.emailKontak || '-'}</TableCell>
+                                      <TableCell className="font-medium">{collection.namaSupplier || '-'}</TableCell>
+                                      <TableCell>{collection.izinBerusaha || '-'}</TableCell>
+                                      <TableCell className="max-w-xs truncate">{(collection as any).alamatKebun || '-'}</TableCell>
+                                      <TableCell>{(collection as any).koordinatKebun || '-'}</TableCell>
                                       <TableCell>
-                                        <Badge variant={spatialLegalityColor}>{randomSpatialLegality}</Badge>
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant={scoreColor}>
+                                            <Star className="w-3 h-3 mr-1" />
+                                            {aiScore}%
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">{scoreBadge}</span>
+                                        </div>
                                       </TableCell>
                                       <TableCell>
-                                        <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                        <Badge variant="outline">{(collection as any).status || 'draft'}</Badge>
                                       </TableCell>
                                       <TableCell>
-                                        <Button variant="ghost" size="sm">
-                                          <Eye className="w-4 h-4" />
-                                        </Button>
+                                        <Dialog open={isAdditionalInfoOpen && selectedItemForInfo?.id === collection.id} onOpenChange={(open) => {
+                                          setIsAdditionalInfoOpen(open);
+                                          if (!open) setSelectedItemForInfo(null);
+                                        }}>
+                                          <DialogTrigger asChild>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm"
+                                              onClick={() => {
+                                                setSelectedItemForInfo(collection);
+                                                setIsAdditionalInfoOpen(true);
+                                              }}
+                                            >
+                                              <Info className="w-4 h-4" />
+                                            </Button>
+                                          </DialogTrigger>
+                                          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                                            <DialogHeader>
+                                              <DialogTitle>Informasi Tambahan - Estate: {collection.namaSupplier}</DialogTitle>
+                                              <DialogDescription>
+                                                Data non-wajib dan dokumen pendukung untuk estate ini
+                                              </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="space-y-6">
+                                              {/* Additional Information Table */}
+                                              <div>
+                                                <h4 className="font-semibold mb-3">Informasi Umum Tambahan</h4>
+                                                <Table>
+                                                  <TableBody>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">Nama Group/Parent Company</TableCell>
+                                                      <TableCell>{collection.namaGroup || '-'}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">Alamat Kantor</TableCell>
+                                                      <TableCell>{collection.alamatKantor || '-'}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">Koordinat Kantor</TableCell>
+                                                      <TableCell>{collection.koordinatKantor || '-'}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">Jenis Supplier</TableCell>
+                                                      <TableCell>{collection.jenisSupplier || '-'}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">Total Produksi TBS/Tahun</TableCell>
+                                                      <TableCell>{collection.totalProduksiTBSTahun || '-'}</TableCell>
+                                                    </TableRow>
+                                                  </TableBody>
+                                                </Table>
+                                              </div>
+                                              
+                                              {/* Documents Section */}
+                                              <div>
+                                                <h4 className="font-semibold mb-3">Dokumen Pendukung</h4>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                  {collection.aktaPendirian && (
+                                                    <div className="flex items-center gap-2 p-3 border rounded-lg">
+                                                      <FileText className="w-4 h-4" />
+                                                      <span className="text-sm">Akta Pendirian</span>
+                                                      <Badge variant="secondary">Uploaded</Badge>
+                                                    </div>
+                                                  )}
+                                                  {collection.aktaPerubahan && (
+                                                    <div className="flex items-center gap-2 p-3 border rounded-lg">
+                                                      <FileText className="w-4 h-4" />
+                                                      <span className="text-sm">Akta Perubahan</span>
+                                                      <Badge variant="secondary">Uploaded</Badge>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                              
+                                              {/* Additional Contact Info */}
+                                              <div>
+                                                <h4 className="font-semibold mb-3">Informasi Kontak</h4>
+                                                <Table>
+                                                  <TableBody>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">Nama Penanggung Jawab</TableCell>
+                                                      <TableCell>{collection.namaPenanggungJawab || '-'}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">No. Telepon</TableCell>
+                                                      <TableCell>{collection.nomorTelepon || '-'}</TableCell>
+                                                    </TableRow>
+                                                    <TableRow>
+                                                      <TableCell className="font-medium">Email</TableCell>
+                                                      <TableCell>{collection.emailKontak || '-'}</TableCell>
+                                                    </TableRow>
+                                                  </TableBody>
+                                                </Table>
+                                              </div>
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
                                       </TableCell>
                                     </TableRow>
                                   );
@@ -4690,42 +4846,55 @@ export default function DataCollection() {
                       {/* Mill Collections */}
                       {millCollections.length > 0 && (
                         <div>
-                          <h3 className="text-lg font-semibold mb-4">Data Mill ({millCollections.length})</h3>
+                          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5" />
+                            Data Mill ({millCollections.length})
+                          </h3>
                           <div className="overflow-x-auto">
                             <Table>
                               <TableHeader>
                                 <TableRow>
-                                  <TableHead>Nama Supplier</TableHead>
-                                  <TableHead>Kapasitas Produksi</TableHead>
-                                  <TableHead>Jenis Produk</TableHead>
-                                  <TableHead>Tahun Berdiri</TableHead>
-                                  <TableHead>Spatial Legality</TableHead>
+                                  <TableHead>Nama Pabrik <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Izin Berusaha <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>Kuantitas CPO/PK <span className="text-xs text-red-600">WAJIB</span></TableHead>
+                                  <TableHead>AI Score</TableHead>
                                   <TableHead>Status</TableHead>
-                                  <TableHead>Aksi</TableHead>
+                                  <TableHead>Informasi Tambahan</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {millCollections.map((collection, index) => {
-                                  const spatialLegalityValues = ['High Risk', 'Medium Risk', 'Low Risk'];
-                                  const randomSpatialLegality = spatialLegalityValues[(index + 1) % 3];
-                                  const spatialLegalityColor = randomSpatialLegality === 'High Risk' ? 'destructive' : 
-                                                              randomSpatialLegality === 'Medium Risk' ? 'secondary' : 'default';
+                                  const aiScore = calculateAIScore(collection, 'mill');
+                                  const scoreColor = getScoreColor(aiScore);
+                                  const scoreBadge = getScoreBadge(aiScore);
                                   
                                   return (
                                     <TableRow key={collection.id}>
-                                      <TableCell>{collection.namaSupplier || '-'}</TableCell>
-                                      <TableCell>{collection.kapasitasProduksi || 0} MT/hari</TableCell>
-                                      <TableCell>{collection.jenisProduk || '-'}</TableCell>
-                                      <TableCell>{collection.tahunBerdiri || '-'}</TableCell>
+                                      <TableCell className="font-medium">{(collection as any).namaPabrik || '-'}</TableCell>
+                                      <TableCell>{collection.izinBerusaha || '-'}</TableCell>
+                                      <TableCell>{(collection as any).kuantitasCPOPK || '-'}</TableCell>
                                       <TableCell>
-                                        <Badge variant={spatialLegalityColor}>{randomSpatialLegality}</Badge>
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant={scoreColor}>
+                                            <Star className="w-3 h-3 mr-1" />
+                                            {aiScore}%
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground">{scoreBadge}</span>
+                                        </div>
                                       </TableCell>
                                       <TableCell>
-                                        <Badge variant="outline">{collection.status || 'draft'}</Badge>
+                                        <Badge variant="outline">{(collection as any).status || 'draft'}</Badge>
                                       </TableCell>
                                       <TableCell>
-                                        <Button variant="ghost" size="sm">
-                                          <Eye className="w-4 h-4" />
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedItemForInfo(collection);
+                                            setIsAdditionalInfoOpen(true);
+                                          }}
+                                        >
+                                          <Info className="w-4 h-4" />
                                         </Button>
                                       </TableCell>
                                     </TableRow>
