@@ -2347,7 +2347,7 @@ export default function DataCollection() {
 
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label>Nama Petani</Label>
+                                  <Label>Nama Petani <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={pemasok.namaPetani}
                                     onChange={(e) => {
@@ -2391,7 +2391,7 @@ export default function DataCollection() {
                                 </div>
 
                                 <div className="space-y-2">
-                                  <Label>Longitude</Label>
+                                  <Label>Longitude <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={pemasok.longitude}
                                     onChange={(e) => {
@@ -2404,7 +2404,7 @@ export default function DataCollection() {
                                 </div>
 
                                 <div className="space-y-2">
-                                  <Label>Latitude</Label>
+                                  <Label>Latitude <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={pemasok.latitude}
                                     onChange={(e) => {
@@ -2419,7 +2419,7 @@ export default function DataCollection() {
 
                               <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                  <Label>Luas (Ha)</Label>
+                                  <Label>Luas (Ha) <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     type="number"
                                     step="0.01"
@@ -2463,7 +2463,7 @@ export default function DataCollection() {
                               {/* Document uploads for this pemasok */}
                               <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                  <Label>Legalitas Lahan</Label>
+                                  <Label>Legalitas Lahan <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <ObjectUploader
                                     onGetUploadParameters={handleGetUploadParameters}
                                     onComplete={(result) => {
@@ -3632,7 +3632,7 @@ export default function DataCollection() {
 
                               <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                  <Label>Tank ID</Label>
+                                  <Label>Tank ID <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={tangki.tankId}
                                     onChange={(e) => {
@@ -3645,7 +3645,7 @@ export default function DataCollection() {
                                 </div>
 
                                 <div className="space-y-2">
-                                  <Label>Produk</Label>
+                                  <Label>Produk <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={tangki.produk}
                                     onChange={(e) => {
@@ -3845,7 +3845,7 @@ export default function DataCollection() {
 
                               <div className="grid grid-cols-4 gap-4">
                                 <div className="space-y-2">
-                                  <Label>Long</Label>
+                                  <Label>Long <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={sumber.longitude}
                                     onChange={(e) => {
@@ -3858,7 +3858,7 @@ export default function DataCollection() {
                                 </div>
 
                                 <div className="space-y-2">
-                                  <Label>Lat</Label>
+                                  <Label>Lat <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     value={sumber.latitude}
                                     onChange={(e) => {
@@ -3884,7 +3884,7 @@ export default function DataCollection() {
                                 </div>
 
                                 <div className="space-y-2">
-                                  <Label>Volume</Label>
+                                  <Label>Volume <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
                                   <Input
                                     type="number"
                                     step="0.01"
