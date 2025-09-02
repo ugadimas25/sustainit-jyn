@@ -134,13 +134,16 @@ export default function EditPolygon() {
     try {
       // Save to database via API
       const savePromises = editablePolygons.map(async (editedPolygon) => {
+        // Convert [lat, lng] to [lng, lat] for GeoJSON standard
+        const geoJsonCoordinates = editedPolygon.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+        
         const response = await fetch(`/api/analysis-results/${editedPolygon.plotId}/geometry`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            coordinates: editedPolygon.coordinates
+            coordinates: geoJsonCoordinates
           })
         });
 
