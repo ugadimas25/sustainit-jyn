@@ -745,7 +745,7 @@ export default function EditPolygon() {
                   {/* Area */}
                   <div>
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">AREA (HA)</div>
-                    <div className="font-bold text-lg text-gray-900 dark:text-white">{entity.area.toFixed(2)} ha</div>
+                    <div className="font-bold text-lg text-gray-900 dark:text-white">{typeof entity.area === 'number' ? entity.area.toFixed(2) : entity.area || '0.00'} ha</div>
                   </div>
                   
                   {/* Polygon Issues */}
