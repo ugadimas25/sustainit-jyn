@@ -114,6 +114,12 @@ export default function DataVerification() {
         // Clear existing map
         if (mapInstanceRef.current) {
           mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+
+        // Clear map container
+        if (mapRef.current) {
+          mapRef.current.innerHTML = '';
         }
 
         // Create map
