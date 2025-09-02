@@ -100,6 +100,17 @@ export default function DataVerification() {
 
     const initializeMap = async () => {
       try {
+        // Load Leaflet CSS first
+        const existingCSS = document.querySelector('link[href*="leaflet"]');
+        if (!existingCSS) {
+          const leafletCSS = document.createElement('link');
+          leafletCSS.rel = 'stylesheet';
+          leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+          leafletCSS.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+          leafletCSS.crossOrigin = '';
+          document.head.appendChild(leafletCSS);
+        }
+
         // Load Leaflet
         const L = (window as any).L;
         if (!L) {
