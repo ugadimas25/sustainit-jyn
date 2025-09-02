@@ -1245,7 +1245,38 @@ export default function DeforestationMonitoring() {
                       <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
                       {isValidating ? 'Validating...' : 'Revalidation'}
                     </DropdownMenuItem>
-                    <DropdownMenuItem data-testid="action-verification">
+                    <DropdownMenuItem onClick={() => {
+                      if (selectedRows.size === 0) {
+                        toast({
+                          title: "No Polygon Selected",
+                          description: "Please select one polygon to verify.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      if (selectedRows.size > 1) {
+                        toast({
+                          title: "Multiple Polygons Selected",
+                          description: "Please select only one polygon for verification.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      // Get the single selected polygon
+                      const selectedPolygon = filteredResults.find(result => 
+                        selectedRows.has(result.plotId)
+                      );
+                      
+                      if (selectedPolygon) {
+                        // Store selected polygon for verification
+                        localStorage.setItem('selectedPolygonForVerification', JSON.stringify(selectedPolygon));
+                        
+                        // Navigate to verification page
+                        setLocation('/data-verification');
+                      }
+                    }} data-testid="action-verification">
                       <CheckSquare className="h-4 w-4 mr-2" />
                       Verification
                     </DropdownMenuItem>

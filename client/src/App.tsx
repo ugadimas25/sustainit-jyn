@@ -16,6 +16,7 @@ import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import MapViewer from "@/pages/map-viewer";
 import EditPolygon from "@/pages/edit-polygon";
+import DataVerification from "@/pages/data-verification";
 import DDSReports from "@/pages/dds-reports";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
@@ -28,6 +29,7 @@ function Router() {
       <ProtectedRoute path="/deforestation-monitoring" component={() => <DeforestationMonitoring />} />
       <ProtectedRoute path="/map-viewer" component={() => <MapViewer />} />
       <ProtectedRoute path="/edit-polygon" component={() => <EditPolygon />} />
+      <ProtectedRoute path="/data-verification" component={() => <DataVerification />} />
       <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
       <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
