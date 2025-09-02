@@ -100,17 +100,6 @@ export default function DataVerification() {
 
     const initializeMap = async () => {
       try {
-        // Load Leaflet CSS first
-        const existingCSS = document.querySelector('link[href*="leaflet"]');
-        if (!existingCSS) {
-          const leafletCSS = document.createElement('link');
-          leafletCSS.rel = 'stylesheet';
-          leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-          leafletCSS.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-          leafletCSS.crossOrigin = '';
-          document.head.appendChild(leafletCSS);
-        }
-
         // Load Leaflet
         const L = (window as any).L;
         if (!L) {
@@ -346,18 +335,17 @@ export default function DataVerification() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      <div ref={verificationContentRef}>
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b p-6 text-center">
-          <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
-            Capture Polygon?
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please confirm that this is the correct polygon to proceed with core data collection.
-          </p>
-        </div>
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 border-b p-6 text-center">
+        <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+          Capture Polygon?
+        </h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Please confirm that this is the correct polygon to proceed with core data collection.
+        </p>
+      </div>
 
-        <div className="flex-1 flex">
+      <div className="flex-1 flex" ref={verificationContentRef}>
         {/* Map Container */}
         <div className="flex-1 relative">
           {/* Map Controls */}
@@ -573,7 +561,6 @@ export default function DataVerification() {
             Confirm
           </Button>
         </div>
-      </div>
       </div>
     </div>
   );
