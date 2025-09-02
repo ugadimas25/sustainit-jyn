@@ -410,18 +410,36 @@ export default function EditPolygon() {
 
           // Create polygon with editing capabilities
           console.log(`Creating polygon for ${entity.plotId} with coordinates:`, entity.coordinates);
-          const polygon = L.polygon(entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]), {
-            fillColor: color,
-            color: color,
-            weight: isEditingMode ? 3 : 2,
-            opacity: 0.8,
-            fillOpacity: isEditingMode ? 0.6 : 0.4
-          }).addTo(map);
+          
+          try {
+            const leafletCoords = entity.coordinates.map((coord: number[]) => {
+              if (!Array.isArray(coord) || coord.length < 2) {
+                console.error(`Invalid coordinate for ${entity.plotId}:`, coord);
+                return [0, 0]; // fallback
+              }
+              return [coord[1], coord[0]]; // [lat, lng] for Leaflet
+            });
+            
+            console.log(`Leaflet coordinates for ${entity.plotId}:`, leafletCoords);
+            
+            const polygon = L.polygon(leafletCoords, {
+              fillColor: color,
+              color: color,
+              weight: isEditingMode ? 3 : 2,
+              opacity: 0.8,
+              fillOpacity: isEditingMode ? 0.6 : 0.4
+            }).addTo(map);
+            
+            console.log(`✅ Successfully created polygon for ${entity.plotId}`);
 
-          // Store polygon reference with plot info using custom properties
-          (polygon as any).plotId = entity.plotId;
-          (polygon as any).originalCoordinates = entity.coordinates;
-          createdPolygons.push(polygon);
+            // Store polygon reference with plot info using custom properties
+            (polygon as any).plotId = entity.plotId;
+            (polygon as any).originalCoordinates = entity.coordinates;
+            createdPolygons.push(polygon);
+          } catch (polygonError) {
+            console.error(`❌ Failed to create polygon for ${entity.plotId}:`, polygonError);
+            return;
+          }
 
           // Enable editing if in editing mode using Leaflet.draw
           if (isEditingMode) {
@@ -559,6 +577,8 @@ export default function EditPolygon() {
         };
       } catch (error) {
         console.error('Error initializing map:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        console.error('Polygon entities at error:', polygonEntities);
       }
     };
 
