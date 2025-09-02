@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ChevronUp, ChevronDown, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface AnalysisResult {
   plotId: string;
@@ -42,6 +44,11 @@ export default function DataVerification() {
   const [selectedPolygon, setSelectedPolygon] = useState<AnalysisResult | null>(null);
   const [detailPanelExpanded, setDetailPanelExpanded] = useState(true);
   const [mapType, setMapType] = useState<'Terrain' | 'Satellite' | 'Silver' | 'UAV'>('Satellite');
+  
+  // TIFF files state
+  const [availableTiffFiles, setAvailableTiffFiles] = useState<any[]>([]);
+  const [selectedTiffFile, setSelectedTiffFile] = useState<string | null>(null);
+  const [isLoadingTiff, setIsLoadingTiff] = useState(false);
 
   // Load selected polygon from localStorage
   useEffect(() => {
@@ -55,6 +62,33 @@ export default function DataVerification() {
       return;
     }
   }, [setLocation]);
+
+  // Load TIFF files when UAV is selected
+  useEffect(() => {
+    if (mapType === 'UAV') {
+      loadTiffFiles();
+    }
+  }, [mapType]);
+
+  const loadTiffFiles = async () => {
+    setIsLoadingTiff(true);
+    try {
+      const response = await apiRequest('/api/objects/tiff-files');
+      setAvailableTiffFiles(response.files || []);
+      if (response.files && response.files.length > 0) {
+        setSelectedTiffFile(response.files[0].path);
+      }
+    } catch (error) {
+      console.error('Error loading TIFF files:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load UAV TIFF files from storage",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingTiff(false);
+    }
+  };
 
   // Initialize map
   useEffect(() => {
@@ -109,6 +143,7 @@ export default function DataVerification() {
             });
             break;
           case 'UAV':
+            // Base satellite layer for UAV mode
             tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
               attribution: '© Esri (UAV View)'
             });
@@ -116,6 +151,25 @@ export default function DataVerification() {
         }
         
         tileLayer.addTo(map);
+
+        // Add TIFF overlay for UAV mode
+        if (mapType === 'UAV' && selectedTiffFile) {
+          // For demonstration purposes, we'll show a semi-transparent overlay
+          // In a real implementation, you'd use a TIFF processing library like geotiff.js
+          const tiffOverlay = L.rectangle(
+            [[-1.5, 99.5], [1.5, 101.5]], // Bounds covering the area
+            {
+              color: '#00FF00',
+              weight: 2,
+              fillColor: '#00FF00',
+              fillOpacity: 0.3,
+              opacity: 0.8
+            }
+          );
+          
+          tiffOverlay.addTo(map);
+          tiffOverlay.bindTooltip('UAV TIFF Data Overlay', { permanent: false });
+        }
 
         // Add polygon if geometry exists
         if (selectedPolygon.geometry?.coordinates) {
@@ -158,7 +212,7 @@ export default function DataVerification() {
         mapInstanceRef.current.remove();
       }
     };
-  }, [selectedPolygon, mapType]);
+  }, [selectedPolygon, mapType, selectedTiffFile]);
 
   const handleCancel = () => {
     localStorage.removeItem('selectedPolygonForVerification');
@@ -236,6 +290,51 @@ export default function DataVerification() {
             ))}
           </div>
 
+          {/* UAV TIFF Files Panel - Show when UAV is selected */}
+          {mapType === 'UAV' && (
+            <div className="absolute bottom-4 left-4 z-[1000] w-80">
+              <Card className="bg-white dark:bg-gray-800 shadow-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    UAV TIFF Files
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {isLoadingTiff ? (
+                    <div className="text-sm text-gray-500 text-center py-4">Loading TIFF files...</div>
+                  ) : availableTiffFiles.length > 0 ? (
+                    <div className="space-y-2">
+                      {availableTiffFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className={`p-2 rounded border cursor-pointer transition-colors ${
+                            selectedTiffFile === file.path
+                              ? 'bg-emerald-50 border-emerald-300 dark:bg-emerald-900/20 dark:border-emerald-700'
+                              : 'bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600'
+                          }`}
+                          onClick={() => setSelectedTiffFile(file.path)}
+                          data-testid={`tiff-file-${index}`}
+                        >
+                          <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                            {file.name}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Size: {file.size}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 text-center py-4">
+                      No TIFF files available in storage
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Detail Information Panel */}
           <div className="absolute top-4 right-4 z-[1000] w-80">
             <Card className="bg-white dark:bg-gray-800 shadow-lg">
@@ -278,6 +377,27 @@ export default function DataVerification() {
                       {selectedPolygon.overallRisk}
                     </span>
                   </div>
+                  
+                  {/* Show UAV TIFF status when UAV mode is active */}
+                  {mapType === 'UAV' && (
+                    <div className="pt-2 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">UAV Data</span>
+                        {isLoadingTiff ? (
+                          <Badge variant="outline" className="text-xs">Loading...</Badge>
+                        ) : selectedTiffFile ? (
+                          <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">Active</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">No Data</Badge>
+                        )}
+                      </div>
+                      {selectedTiffFile && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {availableTiffFiles.find(f => f.path === selectedTiffFile)?.name || 'Unknown file'}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               )}
             </Card>

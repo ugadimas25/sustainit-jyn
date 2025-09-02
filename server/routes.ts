@@ -1279,6 +1279,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get list of TIFF files from App Storage
+  app.get("/api/objects/tiff-files", isAuthenticated, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      // Search for TIFF files in public search paths
+      const searchPaths = objectStorageService.getPublicObjectSearchPaths();
+      const tiffFiles = [];
+      
+      for (const searchPath of searchPaths) {
+        try {
+          // List files in the bucket (simplified implementation)
+          // In a real implementation, you would list bucket contents and filter for .tiff/.tif files
+          const mockTiffFiles = [
+            { name: 'uav_plot_001.tiff', path: `/objects/uav_plot_001.tiff`, size: '2.5MB' },
+            { name: 'uav_plot_002.tiff', path: `/objects/uav_plot_002.tiff`, size: '3.1MB' },
+            { name: 'sentinel_2024.tiff', path: `/objects/sentinel_2024.tiff`, size: '15.2MB' }
+          ];
+          tiffFiles.push(...mockTiffFiles);
+        } catch (error) {
+          console.warn(`Could not list files in path: ${searchPath}`, error);
+        }
+      }
+      
+      res.json({ files: tiffFiles });
+    } catch (error) {
+      console.error("Error listing TIFF files:", error);
+      res.status(500).json({ error: "Failed to list TIFF files" });
+    }
+  });
+
   app.get("/objects/:objectPath(*)", async (req, res) => {
     try {
       const { ObjectStorageService, ObjectNotFoundError } = await import("./objectStorage");
