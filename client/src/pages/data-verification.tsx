@@ -73,10 +73,11 @@ export default function DataVerification() {
   const loadTiffFiles = async () => {
     setIsLoadingTiff(true);
     try {
-      const response = await apiRequest('/api/objects/tiff-files');
-      setAvailableTiffFiles(response.files || []);
-      if (response.files && response.files.length > 0) {
-        setSelectedTiffFile(response.files[0].path);
+      const response = await apiRequest('GET', '/api/objects/tiff-files');
+      const data = await response.json();
+      setAvailableTiffFiles(data.files || []);
+      if (data.files && data.files.length > 0) {
+        setSelectedTiffFile(data.files[0].path);
       }
     } catch (error) {
       console.error('Error loading TIFF files:', error);
