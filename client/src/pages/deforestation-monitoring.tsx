@@ -753,16 +753,8 @@ export default function DeforestationMonitoring() {
     setIsValidating(true);
     
     try {
-      // Fetch fresh data from database to ensure we have latest edited coordinates
-      const freshDataResponse = await apiRequest('GET', '/api/analysis-results');
-      const freshData = await freshDataResponse.json();
-      
-      // Update local state with fresh data from database
-      setAnalysisResults(freshData);
-      setFilteredResults(freshData);
-      
-      // Get selected polygons for validation using fresh data
-      const selectedPolygons = freshData.filter((result: any) => selectedRows.has(result.plotId));
+      // Get selected polygons for validation
+      const selectedPolygons = analysisResults.filter(result => selectedRows.has(result.plotId));
       
       // Prepare polygon data for PostGIS overlap detection
       const polygonData = selectedPolygons
@@ -789,9 +781,9 @@ export default function DeforestationMonitoring() {
         });
       }
       
-      const updatedResults = freshData.map((result: any) => {
+      const updatedResults = analysisResults.map(result => {
         if (selectedRows.has(result.plotId)) {
-          const issues = validatePolygonWithPostGIS(result, freshData, overlappingPlots);
+          const issues = validatePolygonWithPostGIS(result, analysisResults, overlappingPlots);
           return {
             ...result,
             polygonIssues: issues.length > 0 ? issues.join(', ') : 'No Issues Found'

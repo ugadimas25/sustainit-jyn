@@ -134,16 +134,13 @@ export default function EditPolygon() {
     try {
       // Save to database via API
       const savePromises = editablePolygons.map(async (editedPolygon) => {
-        // Convert [lat, lng] to [lng, lat] for GeoJSON standard
-        const geoJsonCoordinates = editedPolygon.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
-        
         const response = await fetch(`/api/analysis-results/${editedPolygon.plotId}/geometry`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            coordinates: geoJsonCoordinates
+            coordinates: editedPolygon.coordinates
           })
         });
 
@@ -276,7 +273,7 @@ export default function EditPolygon() {
         polygonIssues: polygonIssues,
         area: result.area, // Keep as hectares
         lastUpdated: '2024-01-13',
-        coordinates: Array.isArray(result.geometry?.coordinates?.[0]) ? result.geometry.coordinates[0] : result.geometry?.coordinates || []
+        coordinates: result.geometry?.coordinates?.[0] || []
       };
     });
 
@@ -309,16 +306,11 @@ export default function EditPolygon() {
   // Initialize map
   useEffect(() => {
     const initializeMap = async () => {
-      if (!mapRef.current || polygonEntities.length === 0) {
-        console.log('Map initialization skipped:', { mapRef: !!mapRef.current, entitiesCount: polygonEntities.length });
-        return;
-      }
+      if (!mapRef.current || polygonEntities.length === 0) return;
 
       try {
         // Dynamic import of Leaflet to avoid SSR issues
         const L = (await import('leaflet')).default;
-        
-        console.log('Initializing map with', polygonEntities.length, 'polygon entities');
         
         // Clear any existing map
         if ((mapRef.current as any)._leaflet_id) {
@@ -380,16 +372,7 @@ export default function EditPolygon() {
         const createdPolygons: any[] = [];
         
         polygonEntities.forEach((entity) => {
-          console.log(`Processing entity ${entity.plotId}:`, { 
-            coordinates: entity.coordinates, 
-            coordinatesLength: entity.coordinates?.length,
-            coordinatesType: typeof entity.coordinates 
-          });
-          
-          if (!entity.coordinates || entity.coordinates.length === 0) {
-            console.log(`❌ Skipping ${entity.plotId} - no coordinates`);
-            return;
-          }
+          if (!entity.coordinates || entity.coordinates.length === 0) return;
           
           let color;
           const isHighRisk = entity.polygonIssues !== 'No Issues Found' && entity.polygonIssues !== 'No issues detected';
@@ -409,37 +392,18 @@ export default function EditPolygon() {
           }
 
           // Create polygon with editing capabilities
-          console.log(`Creating polygon for ${entity.plotId} with coordinates:`, entity.coordinates);
-          
-          try {
-            const leafletCoords = entity.coordinates.map((coord: number[]) => {
-              if (!Array.isArray(coord) || coord.length < 2) {
-                console.error(`Invalid coordinate for ${entity.plotId}:`, coord);
-                return [0, 0]; // fallback
-              }
-              return [coord[1], coord[0]]; // [lat, lng] for Leaflet
-            });
-            
-            console.log(`Leaflet coordinates for ${entity.plotId}:`, leafletCoords);
-            
-            const polygon = L.polygon(leafletCoords, {
-              fillColor: color,
-              color: color,
-              weight: isEditingMode ? 3 : 2,
-              opacity: 0.8,
-              fillOpacity: isEditingMode ? 0.6 : 0.4
-            }).addTo(map);
-            
-            console.log(`✅ Successfully created polygon for ${entity.plotId}`);
+          const polygon = L.polygon(entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]), {
+            fillColor: color,
+            color: color,
+            weight: isEditingMode ? 3 : 2,
+            opacity: 0.8,
+            fillOpacity: isEditingMode ? 0.6 : 0.4
+          }).addTo(map);
 
-            // Store polygon reference with plot info using custom properties
-            (polygon as any).plotId = entity.plotId;
-            (polygon as any).originalCoordinates = entity.coordinates;
-            createdPolygons.push(polygon);
-          } catch (polygonError) {
-            console.error(`❌ Failed to create polygon for ${entity.plotId}:`, polygonError);
-            return;
-          }
+          // Store polygon reference with plot info using custom properties
+          (polygon as any).plotId = entity.plotId;
+          (polygon as any).originalCoordinates = entity.coordinates;
+          createdPolygons.push(polygon);
 
           // Enable editing if in editing mode using Leaflet.draw
           if (isEditingMode) {
@@ -577,8 +541,6 @@ export default function EditPolygon() {
         };
       } catch (error) {
         console.error('Error initializing map:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        console.error('Polygon entities at error:', polygonEntities);
       }
     };
 
@@ -780,7 +742,7 @@ export default function EditPolygon() {
                   {/* Area */}
                   <div>
                     <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">AREA (HA)</div>
-                    <div className="font-bold text-lg text-gray-900 dark:text-white">{typeof entity.area === 'number' ? entity.area.toFixed(2) : entity.area || '0.00'} ha</div>
+                    <div className="font-bold text-lg text-gray-900 dark:text-white">{entity.area.toFixed(2)} ha</div>
                   </div>
                   
                   {/* Polygon Issues */}
