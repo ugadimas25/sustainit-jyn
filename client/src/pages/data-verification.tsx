@@ -335,17 +335,18 @@ export default function DataVerification() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b p-6 text-center">
-        <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
-          Capture Polygon?
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Please confirm that this is the correct polygon to proceed with core data collection.
-        </p>
-      </div>
+      <div ref={verificationContentRef}>
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 border-b p-6 text-center">
+          <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+            Capture Polygon?
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Please confirm that this is the correct polygon to proceed with core data collection.
+          </p>
+        </div>
 
-      <div className="flex-1 flex" ref={verificationContentRef}>
+        <div className="flex-1 flex">
         {/* Map Container */}
         <div className="flex-1 relative">
           {/* Map Controls */}
@@ -561,6 +562,7 @@ export default function DataVerification() {
             Confirm
           </Button>
         </div>
+      </div>
       </div>
     </div>
   );
