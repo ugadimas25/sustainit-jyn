@@ -18,7 +18,7 @@ import {
   Upload, File, Download, Trash2, Play, Map, AlertTriangle, 
   CheckCircle2, XCircle, Clock, Eye, Info, Zap, ChevronUp, ChevronDown,
   Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal, Edit, 
-  RefreshCw, CheckSquare
+  RefreshCw, CheckSquare, FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -994,6 +994,32 @@ export default function DeforestationMonitoring() {
     }
   };
 
+  const downloadEUDRRequirement = () => {
+    try {
+      // Create a link to download the attached PDF
+      const link = document.createElement('a');
+      link.href = '/attached_assets/EUDR - EUDR GEOJSON FILE DESCRIPTION 1.5_1756830662581.pdf';
+      link.download = 'EUDR-GeoJSON-File-Description-v1.5.pdf';
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast({
+        title: "Download Started",
+        description: "EUDR GeoJSON file description is being downloaded.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error downloading EUDR requirement:', error);
+      toast({
+        title: "Download Error",
+        description: "Failed to download EUDR requirement PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -1166,6 +1192,10 @@ export default function DeforestationMonitoring() {
                     <DropdownMenuItem onClick={() => downloadGeoJSON()} data-testid="download-geojson-option">
                       <Map className="h-4 w-4 mr-2" />
                       GeoJSON
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => downloadEUDRRequirement()} data-testid="download-eudr-requirement">
+                      <FileText className="h-4 w-4 mr-2" />
+                      EUDR Requirement
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
