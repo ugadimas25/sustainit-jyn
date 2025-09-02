@@ -276,7 +276,7 @@ export default function EditPolygon() {
         polygonIssues: polygonIssues,
         area: result.area, // Keep as hectares
         lastUpdated: '2024-01-13',
-        coordinates: result.geometry?.coordinates?.[0] || []
+        coordinates: Array.isArray(result.geometry?.coordinates?.[0]) ? result.geometry.coordinates[0] : result.geometry?.coordinates || []
       };
     });
 
@@ -309,11 +309,16 @@ export default function EditPolygon() {
   // Initialize map
   useEffect(() => {
     const initializeMap = async () => {
-      if (!mapRef.current || polygonEntities.length === 0) return;
+      if (!mapRef.current || polygonEntities.length === 0) {
+        console.log('Map initialization skipped:', { mapRef: !!mapRef.current, entitiesCount: polygonEntities.length });
+        return;
+      }
 
       try {
         // Dynamic import of Leaflet to avoid SSR issues
         const L = (await import('leaflet')).default;
+        
+        console.log('Initializing map with', polygonEntities.length, 'polygon entities');
         
         // Clear any existing map
         if ((mapRef.current as any)._leaflet_id) {
@@ -375,7 +380,16 @@ export default function EditPolygon() {
         const createdPolygons: any[] = [];
         
         polygonEntities.forEach((entity) => {
-          if (!entity.coordinates || entity.coordinates.length === 0) return;
+          console.log(`Processing entity ${entity.plotId}:`, { 
+            coordinates: entity.coordinates, 
+            coordinatesLength: entity.coordinates?.length,
+            coordinatesType: typeof entity.coordinates 
+          });
+          
+          if (!entity.coordinates || entity.coordinates.length === 0) {
+            console.log(`❌ Skipping ${entity.plotId} - no coordinates`);
+            return;
+          }
           
           let color;
           const isHighRisk = entity.polygonIssues !== 'No Issues Found' && entity.polygonIssues !== 'No issues detected';
@@ -395,6 +409,7 @@ export default function EditPolygon() {
           }
 
           // Create polygon with editing capabilities
+          console.log(`Creating polygon for ${entity.plotId} with coordinates:`, entity.coordinates);
           const polygon = L.polygon(entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]), {
             fillColor: color,
             color: color,
