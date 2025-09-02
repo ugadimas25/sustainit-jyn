@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronUp, ChevronDown, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface AnalysisResult {
   plotId: string;
@@ -30,6 +32,7 @@ export default function DataVerification() {
   const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const verificationContentRef = useRef<HTMLDivElement>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -226,15 +229,79 @@ export default function DataVerification() {
     setLocation('/deforestation-monitoring');
   };
 
-  const handleConfirm = () => {
+  const generateVerificationPDF = async () => {
+    if (!verificationContentRef.current || !selectedPolygon) return false;
+
     try {
-      // Process verification confirmation
-      toast({
-        title: "Verification Confirmed",
-        description: `Plot ${selectedPolygon?.plotId} has been verified for data collection.`,
-        variant: "default",
+      // Hide UI elements that shouldn't be in PDF
+      const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
+      elementsToHide.forEach(el => (el as HTMLElement).style.display = 'none');
+
+      // Create canvas from the verification content
+      const canvas = await html2canvas(verificationContentRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        width: verificationContentRef.current.scrollWidth,
+        height: verificationContentRef.current.scrollHeight,
       });
+
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Calculate dimensions
+      const imgWidth = 297; // A4 landscape width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      // Add image to PDF
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+
+      // Generate filename
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+      const filename = `data-verification-${selectedPolygon.plotId}-${timestamp}.pdf`;
+
+      // Download PDF
+      pdf.save(filename);
+
+      // Show UI elements again
+      elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
+
+      return true;
+    } catch (error) {
+      console.error('Error generating PDF:', error);
       
+      // Show UI elements again on error
+      const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
+      elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
+      
+      return false;
+    }
+  };
+
+  const handleConfirm = async () => {
+    try {
+      // Generate PDF first
+      const pdfGenerated = await generateVerificationPDF();
+      
+      if (pdfGenerated) {
+        toast({
+          title: "Verification Confirmed",
+          description: `Plot ${selectedPolygon?.plotId} verification PDF has been generated and downloaded.`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Verification Confirmed", 
+          description: `Plot ${selectedPolygon?.plotId} has been verified but PDF generation failed.`,
+          variant: "default",
+        });
+      }
+
       // Clear storage and redirect
       localStorage.removeItem('selectedPolygonForVerification');
       setLocation('/deforestation-monitoring');
@@ -278,7 +345,7 @@ export default function DataVerification() {
         </p>
       </div>
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex" ref={verificationContentRef}>
         {/* Map Container */}
         <div className="flex-1 relative">
           {/* Map Controls */}
@@ -478,7 +545,7 @@ export default function DataVerification() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3" data-hide-in-pdf>
           <Button 
             variant="outline" 
             onClick={handleCancel}
