@@ -178,7 +178,7 @@ export default function EditPolygon() {
               ...polygon,
               geometry: {
                 ...polygon.geometry,
-                coordinates: [editedEntity.coordinates.map((coord: number[]) => [coord[1], coord[0]])]
+                coordinates: [editedEntity.coordinates]
               }
             };
           }
@@ -198,7 +198,7 @@ export default function EditPolygon() {
               ...result,
               geometry: {
                 ...result.geometry,
-                coordinates: [editedEntity.coordinates.map((coord: number[]) => [coord[1], coord[0]])]
+                coordinates: [editedEntity.coordinates]
               }
             };
           }

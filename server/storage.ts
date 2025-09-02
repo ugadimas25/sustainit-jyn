@@ -907,8 +907,8 @@ export class DatabaseStorage implements IStorage {
 
   async updateAnalysisResultGeometry(plotId: string, coordinates: number[][]): Promise<AnalysisResult | undefined> {
     try {
-      // Convert coordinates to GeoJSON Polygon format
-      const geoJsonCoordinates = [coordinates.map(coord => [coord[1], coord[0]])]; // [lng, lat] format
+      // Frontend already sends coordinates in correct [lng, lat] format
+      const geoJsonCoordinates = [coordinates]; // Use coordinates as-is
       const geometry = {
         type: 'Polygon',
         coordinates: geoJsonCoordinates
