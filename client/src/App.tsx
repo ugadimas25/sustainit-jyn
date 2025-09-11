@@ -34,6 +34,7 @@ function Router() {
       <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
       <ProtectedRoute path="/reports" component={() => <DDSReports />} />
+      <ProtectedRoute path="/dds-reports" component={() => <DDSReports />} />
 
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
