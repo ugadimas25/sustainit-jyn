@@ -22,6 +22,111 @@ import { KMLUploader } from "@/components/kml-uploader";
 import { GeoJSONGenerator } from "@/components/geojson-generator";
 import { PALM_OIL_HS_CODES, STORAGE_KEYS } from "@/lib/constants";
 
+// TraceabilityConfigSelector Component
+function TraceabilityConfigSelector({ onSelect, onCancel }: { onSelect: (config: any) => void; onCancel: () => void }) {
+  const [mockConfigurations] = useState([
+    {
+      id: 'current',
+      name: 'Current Supply Chain Configuration',
+      description: 'Use the current tier-based supply chain configuration from Supply Chain Management',
+      maxTiers: 5,
+      tierAssignments: {
+        1: [
+          { id: 'estate-1', name: 'Riau Palm Estate', category: 'estates', location: 'Riau Province', details: '500 MT/month' },
+          { id: 'mill-1', name: 'Central Palm Mill', category: 'mills', location: 'Medan', details: '1000 MT/day' }
+        ],
+        2: [
+          { id: 'ext-1', name: 'PT Sinar Mas', category: 'external', location: 'Jakarta', details: 'Large Supplier' },
+          { id: 'shf-1', name: 'Farmers Cooperative A', category: 'shf', location: 'West Riau', details: '250 farmers' }
+        ],
+        3: [
+          { id: 'business-1', name: 'KPN Plantation Business Unit 1', category: 'businesses', location: 'Jakarta HQ', details: 'Primary Processing' }
+        ],
+        4: [
+          { id: 'bulk-1', name: 'Central Bulking Station 1', category: 'bulking', location: 'Port of Dumai', details: '5000 MT' }
+        ],
+        5: []
+      },
+      lastUpdated: '2024-01-15T10:30:00Z'
+    },
+    {
+      id: 'preset-1',
+      name: 'Standard Palm Oil Supply Chain',
+      description: 'Preset configuration for typical palm oil supply chain with 4 tiers',
+      maxTiers: 4,
+      tierAssignments: {
+        1: [
+          { id: 'preset-estate-1', name: 'Estate Partners', category: 'estates', location: 'Various', details: 'Direct suppliers' }
+        ],
+        2: [
+          { id: 'preset-mill-1', name: 'Processing Mills', category: 'mills', location: 'Regional', details: 'Processing facilities' }
+        ],
+        3: [
+          { id: 'preset-trader-1', name: 'Trading Companies', category: 'businesses', location: 'National', details: 'Trade intermediaries' }
+        ],
+        4: [
+          { id: 'preset-export-1', name: 'Export Terminals', category: 'bulking', location: 'Ports', details: 'Export facilities' }
+        ]
+      },
+      lastUpdated: '2024-01-10T08:15:00Z'
+    }
+  ]);
+
+  return (
+    <div className="space-y-4">
+      <div className="text-sm text-gray-600 mb-4">
+        Select a supply chain configuration to establish traceability linkage for this DDS report. You can use your current configuration from Supply Chain Management or choose a preset.
+      </div>
+      
+      <div className="space-y-3">
+        {mockConfigurations.map((config) => (
+          <Card key={config.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => onSelect(config)}>
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h4 className="font-medium text-sm">{config.name}</h4>
+                  <p className="text-xs text-gray-500 mt-1">{config.description}</p>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {config.maxTiers} tiers
+                </Badge>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+                {Object.entries(config.tierAssignments).map(([tier, suppliers]: [string, any]) => (
+                  <div key={tier} className="text-center">
+                    <div className="text-xs text-gray-500">Tier {tier}</div>
+                    <div className="text-sm font-medium">{suppliers.length}</div>
+                    <div className="text-xs text-gray-400">suppliers</div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex justify-between items-center mt-3 pt-3 border-t">
+                <span className="text-xs text-gray-500">
+                  Total: {Object.values(config.tierAssignments).flat().length} suppliers
+                </span>
+                <span className="text-xs text-gray-400">
+                  Updated: {new Date(config.lastUpdated).toLocaleDateString()}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      <div className="flex justify-end space-x-2 pt-4 border-t">
+        <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel-traceability">
+          Cancel
+        </Button>
+        <Button type="button" variant="outline" data-testid="button-create-custom-traceability">
+          Create Custom Configuration
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function DdsReports() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showDdsForm, setShowDdsForm] = useState(false);
@@ -33,6 +138,7 @@ export default function DdsReports() {
   const [selectedLegalityStatus, setSelectedLegalityStatus] = useState("");
   const [selectedPlots, setSelectedPlots] = useState<any[]>([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<any[]>([]);
+  const [selectedTraceability, setSelectedTraceability] = useState<any>(null);
   const { toast } = useToast();
 
   // Fetch DDS reports
@@ -141,6 +247,7 @@ export default function DdsReports() {
       deforestationRiskLevel: formData.get('deforestationRiskLevel') as string || undefined,
       legalityStatus: formData.get('legalityStatus') as string || undefined,
       complianceScore: formData.get('complianceScore') as string || undefined,
+      traceability: selectedTraceability ? JSON.stringify(selectedTraceability) : undefined,
     };
 
     createDdsMutation.mutate(ddsData);
@@ -155,6 +262,9 @@ export default function DdsReports() {
       setSelectedCountry("");
       setSelectedDeforestationRisk("");
       setSelectedLegalityStatus("");
+      setSelectedPlots([]);
+      setSelectedSuppliers([]);
+      setSelectedTraceability(null);
     }
   };
 
@@ -177,6 +287,9 @@ export default function DdsReports() {
   // State for supplier legality selection popup
   const [showSupplierSelector, setShowSupplierSelector] = useState(false);
   const [tempSelectedSuppliers, setTempSelectedSuppliers] = useState<Set<string>>(new Set());
+  
+  // State for traceability selection popup
+  const [showTraceabilitySelector, setShowTraceabilitySelector] = useState(false);
   
   // Fetch analysis results for plot selection
   const { data: analysisResults = [] } = useQuery<any[]>({
@@ -1109,6 +1222,108 @@ export default function DdsReports() {
                             max="100"
                             data-testid="input-compliance-score"
                           />
+                        </div>
+                        <div className="col-span-full">
+                          <Label htmlFor="traceability">Supply Chain Traceability</Label>
+                          <div className="space-y-3">
+                            {selectedTraceability ? (
+                              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                                <div className="flex justify-between items-center mb-3">
+                                  <div className="flex items-center gap-2">
+                                    <Package className="h-5 w-5 text-green-600" />
+                                    <span className="font-medium text-green-800 dark:text-green-300">
+                                      Supply Chain Configuration Selected
+                                    </span>
+                                  </div>
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setSelectedTraceability(null)}
+                                    data-testid="button-clear-traceability"
+                                  >
+                                    <X className="h-3 w-3 mr-1" />
+                                    Clear
+                                  </Button>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {Object.entries(selectedTraceability.tierAssignments || {}).map(([tier, suppliers]: [string, any]) => (
+                                    suppliers.length > 0 && (
+                                      <div key={tier} className="bg-white dark:bg-gray-800 p-3 rounded border">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <Badge variant="secondary" className="text-xs">
+                                            Tier {tier} {tier === '1' ? '(Direct)' : `(Tier ${parseInt(tier)-1} Suppliers)`}
+                                          </Badge>
+                                          <span className="text-xs text-gray-500">{suppliers.length} suppliers</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {suppliers.slice(0, 3).map((supplier: any, index: number) => (
+                                            <div key={index} className="text-xs text-gray-600 truncate">
+                                              • {supplier.name}
+                                            </div>
+                                          ))}
+                                          {suppliers.length > 3 && (
+                                            <div className="text-xs text-gray-500">
+                                              +{suppliers.length - 3} more...
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )
+                                  ))}
+                                </div>
+                                
+                                <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-700">
+                                  <div className="text-sm text-green-700 dark:text-green-300">
+                                    <strong>Configuration:</strong> {selectedTraceability.maxTiers} tiers, {Object.values(selectedTraceability.tierAssignments || {}).flat().length} total suppliers
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                                <Package className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-500 mb-3">No supply chain configuration selected</p>
+                                <p className="text-xs text-gray-400 mb-4">
+                                  Select your tier-based supply chain linkage configuration to establish traceability for this DDS report
+                                </p>
+                              </div>
+                            )}
+                            
+                            <Dialog open={showTraceabilitySelector} onOpenChange={setShowTraceabilitySelector}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  className="w-full"
+                                  data-testid="button-select-traceability"
+                                >
+                                  <Package className="h-4 w-4 mr-2" />
+                                  Select Supply Chain Configuration
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+                                <DialogHeader>
+                                  <DialogTitle>Select Supply Chain Traceability Configuration</DialogTitle>
+                                  <DialogDescription>
+                                    Choose the tier-based supply chain linkage configuration for this DDS report. This establishes the traceability from your direct suppliers through all tiers of your supply chain.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <TraceabilityConfigSelector 
+                                  onSelect={(config: any) => {
+                                    setSelectedTraceability(config);
+                                    setShowTraceabilitySelector(false);
+                                    toast({
+                                      title: "Supply Chain Configuration Selected",
+                                      description: `Configuration with ${config.maxTiers} tiers and ${Object.values(config.tierAssignments || {}).flat().length} suppliers selected.`,
+                                      variant: "default",
+                                    });
+                                  }}
+                                  onCancel={() => setShowTraceabilitySelector(false)}
+                                />
+                              </DialogContent>
+                            </Dialog>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

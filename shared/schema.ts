@@ -476,6 +476,7 @@ export const ddsReports = pgTable("dds_reports", {
   deforestationRiskLevel: text("deforestation_risk_level"),
   legalityStatus: text("legality_status"),
   complianceScore: decimal("compliance_score", { precision: 5, scale: 2 }),
+  traceability: jsonb("traceability"), // Supply chain linkage configuration
   
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
