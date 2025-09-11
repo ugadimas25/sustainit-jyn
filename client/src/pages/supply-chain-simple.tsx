@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2, Eye, MapPin, Navigation, Download
+  Building, Factory, TreePine, Home, Truck, Users, Package, ArrowRight, ArrowDown, Trash2, Eye, MapPin, Navigation, Download, X
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import L from 'leaflet';
@@ -77,6 +77,7 @@ interface TierAssignment {
 interface DraggedItem {
   category: string;
   supplier: any;
+  sourceTier?: number;
 }
 
 export default function SupplyChainSimple() {
@@ -87,6 +88,7 @@ export default function SupplyChainSimple() {
     4: [],
     5: []
   });
+  const [maxTiers, setMaxTiers] = useState<number>(5);
   const [draggedItem, setDraggedItem] = useState<DraggedItem | null>(null);
   const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
 
@@ -102,11 +104,11 @@ export default function SupplyChainSimple() {
         name: supplier.name,
         location: supplier.location,
         details: supplier.details
-      }
+      },
+      sourceTier: fromTier
     });
     
-    // Remove from current tier when starting drag
-    removeFromTier(fromTier, supplier.id);
+    // Don't remove from tier immediately - wait for successful drop
   };
 
   const handleDragOver = (e: React.DragEvent, tierNumber: number) => {
@@ -137,6 +139,11 @@ export default function SupplyChainSimple() {
       const exists = tierAssignments[tierNumber].some(s => s.id === tierSupplier.id);
       
       if (!exists) {
+        // Remove from source tier if it was dragged from another tier
+        if (draggedItem.sourceTier) {
+          removeFromTier(draggedItem.sourceTier, tierSupplier.id);
+        }
+        
         setTierAssignments(prev => ({
           ...prev,
           [tierNumber]: [...prev[tierNumber], tierSupplier]
@@ -175,14 +182,44 @@ export default function SupplyChainSimple() {
     }
   };
 
+  const addMoreTiers = () => {
+    const newMaxTiers = maxTiers + 1;
+    setMaxTiers(newMaxTiers);
+    setTierAssignments(prev => ({
+      ...prev,
+      [newMaxTiers]: []
+    }));
+  };
+
+  const removeTier = (tierNumber: number) => {
+    if (maxTiers <= 1) return; // Don't allow removing all tiers
+    
+    // Remove the specific tier and reassign tier numbers
+    const newAssignments: TierAssignment = {};
+    let newTierNumber = 1;
+    
+    for (let i = 1; i <= maxTiers; i++) {
+      if (i !== tierNumber) {
+        newAssignments[newTierNumber] = tierAssignments[i] || [];
+        // Update assigned tier numbers for suppliers
+        newAssignments[newTierNumber] = newAssignments[newTierNumber].map(supplier => ({
+          ...supplier,
+          assignedTier: newTierNumber
+        }));
+        newTierNumber++;
+      }
+    }
+    
+    setTierAssignments(newAssignments);
+    setMaxTiers(maxTiers - 1);
+  };
+
   const clearAllTiers = () => {
-    setTierAssignments({
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-      5: []
-    });
+    const emptyAssignments: TierAssignment = {};
+    for (let i = 1; i <= maxTiers; i++) {
+      emptyAssignments[i] = [];
+    }
+    setTierAssignments(emptyAssignments);
   };
 
   // Download functionality for exporting mockups
@@ -289,7 +326,7 @@ export default function SupplyChainSimple() {
         
         <Card className="p-8">
           <div className="space-y-8">
-            {[1, 2, 3, 4, 5].map(tierNumber => {
+            {Array.from({length: maxTiers}, (_, i) => i + 1).map(tierNumber => {
               const suppliers = tierAssignments[tierNumber] || [];
               if (suppliers.length === 0) return null;
               
@@ -297,7 +334,7 @@ export default function SupplyChainSimple() {
                 <div key={tierNumber}>
                   <div className="flex items-center mb-4">
                     <Badge className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1">
-                      Tier {tierNumber}
+                      Tier {tierNumber} {tierNumber === 1 ? '(Direct Suppliers)' : tierNumber === 2 ? '(Tier 1 Suppliers)' : `(Tier ${tierNumber-1} Suppliers)`}
                     </Badge>
                     <div className="ml-4 h-px bg-gray-300 flex-1"></div>
                   </div>
@@ -324,7 +361,7 @@ export default function SupplyChainSimple() {
                     })}
                   </div>
                   
-                  {tierNumber < 5 && tierAssignments[tierNumber + 1]?.length > 0 && (
+                  {tierNumber < maxTiers && tierAssignments[tierNumber + 1]?.length > 0 && (
                     <div className="flex justify-center mb-4">
                       <div className="flex items-center gap-2 text-gray-500">
                         <ArrowDown className="h-5 w-5" />
@@ -347,8 +384,15 @@ export default function SupplyChainSimple() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-              {[1, 2, 3, 4, 5].map(tierNumber => (
+            <div className={`grid gap-4 text-center ${
+              maxTiers === 1 ? 'grid-cols-1' :
+              maxTiers === 2 ? 'grid-cols-2' :
+              maxTiers === 3 ? 'grid-cols-2 md:grid-cols-3' :
+              maxTiers === 4 ? 'grid-cols-2 md:grid-cols-4' :
+              maxTiers === 5 ? 'grid-cols-2 md:grid-cols-5' :
+              'grid-cols-2 md:grid-cols-5 lg:grid-cols-6'
+            }`}>
+              {Array.from({length: maxTiers}, (_, i) => i + 1).map(tierNumber => (
                 <div key={tierNumber} className="space-y-2">
                   <div className="text-2xl font-bold text-blue-600">
                     {tierAssignments[tierNumber]?.length || 0}
@@ -369,7 +413,7 @@ export default function SupplyChainSimple() {
               <div className="flex items-center justify-between text-sm mt-2">
                 <span>Active Tiers:</span>
                 <span className="font-medium">
-                  {Object.values(tierAssignments).filter(tier => tier.length > 0).length} of 5
+                  {Object.values(tierAssignments).filter(tier => tier.length > 0).length} of {maxTiers}
                 </span>
               </div>
             </div>
@@ -490,7 +534,7 @@ export default function SupplyChainSimple() {
       });
 
       // Create flow lines between tiers
-      for (let tier = 1; tier <= 4; tier++) {
+      for (let tier = 1; tier <= maxTiers - 1; tier++) {
         const currentTier = tierCoords[tier];
         const nextTier = tierCoords[tier + 1];
         
@@ -872,6 +916,14 @@ export default function SupplyChainSimple() {
                 >
                   Save Configuration
                 </Button>
+                <Button 
+                  size="sm" 
+                  variant="secondary" 
+                  onClick={addMoreTiers}
+                  data-testid="button-add-more-tiers"
+                >
+                  + Add More Tiers
+                </Button>
                 {Object.values(tierAssignments).some(tier => tier.length > 0) && (
                   <Button 
                     size="sm" 
@@ -886,12 +938,12 @@ export default function SupplyChainSimple() {
             </div>
             
             <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map(tierNumber => (
+              {Array.from({length: maxTiers}, (_, i) => i + 1).map(tierNumber => (
                 <Card key={tierNumber}>
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <ArrowDown className="h-4 w-4" />
-                      Tier {tierNumber}
+                      Tier {tierNumber} {tierNumber === 1 ? '(Direct)' : `(Tier ${tierNumber-1} Suppliers)`}
                       <Badge variant="outline" className="ml-auto">
                         {tierAssignments[tierNumber]?.length || 0} suppliers
                       </Badge>
@@ -904,6 +956,18 @@ export default function SupplyChainSimple() {
                           data-testid={`clear-tier-${tierNumber}`}
                         >
                           <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {maxTiers > 1 && (
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => removeTier(tierNumber)}
+                          className="h-6 w-6 p-0 text-orange-500 hover:text-orange-700"
+                          title="Remove this tier"
+                          data-testid={`button-remove-tier-${tierNumber}`}
+                        >
+                          <X className="h-3 w-3" />
                         </Button>
                       )}
                     </CardTitle>
