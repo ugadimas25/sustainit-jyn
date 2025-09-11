@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DdsReport, InsertDdsReport } from "@shared/schema";
 import { KMLUploader } from "@/components/kml-uploader";
 import { GeoJSONGenerator } from "@/components/geojson-generator";
-import { PALM_OIL_HS_CODES } from "@/lib/constants";
+import { PALM_OIL_HS_CODES, STORAGE_KEYS } from "@/lib/constants";
 
 export default function DdsReports() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -31,6 +31,7 @@ export default function DdsReports() {
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedDeforestationRisk, setSelectedDeforestationRisk] = useState("");
   const [selectedLegalityStatus, setSelectedLegalityStatus] = useState("");
+  const [selectedPlots, setSelectedPlots] = useState<any[]>([]);
   const { toast } = useToast();
 
   // Fetch DDS reports
@@ -124,8 +125,9 @@ export default function DdsReports() {
       supplementaryUnit: formData.get('supplementaryUnit') as string || undefined,
       supplementaryQuantity: formData.get('supplementaryQuantity') as string || undefined,
       countryOfProduction: formData.get('countryOfProduction') as string,
-      plotGeolocations: formData.get('plotGeolocations') ? 
-        (formData.get('plotGeolocations') as string).split(',').map(s => s.trim()) : [],
+      plotGeolocations: selectedPlots.length > 0 ? 
+        selectedPlots.map(plot => `${plot.plotId}:${plot.geometry?.coordinates?.[0]?.map((coord: number[]) => coord.join(',')).join(';') || ''}`).filter(str => str.includes(':')) : 
+        (formData.get('plotGeolocations') ? (formData.get('plotGeolocations') as string).split(',').map(s => s.trim()) : []),
       establishmentGeolocations: formData.get('establishmentGeolocations') ? 
         (formData.get('establishmentGeolocations') as string).split(',').map(s => s.trim()) : [],
       priorDdsReference: formData.get('priorDdsReference') as string || undefined,
@@ -166,6 +168,36 @@ export default function DdsReports() {
   const removeHsCode = (code: string) => {
     setSelectedHsCodes(prev => prev.filter(c => c !== code));
   };
+
+  // Load selected plots from localStorage on component mount
+  useEffect(() => {
+    const loadSelectedPlots = () => {
+      try {
+        const storedPlots = localStorage.getItem(STORAGE_KEYS.SELECTED_PLOTS_FOR_DDS);
+        if (storedPlots) {
+          const plots = JSON.parse(storedPlots);
+          setSelectedPlots(plots);
+          
+          // Clear the localStorage after loading to prevent stale data
+          localStorage.removeItem(STORAGE_KEYS.SELECTED_PLOTS_FOR_DDS);
+          
+          // Auto-open the create form if plots are selected
+          setShowDdsForm(true);
+          setActiveTab("create");
+          
+          toast({
+            title: "Plots Loaded",
+            description: `${plots.length} plots loaded from Deforestation Analysis for DDS creation.`,
+            variant: "default",
+          });
+        }
+      } catch (error) {
+        console.error('Error loading selected plots:', error);
+      }
+    };
+
+    loadSelectedPlots();
+  }, [toast]);
 
   const generateComprehensiveDDS = (report: DdsReport) => {
     return {
@@ -564,14 +596,57 @@ export default function DdsReports() {
                           <input type="hidden" name="countryOfProduction" value={selectedCountry} />
                         </div>
                         <div>
-                          <Label htmlFor="plotGeolocations">Plot Geolocations (comma-separated coordinates)</Label>
-                          <Textarea 
-                            id="plotGeolocations" 
-                            name="plotGeolocations" 
-                            placeholder="2.5194, 101.5183, 2.5298, 101.5287"
-                            rows={3}
-                            data-testid="textarea-plot-geolocations"
-                          />
+                          <Label htmlFor="plotGeolocations">Plot Geolocations</Label>
+                          {selectedPlots.length > 0 ? (
+                            <div className="space-y-3">
+                              <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg">
+                                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">
+                                  📍 {selectedPlots.length} plots selected from Deforestation Analysis
+                                </p>
+                                <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                                  {selectedPlots.map((plot, index) => (
+                                    <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border">
+                                      <div className="flex items-center space-x-2">
+                                        <Badge 
+                                          variant={plot.overallRisk === 'HIGH' ? 'destructive' : plot.overallRisk === 'MEDIUM' ? 'default' : 'secondary'}
+                                          className="text-xs"
+                                        >
+                                          {plot.overallRisk}
+                                        </Badge>
+                                        <span className="font-medium text-sm">{plot.plotId}</span>
+                                        <span className="text-xs text-gray-500">{plot.country}</span>
+                                        <span className="text-xs text-gray-500">{plot.area} ha</span>
+                                      </div>
+                                      <Badge variant="outline" className="text-xs">
+                                        {plot.complianceStatus}
+                                      </Badge>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              {/* Hidden input for form submission */}
+                              <input 
+                                type="hidden" 
+                                name="plotGeolocations" 
+                                value={selectedPlots.map(plot => 
+                                  `${plot.plotId}:${plot.geometry?.coordinates?.[0]?.map((coord: number[]) => coord.join(',')).join(';') || ''}`
+                                ).join('|')}
+                              />
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <Textarea 
+                                id="plotGeolocations" 
+                                name="plotGeolocations" 
+                                placeholder="2.5194, 101.5183, 2.5298, 101.5287 (or select plots from Deforestation Monitoring page)"
+                                rows={3}
+                                data-testid="textarea-plot-geolocations"
+                              />
+                              <p className="text-xs text-gray-500">
+                                💡 Tip: Go to Deforestation Monitoring → Select plots → Actions → Create DDS Report for automatic population
+                              </p>
+                            </div>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="establishmentGeolocations">Establishment Geolocations (for cattle)</Label>

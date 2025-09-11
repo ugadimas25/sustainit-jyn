@@ -244,7 +244,8 @@ export const HTTP_STATUS = {
 export const STORAGE_KEYS = {
   USER_PREFERENCES: 'kpn_eudr_user_preferences',
   MAP_SETTINGS: 'kpn_eudr_map_settings',
-  FILTER_SETTINGS: 'kpn_eudr_filter_settings'
+  FILTER_SETTINGS: 'kpn_eudr_filter_settings',
+  SELECTED_PLOTS_FOR_DDS: 'selectedPlotsForDDS'
 } as const;
 
 // Feature Flags
