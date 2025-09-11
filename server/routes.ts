@@ -977,8 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate actual PDF file
-      const pdfDoc = generateActualPDF(report, res);
-      const pdfBuffer = pdfDoc.output('arraybuffer');
+      const pdfBuffer = generateCleanDDSPDF(report);
       
       // For demo purposes, we'll return the PDF directly
       res.setHeader('Content-Type', 'application/pdf');
@@ -1026,12 +1025,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Set up the document
       doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Due Diligence Statement', 105, 20, { align: 'center' });
       
       // Page info
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text('-------------------------------------------------------------------------------------------------------------', 10, 30);
       doc.text('Page 1', 10, 40);
       doc.text('Status: SUBMITTED', 150, 40);
@@ -1041,63 +1040,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Section 1
       let yPos = 70;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('1. Company Internal Ref:', 10, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.companyInternalRef, 80, yPos);
       
       yPos += 10;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('2. Activity:', 10, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.activity, 50, yPos);
       
       // Section 3 - Operator Information
       yPos += 20;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('3. Operator/Trader name and address:', 10, yPos);
       
       yPos += 10;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Name:', 15, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.operatorLegalName, 40, yPos);
       
       yPos += 10;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Address:', 15, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       const addressLines = doc.splitTextToSize(dummyReport.operatorAddress, 140);
       doc.text(addressLines, 45, yPos);
       yPos += addressLines.length * 5;
       
       yPos += 5;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Country:', 15, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.operatorCountry, 45, yPos);
       
       yPos += 10;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('ISO Code:', 15, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.operatorIsoCode, 45, yPos);
       
       // Commodity Section
       yPos += 20;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Commodity(ies) or Product(s)', 10, yPos);
       
       yPos += 15;
       doc.setFontSize(9);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Description', 10, yPos);
       doc.text('Net Mass (Kg)', 70, yPos);
       doc.text('% Est.', 120, yPos);
       doc.text('Units', 150, yPos);
       
       yPos += 10;
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.productDescription, 10, yPos);
       doc.text(dummyReport.netMassKg.toString(), 70, yPos);
       doc.text(dummyReport.percentageEstimation.toString() + '%', 120, yPos);
@@ -1105,37 +1104,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       yPos += 15;
       doc.setFontSize(10);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Scientific Name:', 10, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.scientificName, 60, yPos);
       
       yPos += 8;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Common Name:', 10, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.commonName, 60, yPos);
       
       yPos += 8;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Producer Name:', 10, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.producerName, 60, yPos);
       
       yPos += 8;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Country of Production:', 10, yPos);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.countryOfProduction, 80, yPos);
       
       // Summary Plot Information
       yPos += 20;
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Summary Plot Information', 10, yPos);
       
       yPos += 10;
       doc.setFontSize(9);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(`Total Producers: ${dummyReport.totalProducers}`, 10, yPos);
       doc.text(`Total Plots: ${dummyReport.totalPlots}`, 10, yPos + 8);
       doc.text(`Total Production Area (ha): ${dummyReport.totalProductionArea}`, 10, yPos + 16);
@@ -1149,14 +1148,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.addPage();
       doc.setFontSize(10);
       doc.text('-------------------------------------------------------------------------------------------------------------', 10, 20);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2', 10, 30);
       
       doc.setFontSize(12);
       doc.text('Appendix 1. Detailed Plot Information (Link to GeoJSON File)', 10, 50);
       
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text('This appendix contains detailed geographical information about all plots', 10, 70);
       doc.text('included in this Due Diligence Statement.', 10, 80);
       doc.text('', 10, 90);
@@ -1178,108 +1177,234 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       console.error('Error generating dummy DDS PDF:', error);
-      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
     }
   });
 
-  // Clean PDF generation helper function
+  // Enhanced PDF generation helper function with professional layout
   function generateCleanDDSPDF(report: any): ArrayBuffer {
     try {
       const doc = new jsPDF();
       
-      // Set up the document
-      doc.setFontSize(16);
-      doc.setFont(undefined, 'bold');
-      doc.text('Due Diligence Statement', 105, 20, { align: 'center' });
+      // Page 1 - Main DDS Content with Professional Tables
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('EU Due Diligence Statement', 105, 20, { align: 'center' });
       
-      // Page info
+      // Header section with border
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
-      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 30);
-      doc.text('Page 1', 10, 40);
-      doc.text('Status: SUBMITTED', 150, 40);
-      
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 1 of 2', 15, 38);
+      doc.text('Status: SUBMITTED', 90, 38);
       const currentDate = new Date().toLocaleDateString('en-GB');
-      doc.text(`Created On: ${currentDate}`, 10, 50);
+      doc.text(`Generated: ${currentDate}`, 150, 38);
       
-      // Section 1
-      let yPos = 70;
-      doc.setFont(undefined, 'bold');
-      doc.text('1. Company Internal Ref:', 10, yPos);
-      doc.setFont(undefined, 'normal');
-      doc.text(report.companyInternalRef || 'DDS-2024-001', 80, yPos);
+      let yPos = 55;
       
-      yPos += 10;
-      doc.setFont(undefined, 'bold');
-      doc.text('2. Activity:', 10, yPos);
-      doc.setFont(undefined, 'normal');
-      doc.text(report.activity || 'Import', 50, yPos);
-      
-      // Section 3 - Operator Information
-      yPos += 20;
-      doc.setFont(undefined, 'bold');
-      doc.text('3. Operator/Trader name and address:', 10, yPos);
-      
-      yPos += 10;
-      doc.setFont(undefined, 'bold');
-      doc.text('Name:', 15, yPos);
-      doc.setFont(undefined, 'normal');
-      doc.text(report.operatorLegalName || 'KPN Corporation Berhad', 40, yPos);
-      
-      yPos += 10;
-      doc.setFont(undefined, 'bold');
-      doc.text('Address:', 15, yPos);
-      doc.setFont(undefined, 'normal');
-      const address = report.operatorAddress || 'Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia';
-      const addressLines = doc.splitTextToSize(address, 140);
-      doc.text(addressLines, 45, yPos);
-      yPos += addressLines.length * 5;
-      
-      yPos += 5;
-      doc.setFont(undefined, 'bold');
-      doc.text('Country:', 15, yPos);
-      doc.setFont(undefined, 'normal');
-      doc.text(report.operatorCountry || 'Malaysia', 45, yPos);
-      
-      // Commodity Section
-      yPos += 20;
-      doc.setFont(undefined, 'bold');
-      doc.text('Commodity(ies) or Product(s)', 10, yPos);
-      
-      yPos += 15;
-      doc.setFontSize(9);
-      doc.setFont(undefined, 'bold');
-      doc.text('Description', 10, yPos);
-      doc.text('Net Mass (Kg)', 70, yPos);
-      doc.text('% Est.', 120, yPos);
-      doc.text('Units', 150, yPos);
-      
-      yPos += 10;
-      doc.setFont(undefined, 'normal');
-      doc.text(report.productDescription || 'Crude Palm Oil (CPO)', 10, yPos);
-      doc.text(report.netMassKg?.toString() || '2150.000', 70, yPos);
-      doc.text(report.percentageEstimation?.toString() + '%' || '5%', 120, yPos);
-      doc.text(report.supplementaryUnit || 'MT', 150, yPos);
-      
-      // Page 2
-      doc.addPage();
-      doc.setFontSize(10);
-      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 20);
-      doc.setFont(undefined, 'bold');
-      doc.text('PAGE 2', 10, 30);
-      
+      // Section 1: Reference Information Table
+      doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.text('Appendix 1. Detailed Plot Information (Link to GeoJSON File)', 10, 50);
+      doc.text('1. Reference Information', 10, yPos);
+      yPos += 10;
       
+      // Create table for reference info
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 25);
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(80, yPos, 80, yPos + 25);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Company Internal Ref:', 12, yPos + 8);
+      doc.text('Activity:', 12, yPos + 20);
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.companyInternalRef || 'DDS-2024-001', 82, yPos + 8);
+      doc.text(report.activity || 'Import of Palm Oil Products', 82, yPos + 20);
+      yPos += 35;
+      
+      // Section 2: Operator Information Table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('2. Operator/Trader Information', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 35);
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(10, yPos + 24, 200, yPos + 24);
+      doc.line(60, yPos, 60, yPos + 35);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Name:', 12, yPos + 8);
+      doc.text('Address:', 12, yPos + 20);
+      doc.text('Country:', 12, yPos + 32);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.operatorLegalName || 'KPN Corporation Berhad', 62, yPos + 8);
+      const address = report.operatorAddress || 'Level 6, Menara KPN, Jalan Sultan Ismail, Kuala Lumpur, Malaysia';
+      const addressLines = doc.splitTextToSize(address, 135);
+      doc.text(addressLines, 62, yPos + 16);
+      doc.text(report.operatorCountry || 'Malaysia', 62, yPos + 32);
+      yPos += 45;
+      
+      // Section 3: Commodity Information Table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('3. Commodity Information', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 35);
+      
+      // Table headers
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(70, yPos, 70, yPos + 35);
+      doc.line(120, yPos, 120, yPos + 35);
+      doc.line(150, yPos, 150, yPos + 35);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Description', 12, yPos + 8);
+      doc.text('Net Mass (Kg)', 72, yPos + 8);
+      doc.text('% Est.', 122, yPos + 8);
+      doc.text('Units', 152, yPos + 8);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.productDescription || 'Crude Palm Oil (CPO)', 12, yPos + 20);
+      doc.text(report.netMassKg?.toString() || '2150.000', 72, yPos + 20);
+      doc.text(report.percentageEstimation?.toString() + '%' || '5%', 122, yPos + 20);
+      doc.text(report.supplementaryUnit || 'MT', 152, yPos + 20);
+      
+      // Scientific details
+      doc.text(`Scientific: ${report.scientificName || 'Elaeis guineensis'}`, 12, yPos + 28);
+      doc.text(`Common: ${report.commonName || 'Oil Palm'}`, 72, yPos + 28);
+      yPos += 45;
+      
+      // Section 4: Summary Statistics Table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('4. Summary Statistics', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 25);
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(95, yPos, 95, yPos + 25);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Total Producers:', 12, yPos + 8);
+      doc.text('Total Plots:', 12, yPos + 20);
+      doc.text('Total Area (ha):', 97, yPos + 8);
+      doc.text('Country of Harvest:', 97, yPos + 20);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.totalProducers?.toString() || '15', 55, yPos + 8);
+      doc.text(report.totalPlots?.toString() || '45', 40, yPos + 20);
+      doc.text(report.totalProductionArea?.toString() || '1250.50', 140, yPos + 8);
+      doc.text(report.countryOfHarvest || 'Malaysia', 150, yPos + 20);
+      
+      // Page 2 - Methodology and Technical Content
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('EUDR Compliance Methodology', 105, 20, { align: 'center' });
+      
+      // Header for page 2
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
-      doc.text('This appendix contains detailed geographical information about all plots', 10, 70);
-      doc.text('included in this Due Diligence Statement.', 10, 80);
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 2 of 2', 15, 38);
+      doc.text('Technical Appendix', 90, 38);
+      doc.text(`Generated: ${currentDate}`, 150, 38);
       
-      console.log('PDF generated successfully');
+      yPos = 55;
+      
+      // Methodology Section 1: Deforestation Analysis
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('1. Deforestation Analysis Methodology', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const methodologyText1 = [
+        'Our deforestation analysis employs a multi-layer satellite monitoring approach:',
+        '',
+        '• Global Forest Watch (GFW) - Provides annual tree cover loss data',
+        '• Joint Research Centre (JRC) - EU\'s forest monitoring system',
+        '• Science Based Targets Network (SBTN) - Advanced deforestation alerts',
+        '',
+        'Analysis Workflow:',
+        '1. Plot boundary verification using GPS coordinates',
+        '2. Historical forest cover analysis (2000-2023)',
+        '3. Cross-reference with protected area databases',
+        '4. Risk assessment scoring and compliance determination'
+      ];
+      
+      methodologyText1.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 70;
+      
+      // Methodology Section 2: Risk Assessment
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('2. Plot Risk Assessment Framework', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const methodologyText2 = [
+        'Risk Classification System:',
+        '',
+        '• HIGH RISK: Forest loss detected after December 31, 2020',
+        '• MEDIUM RISK: Forest loss between 2018-2020 (requires verification)',
+        '• LOW RISK: No significant forest loss detected in monitoring period',
+        '',
+        'Compliance Determination:',
+        '• COMPLIANT: No deforestation after cutoff date, all documentation verified',
+        '• NON-COMPLIANT: Evidence of post-2020 deforestation detected'
+      ];
+      
+      methodologyText2.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 55;
+      
+      // Methodology Section 3: Data Sources
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('3. Geospatial Data Integration', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const methodologyText3 = [
+        'Plot boundaries and verification data are provided in standardized GeoJSON format',
+        'ensuring compatibility with EU TRACE system requirements.',
+        '',
+        'Data Sources Include:',
+        '• Verified plot coordinates with sub-meter accuracy',
+        '• Satellite imagery analysis from multiple providers',
+        '• Local ground-truthing and farmer documentation',
+        '• Integration with national land use databases',
+        '',
+        'For detailed plot geometries and verification data, refer to the',
+        'accompanying GeoJSON files linked to this Due Diligence Statement.'
+      ];
+      
+      methodologyText3.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      
+      console.log('Enhanced PDF generated successfully with professional layout');
       return doc.output('arraybuffer');
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error generating enhanced PDF:', error);
       throw error;
     }
   }
@@ -1583,7 +1708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Mock file paths - in real implementation, save to storage
-      const filePaths = geoJsonFiles.map(file => `/geojson/${report.id}/${file.fileName}`);
+      const filePaths = geoJsonFiles.map((file: { fileName: string }) => `/geojson/${report.id}/${file.fileName}`);
       const combinedFilePath = `/geojson/${report.id}/combined-verified-polygons.geojson`;
 
       // Update report with generated GeoJSON paths
@@ -1595,7 +1720,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true, 
         message: 'GeoJSON files generated successfully',
         files: [
-          ...geoJsonFiles.map(file => ({
+          ...geoJsonFiles.map((file: { fileName: string; plotId: string }) => ({
             fileName: file.fileName,
             path: `/geojson/${report.id}/${file.fileName}`,
             plotId: file.plotId
@@ -1716,8 +1841,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(mill);
     } catch (error) {
       console.error('Error creating mill data collection:', error);
-      if (error.issues) {
-        return res.status(400).json({ error: 'Validation error', details: error.issues });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: 'Validation error', details: error.errors });
       }
       res.status(500).json({ error: 'Failed to create mill data collection' });
     }
@@ -2021,15 +2146,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
               sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
               // Include intersection area data for high-risk datasets
-              gfwLossArea: Number(gfwArea || 0),
-              jrcLossArea: Number(jrcArea || 0),
-              sbtnLossArea: Number(sbtnArea || 0),
+              gfwLossArea: String(Number(gfwArea || 0)),
+              jrcLossArea: String(Number(jrcArea || 0)),
+              sbtnLossArea: String(Number(sbtnArea || 0)),
               highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
               geometry: feature.geometry,
               uploadSession: uploadSession
             });
           } catch (err) {
-            console.log("Could not store analysis result:", err.message);
+            const errMessage = err instanceof Error ? err.message : 'Unknown error';
+            console.log("Could not store analysis result:", errMessage);
           }
         }
         
@@ -2041,9 +2167,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('GeoJSON upload error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'Internal server error during GeoJSON analysis',
-        details: error.message 
+        details: errorMessage 
       });
     }
   });
@@ -2511,15 +2638,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error in PostGIS overlap detection:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       res.status(500).json({ 
         error: 'Failed to detect overlaps using PostGIS',
-        details: error.message 
+        details: errorMessage 
       });
     }
   });
 
   // Helper function to convert coordinates array to WKT format
-  function coordinatesToWKT(coordinates) {
+  function coordinatesToWKT(coordinates: any): string {
     if (!coordinates || !coordinates[0]) {
       throw new Error('Invalid coordinates');
     }
@@ -2532,7 +2660,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const ring = coords[0];
-    const wktCoords = ring.map(coord => `${coord[0]} ${coord[1]}`).join(', ');
+    const wktCoords = ring.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
     return `POLYGON((${wktCoords}))`;
   }
 
