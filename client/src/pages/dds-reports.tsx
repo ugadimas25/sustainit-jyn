@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, Plus, Download, Send, Eye, CheckCircle2, Clock, AlertTriangle,
-  Building, Package, MapPin, Link2, Signature, Globe, Shield
+  Building, Package, MapPin, Link2, Signature, Globe, Shield, ChevronDown, X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -24,7 +26,7 @@ export default function DdsReports() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showDdsForm, setShowDdsForm] = useState(false);
   const [selectedReport, setSelectedReport] = useState<DdsReport | null>(null);
-  const [selectedHsCode, setSelectedHsCode] = useState("");
+  const [selectedHsCodes, setSelectedHsCodes] = useState<string[]>([]);
   const [selectedShipment, setSelectedShipment] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedDeforestationRisk, setSelectedDeforestationRisk] = useState("");
@@ -99,10 +101,10 @@ export default function DdsReports() {
     e.preventDefault();
     
     // Validate required Select fields
-    if (!selectedHsCode || !selectedCountry) {
+    if (selectedHsCodes.length === 0 || !selectedCountry) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields: HS Code and Country of Production.",
+        description: "Please fill in all required fields: HS Code(s) and Country of Production.",
         variant: "destructive",
       });
       return;
@@ -115,7 +117,7 @@ export default function DdsReports() {
       operatorLegalName: formData.get('operatorLegalName') as string,
       operatorAddress: formData.get('operatorAddress') as string,
       eoriNumber: formData.get('eoriNumber') as string || undefined,
-      hsCode: formData.get('hsCode') as string,
+      hsCode: formData.getAll('hsCode').join(','),
       productDescription: formData.get('productDescription') as string,
       scientificName: formData.get('scientificName') as string || undefined,
       netMassKg: formData.get('netMassKg') as string,
@@ -145,12 +147,24 @@ export default function DdsReports() {
     setShowDdsForm(open);
     if (!open) {
       // Reset form state when dialog closes
-      setSelectedHsCode("");
+      setSelectedHsCodes([]);
       setSelectedShipment("");
       setSelectedCountry("");
       setSelectedDeforestationRisk("");
       setSelectedLegalityStatus("");
     }
+  };
+
+  const handleHsCodeToggle = (code: string) => {
+    setSelectedHsCodes(prev => 
+      prev.includes(code) 
+        ? prev.filter(c => c !== code)
+        : [...prev, code]
+    );
+  };
+
+  const removeHsCode = (code: string) => {
+    setSelectedHsCodes(prev => prev.filter(c => c !== code));
   };
 
   const generateComprehensiveDDS = (report: DdsReport) => {
@@ -385,26 +399,92 @@ export default function DdsReports() {
                           <input type="hidden" name="shipmentId" value={selectedShipment} />
                         </div>
                         <div>
-                          <Label htmlFor="hsCode">HS Code *</Label>
-                          <Select value={selectedHsCode} onValueChange={setSelectedHsCode} required>
-                            <SelectTrigger data-testid="select-hs-code">
-                              <SelectValue placeholder="Select HS Code for palm oil product" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-60">
-                              {PALM_OIL_HS_CODES.map((hsCode) => (
-                                <SelectItem key={hsCode.code} value={hsCode.code}>
-                                  <div className="flex flex-col">
-                                    <span className="font-medium">{hsCode.code}</span>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                                      {hsCode.description}
-                                    </span>
+                          <Label htmlFor="hsCode">HS Codes * (Multiple Selection)</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-full justify-between text-left font-normal"
+                                data-testid="select-hs-codes"
+                              >
+                                {selectedHsCodes.length === 0 ? (
+                                  <span className="text-gray-500">Select HS Codes for palm oil products</span>
+                                ) : (
+                                  <span className="text-sm">
+                                    {selectedHsCodes.length} HS Code{selectedHsCodes.length !== 1 ? 's' : ''} selected
+                                  </span>
+                                )}
+                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80 p-0" align="start">
+                              <div className="max-h-60 overflow-y-auto">
+                                <div className="p-2">
+                                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 px-2">
+                                    Select Multiple HS Codes:
                                   </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {/* Hidden input for form submission */}
-                          <input type="hidden" name="hsCode" value={selectedHsCode} />
+                                  {PALM_OIL_HS_CODES.map((hsCode) => (
+                                    <div
+                                      key={hsCode.code}
+                                      className="flex items-start space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded cursor-pointer"
+                                      onClick={() => handleHsCodeToggle(hsCode.code)}
+                                      data-testid={`hs-code-option-${hsCode.code}`}
+                                    >
+                                      <Checkbox
+                                        checked={selectedHsCodes.includes(hsCode.code)}
+                                        onChange={() => handleHsCodeToggle(hsCode.code)}
+                                        className="mt-0.5"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="font-medium text-sm">{hsCode.code}</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                          {hsCode.description}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                          
+                          {/* Selected HS Codes Display */}
+                          {selectedHsCodes.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {selectedHsCodes.map((code) => {
+                                const hsCodeData = PALM_OIL_HS_CODES.find(hc => hc.code === code);
+                                return (
+                                  <Badge
+                                    key={code}
+                                    variant="secondary"
+                                    className="text-xs px-2 py-1"
+                                    data-testid={`selected-hs-code-${code}`}
+                                  >
+                                    {code}
+                                    <button
+                                      type="button"
+                                      onClick={() => removeHsCode(code)}
+                                      className="ml-1 hover:text-red-500"
+                                      data-testid={`remove-hs-code-${code}`}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          )}
+                          
+                          {/* Hidden inputs for form submission */}
+                          {selectedHsCodes.map((code, index) => (
+                            <input
+                              key={index}
+                              type="hidden"
+                              name="hsCode"
+                              value={code}
+                            />
+                          ))}
                         </div>
                         <div className="col-span-2">
                           <Label htmlFor="productDescription">Product Description *</Label>
