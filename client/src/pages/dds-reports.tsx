@@ -32,6 +32,7 @@ export default function DdsReports() {
   const [selectedDeforestationRisk, setSelectedDeforestationRisk] = useState("");
   const [selectedLegalityStatus, setSelectedLegalityStatus] = useState("");
   const [selectedPlots, setSelectedPlots] = useState<any[]>([]);
+  const [selectedSuppliers, setSelectedSuppliers] = useState<any[]>([]);
   const { toast } = useToast();
 
   // Fetch DDS reports
@@ -173,10 +174,20 @@ export default function DdsReports() {
   const [showPlotSelector, setShowPlotSelector] = useState(false);
   const [tempSelectedPlots, setTempSelectedPlots] = useState<Set<string>>(new Set());
   
+  // State for supplier legality selection popup
+  const [showSupplierSelector, setShowSupplierSelector] = useState(false);
+  const [tempSelectedSuppliers, setTempSelectedSuppliers] = useState<Set<string>>(new Set());
+  
   // Fetch analysis results for plot selection
   const { data: analysisResults = [] } = useQuery<any[]>({
     queryKey: ['/api/analysis-results'],
     enabled: showPlotSelector,
+  });
+
+  // Fetch supplier compliance data for supplier selection
+  const { data: supplierComplianceData = [] } = useQuery<any[]>({
+    queryKey: ['/api/supplier-compliance'],
+    enabled: showSupplierSelector,
   });
 
   const handlePlotSelection = (plotId: string, checked: boolean) => {
@@ -203,6 +214,53 @@ export default function DdsReports() {
   const clearPlotSelection = () => {
     setSelectedPlots([]);
     setTempSelectedPlots(new Set());
+  };
+
+  const handleSupplierSelection = (supplierId: string, checked: boolean) => {
+    const newSelection = new Set(tempSelectedSuppliers);
+    if (checked) {
+      newSelection.add(supplierId);
+    } else {
+      newSelection.delete(supplierId);
+    }
+    setTempSelectedSuppliers(newSelection);
+  };
+
+  const confirmSupplierSelection = () => {
+    const selectedSupplierData = supplierComplianceData.filter(supplier => 
+      tempSelectedSuppliers.has(supplier.id.toString())
+    );
+    setSelectedSuppliers(selectedSupplierData);
+    setShowSupplierSelector(false);
+    
+    // Calculate overall legality status from selected suppliers
+    const verifiedCount = selectedSupplierData.filter(s => s.complianceStatus === 'Verified' || s.overallScore >= 80).length;
+    const totalCount = selectedSupplierData.length;
+    
+    let overallStatus = 'pending';
+    if (totalCount === 0) {
+      overallStatus = '';
+    } else if (verifiedCount === totalCount) {
+      overallStatus = 'verified';
+    } else if (verifiedCount / totalCount >= 0.8) {
+      overallStatus = 'mostly-verified';
+    } else {
+      overallStatus = 'pending';
+    }
+    
+    setSelectedLegalityStatus(overallStatus);
+    
+    toast({
+      title: "Suppliers Selected",
+      description: `${selectedSupplierData.length} suppliers selected for legality assessment.`,
+      variant: "default",
+    });
+  };
+
+  const clearSupplierSelection = () => {
+    setSelectedSuppliers([]);
+    setTempSelectedSuppliers(new Set());
+    setSelectedLegalityStatus('');
   };
 
   const generateComprehensiveDDS = (report: DdsReport) => {
@@ -808,17 +866,238 @@ export default function DdsReports() {
                         </div>
                         <div>
                           <Label htmlFor="legalityStatus">Legality Status</Label>
-                          <Select value={selectedLegalityStatus} onValueChange={setSelectedLegalityStatus}>
-                            <SelectTrigger data-testid="select-legality-status">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="verified">Verified</SelectItem>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="non-compliant">Non-Compliant</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <input type="hidden" name="legalityStatus" value={selectedLegalityStatus} />
+                          <div className="space-y-3">
+                            {selectedSuppliers.length > 0 ? (
+                              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                                <div className="flex justify-between items-center mb-2">
+                                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                                    🏢 {selectedSuppliers.length} suppliers selected for legality assessment
+                                  </p>
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={clearSupplierSelection}
+                                    data-testid="button-clear-suppliers"
+                                  >
+                                    <X className="h-3 w-3 mr-1" />
+                                    Clear
+                                  </Button>
+                                </div>
+                                <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
+                                  {selectedSuppliers.map((supplier, index) => (
+                                    <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border">
+                                      <div className="flex items-center space-x-2">
+                                        <Badge 
+                                          variant={supplier.overallScore >= 80 ? 'default' : supplier.overallScore >= 60 ? 'secondary' : 'destructive'}
+                                          className="text-xs"
+                                        >
+                                          {supplier.overallScore || 0}/100
+                                        </Badge>
+                                        <span className="font-medium text-sm">{supplier.namaSupplier}</span>
+                                        <span className="text-xs text-gray-500">{supplier.jenisSupplier}</span>
+                                      </div>
+                                      <div className="flex space-x-1">
+                                        <Badge 
+                                          variant={supplier.spatialLegalityStatus === 'compliant' ? 'default' : 'secondary'}
+                                          className="text-xs"
+                                        >
+                                          Spatial: {supplier.spatialLegalityStatus || 'pending'}
+                                        </Badge>
+                                        <Badge 
+                                          variant={supplier.complianceStatus === 'Verified' ? 'default' : 'outline'}
+                                          className="text-xs"
+                                        >
+                                          8 Indicators: {supplier.complianceStatus || 'pending'}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                {/* Overall status display */}
+                                <div className="mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm text-blue-700 dark:text-blue-300">Overall Status:</span>
+                                    <Badge 
+                                      variant={selectedLegalityStatus === 'verified' ? 'default' : selectedLegalityStatus === 'mostly-verified' ? 'secondary' : 'outline'}
+                                      className="text-xs"
+                                    >
+                                      {selectedLegalityStatus === 'verified' ? 'Fully Verified' : 
+                                       selectedLegalityStatus === 'mostly-verified' ? 'Mostly Verified (>80%)' : 
+                                       selectedLegalityStatus === 'pending' ? 'Under Review' : 'No Assessment'}
+                                    </Badge>
+                                  </div>
+                                </div>
+                                {/* Hidden input for form submission */}
+                                <input 
+                                  type="hidden" 
+                                  name="legalityStatus" 
+                                  value={selectedLegalityStatus}
+                                />
+                              </div>
+                            ) : (
+                              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                                <Shield className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-500 mb-3">No suppliers selected for legality assessment</p>
+                                <input type="hidden" name="legalityStatus" value="" />
+                              </div>
+                            )}
+                            
+                            <Dialog open={showSupplierSelector} onOpenChange={setShowSupplierSelector}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  className="w-full"
+                                  data-testid="button-select-suppliers"
+                                >
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Select Suppliers for Legality Assessment
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-6xl max-h-[80vh] overflow-hidden">
+                                <DialogHeader>
+                                  <DialogTitle>Select Suppliers for Legality Assessment</DialogTitle>
+                                  <DialogDescription>
+                                    Select suppliers from the compliance assessment results below. Each supplier shows spatial legality checking and 8 indicators assessment status.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex flex-col h-full">
+                                  <div className="mb-4">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                      <div>
+                                        <strong>Spatial Legality Checking:</strong>
+                                        <ul className="text-xs text-gray-600 mt-1 ml-4">
+                                          <li>• Protected areas overlap verification</li>
+                                          <li>• Land use rights validation</li>
+                                          <li>• Boundary compliance assessment</li>
+                                        </ul>
+                                      </div>
+                                      <div>
+                                        <strong>8 Indicators Assessment:</strong>
+                                        <ul className="text-xs text-gray-600 mt-1 ml-4">
+                                          <li>• Land tenure rights • Environmental protection</li>
+                                          <li>• Forestry regulations • Indigenous rights</li>
+                                          <li>• Plasma development • Land disputes</li>
+                                          <li>• Labour & human rights • Tax & anti-corruption</li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex-1 overflow-y-auto border rounded-lg">
+                                    <table className="w-full text-sm">
+                                      <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
+                                        <tr>
+                                          <th className="w-10 px-3 py-2 text-left">
+                                            <Checkbox
+                                              checked={tempSelectedSuppliers.size === supplierComplianceData.length && supplierComplianceData.length > 0}
+                                              onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                  setTempSelectedSuppliers(new Set(supplierComplianceData.map(s => s.id.toString())));
+                                                } else {
+                                                  setTempSelectedSuppliers(new Set());
+                                                }
+                                              }}
+                                              data-testid="checkbox-select-all-suppliers"
+                                            />
+                                          </th>
+                                          <th className="px-3 py-2 text-left font-medium">Supplier Name</th>
+                                          <th className="px-3 py-2 text-left font-medium">Type</th>
+                                          <th className="px-3 py-2 text-left font-medium">Compliance Score</th>
+                                          <th className="px-3 py-2 text-left font-medium">Spatial Legality</th>
+                                          <th className="px-3 py-2 text-left font-medium">8 Indicators</th>
+                                          <th className="px-3 py-2 text-left font-medium">Overall Status</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {supplierComplianceData.map((supplier) => (
+                                          <tr key={supplier.id} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
+                                            <td className="px-3 py-2">
+                                              <Checkbox
+                                                checked={tempSelectedSuppliers.has(supplier.id.toString())}
+                                                onCheckedChange={(checked) => handleSupplierSelection(supplier.id.toString(), !!checked)}
+                                                data-testid={`checkbox-supplier-${supplier.id}`}
+                                              />
+                                            </td>
+                                            <td className="px-3 py-2">
+                                              <div>
+                                                <span className="font-medium">{supplier.namaSupplier}</span>
+                                                <div className="text-xs text-gray-500">{supplier.alamatSupplier}</div>
+                                              </div>
+                                            </td>
+                                            <td className="px-3 py-2">{supplier.jenisSupplier}</td>
+                                            <td className="px-3 py-2">
+                                              <div className="flex items-center space-x-2">
+                                                <Badge 
+                                                  variant={supplier.overallScore >= 80 ? 'default' : supplier.overallScore >= 60 ? 'secondary' : 'destructive'}
+                                                  className="text-xs"
+                                                >
+                                                  {supplier.overallScore || 0}/100
+                                                </Badge>
+                                              </div>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                              <Badge 
+                                                variant={supplier.spatialLegalityStatus === 'compliant' ? 'default' : 'secondary'}
+                                                className="text-xs"
+                                              >
+                                                {supplier.spatialLegalityStatus || 'pending'}
+                                              </Badge>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                              <Badge 
+                                                variant={supplier.complianceStatus === 'Verified' ? 'default' : 'outline'}
+                                                className="text-xs"
+                                              >
+                                                {supplier.complianceStatus || 'pending'}
+                                              </Badge>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                              <Badge 
+                                                variant={
+                                                  (supplier.overallScore >= 80 && supplier.spatialLegalityStatus === 'compliant') ? 'default' :
+                                                  supplier.overallScore >= 60 ? 'secondary' : 'destructive'
+                                                }
+                                                className="text-xs"
+                                              >
+                                                {supplier.overallScore >= 80 && supplier.spatialLegalityStatus === 'compliant' ? 'Verified' :
+                                                 supplier.overallScore >= 60 ? 'Review' : 'Non-Compliant'}
+                                              </Badge>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  
+                                  <div className="flex justify-between items-center pt-4 border-t">
+                                    <p className="text-sm text-gray-600">
+                                      {tempSelectedSuppliers.size} of {supplierComplianceData.length} suppliers selected
+                                    </p>
+                                    <div className="flex space-x-2">
+                                      <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        onClick={() => setShowSupplierSelector(false)}
+                                        data-testid="button-cancel-supplier-selection"
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button 
+                                        type="button" 
+                                        onClick={confirmSupplierSelection}
+                                        disabled={tempSelectedSuppliers.size === 0}
+                                        data-testid="button-confirm-supplier-selection"
+                                      >
+                                        Confirm Selection ({tempSelectedSuppliers.size})
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
                         </div>
                         <div>
                           <Label htmlFor="complianceScore">Compliance Score (0-100)</Label>
