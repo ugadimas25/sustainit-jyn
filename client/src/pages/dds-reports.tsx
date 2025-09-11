@@ -527,10 +527,14 @@ export default function DdsReports() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" data-testid="tab-overview">
               <FileText className="h-4 w-4 mr-2" />
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="demo" data-testid="tab-demo">
+              <Download className="h-4 w-4 mr-2" />
+              Demo PDF
             </TabsTrigger>
             <TabsTrigger value="create" data-testid="tab-create">
               <Plus className="h-4 w-4 mr-2" />
@@ -1869,6 +1873,151 @@ export default function DdsReports() {
                     <div className="flex justify-between">
                       <span>Documentation:</span>
                       <span className="font-medium">Complete</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Demo PDF Tab */}
+          <TabsContent value="demo" className="space-y-6">
+            <div className="max-w-4xl">
+              <h2 className="text-xl font-semibold mb-4">Demo DDS PDF Document</h2>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Generated DDS PDF Sample
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-gray-600 dark:text-gray-300">
+                    This is a sample Due Diligence Statement PDF document generated using the EU template structure. 
+                    It includes all required sections including operator details, commodity information, plot data, 
+                    and compliance assessments.
+                  </p>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">PDF Contents Include:</h3>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600 dark:text-gray-300">
+                      <li>Company Internal Reference & Activity Type</li>
+                      <li>Complete Operator/Trader Information with Address</li>
+                      <li>Commodity Description with Scientific Names</li>
+                      <li>Net Mass, Percentages, and Supplementary Units</li>
+                      <li>Producer Information and Country of Production</li>
+                      <li>Summary Plot Information with Traceability Data</li>
+                      <li>Harvest Dates and Production Date Ranges</li>
+                      <li>Appendix with Detailed Plot Coordinate Information</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/generate-dummy-dds-pdf');
+                          if (response.ok) {
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'dummy-dds-report.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            
+                            toast({
+                              title: "PDF Downloaded",
+                              description: "The demo DDS PDF has been downloaded successfully.",
+                            });
+                          } else {
+                            throw new Error('Failed to generate PDF');
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Download Error", 
+                            description: "Failed to download the PDF. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      data-testid="button-download-demo-pdf"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Demo PDF
+                    </Button>
+                    
+                    <Button 
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/generate-dummy-dds-pdf');
+                          if (response.ok) {
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            window.open(url, '_blank');
+                            window.URL.revokeObjectURL(url);
+                            
+                            toast({
+                              title: "PDF Opened",
+                              description: "The demo DDS PDF has been opened in a new tab.",
+                            });
+                          } else {
+                            throw new Error('Failed to generate PDF');
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "View Error",
+                            description: "Failed to open the PDF. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      data-testid="button-view-demo-pdf"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View PDF
+                    </Button>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <span>EU Template Structure</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                        <span>Multi-page Layout</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-purple-600" />
+                        <span>EUDR Compliant</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sample Data Used</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <strong>Company:</strong> KPN Corporation Berhad<br/>
+                      <strong>Activity:</strong> Import<br/>
+                      <strong>Product:</strong> Crude Palm Oil (CPO)<br/>
+                      <strong>Net Mass:</strong> 2,150 KG<br/>
+                    </div>
+                    <div>
+                      <strong>Country:</strong> Malaysia<br/>
+                      <strong>Producers:</strong> 15<br/>
+                      <strong>Total Plots:</strong> 45<br/>
+                      <strong>Production Area:</strong> 1,250.50 ha<br/>
                     </div>
                   </div>
                 </CardContent>
