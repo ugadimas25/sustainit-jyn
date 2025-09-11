@@ -227,8 +227,125 @@ Respond in JSON format with the exact structure specified in the interface.`;
 
     } catch (error) {
       console.error('OpenAI compliance analysis error:', error);
-      throw new Error('Failed to analyze supplier compliance with AI');
+      console.log('Falling back to rule-based analysis due to OpenAI unavailability');
+      
+      // Fallback analysis when OpenAI is unavailable
+      return this.generateFallbackAnalysis(request);
     }
+  }
+  
+  private generateFallbackAnalysis(request: { supplierName: string; formData: any; analysisType: string }) {
+    // Rule-based analysis when OpenAI is unavailable
+    const formData = request.formData;
+    let score = 100;
+    const riskFactors = [];
+    const complianceGaps = [];
+    const mitigationPlan = [];
+    
+    // Check common compliance fields
+    const requiredFields = [
+      'namaSupplier', 'alamatSupplier', 'kontakSupplier', 'jenisSupplier',
+      'statusLegalitas', 'nomorIzin', 'tanggalBerlaku', 'luasKebun',
+      'jumlahPekerjaTetap', 'jumlahPekerjaKontrak'
+    ];
+    
+    let missingFields = 0;
+    for (const field of requiredFields) {
+      if (!formData[field] || formData[field] === '' || formData[field] === null) {
+        missingFields++;
+        score -= 8;
+      }
+    }
+    
+    if (missingFields > 0) {
+      riskFactors.push(`${missingFields} missing required fields`);
+      complianceGaps.push({
+        category: 'Documentation',
+        description: `Missing ${missingFields} required supplier information fields`,
+        priority: missingFields > 5 ? 'HIGH' : 'MEDIUM',
+        impact: 'Incomplete supplier profile affects risk assessment accuracy'
+      });
+    }
+    
+    // Check sustainability documents
+    const sustainabilityDocs = ['sertifikatRSPO', 'sertifikatISCC', 'sertifikatISPO'];
+    const missingSustainabilityDocs = sustainabilityDocs.filter(doc => !formData[doc] || formData[doc] === 'Tidak Ada');
+    
+    if (missingSustainabilityDocs.length > 0) {
+      score -= missingSustainabilityDocs.length * 15;
+      riskFactors.push('Missing sustainability certifications');
+      complianceGaps.push({
+        category: 'Sustainability',
+        description: `Missing certifications: ${missingSustainabilityDocs.join(', ')}`,
+        priority: 'HIGH',
+        impact: 'Sustainability compliance cannot be verified'
+      });
+    }
+    
+    // Check legal compliance
+    if (!formData.statusLegalitas || formData.statusLegalitas === 'Tidak Lengkap') {
+      score -= 20;
+      riskFactors.push('Incomplete legal documentation');
+      complianceGaps.push({
+        category: 'Legal',
+        description: 'Legal documentation is incomplete or missing',
+        priority: 'CRITICAL',
+        impact: 'Legal compliance status unclear'
+      });
+    }
+    
+    // Check environmental compliance
+    if (!formData.analisisDampakLingkungan || formData.analisisDampakLingkungan === 'Tidak Ada') {
+      score -= 10;
+      riskFactors.push('Missing environmental impact analysis');
+      complianceGaps.push({
+        category: 'Environmental',
+        description: 'Environmental impact analysis not provided',
+        priority: 'MEDIUM',
+        impact: 'Environmental compliance cannot be assessed'
+      });
+    }
+    
+    // Generate mitigation plan
+    if (complianceGaps.length > 0) {
+      mitigationPlan.push({
+        phase: 'Immediate (0-30 days)',
+        actions: ['Request missing documentation', 'Verify legal status'],
+        timeline: '30 days',
+        priority: 'HIGH'
+      });
+      
+      mitigationPlan.push({
+        phase: 'Short-term (1-3 months)',
+        actions: ['Obtain sustainability certifications', 'Complete environmental assessments'],
+        timeline: '90 days',
+        priority: 'MEDIUM'
+      });
+    }
+    
+    // Determine risk level
+    let riskLevel = 'LOW';
+    if (score < 40) riskLevel = 'CRITICAL';
+    else if (score < 60) riskLevel = 'HIGH';
+    else if (score < 80) riskLevel = 'MEDIUM';
+    
+    // Ensure score is within bounds
+    score = Math.max(0, Math.min(100, score));
+    
+    return {
+      overallScore: score,
+      riskLevel,
+      riskFactors,
+      complianceGaps,
+      mitigationPlan,
+      summary: `Rule-based analysis completed for ${request.supplierName}. ${complianceGaps.length} compliance gaps identified with overall score of ${score}/100.`,
+      recommendations: [
+        'Complete all missing documentation fields',
+        'Obtain required sustainability certifications',
+        'Ensure legal compliance documentation is up to date',
+        'Conduct environmental impact assessment if required'
+      ]
+    };
   }
 }
 
