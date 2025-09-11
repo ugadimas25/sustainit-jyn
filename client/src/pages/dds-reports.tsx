@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, Plus, Download, Send, Eye, CheckCircle2, Clock, AlertTriangle,
@@ -171,12 +171,39 @@ export default function DdsReports() {
 
   // State for plot selection popup
   const [showPlotSelector, setShowPlotSelector] = useState(false);
+  const [tempSelectedPlots, setTempSelectedPlots] = useState<Set<string>>(new Set());
   
   // Fetch analysis results for plot selection
   const { data: analysisResults = [] } = useQuery<any[]>({
-    queryKey: ['/api/deforestation-analysis'],
+    queryKey: ['/api/analysis-results'],
     enabled: showPlotSelector,
   });
+
+  const handlePlotSelection = (plotId: string, checked: boolean) => {
+    const newSelection = new Set(tempSelectedPlots);
+    if (checked) {
+      newSelection.add(plotId);
+    } else {
+      newSelection.delete(plotId);
+    }
+    setTempSelectedPlots(newSelection);
+  };
+
+  const confirmPlotSelection = () => {
+    const selectedPlotData = analysisResults.filter(plot => tempSelectedPlots.has(plot.plotId));
+    setSelectedPlots(selectedPlotData);
+    setShowPlotSelector(false);
+    toast({
+      title: "Plots Selected",
+      description: `${selectedPlotData.length} plots selected for DDS report.`,
+      variant: "default",
+    });
+  };
+
+  const clearPlotSelection = () => {
+    setSelectedPlots([]);
+    setTempSelectedPlots(new Set());
+  };
 
   const generateComprehensiveDDS = (report: DdsReport) => {
     return {
@@ -576,12 +603,24 @@ export default function DdsReports() {
                         </div>
                         <div>
                           <Label htmlFor="plotGeolocations">Plot Geolocations</Label>
-                          {selectedPlots.length > 0 ? (
-                            <div className="space-y-3">
+                          <div className="space-y-3">
+                            {selectedPlots.length > 0 ? (
                               <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-lg">
-                                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300 mb-2">
-                                  📍 {selectedPlots.length} plots selected from Deforestation Analysis
-                                </p>
+                                <div className="flex justify-between items-center mb-2">
+                                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                                    📍 {selectedPlots.length} plots selected
+                                  </p>
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={clearPlotSelection}
+                                    data-testid="button-clear-plots"
+                                  >
+                                    <X className="h-3 w-3 mr-1" />
+                                    Clear
+                                  </Button>
+                                </div>
                                 <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto">
                                   {selectedPlots.map((plot, index) => (
                                     <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border">
@@ -602,30 +641,133 @@ export default function DdsReports() {
                                     </div>
                                   ))}
                                 </div>
+                                {/* Hidden input for form submission */}
+                                <input 
+                                  type="hidden" 
+                                  name="plotGeolocations" 
+                                  value={selectedPlots.map(plot => 
+                                    `${plot.plotId}:${plot.geometry?.coordinates?.[0]?.map((coord: number[]) => coord.join(',')).join(';') || ''}`
+                                  ).join('|')}
+                                />
                               </div>
-                              {/* Hidden input for form submission */}
-                              <input 
-                                type="hidden" 
-                                name="plotGeolocations" 
-                                value={selectedPlots.map(plot => 
-                                  `${plot.plotId}:${plot.geometry?.coordinates?.[0]?.map((coord: number[]) => coord.join(',')).join(';') || ''}`
-                                ).join('|')}
-                              />
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <Textarea 
-                                id="plotGeolocations" 
-                                name="plotGeolocations" 
-                                placeholder="2.5194, 101.5183, 2.5298, 101.5287 (or select plots from Deforestation Monitoring page)"
-                                rows={3}
-                                data-testid="textarea-plot-geolocations"
-                              />
-                              <p className="text-xs text-gray-500">
-                                💡 Tip: Go to Deforestation Monitoring → Select plots → Actions → Create DDS Report for automatic population
-                              </p>
-                            </div>
-                          )}
+                            ) : (
+                              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                                <MapPin className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                <p className="text-sm text-gray-500 mb-3">No plots selected for this DDS report</p>
+                                <input type="hidden" name="plotGeolocations" value="" />
+                              </div>
+                            )}
+                            
+                            <Dialog open={showPlotSelector} onOpenChange={setShowPlotSelector}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  className="w-full"
+                                  data-testid="button-select-plots"
+                                >
+                                  <MapPin className="h-4 w-4 mr-2" />
+                                  Select Plots from Analysis
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+                                <DialogHeader>
+                                  <DialogTitle>Select Plots for DDS Report</DialogTitle>
+                                  <DialogDescription>
+                                    Select plots from the deforestation risk analysis results below. Selected plots will be added to your DDS report with their geolocations.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex flex-col h-full">
+                                  <div className="mb-4">
+                                    <p className="text-sm text-gray-600">
+                                      Select plots from the deforestation risk analysis results below. 
+                                      Selected plots will be added to your DDS report.
+                                    </p>
+                                  </div>
+                                  
+                                  <div className="flex-1 overflow-y-auto border rounded-lg">
+                                    <table className="w-full text-sm">
+                                      <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
+                                        <tr>
+                                          <th className="w-10 px-3 py-2 text-left">
+                                            <Checkbox
+                                              checked={tempSelectedPlots.size === analysisResults.length && analysisResults.length > 0}
+                                              onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                  setTempSelectedPlots(new Set(analysisResults.map(r => r.plotId)));
+                                                } else {
+                                                  setTempSelectedPlots(new Set());
+                                                }
+                                              }}
+                                              data-testid="checkbox-select-all-plots"
+                                            />
+                                          </th>
+                                          <th className="px-3 py-2 text-left font-medium">Plot ID</th>
+                                          <th className="px-3 py-2 text-left font-medium">Country</th>
+                                          <th className="px-3 py-2 text-left font-medium">Area (ha)</th>
+                                          <th className="px-3 py-2 text-left font-medium">Risk Level</th>
+                                          <th className="px-3 py-2 text-left font-medium">Compliance</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {analysisResults.map((plot) => (
+                                          <tr key={plot.plotId} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
+                                            <td className="px-3 py-2">
+                                              <Checkbox
+                                                checked={tempSelectedPlots.has(plot.plotId)}
+                                                onCheckedChange={(checked) => handlePlotSelection(plot.plotId, !!checked)}
+                                                data-testid={`checkbox-plot-${plot.plotId}`}
+                                              />
+                                            </td>
+                                            <td className="px-3 py-2 font-medium">{plot.plotId}</td>
+                                            <td className="px-3 py-2">{plot.country}</td>
+                                            <td className="px-3 py-2">{plot.area}</td>
+                                            <td className="px-3 py-2">
+                                              <Badge 
+                                                variant={plot.overallRisk === 'HIGH' ? 'destructive' : plot.overallRisk === 'MEDIUM' ? 'default' : 'secondary'}
+                                                className="text-xs"
+                                              >
+                                                {plot.overallRisk}
+                                              </Badge>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                              <Badge variant="outline" className="text-xs">
+                                                {plot.complianceStatus}
+                                              </Badge>
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  
+                                  <div className="flex justify-between items-center pt-4 border-t">
+                                    <p className="text-sm text-gray-600">
+                                      {tempSelectedPlots.size} of {analysisResults.length} plots selected
+                                    </p>
+                                    <div className="flex space-x-2">
+                                      <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        onClick={() => setShowPlotSelector(false)}
+                                        data-testid="button-cancel-selection"
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button 
+                                        type="button" 
+                                        onClick={confirmPlotSelection}
+                                        disabled={tempSelectedPlots.size === 0}
+                                        data-testid="button-confirm-selection"
+                                      >
+                                        Confirm Selection ({tempSelectedPlots.size})
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
                         </div>
                         <div>
                           <Label htmlFor="establishmentGeolocations">Establishment Geolocations (for cattle)</Label>
