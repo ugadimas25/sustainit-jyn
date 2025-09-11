@@ -2554,6 +2554,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Auto-fill suppliers endpoint - fetch all suppliers from data collection forms
+  app.get('/api/suppliers/auto-fill', isAuthenticated, async (req, res) => {
+    try {
+      console.log('📋 Fetching suppliers for auto-fill from data collection forms...');
+      
+      // Fetch estate data collection
+      const estates = await storage.getEstateDataCollection();
+      
+      // Fetch mill data collection  
+      const mills = await storage.getMillDataCollection();
+      
+      // Combine and format supplier data for auto-fill
+      const suppliers: Array<{
+        id: string;
+        name: string;
+        type: 'Estate' | 'Mill';
+        groupParentCompany?: string;
+        officeAddress?: string;
+        plantationAddress?: string;
+        officeCoordinates?: string;
+        plantationCoordinates?: string;
+        businessLicense?: string;
+        establishmentAct?: string;
+        amendmentAct?: string;
+        certificationType?: string;
+        certificateNumber?: string;
+        supplierType?: string;
+        responsiblePersonName?: string;
+        responsiblePersonPosition?: string;
+        responsiblePersonEmail?: string;
+        responsiblePersonPhone?: string;
+        internalTeamName?: string;
+        internalTeamPosition?: string;
+        internalTeamEmail?: string;
+        internalTeamPhone?: string;
+        originalData: any;
+      }> = [];
+      
+      // Add estate suppliers
+      estates.forEach(estate => {
+        suppliers.push({
+          id: estate.id,
+          name: estate.namaSupplier,
+          type: 'Estate',
+          groupParentCompany: estate.namaGroupParentCompany || undefined,
+          officeAddress: estate.alamatKantor || undefined,
+          plantationAddress: estate.alamatKebun || undefined,
+          officeCoordinates: estate.koordinatKantor || undefined,
+          plantationCoordinates: estate.koordinatKebun || undefined,
+          businessLicense: estate.izinBerusaha || undefined,
+          establishmentAct: estate.aktaPendirianPerusahaan || undefined,
+          amendmentAct: estate.aktaPerubahan || undefined,
+          certificationType: estate.tipeSertifikat || undefined,
+          certificateNumber: estate.nomorSertifikat || undefined,
+          supplierType: estate.jenisSupplier || undefined,
+          responsiblePersonName: estate.namaPenanggungJawab || undefined,
+          responsiblePersonPosition: estate.jabatanPenanggungJawab || undefined,
+          responsiblePersonEmail: estate.emailPenanggungJawab || undefined,
+          responsiblePersonPhone: estate.nomorTelefonPenanggungJawab || undefined,
+          internalTeamName: estate.namaTimInternal || undefined,
+          internalTeamPosition: estate.jabatanTimInternal || undefined,
+          internalTeamEmail: estate.emailTimInternal || undefined,
+          internalTeamPhone: estate.nomorTelefonTimInternal || undefined,
+          originalData: estate
+        });
+      });
+      
+      // Add mill suppliers  
+      mills.forEach(mill => {
+        suppliers.push({
+          id: mill.id,
+          name: mill.namaPabrik,
+          type: 'Mill',
+          groupParentCompany: mill.namaGroupParentCompany || undefined,
+          officeAddress: mill.alamatKantor || undefined,
+          plantationAddress: mill.alamatPabrik || undefined,
+          officeCoordinates: mill.koordinatKantor || undefined,
+          plantationCoordinates: mill.koordinatPabrik || undefined,
+          businessLicense: mill.izinBerusaha || undefined,
+          establishmentAct: mill.aktaPendirianPerusahaan || undefined,
+          amendmentAct: mill.aktaPerubahan || undefined,
+          certificationType: mill.tipeSertifikat || undefined,
+          certificateNumber: mill.nomorSertifikat || undefined,
+          supplierType: mill.jenisSupplier || undefined,
+          responsiblePersonName: mill.namaPenanggungJawab || undefined,
+          responsiblePersonPosition: mill.jabatanPenanggungJawab || undefined,
+          responsiblePersonEmail: mill.emailPenanggungJawab || undefined,
+          responsiblePersonPhone: mill.nomorTelefonPenanggungJawab || undefined,
+          internalTeamName: mill.namaTimInternal || undefined,
+          internalTeamPosition: mill.jabatanTimInternal || undefined,
+          internalTeamEmail: mill.emailTimInternal || undefined,
+          internalTeamPhone: mill.nomorTelefonTimInternal || undefined,
+          originalData: mill
+        });
+      });
+      
+      console.log(`✅ Found ${suppliers.length} suppliers for auto-fill (${estates.length} estates, ${mills.length} mills)`);
+      
+      res.json(suppliers);
+    } catch (error) {
+      console.error('❌ Error fetching suppliers for auto-fill:', error);
+      res.status(500).json({ error: 'Failed to fetch suppliers for auto-fill' });
+    }
+  });
+
   // Supplier Compliance endpoints
   app.post('/api/supplier-compliance', async (req, res) => {
     try {

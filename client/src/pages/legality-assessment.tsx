@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -28,10 +30,40 @@ import {
   CheckCircle,
   AlertTriangle,
   Info,
-  Building
+  Building,
+  ChevronDown,
+  Check,
+  Search
 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+
+// Auto-fill Supplier Interface
+interface AutoFillSupplier {
+  id: string;
+  name: string;
+  type: 'Estate' | 'Mill';
+  groupParentCompany?: string;
+  officeAddress?: string;
+  plantationAddress?: string;
+  officeCoordinates?: string;
+  plantationCoordinates?: string;
+  businessLicense?: string;
+  establishmentAct?: string;
+  amendmentAct?: string;
+  certificationType?: string;
+  certificateNumber?: string;
+  supplierType?: string;
+  responsiblePersonName?: string;
+  responsiblePersonPosition?: string;
+  responsiblePersonEmail?: string;
+  responsiblePersonPhone?: string;
+  internalTeamName?: string;
+  internalTeamPosition?: string;
+  internalTeamEmail?: string;
+  internalTeamPhone?: string;
+  originalData: any;
+}
 
 // EUDR Legality Assessment Form Structure
 interface EUDRLegalityForm {
@@ -236,6 +268,49 @@ export default function LegalityAssessmentPage() {
   });
 
   const { toast } = useToast();
+
+  // Auto-fill suppliers query
+  const { data: availableSuppliers = [] } = useQuery<AutoFillSupplier[]>({
+    queryKey: ['/api/suppliers/auto-fill'],
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+
+  // Supplier dropdown state
+  const [supplierDropdownOpen, setSupplierDropdownOpen] = useState(false);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string>("");
+
+  // Auto-fill function when supplier is selected
+  const handleSupplierSelect = (supplierId: string) => {
+    const supplier = availableSuppliers.find(s => s.id === supplierId);
+    if (!supplier) return;
+
+    console.log('🔄 Auto-filling supplier data:', supplier.name, supplier.type);
+
+    setSelectedSupplierId(supplierId);
+    setSupplierDropdownOpen(false);
+
+    // Auto-fill all relevant fields
+    setForm(prev => ({
+      ...prev,
+      supplierName: supplier.name,
+      supplierID: supplier.id,
+      supplierType: supplier.type,
+      location: supplier.officeAddress || supplier.plantationAddress || "",
+      ownership: supplier.groupParentCompany || "",
+      contactDetails: {
+        name: supplier.responsiblePersonName || "",
+        position: supplier.responsiblePersonPosition || "",
+        email: supplier.responsiblePersonEmail || "",
+        phone: supplier.responsiblePersonPhone || ""
+      },
+      lastUpdated: new Date()
+    }));
+
+    toast({
+      title: "✅ Auto-fill Complete",
+      description: `Successfully populated supplier information for ${supplier.name}`,
+    });
+  };
 
   // Transform frontend form to backend schema
   const transformToBackendSchema = (frontendData: EUDRLegalityForm) => {
@@ -665,13 +740,102 @@ export default function LegalityAssessmentPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="supplier-name">Supplier Name *</Label>
-                  <Input
-                    id="supplier-name"
-                    value={form.supplierName}
-                    onChange={(e) => handleInputChange('supplierName', e.target.value)}
-                    placeholder="Enter supplier name"
-                    data-testid="input-supplier-name"
-                  />
+                  <div className="text-xs text-gray-600 mb-2">
+                    Pilih dari data yang tersedia atau ketik manual
+                  </div>
+                  <Popover open={supplierDropdownOpen} onOpenChange={setSupplierDropdownOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={supplierDropdownOpen}
+                        className="w-full justify-between"
+                        data-testid="button-supplier-select"
+                      >
+                        {form.supplierName ? (
+                          <div className="flex items-center gap-2">
+                            <span>{form.supplierName}</span>
+                            {selectedSupplierId && (
+                              <Badge variant="secondary" className="text-xs">
+                                {availableSuppliers.find(s => s.id === selectedSupplierId)?.type}
+                              </Badge>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">Pilih supplier atau ketik manual...</span>
+                        )}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Cari supplier..." 
+                          className="h-9" 
+                          onValueChange={(search) => {
+                            // Allow manual input if no exact match
+                            if (search && !availableSuppliers.some(s => s.name.toLowerCase().includes(search.toLowerCase()))) {
+                              handleInputChange('supplierName', search);
+                              setSelectedSupplierId('');
+                            }
+                          }}
+                        />
+                        <CommandEmpty>
+                          <div className="p-4 text-sm">
+                            <p>Tidak ada supplier ditemukan.</p>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="mt-2"
+                              onClick={() => {
+                                setSupplierDropdownOpen(false);
+                              }}
+                            >
+                              Ketik manual
+                            </Button>
+                          </div>
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {availableSuppliers.map((supplier) => (
+                            <CommandItem
+                              key={supplier.id}
+                              value={supplier.name}
+                              onSelect={() => handleSupplierSelect(supplier.id)}
+                              className="cursor-pointer"
+                            >
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{supplier.name}</span>
+                                  <span className="text-xs text-gray-500">
+                                    {supplier.type} • {supplier.officeAddress || supplier.plantationAddress || 'No address'}
+                                  </span>
+                                </div>
+                                <Check
+                                  className={`ml-2 h-4 w-4 ${
+                                    selectedSupplierId === supplier.id ? "opacity-100" : "opacity-0"
+                                  }`}
+                                />
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {/* Manual input fallback */}
+                  <div className="mt-2">
+                    <Input
+                      placeholder="Atau ketik manual..."
+                      value={selectedSupplierId ? '' : form.supplierName}
+                      onChange={(e) => {
+                        handleInputChange('supplierName', e.target.value);
+                        setSelectedSupplierId('');
+                      }}
+                      className="text-sm"
+                      data-testid="input-supplier-name-manual"
+                    />
+                  </div>
                 </div>
               </div>
 
