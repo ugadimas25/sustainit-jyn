@@ -6,12 +6,40 @@ export const EUDR_CONSTANTS = {
   REQUIRED_COORDINATE_PRECISION: 6, // decimal places
   SUPPORTED_COORDINATE_SYSTEMS: ['WGS84'],
   HS_CODES: {
+    // Palm oil and related products comprehensive list
+    PALM_NUTS_KERNELS: '1207.10',
     CRUDE_PALM_OIL: '1511.10',
     REFINED_PALM_OIL: '1511.90',
-    PALM_KERNEL_OIL: '1513.21'
+    CRUDE_PALM_KERNEL_OIL: '1513.21',
+    REFINED_PALM_KERNEL_OIL: '1513.29',
+    PALM_OIL_CAKE_RESIDUES: '2306.60',
+    GLYCEROL_95_PERCENT: '2905.45',
+    PALMITIC_STEARIC_ACID: '2915.70',
+    SATURATED_MONOCARBOXYLIC_ACIDS: '2915.90',
+    STEARIC_ACID_INDUSTRIAL: '3823.11',
+    OLEIC_ACID_INDUSTRIAL: '3823.12',
+    INDUSTRIAL_FATTY_ACIDS: '3823.19',
+    INDUSTRIAL_FATTY_ALCOHOLS: '3823.70'
   },
   TRACES_SUBMISSION_FORMATS: ['XML', 'PDF']
 } as const;
+
+// HS Codes with descriptions for palm oil products
+export const PALM_OIL_HS_CODES = [
+  { code: '1207.10', description: 'Palm nuts and kernels' },
+  { code: '1511.10', description: 'Crude palm oil and its fractions, whether or not refined, but not chemically modified' },
+  { code: '1511.90', description: 'Refined palm oil and its fractions, whether or not refined, but not chemically modified' },
+  { code: '1513.21', description: 'Crude palm kernel and babassu oil and fractions thereof, whether or not refined, but not chemically modified' },
+  { code: '1513.29', description: 'Palm kernel and babassu oil and their fractions, whether or not refined, but not chemically modified (excluding crude oil)' },
+  { code: '2306.60', description: 'Oilcake and other solid residues of palm nuts or kernels, whether or not ground or in the form of pellets, resulting from the extraction of palm nut or kernel fats or oils' },
+  { code: '2905.45', description: 'Glycerol, with a purity of 95% or more (calculated on the weight of the dry product)' },
+  { code: '2915.70', description: 'Palmitic acid, stearic acid, their salts and esters' },
+  { code: '2915.90', description: 'Saturated acyclic monocarboxylic acids, their anhydrides, halides, peroxides and peroxyacids; their halogenated, sulphonated, nitrated or nitrosated derivatives (excluding formic acid, acetic acid, mono-, di- or trichloroacetic acids, propionic acid, butanoic acids, pentanoic acids, palmitic acid, stearic acid, their salts and esters, and acetic anhydride)' },
+  { code: '3823.11', description: 'Stearic acid, industrial' },
+  { code: '3823.12', description: 'Oleic acid, industrial' },
+  { code: '3823.19', description: 'Industrial monocarboxylic fatty acids; acid oils from refining (excluding stearic acid, oleic acid and tall oil fatty acids)' },
+  { code: '3823.70', description: 'Industrial fatty alcohols' }
+] as const;
 
 // Plot Status Types
 export const PLOT_STATUS = {
