@@ -33,6 +33,8 @@ import { promisify } from "util";
 import FormData from "form-data";
 import { Readable } from "stream";
 import { jsPDF } from "jspdf";
+import * as fs from 'fs';
+import * as path from 'path';
 
 const scryptAsync = promisify(scrypt);
 
@@ -1144,17 +1146,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
       doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
       
-      // Page 2 - Methodology with Images
+      // Page 2 - Methodology with Embedded Images
       doc.addPage();
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
       
-      // Add Methodology Flowchart Image
+      // Load methodology flowchart from filesystem
       const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIiIiIbGAKdUVEREREREREREREREREREREN';
       
       try {
-        doc.addImage('data:image/png;base64,' + methodologyImage, 'PNG', 10, 30, 180, 120);
+        const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757580866290.png');
+        const imgBase64 = fs.readFileSync(imgPath).toString('base64');
+        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 10, 30, 180, 120);
+        console.log(`✅ Embedded methodology image, base64 length: ${imgBase64.length}`);
       } catch (error) {
         console.log('Failed to add methodology image, using text fallback');
         doc.setFontSize(12);
@@ -1291,7 +1296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced PDF generation helper function with professional layout
+  // Enhanced PDF generation helper function with professional layout and embedded images
   function generateCleanDDSPDF(report: any): ArrayBuffer {
     try {
       const doc = new jsPDF();
