@@ -18,11 +18,17 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DdsReport, InsertDdsReport } from "@shared/schema";
 import { KMLUploader } from "@/components/kml-uploader";
 import { GeoJSONGenerator } from "@/components/geojson-generator";
+import { PALM_OIL_HS_CODES } from "@/lib/constants";
 
 export default function DdsReports() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showDdsForm, setShowDdsForm] = useState(false);
   const [selectedReport, setSelectedReport] = useState<DdsReport | null>(null);
+  const [selectedHsCode, setSelectedHsCode] = useState("");
+  const [selectedShipment, setSelectedShipment] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedDeforestationRisk, setSelectedDeforestationRisk] = useState("");
+  const [selectedLegalityStatus, setSelectedLegalityStatus] = useState("");
   const { toast } = useToast();
 
   // Fetch DDS reports
@@ -91,6 +97,17 @@ export default function DdsReports() {
 
   const handleDdsSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Validate required Select fields
+    if (!selectedHsCode || !selectedCountry) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields: HS Code and Country of Production.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const formData = new FormData(e.currentTarget);
     
     const ddsData: InsertDdsReport = {
@@ -122,6 +139,18 @@ export default function DdsReports() {
     };
 
     createDdsMutation.mutate(ddsData);
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setShowDdsForm(open);
+    if (!open) {
+      // Reset form state when dialog closes
+      setSelectedHsCode("");
+      setSelectedShipment("");
+      setSelectedCountry("");
+      setSelectedDeforestationRisk("");
+      setSelectedLegalityStatus("");
+    }
   };
 
   const generateComprehensiveDDS = (report: DdsReport) => {
@@ -279,7 +308,7 @@ export default function DdsReports() {
           <TabsContent value="overview" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">DDS Reports Overview</h2>
-              <Dialog open={showDdsForm} onOpenChange={setShowDdsForm}>
+              <Dialog open={showDdsForm} onOpenChange={handleDialogOpenChange}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-dds">
                     <Plus className="h-4 w-4 mr-2" />
@@ -341,7 +370,7 @@ export default function DdsReports() {
                       <CardContent className="grid grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="shipmentId">Related Shipment</Label>
-                          <Select name="shipmentId">
+                          <Select value={selectedShipment} onValueChange={setSelectedShipment}>
                             <SelectTrigger data-testid="select-shipment">
                               <SelectValue placeholder="Select shipment" />
                             </SelectTrigger>
@@ -353,16 +382,29 @@ export default function DdsReports() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <input type="hidden" name="shipmentId" value={selectedShipment} />
                         </div>
                         <div>
                           <Label htmlFor="hsCode">HS Code *</Label>
-                          <Input 
-                            id="hsCode" 
-                            name="hsCode" 
-                            placeholder="15119010"
-                            required 
-                            data-testid="input-hs-code"
-                          />
+                          <Select value={selectedHsCode} onValueChange={setSelectedHsCode} required>
+                            <SelectTrigger data-testid="select-hs-code">
+                              <SelectValue placeholder="Select HS Code for palm oil product" />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              {PALM_OIL_HS_CODES.map((hsCode) => (
+                                <SelectItem key={hsCode.code} value={hsCode.code}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{hsCode.code}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                      {hsCode.description}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {/* Hidden input for form submission */}
+                          <input type="hidden" name="hsCode" value={selectedHsCode} />
                         </div>
                         <div className="col-span-2">
                           <Label htmlFor="productDescription">Product Description *</Label>
@@ -427,7 +469,7 @@ export default function DdsReports() {
                       <CardContent className="space-y-4">
                         <div>
                           <Label htmlFor="countryOfProduction">Country of Production *</Label>
-                          <Select name="countryOfProduction" required>
+                          <Select value={selectedCountry} onValueChange={setSelectedCountry} required>
                             <SelectTrigger data-testid="select-country">
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
@@ -439,6 +481,7 @@ export default function DdsReports() {
                               <SelectItem value="Colombia">Colombia</SelectItem>
                             </SelectContent>
                           </Select>
+                          <input type="hidden" name="countryOfProduction" value={selectedCountry} />
                         </div>
                         <div>
                           <Label htmlFor="plotGeolocations">Plot Geolocations (comma-separated coordinates)</Label>
@@ -474,7 +517,7 @@ export default function DdsReports() {
                       <CardContent className="grid grid-cols-3 gap-4">
                         <div>
                           <Label htmlFor="deforestationRiskLevel">Deforestation Risk</Label>
-                          <Select name="deforestationRiskLevel">
+                          <Select value={selectedDeforestationRisk} onValueChange={setSelectedDeforestationRisk}>
                             <SelectTrigger data-testid="select-deforestation-risk">
                               <SelectValue placeholder="Select risk level" />
                             </SelectTrigger>
@@ -485,10 +528,11 @@ export default function DdsReports() {
                               <SelectItem value="high">High</SelectItem>
                             </SelectContent>
                           </Select>
+                          <input type="hidden" name="deforestationRiskLevel" value={selectedDeforestationRisk} />
                         </div>
                         <div>
                           <Label htmlFor="legalityStatus">Legality Status</Label>
-                          <Select name="legalityStatus">
+                          <Select value={selectedLegalityStatus} onValueChange={setSelectedLegalityStatus}>
                             <SelectTrigger data-testid="select-legality-status">
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
@@ -498,6 +542,7 @@ export default function DdsReports() {
                               <SelectItem value="non-compliant">Non-Compliant</SelectItem>
                             </SelectContent>
                           </Select>
+                          <input type="hidden" name="legalityStatus" value={selectedLegalityStatus} />
                         </div>
                         <div>
                           <Label htmlFor="complianceScore">Compliance Score (0-100)</Label>
