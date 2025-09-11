@@ -1156,10 +1156,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIiIiIbGAKdUVEREREREREREREREREREREN';
       
       try {
-        const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757580866290.png');
-        const imgBase64 = fs.readFileSync(imgPath).toString('base64');
-        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 10, 30, 180, 120);
-        console.log(`✅ Embedded methodology image, base64 length: ${imgBase64.length}`);
+        // Add Land Cover Change Monitoring flowchart
+        const landCoverPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757581428491.png');
+        const landCoverBase64 = fs.readFileSync(landCoverPath).toString('base64');
+        doc.addImage('data:image/png;base64,' + landCoverBase64, 'PNG', 10, 30, 180, 160);
+        console.log(`✅ Embedded Land Cover Change Monitoring flowchart, base64 length: ${landCoverBase64.length}`);
       } catch (error) {
         console.log('Failed to add methodology image, using text fallback');
         doc.setFontSize(12);
