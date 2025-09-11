@@ -976,6 +976,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'DDS report not found' });
       }
 
+      // Generate PDF content matching the exact template structure
+      const pdfTemplate = generateDDSPDFTemplate(report);
+      
       // Mock PDF generation - in real implementation, use a PDF library
       const pdfPath = `/pdfs/dds-${report.id}.pdf`;
       
@@ -988,13 +991,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         message: 'PDF generated successfully',
-        pdfPath 
+        pdfPath,
+        template: pdfTemplate // Return template for debugging
       });
     } catch (error) {
       console.error('Error generating PDF:', error);
       res.status(500).json({ error: 'Failed to generate PDF' });
     }
   });
+
+  // Helper function to generate PDF template matching the exact structure
+  function generateDDSPDFTemplate(report: any) {
+    const currentDate = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric'
+    }) + ' ' + new Date().toLocaleTimeString('en-GB', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
+
+    return {
+      // Page 1 - Exact template structure
+      page1: {
+        header: {
+          title: "Due Diligence Statement",
+          divider: "-------------------------------------------------------------------------------------------------------------",
+          pageNumber: "Page 1",
+          status: "SUBMITTED",
+          createdOn: currentDate
+        },
+        
+        section1: {
+          companyInternalRef: {
+            label: "1. Company Internal Ref:",
+            value: report.companyInternalRef || ""
+          },
+          activity: {
+            label: "2. Activity:",
+            value: report.activity || ""
+          }
+        },
+
+        section3: {
+          operatorTrader: {
+            title: "3. Operator/Trader name and address:",
+            name: {
+              label: "Name:",
+              value: report.operatorLegalName || ""
+            },
+            address: {
+              label: "Address:",
+              value: report.operatorAddress || ""
+            },
+            country: {
+              label: "Country:",
+              value: report.operatorCountry || ""
+            },
+            isoCode: {
+              label: "ISO Code:",
+              value: report.operatorIsoCode || ""
+            }
+          }
+        },
+
+        commoditySection: {
+          title: "Commodity(ies) or Product(s)",
+          table: {
+            headers: [
+              "Commodity(ies) or Product(s) Description",
+              "Net Mass (Kg)",
+              "% Est. or Deviation", 
+              "Supplementary Units"
+            ],
+            data: {
+              description: report.productDescription || "",
+              netMass: report.netMassKg || "",
+              percentage: report.percentageEstimation || "",
+              supplementaryUnits: report.supplementaryUnit || ""
+            }
+          },
+          producerSection: {
+            headers: ["Scientific Name", "Common Name", "Producer Name", "Country of Production"],
+            data: {
+              scientificName: report.scientificName || "",
+              commonName: report.commonName || "",
+              producerName: report.producerName || "",
+              countryOfProduction: report.countryOfProduction || ""
+            }
+          }
+        },
+
+        summaryPlotInfo: {
+          title: "Summary Plot Information",
+          totalProducers: {
+            label: "Total Producers :",
+            value: report.totalProducers || "0"
+          },
+          totalPlots: {
+            label: "Total Plots :",
+            value: report.totalPlots || "0"
+          },
+          totalProductionArea: {
+            label: "Total Production Area (ha) :",
+            value: report.totalProductionArea || "0"
+          },
+          countryOfHarvest: {
+            label: "Country of Harvest :",
+            value: report.countryOfHarvest || ""
+          },
+          maxIntermediaries: {
+            label: "Max. Number of Intermediaries :",
+            value: report.maxIntermediaries || "0"
+          },
+          traceabilityMethod: {
+            label: "Traceability Method :",
+            value: report.traceabilityMethod || ""
+          },
+          expectedHarvestDate: {
+            label: "Expected Harvest Date :",
+            value: report.expectedHarvestDate || ""
+          },
+          productionDateRange: {
+            label: "Production date range or processing time:",
+            value: report.productionDateRange || ""
+          }
+        },
+
+        competentAuthority: {
+          title: "Communication for competent authority",
+          text: "By submitting this due diligence statement the operator confirms that due diligence in accordance with Regulation (EU) 2023/1115 was carried out and that no or only a negligible risk was found that the relevant products do not comply with Article 3, point (a) or (b), of that Regulation"
+        },
+
+        footer: {
+          title: "Footer",
+          eudrStatus: {
+            label: "EUDR Status:",
+            value: report.status || "draft"
+          },
+          lastChanges: {
+            label: "Last Changes:",
+            value: report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-GB') : ""
+          },
+          creationDate: {
+            label: "Creation date:",
+            value: report.createdAt ? new Date(report.createdAt).toLocaleDateString('en-GB') : ""
+          },
+          updateDate: {
+            label: "Update date:",
+            value: report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-GB') : ""
+          },
+          submissionDate: {
+            label: "Submission Date:",
+            value: report.signedDate ? new Date(report.signedDate).toLocaleDateString('en-GB') : ""
+          },
+          user: {
+            label: "User:",
+            value: report.signedBy || ""
+          }
+        }
+      },
+
+      // Page 2 - Static hardcoded content as requested
+      page2: {
+        header: {
+          divider: "-------------------------------------------------------------------------------------------------------------",
+          pageNumber: "PAGE 2"
+        },
+        content: {
+          title: "Appendix 1. Detailed Plot Information (Link to GeoJSON File)",
+          description: "This appendix contains detailed geographical information about all plots included in this Due Diligence Statement.",
+          note: "Plot coordinates and boundaries are provided in GeoJSON format for precise geolocation verification.",
+          disclaimer: "All coordinates are verified through satellite imagery and ground-truthing where applicable."
+        }
+      }
+    };
+  }
 
   // DDS Report EU Trace submission
   app.post('/api/dds-reports/:id/submit', isAuthenticated, async (req, res) => {

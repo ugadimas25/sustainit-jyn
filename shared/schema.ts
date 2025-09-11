@@ -434,18 +434,37 @@ export const ddsReports = pgTable("dds_reports", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
   shipmentId: text("shipment_id").references(() => shipments.id),
   
+  // Company and Activity details
+  companyInternalRef: text("company_internal_ref"),
+  activity: text("activity"),
+  
   // Operator details
   operatorLegalName: text("operator_legal_name").notNull(),
   operatorAddress: text("operator_address").notNull(),
+  operatorCountry: text("operator_country"),
+  operatorIsoCode: text("operator_iso_code"),
   eoriNumber: text("eori_number"),
   
   // Product details
   hsCode: text("hs_code").notNull(),
   productDescription: text("product_description").notNull(),
   scientificName: text("scientific_name"),
+  commonName: text("common_name"),
+  producerName: text("producer_name"),
   netMassKg: decimal("net_mass_kg", { precision: 10, scale: 3 }).notNull(),
+  percentageEstimation: decimal("percentage_estimation", { precision: 5, scale: 2 }),
   supplementaryUnit: text("supplementary_unit"),
   supplementaryQuantity: decimal("supplementary_quantity", { precision: 10, scale: 3 }),
+  
+  // Summary Plot Information
+  totalProducers: integer("total_producers"),
+  totalPlots: integer("total_plots"),
+  totalProductionArea: decimal("total_production_area", { precision: 10, scale: 2 }),
+  countryOfHarvest: text("country_of_harvest"),
+  maxIntermediaries: integer("max_intermediaries"),
+  traceabilityMethod: text("traceability_method"),
+  expectedHarvestDate: date("expected_harvest_date"),
+  productionDateRange: text("production_date_range"),
   
   // Origin & geolocation
   countryOfProduction: text("country_of_production").notNull(),

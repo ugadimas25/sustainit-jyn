@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, Plus, Download, Send, Eye, CheckCircle2, Clock, AlertTriangle,
-  Building, Package, MapPin, Link2, Signature, Globe, Shield, ChevronDown, X
+  Building, Package, MapPin, Link2, Signature, Globe, Shield, ChevronDown, X, BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -222,16 +222,31 @@ export default function DdsReports() {
     
     const ddsData: InsertDdsReport = {
       shipmentId: formData.get('shipmentId') as string,
+      companyInternalRef: formData.get('companyInternalRef') as string,
+      activity: formData.get('activity') as string,
       operatorLegalName: formData.get('operatorLegalName') as string,
       operatorAddress: formData.get('operatorAddress') as string,
+      operatorCountry: formData.get('operatorCountry') as string || undefined,
+      operatorIsoCode: formData.get('operatorIsoCode') as string || undefined,
       eoriNumber: formData.get('eoriNumber') as string || undefined,
       hsCode: formData.getAll('hsCode').join(','),
       productDescription: formData.get('productDescription') as string,
       scientificName: formData.get('scientificName') as string || undefined,
+      commonName: formData.get('commonName') as string || undefined,
+      producerName: formData.get('producerName') as string || undefined,
       netMassKg: formData.get('netMassKg') as string,
+      percentageEstimation: formData.get('percentageEstimation') as string || undefined,
       supplementaryUnit: formData.get('supplementaryUnit') as string || undefined,
       supplementaryQuantity: formData.get('supplementaryQuantity') as string || undefined,
       countryOfProduction: formData.get('countryOfProduction') as string,
+      totalProducers: formData.get('totalProducers') ? parseInt(formData.get('totalProducers') as string) : undefined,
+      totalPlots: formData.get('totalPlots') ? parseInt(formData.get('totalPlots') as string) : undefined,
+      totalProductionArea: formData.get('totalProductionArea') ? parseFloat(formData.get('totalProductionArea') as string) : undefined,
+      countryOfHarvest: formData.get('countryOfHarvest') as string || undefined,
+      maxIntermediaries: formData.get('maxIntermediaries') ? parseInt(formData.get('maxIntermediaries') as string) : undefined,
+      traceabilityMethod: formData.get('traceabilityMethod') as string || undefined,
+      expectedHarvestDate: formData.get('expectedHarvestDate') as string || undefined,
+      productionDateRange: formData.get('productionDateRange') as string || undefined,
       plotGeolocations: selectedPlots.length > 0 ? 
         selectedPlots.map(plot => `${plot.plotId}:${plot.geometry?.coordinates?.[0]?.map((coord: number[]) => coord.join(',')).join(';') || ''}`).filter(str => str.includes(':')) : 
         (formData.get('plotGeolocations') ? (formData.get('plotGeolocations') as string).split(',').map(s => s.trim()) : []),
@@ -553,6 +568,29 @@ export default function DdsReports() {
                       </CardHeader>
                       <CardContent className="grid grid-cols-2 gap-4">
                         <div>
+                          <Label htmlFor="companyInternalRef">Company Internal Ref *</Label>
+                          <Input 
+                            id="companyInternalRef" 
+                            name="companyInternalRef" 
+                            placeholder="KPN-2024-001"
+                            required 
+                            data-testid="input-company-ref"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="activity">Activity *</Label>
+                          <Select name="activity" required>
+                            <SelectTrigger data-testid="select-activity">
+                              <SelectValue placeholder="Select activity" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="placing-on-market">Placing on the market</SelectItem>
+                              <SelectItem value="making-available">Making available on the market</SelectItem>
+                              <SelectItem value="export">Export</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
                           <Label htmlFor="operatorLegalName">Legal Name *</Label>
                           <Input 
                             id="operatorLegalName" 
@@ -568,6 +606,31 @@ export default function DdsReports() {
                             name="operatorAddress" 
                             required 
                             data-testid="input-operator-address"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="operatorCountry">Country *</Label>
+                          <Select name="operatorCountry" required>
+                            <SelectTrigger data-testid="select-operator-country">
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ID">Indonesia</SelectItem>
+                              <SelectItem value="MY">Malaysia</SelectItem>
+                              <SelectItem value="TH">Thailand</SelectItem>
+                              <SelectItem value="SG">Singapore</SelectItem>
+                              <SelectItem value="EU">European Union</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="operatorIsoCode">ISO Code *</Label>
+                          <Input 
+                            id="operatorIsoCode" 
+                            name="operatorIsoCode" 
+                            placeholder="ID-001"
+                            required 
+                            data-testid="input-operator-iso"
                           />
                         </div>
                         <div className="col-span-2">
@@ -715,6 +778,39 @@ export default function DdsReports() {
                           />
                         </div>
                         <div>
+                          <Label htmlFor="commonName">Common Name</Label>
+                          <Input 
+                            id="commonName" 
+                            name="commonName" 
+                            placeholder="Palm Oil"
+                            data-testid="input-common-name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="producerName">Producer Name</Label>
+                          <Input 
+                            id="producerName" 
+                            name="producerName" 
+                            placeholder="Producer/Supplier name"
+                            data-testid="input-producer-name"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="countryOfProduction">Country of Production *</Label>
+                          <Select name="countryOfProduction" required>
+                            <SelectTrigger data-testid="select-country-production">
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ID">Indonesia</SelectItem>
+                              <SelectItem value="MY">Malaysia</SelectItem>
+                              <SelectItem value="TH">Thailand</SelectItem>
+                              <SelectItem value="BR">Brazil</SelectItem>
+                              <SelectItem value="NG">Nigeria</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
                           <Label htmlFor="netMassKg">Net Mass (kg) *</Label>
                           <Input 
                             id="netMassKg" 
@@ -723,6 +819,19 @@ export default function DdsReports() {
                             step="0.001" 
                             required 
                             data-testid="input-net-mass"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="percentageEstimation">% Est. or Deviation</Label>
+                          <Input 
+                            id="percentageEstimation" 
+                            name="percentageEstimation" 
+                            type="number" 
+                            step="0.1" 
+                            min="0" 
+                            max="100"
+                            placeholder="2.5"
+                            data-testid="input-percentage-estimation"
                           />
                         </div>
                         <div>
@@ -742,6 +851,110 @@ export default function DdsReports() {
                             type="number" 
                             step="0.001"
                             data-testid="input-supplementary-quantity"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Summary Plot Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5" />
+                          Summary Plot Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="totalProducers">Total Producers</Label>
+                          <Input 
+                            id="totalProducers" 
+                            name="totalProducers" 
+                            type="number" 
+                            min="0"
+                            placeholder="0"
+                            data-testid="input-total-producers"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="totalPlots">Total Plots</Label>
+                          <Input 
+                            id="totalPlots" 
+                            name="totalPlots" 
+                            type="number" 
+                            min="0"
+                            placeholder="0"
+                            data-testid="input-total-plots"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="totalProductionArea">Total Production Area (ha)</Label>
+                          <Input 
+                            id="totalProductionArea" 
+                            name="totalProductionArea" 
+                            type="number" 
+                            step="0.01" 
+                            min="0"
+                            placeholder="0.00"
+                            data-testid="input-total-production-area"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="countryOfHarvest">Country of Harvest *</Label>
+                          <Select name="countryOfHarvest" required>
+                            <SelectTrigger data-testid="select-country-harvest">
+                              <SelectValue placeholder="Select country" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ID">Indonesia</SelectItem>
+                              <SelectItem value="MY">Malaysia</SelectItem>
+                              <SelectItem value="TH">Thailand</SelectItem>
+                              <SelectItem value="BR">Brazil</SelectItem>
+                              <SelectItem value="NG">Nigeria</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="maxIntermediaries">Max. Number of Intermediaries</Label>
+                          <Input 
+                            id="maxIntermediaries" 
+                            name="maxIntermediaries" 
+                            type="number" 
+                            min="0"
+                            placeholder="0"
+                            data-testid="input-max-intermediaries"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="traceabilityMethod">Traceability Method *</Label>
+                          <Select name="traceabilityMethod" required>
+                            <SelectTrigger data-testid="select-traceability-method">
+                              <SelectValue placeholder="Select method" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="mass-balance">Mass Balance</SelectItem>
+                              <SelectItem value="segregated">Segregated</SelectItem>
+                              <SelectItem value="identity-preserved">Identity Preserved</SelectItem>
+                              <SelectItem value="book-and-claim">Book and Claim</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="expectedHarvestDate">Expected Harvest Date</Label>
+                          <Input 
+                            id="expectedHarvestDate" 
+                            name="expectedHarvestDate" 
+                            type="date"
+                            data-testid="input-expected-harvest-date"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="productionDateRange">Production Date Range</Label>
+                          <Input 
+                            id="productionDateRange" 
+                            name="productionDateRange" 
+                            placeholder="January 2024 - March 2024"
+                            data-testid="input-production-date-range"
                           />
                         </div>
                       </CardContent>
