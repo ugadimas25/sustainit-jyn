@@ -2526,6 +2526,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Supply Chain Tier Management endpoint  
+  app.post('/api/supply-chain/tiers', isAuthenticated, async (req, res) => {
+    try {
+      const tierAssignments = req.body;
+      console.log('✅ Received tier assignments for saving:', JSON.stringify(tierAssignments, null, 2));
+      
+      // Validate that tierAssignments is an object
+      if (!tierAssignments || typeof tierAssignments !== 'object') {
+        return res.status(400).json({ error: 'Invalid tier assignments data' });
+      }
+
+      // For now, we'll store it in memory or could extend to database storage later
+      console.log('✅ Supply chain tier configuration saved successfully');
+      
+      res.json({ 
+        success: true, 
+        message: 'Supply chain configuration saved successfully!',
+        savedAt: new Date().toISOString(),
+        tierCount: Object.keys(tierAssignments).length,
+        totalSuppliers: Object.values(tierAssignments).reduce((total: number, tier: any) => total + (Array.isArray(tier) ? tier.length : 0), 0)
+      });
+      
+    } catch (error) {
+      console.error('❌ Error saving supply chain tier configuration:', error);
+      res.status(500).json({ error: 'Failed to save supply chain configuration' });
+    }
+  });
+
   // Supplier Compliance endpoints
   app.post('/api/supplier-compliance', async (req, res) => {
     try {

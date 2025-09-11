@@ -170,11 +170,13 @@ export default function SupplyChainSimple() {
   const saveTierAssignments = async () => {
     try {
       console.log('Saving tier assignments:', tierAssignments);
-      // Here you would normally send to API
-      // await apiRequest('/api/supply-chain/tiers', {
-      //   method: 'POST',
-      //   data: tierAssignments
-      // });
+      
+      // Save to API
+      await apiRequest('/api/supply-chain/tiers', {
+        method: 'POST',
+        data: tierAssignments
+      });
+      
       alert('Supply chain configuration saved successfully!');
     } catch (error) {
       console.error('Error saving tier assignments:', error);
