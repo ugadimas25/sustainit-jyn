@@ -103,7 +103,7 @@ async function seedSampleData() {
     // Create sample DDS reports - temporarily disabled due to schema migration
     // const ddsReports = await storage.getDdsReports();
     // if (ddsReports.length === 0) {
-      // const ddsReport1 = await storage.createDdsReport({
+      /* const ddsReport1 = await storage.createDdsReport({
         operatorLegalName: "KPN Plantations Berhad",
         operatorAddress: "Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia",
         eoriNumber: "MY123456789000",
@@ -166,8 +166,7 @@ async function seedSampleData() {
         pdfDocumentPath: "/pdfs/dds-sample-002.pdf",
         euTraceReference: "EU-TRACE-1755198000-456789ab",
         submissionDate: new Date("2024-08-06")
-      // });
-
+      */
       // console.log("✓ Sample DDS reports created");
     // }
 
