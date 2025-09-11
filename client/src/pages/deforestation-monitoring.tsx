@@ -1280,34 +1280,6 @@ export default function DeforestationMonitoring() {
                       <CheckSquare className="h-4 w-4 mr-2" />
                       Verification
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      if (selectedRows.size === 0) {
-                        toast({
-                          title: "No Plots Selected",
-                          description: "Please select at least one plot to create a DDS report.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      
-                      // Get selected plots data with their geolocations
-                      const selectedPlots = filteredResults.filter(result => 
-                        selectedRows.has(result.plotId)
-                      );
-                      
-                      // Store selected plots for DDS creation
-                      localStorage.setItem('selectedPlotsForDDS', JSON.stringify(selectedPlots));
-                      setLocation('/dds-reports');
-                      
-                      toast({
-                        title: "Plots Selected for DDS",
-                        description: `${selectedRows.size} plots selected and ready for DDS report creation.`,
-                        variant: "default",
-                      });
-                    }} data-testid="action-create-dds">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Create DDS Report
-                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 

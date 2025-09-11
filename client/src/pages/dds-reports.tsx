@@ -169,35 +169,14 @@ export default function DdsReports() {
     setSelectedHsCodes(prev => prev.filter(c => c !== code));
   };
 
-  // Load selected plots from localStorage on component mount
-  useEffect(() => {
-    const loadSelectedPlots = () => {
-      try {
-        const storedPlots = localStorage.getItem(STORAGE_KEYS.SELECTED_PLOTS_FOR_DDS);
-        if (storedPlots) {
-          const plots = JSON.parse(storedPlots);
-          setSelectedPlots(plots);
-          
-          // Clear the localStorage after loading to prevent stale data
-          localStorage.removeItem(STORAGE_KEYS.SELECTED_PLOTS_FOR_DDS);
-          
-          // Auto-open the create form if plots are selected
-          setShowDdsForm(true);
-          setActiveTab("create");
-          
-          toast({
-            title: "Plots Loaded",
-            description: `${plots.length} plots loaded from Deforestation Analysis for DDS creation.`,
-            variant: "default",
-          });
-        }
-      } catch (error) {
-        console.error('Error loading selected plots:', error);
-      }
-    };
-
-    loadSelectedPlots();
-  }, [toast]);
+  // State for plot selection popup
+  const [showPlotSelector, setShowPlotSelector] = useState(false);
+  
+  // Fetch analysis results for plot selection
+  const { data: analysisResults = [] } = useQuery<any[]>({
+    queryKey: ['/api/deforestation-analysis'],
+    enabled: showPlotSelector,
+  });
 
   const generateComprehensiveDDS = (report: DdsReport) => {
     return {
