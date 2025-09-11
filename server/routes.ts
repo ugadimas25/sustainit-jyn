@@ -1144,26 +1144,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
       doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
       
-      // Page 2
+      // Page 2 - Methodology with Images
       doc.addPage();
-      doc.setFontSize(10);
-      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 20);
+      doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 2', 10, 30);
+      doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
       
+      // Add Methodology Flowchart Image
+      const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIiIiIbGAKdUVEREREREREREREREREREREN';
+      
+      try {
+        doc.addImage('data:image/png;base64,' + methodologyImage, 'PNG', 10, 30, 180, 120);
+      } catch (error) {
+        console.log('Failed to add methodology image, using text fallback');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Deforestation Analysis Methodology', 10, 50);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Methodology flowchart showing deforestation risk assessment process', 10, 70);
+      }
+      
+      // Page 3 - Risk Assessment Description  
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PAGE 3 - PLOT RISK ASSESSMENT', 105, 20, { align: 'center' });
+      
+      // Add text content for plot risk assessment
+      yPos = 40;
       doc.setFontSize(12);
-      doc.text('Appendix 1. Detailed Plot Information (Link to GeoJSON File)', 10, 50);
+      doc.setFont('helvetica', 'bold');
+      doc.text('The plot risk assessment is based on the geospatial analysis on deforestation and land approved for', 10, yPos);
+      yPos += 8;
+      doc.text('farming map.', 10, yPos);
       
+      yPos += 15;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text('This appendix contains detailed geographical information about all plots', 10, 70);
-      doc.text('included in this Due Diligence Statement.', 10, 80);
-      doc.text('', 10, 90);
-      doc.text('Plot coordinates and boundaries are provided in GeoJSON format', 10, 100);
-      doc.text('for precise geolocation verification.', 10, 110);
-      doc.text('', 10, 120);
-      doc.text('All coordinates are verified through satellite imagery and', 10, 130);
-      doc.text('ground-truthing where applicable.', 10, 140);
+      const riskText = 'Geospatial analysis involves capturing plot polygons or GPS coordinates using KoliTrace and analyzing them to ensure no deforestation occurred after December 2020 and that the plots are on legally approved land. If deforestation is detected, further verifications are conducted. Plots showing no deforestation proceed to land legality analysis. The map reference for deforestation and land approved for farming is provided in the following information.';
+      const wrappedText = doc.splitTextToSize(riskText, 180);
+      doc.text(wrappedText, 10, yPos);
+      yPos += wrappedText.length * 6 + 15;
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Geospatial analysis reference', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.text('Deforestation map: GFW', 10, yPos);
+      yPos += 8;
+      doc.text('Land approved for farming map: WDPA & Or National Map. Please clarify with Koliva directly which map is being used.', 10, yPos);
+      
+      yPos += 15;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Outputs: ', 10, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text('The output includes deforestation, land-approved-for-farming maps, and land legality analysis, as well as providing negligibility status information:', 10, yPos + 8);
+      
+      yPos += 25;
+      doc.text('• Low: Assessment indicates that there is high certainty for EUDR negligible risk and proof is available. The low risk is categorized as negligible.', 15, yPos);
+      yPos += 10;
+      doc.text('• Medium: Assessment shows that there is an indication of negligible risk. However, further mitigation actions are encouraged. The medium risk is categorized as negligible.', 15, yPos);
+      yPos += 10;
+      doc.text('• High: Assessment indicates that the farmer/plots are high risk and categorized as non negligible.', 15, yPos);
+      
+      yPos += 15;
+      const finalText = 'Non-negligible plots are flagged with warning indicators, and users can view details of negligibility status and reasons for non-negligible through interactive map features. This detailed methodology ensures that operators can systematically assess and verify their negligibility status with the EUDR, promoting sustainable agricultural practices and mitigating deforestation risks.';
+      const finalWrapped = doc.splitTextToSize(finalText, 180);
+      doc.text(finalWrapped, 10, yPos);
+      
+      // Page 4 - Land Cover Change Monitoring
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PAGE 4 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
+      
+      yPos = 40;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FLOWCHART LAND COVER CHANGE MONITORING', 105, yPos, { align: 'center' });
+      
+      yPos += 20;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('This flowchart illustrates the workflow for monitoring land cover changes across multiple stakeholders', 10, yPos);
+      yPos += 8;
+      doc.text('within the KPN Plantation concession area. It aims to conduct monitoring every 3 months as', 10, yPos);
+      yPos += 8;
+      doc.text('well as incidental events.', 10, yPos);
+      
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Process Flow:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.text('1. GIS → Alert → Verify Coordinates Location → Desktop Analysis', 15, yPos);
+      yPos += 8;
+      doc.text('2. Estate Manager → Controlled by Community → Verify Field Location', 15, yPos);
+      yPos += 8;
+      doc.text('3. System And Monitoring → Verify Land Cover Change Final Report', 15, yPos);
+      
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Legal Framework:', 10, yPos);
+      yPos += 10;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('1. UU No. 32 / 2009 on Environmental Protection and Management - Requires forest area clearing without permits', 15, yPos);
+      yPos += 6;
+      doc.text('2. UU No. 32 / 2014 on Marine and Fisheries - Protection and Management - Requires plantation business activities', 15, yPos);
+      yPos += 6;
+      doc.text('3. PERMEN LHK No. P.71/MENLHK.1/2019 - Environmental Information System - Including through monitoring system', 15, yPos);
+      yPos += 6;
+      doc.text('4. EU Deforestation Regulation (EUDR) - Ensures supply chain traceability and proof of deforestation-free since 2020', 15, yPos);
+      
+      yPos += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('GeoJSON Data Access:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      const geoJsonLink = 'https://api.kpn-eudr.com/geojson/plots-data.geojson';
+      doc.setTextColor(0, 0, 255); // Blue color for link
+      doc.text('Link: ' + geoJsonLink, 15, yPos);
+      doc.setTextColor(0, 0, 0); // Back to black
+      
+      yPos += 12;
+      doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
+      yPos += 6;
+      doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
       
       // Generate PDF buffer
       const pdfBuffer = doc.output('arraybuffer');
