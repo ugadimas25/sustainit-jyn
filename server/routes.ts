@@ -32,6 +32,7 @@ import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import FormData from "form-data";
 import { Readable } from "stream";
+import { jsPDF } from "jspdf";
 
 const scryptAsync = promisify(scrypt);
 
@@ -975,29 +976,313 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'DDS report not found' });
       }
 
-      // Generate PDF content matching the exact template structure
-      const pdfTemplate = generateDDSPDFTemplate(report);
+      // Generate actual PDF file
+      const pdfDoc = generateActualPDF(report, res);
+      const pdfBuffer = pdfDoc.output('arraybuffer');
       
-      // Mock PDF generation - in real implementation, use a PDF library
-      const pdfPath = `/pdfs/dds-${report.id}.pdf`;
-      
-      // Update report with PDF path
-      await storage.updateDdsReport(req.params.id, {
-        pdfDocumentPath: pdfPath,
-        status: 'generated'
-      });
-
-      res.json({ 
-        success: true, 
-        message: 'PDF generated successfully',
-        pdfPath,
-        template: pdfTemplate // Return template for debugging
-      });
+      // For demo purposes, we'll return the PDF directly
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="dds-${report.id}.pdf"`);
+      res.send(Buffer.from(pdfBuffer));
     } catch (error) {
       console.error('Error generating PDF:', error);
       res.status(500).json({ error: 'Failed to generate PDF' });
     }
   });
+
+  // Generate dummy DDS PDF document
+  app.get('/api/generate-dummy-dds-pdf', async (req, res) => {
+    try {
+      // Create dummy report data
+      const dummyReport = {
+        companyInternalRef: 'DDS-2024-DUMMY-001',
+        activity: 'Import of Palm Oil Products',
+        operatorLegalName: 'KPN Corporation Berhad',
+        operatorAddress: 'Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia',
+        operatorCountry: 'Malaysia',
+        operatorIsoCode: 'MY',
+        productDescription: 'Crude Palm Oil (CPO)',
+        netMassKg: 2150.000,
+        percentageEstimation: 5,
+        supplementaryUnit: 'MT',
+        scientificName: 'Elaeis guineensis',
+        commonName: 'Oil Palm',
+        producerName: 'Riau Cooperative Growers',
+        countryOfProduction: 'Malaysia',
+        totalProducers: 15,
+        totalPlots: 45,
+        totalProductionArea: 1250.50,
+        countryOfHarvest: 'Malaysia',
+        maxIntermediaries: 2,
+        traceabilityMethod: 'GPS Coordinates + Plot Mapping',
+        expectedHarvestDate: '2024-12-31',
+        productionDateRange: 'January 2024 - December 2024'
+      };
+
+      console.log('Starting PDF generation...');
+      
+      // Generate the PDF using jsPDF
+      const doc = new jsPDF();
+      
+      // Set up the document
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text('Due Diligence Statement', 105, 20, { align: 'center' });
+      
+      // Page info
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 30);
+      doc.text('Page 1', 10, 40);
+      doc.text('Status: SUBMITTED', 150, 40);
+      
+      const currentDate = new Date().toLocaleDateString('en-GB');
+      doc.text(`Created On: ${currentDate}`, 10, 50);
+      
+      // Section 1
+      let yPos = 70;
+      doc.setFont(undefined, 'bold');
+      doc.text('1. Company Internal Ref:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.companyInternalRef, 80, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('2. Activity:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.activity, 50, yPos);
+      
+      // Section 3 - Operator Information
+      yPos += 20;
+      doc.setFont(undefined, 'bold');
+      doc.text('3. Operator/Trader name and address:', 10, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('Name:', 15, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.operatorLegalName, 40, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('Address:', 15, yPos);
+      doc.setFont(undefined, 'normal');
+      const addressLines = doc.splitTextToSize(dummyReport.operatorAddress, 140);
+      doc.text(addressLines, 45, yPos);
+      yPos += addressLines.length * 5;
+      
+      yPos += 5;
+      doc.setFont(undefined, 'bold');
+      doc.text('Country:', 15, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.operatorCountry, 45, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('ISO Code:', 15, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.operatorIsoCode, 45, yPos);
+      
+      // Commodity Section
+      yPos += 20;
+      doc.setFont(undefined, 'bold');
+      doc.text('Commodity(ies) or Product(s)', 10, yPos);
+      
+      yPos += 15;
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
+      doc.text('Description', 10, yPos);
+      doc.text('Net Mass (Kg)', 70, yPos);
+      doc.text('% Est.', 120, yPos);
+      doc.text('Units', 150, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.productDescription, 10, yPos);
+      doc.text(dummyReport.netMassKg.toString(), 70, yPos);
+      doc.text(dummyReport.percentageEstimation.toString() + '%', 120, yPos);
+      doc.text(dummyReport.supplementaryUnit, 150, yPos);
+      
+      yPos += 15;
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.text('Scientific Name:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.scientificName, 60, yPos);
+      
+      yPos += 8;
+      doc.setFont(undefined, 'bold');
+      doc.text('Common Name:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.commonName, 60, yPos);
+      
+      yPos += 8;
+      doc.setFont(undefined, 'bold');
+      doc.text('Producer Name:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.producerName, 60, yPos);
+      
+      yPos += 8;
+      doc.setFont(undefined, 'bold');
+      doc.text('Country of Production:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(dummyReport.countryOfProduction, 80, yPos);
+      
+      // Summary Plot Information
+      yPos += 20;
+      doc.setFont(undefined, 'bold');
+      doc.text('Summary Plot Information', 10, yPos);
+      
+      yPos += 10;
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Total Producers: ${dummyReport.totalProducers}`, 10, yPos);
+      doc.text(`Total Plots: ${dummyReport.totalPlots}`, 10, yPos + 8);
+      doc.text(`Total Production Area (ha): ${dummyReport.totalProductionArea}`, 10, yPos + 16);
+      doc.text(`Country of Harvest: ${dummyReport.countryOfHarvest}`, 10, yPos + 24);
+      doc.text(`Max. Intermediaries: ${dummyReport.maxIntermediaries}`, 10, yPos + 32);
+      doc.text(`Traceability Method: ${dummyReport.traceabilityMethod}`, 10, yPos + 40);
+      doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
+      doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
+      
+      // Page 2
+      doc.addPage();
+      doc.setFontSize(10);
+      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 20);
+      doc.setFont(undefined, 'bold');
+      doc.text('PAGE 2', 10, 30);
+      
+      doc.setFontSize(12);
+      doc.text('Appendix 1. Detailed Plot Information (Link to GeoJSON File)', 10, 50);
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text('This appendix contains detailed geographical information about all plots', 10, 70);
+      doc.text('included in this Due Diligence Statement.', 10, 80);
+      doc.text('', 10, 90);
+      doc.text('Plot coordinates and boundaries are provided in GeoJSON format', 10, 100);
+      doc.text('for precise geolocation verification.', 10, 110);
+      doc.text('', 10, 120);
+      doc.text('All coordinates are verified through satellite imagery and', 10, 130);
+      doc.text('ground-truthing where applicable.', 10, 140);
+      
+      // Generate PDF buffer
+      const pdfBuffer = doc.output('arraybuffer');
+      
+      console.log('PDF generated successfully');
+      
+      // Return the PDF file
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
+      res.send(Buffer.from(pdfBuffer));
+      
+    } catch (error) {
+      console.error('Error generating dummy DDS PDF:', error);
+      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: error.message });
+    }
+  });
+
+  // Clean PDF generation helper function
+  function generateCleanDDSPDF(report: any): ArrayBuffer {
+    try {
+      const doc = new jsPDF();
+      
+      // Set up the document
+      doc.setFontSize(16);
+      doc.setFont(undefined, 'bold');
+      doc.text('Due Diligence Statement', 105, 20, { align: 'center' });
+      
+      // Page info
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 30);
+      doc.text('Page 1', 10, 40);
+      doc.text('Status: SUBMITTED', 150, 40);
+      
+      const currentDate = new Date().toLocaleDateString('en-GB');
+      doc.text(`Created On: ${currentDate}`, 10, 50);
+      
+      // Section 1
+      let yPos = 70;
+      doc.setFont(undefined, 'bold');
+      doc.text('1. Company Internal Ref:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(report.companyInternalRef || 'DDS-2024-001', 80, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('2. Activity:', 10, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(report.activity || 'Import', 50, yPos);
+      
+      // Section 3 - Operator Information
+      yPos += 20;
+      doc.setFont(undefined, 'bold');
+      doc.text('3. Operator/Trader name and address:', 10, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('Name:', 15, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(report.operatorLegalName || 'KPN Corporation Berhad', 40, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'bold');
+      doc.text('Address:', 15, yPos);
+      doc.setFont(undefined, 'normal');
+      const address = report.operatorAddress || 'Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia';
+      const addressLines = doc.splitTextToSize(address, 140);
+      doc.text(addressLines, 45, yPos);
+      yPos += addressLines.length * 5;
+      
+      yPos += 5;
+      doc.setFont(undefined, 'bold');
+      doc.text('Country:', 15, yPos);
+      doc.setFont(undefined, 'normal');
+      doc.text(report.operatorCountry || 'Malaysia', 45, yPos);
+      
+      // Commodity Section
+      yPos += 20;
+      doc.setFont(undefined, 'bold');
+      doc.text('Commodity(ies) or Product(s)', 10, yPos);
+      
+      yPos += 15;
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
+      doc.text('Description', 10, yPos);
+      doc.text('Net Mass (Kg)', 70, yPos);
+      doc.text('% Est.', 120, yPos);
+      doc.text('Units', 150, yPos);
+      
+      yPos += 10;
+      doc.setFont(undefined, 'normal');
+      doc.text(report.productDescription || 'Crude Palm Oil (CPO)', 10, yPos);
+      doc.text(report.netMassKg?.toString() || '2150.000', 70, yPos);
+      doc.text(report.percentageEstimation?.toString() + '%' || '5%', 120, yPos);
+      doc.text(report.supplementaryUnit || 'MT', 150, yPos);
+      
+      // Page 2
+      doc.addPage();
+      doc.setFontSize(10);
+      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 20);
+      doc.setFont(undefined, 'bold');
+      doc.text('PAGE 2', 10, 30);
+      
+      doc.setFontSize(12);
+      doc.text('Appendix 1. Detailed Plot Information (Link to GeoJSON File)', 10, 50);
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text('This appendix contains detailed geographical information about all plots', 10, 70);
+      doc.text('included in this Due Diligence Statement.', 10, 80);
+      
+      console.log('PDF generated successfully');
+      return doc.output('arraybuffer');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      throw error;
+    }
+  }
 
   // Helper function to generate PDF template matching the exact structure
   function generateDDSPDFTemplate(report: any) {
