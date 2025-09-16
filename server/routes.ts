@@ -22,7 +22,8 @@ import {
   insertWorkflowShipmentSchema,
   insertDdsReportSchema,
   insertEudrAssessmentSchema,
-  insertMillSchema
+  insertMillSchema,
+  insertSupplierAssessmentProgressSchema
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -756,6 +757,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       res.status(500).json({ error: "Failed to delete shipment" });
+    }
+  });
+
+  // Supplier Assessment Progress endpoints
+  app.get("/api/supplier-assessment-progress", isAuthenticated, async (req, res) => {
+    try {
+      const progress = await storage.getSupplierAssessmentProgress();
+      res.json(progress);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch supplier assessment progress" });
+    }
+  });
+
+  app.get("/api/supplier-assessment-progress/:supplierName", isAuthenticated, async (req, res) => {
+    try {
+      const { supplierName } = req.params;
+      const progress = await storage.getSupplierAssessmentProgressByName(decodeURIComponent(supplierName));
+      if (!progress) {
+        res.status(404).json({ error: "Supplier progress not found" });
+      } else {
+        res.json(progress);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch supplier progress" });
+    }
+  });
+
+  app.post("/api/supplier-assessment-progress", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertSupplierAssessmentProgressSchema.parse(req.body);
+      const progress = await storage.createSupplierAssessmentProgress(validatedData);
+      res.status(201).json(progress);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid progress data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create supplier progress" });
+      }
+    }
+  });
+
+  app.put("/api/supplier-assessment-progress/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertSupplierAssessmentProgressSchema.partial().parse(req.body);
+      const progress = await storage.updateSupplierAssessmentProgress(id, validatedData);
+      if (!progress) {
+        res.status(404).json({ error: "Supplier progress not found" });
+      } else {
+        res.json(progress);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid progress data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to update supplier progress" });
+      }
+    }
+  });
+
+  // Workflow step management endpoints
+  app.post("/api/supplier-workflow-step", isAuthenticated, async (req, res) => {
+    try {
+      const { supplierName, step, completed, referenceId } = req.body;
+      if (!supplierName || typeof step !== 'number' || typeof completed !== 'boolean') {
+        return res.status(400).json({ error: "Missing required fields: supplierName, step, completed" });
+      }
+      
+      const progress = await storage.updateSupplierWorkflowStep(supplierName, step, completed, referenceId);
+      if (!progress) {
+        res.status(404).json({ error: "Failed to update workflow step" });
+      } else {
+        res.json(progress);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update workflow step" });
+    }
+  });
+
+  app.get("/api/supplier-step-access/:supplierName/:step", isAuthenticated, async (req, res) => {
+    try {
+      const { supplierName, step } = req.params;
+      const stepNumber = parseInt(step, 10);
+      if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 3) {
+        return res.status(400).json({ error: "Step must be a number between 1 and 3" });
+      }
+      
+      const hasAccess = await storage.checkSupplierStepAccess(decodeURIComponent(supplierName), stepNumber);
+      res.json({ supplierName, step: stepNumber, hasAccess });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to check step access" });
     }
   });
 

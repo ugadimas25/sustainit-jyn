@@ -19,7 +19,8 @@ import {
 
   mills, type Mill, type InsertMill,
   analysisResults, type AnalysisResult, type InsertAnalysisResult,
-  eudrAssessments, type EudrAssessment, type InsertEudrAssessment
+  eudrAssessments, type EudrAssessment, type InsertEudrAssessment,
+  supplierAssessmentProgress, type SupplierAssessmentProgress, type InsertSupplierAssessmentProgress
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
@@ -169,6 +170,14 @@ export interface IStorage {
     deforestedPlots: string;
     totalArea: string;
   }>;
+
+  // Supplier Assessment Progress management
+  getSupplierAssessmentProgress(): Promise<SupplierAssessmentProgress[]>;
+  getSupplierAssessmentProgressByName(supplierName: string): Promise<SupplierAssessmentProgress | undefined>;
+  createSupplierAssessmentProgress(insertProgress: InsertSupplierAssessmentProgress): Promise<SupplierAssessmentProgress>;
+  updateSupplierAssessmentProgress(id: string, updates: Partial<SupplierAssessmentProgress>): Promise<SupplierAssessmentProgress | undefined>;
+  updateSupplierWorkflowStep(supplierName: string, step: number, completed: boolean, referenceId?: string): Promise<SupplierAssessmentProgress | undefined>;
+  checkSupplierStepAccess(supplierName: string, requestedStep: number): Promise<boolean>;
 }
 
 // Database implementation of IStorage
@@ -979,6 +988,125 @@ export class DatabaseStorage implements IStorage {
         deforestedPlots: "0",
         totalArea: "0"
       };
+    }
+  }
+
+  // Supplier Assessment Progress methods
+  async getSupplierAssessmentProgress(): Promise<SupplierAssessmentProgress[]> {
+    return await db.select().from(supplierAssessmentProgress).orderBy(supplierAssessmentProgress.supplierName);
+  }
+
+  async getSupplierAssessmentProgressByName(supplierName: string): Promise<SupplierAssessmentProgress | undefined> {
+    const [progress] = await db
+      .select()
+      .from(supplierAssessmentProgress)
+      .where(eq(supplierAssessmentProgress.supplierName, supplierName))
+      .limit(1);
+    return progress || undefined;
+  }
+
+  async createSupplierAssessmentProgress(insertProgress: InsertSupplierAssessmentProgress): Promise<SupplierAssessmentProgress> {
+    const [progress] = await db
+      .insert(supplierAssessmentProgress)
+      .values(insertProgress)
+      .returning();
+    return progress;
+  }
+
+  async updateSupplierAssessmentProgress(id: string, updates: Partial<SupplierAssessmentProgress>): Promise<SupplierAssessmentProgress | undefined> {
+    const [progress] = await db
+      .update(supplierAssessmentProgress)
+      .set({ ...updates, updatedAt: sql`now()` })
+      .where(eq(supplierAssessmentProgress.id, id))
+      .returning();
+    return progress || undefined;
+  }
+
+  async updateSupplierWorkflowStep(supplierName: string, step: number, completed: boolean, referenceId?: string): Promise<SupplierAssessmentProgress | undefined> {
+    try {
+      // First, get or create the progress record
+      let progress = await this.getSupplierAssessmentProgressByName(supplierName);
+      
+      if (!progress) {
+        // Create new progress record
+        progress = await this.createSupplierAssessmentProgress({
+          supplierName,
+          supplierType: 'Estate', // Default type, should be updated based on actual data
+          currentStep: step,
+        });
+      }
+
+      // Update the specific step completion status
+      const updates: Partial<SupplierAssessmentProgress> = {
+        currentStep: Math.max(progress.currentStep || 1, step),
+        updatedAt: sql`now()` as any,
+      };
+
+      if (step === 1) {
+        updates.dataCollectionCompleted = completed;
+        if (completed) {
+          updates.dataCollectionCompletedAt = sql`now()` as any;
+          updates.dataCollectionId = referenceId;
+        }
+      } else if (step === 2) {
+        updates.legalityComplianceCompleted = completed;
+        if (completed) {
+          updates.legalityComplianceCompletedAt = sql`now()` as any;
+          updates.legalityComplianceId = referenceId;
+        }
+      } else if (step === 3) {
+        updates.riskAssessmentCompleted = completed;
+        if (completed) {
+          updates.riskAssessmentCompletedAt = sql`now()` as any;
+          updates.riskAssessmentId = referenceId;
+        }
+      }
+
+      // Check if all steps are completed
+      const isDataCompleted = step === 1 ? completed : progress.dataCollectionCompleted;
+      const isLegalityCompleted = step === 2 ? completed : progress.legalityComplianceCompleted;
+      const isRiskCompleted = step === 3 ? completed : progress.riskAssessmentCompleted;
+
+      if (isDataCompleted && isLegalityCompleted && isRiskCompleted) {
+        updates.workflowCompleted = true;
+        updates.workflowCompletedAt = sql`now()` as any;
+      }
+
+      return await this.updateSupplierAssessmentProgress(progress.id, updates);
+    } catch (error) {
+      console.error("Error updating supplier workflow step:", error);
+      return undefined;
+    }
+  }
+
+  async checkSupplierStepAccess(supplierName: string, requestedStep: number): Promise<boolean> {
+    try {
+      const progress = await this.getSupplierAssessmentProgressByName(supplierName);
+      
+      if (!progress) {
+        // No progress record - only allow step 1 (Data Collection)
+        return requestedStep === 1;
+      }
+
+      // Step 1 (Data Collection) is always accessible
+      if (requestedStep === 1) {
+        return true;
+      }
+
+      // Step 2 (Legality Compliance) requires Data Collection to be completed
+      if (requestedStep === 2) {
+        return progress.dataCollectionCompleted || false;
+      }
+
+      // Step 3 (Risk Assessment) requires both Data Collection and Legality Compliance to be completed
+      if (requestedStep === 3) {
+        return (progress.dataCollectionCompleted || false) && (progress.legalityComplianceCompleted || false);
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Error checking supplier step access:", error);
+      return false;
     }
   }
 }

@@ -11,6 +11,7 @@ import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
 import LegalityAssessment from "@/pages/data-collection";
 import LegalityCompliance from "@/pages/legality-compliance";
+import RiskAssessment from "@/pages/risk-assessment";
 import UnifiedMonitoring from "@/pages/unified-monitoring";
 import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
@@ -26,12 +27,13 @@ function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={() => <Dashboard />} />
-      <ProtectedRoute path="/deforestation-monitoring" component={() => <DeforestationMonitoring />} />
+      <ProtectedRoute path="/spatial-analysis" component={() => <DeforestationMonitoring />} />
       <ProtectedRoute path="/map-viewer" component={() => <MapViewer />} />
       <ProtectedRoute path="/edit-polygon" component={() => <EditPolygon />} />
       <ProtectedRoute path="/data-verification" component={() => <DataVerification />} />
       <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
       <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
+      <ProtectedRoute path="/risk-assessment" component={() => <RiskAssessment />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
       <ProtectedRoute path="/reports" component={() => <DDSReports />} />
       <ProtectedRoute path="/dds-reports" component={() => <DDSReports />} />

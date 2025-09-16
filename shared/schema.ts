@@ -1216,7 +1216,46 @@ export const eudrAssessments = pgTable("eudr_assessments", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Supplier Assessment Progress Tracking - tracks completion status across the 3-step workflow
+export const supplierAssessmentProgress = pgTable("supplier_assessment_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  supplierName: text("supplier_name").notNull(), // Primary identifier for supplier across modules
+  supplierType: text("supplier_type").notNull(), // "Estate", "Mill", "Bulking Station", etc.
+  
+  // Data Collection Step (Step 1) - based on existing data collection forms
+  dataCollectionCompleted: boolean("data_collection_completed").default(false),
+  dataCollectionCompletedAt: timestamp("data_collection_completed_at"),
+  dataCollectionId: varchar("data_collection_id"), // References the specific data collection record
+  
+  // Legality Compliance Step (Step 2) - based on existing supplier compliance system
+  legalityComplianceCompleted: boolean("legality_compliance_completed").default(false),
+  legalityComplianceCompletedAt: timestamp("legality_compliance_completed_at"),
+  legalityComplianceId: varchar("legality_compliance_id"), // References supplier compliance record
+  
+  // Risk Assessment Step (Step 3) - new module to be implemented
+  riskAssessmentCompleted: boolean("risk_assessment_completed").default(false),
+  riskAssessmentCompletedAt: timestamp("risk_assessment_completed_at"),
+  riskAssessmentId: varchar("risk_assessment_id"), // Will reference future risk assessment record
+  
+  // Overall workflow status
+  currentStep: integer("current_step").default(1), // 1=Data Collection, 2=Legality Compliance, 3=Risk Assessment
+  workflowCompleted: boolean("workflow_completed").default(false),
+  workflowCompletedAt: timestamp("workflow_completed_at"),
+  
+  // Additional metadata
+  lastUpdatedBy: varchar("last_updated_by"),
+  notes: text("notes"),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Export EUDR Assessment types
 export type EudrAssessment = typeof eudrAssessments.$inferSelect;
 export type InsertEudrAssessment = typeof eudrAssessments.$inferInsert;
 export const insertEudrAssessmentSchema = createInsertSchema(eudrAssessments);
+
+// Export Supplier Assessment Progress types
+export type SupplierAssessmentProgress = typeof supplierAssessmentProgress.$inferSelect;
+export type InsertSupplierAssessmentProgress = typeof supplierAssessmentProgress.$inferInsert;
+export const insertSupplierAssessmentProgressSchema = createInsertSchema(supplierAssessmentProgress);

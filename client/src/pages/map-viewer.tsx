@@ -45,8 +45,8 @@ export default function MapViewer() {
   // Redirect if no analysis data available
   useEffect(() => {
     if (!isLoading && !isError && analysisResults.length === 0) {
-      console.log('No analysis results found, redirecting to deforestation monitoring');
-      setLocation('/deforestation-monitoring');
+      console.log('No analysis results found, redirecting to spatial analysis');
+      setLocation('/spatial-analysis');
     }
   }, [isLoading, isError, analysisResults.length, setLocation]);
 
@@ -68,7 +68,7 @@ export default function MapViewer() {
       <div className="min-h-screen bg-neutral-bg flex items-center justify-center">
         <div className="text-center">
           <p className="text-destructive mb-4">Error loading analysis data</p>
-          <Button onClick={() => setLocation('/deforestation-monitoring')}>
+          <Button onClick={() => setLocation('/spatial-analysis')}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Monitoring
           </Button>
@@ -1045,7 +1045,7 @@ export default function MapViewer() {
           
           <Button
             className="flex items-center gap-2"
-            onClick={() => setLocation('/deforestation-monitoring')}
+            onClick={() => setLocation('/spatial-analysis')}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Results
