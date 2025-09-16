@@ -20,7 +20,9 @@ import {
   mills, type Mill, type InsertMill,
   analysisResults, type AnalysisResult, type InsertAnalysisResult,
   eudrAssessments, type EudrAssessment, type InsertEudrAssessment,
-  supplierAssessmentProgress, type SupplierAssessmentProgress, type InsertSupplierAssessmentProgress
+  supplierAssessmentProgress, type SupplierAssessmentProgress, type InsertSupplierAssessmentProgress,
+  riskAssessments, type RiskAssessment, type InsertRiskAssessment,
+  riskAssessmentItems, type RiskAssessmentItem, type InsertRiskAssessmentItem
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
@@ -178,6 +180,25 @@ export interface IStorage {
   updateSupplierAssessmentProgress(id: string, updates: Partial<SupplierAssessmentProgress>): Promise<SupplierAssessmentProgress | undefined>;
   updateSupplierWorkflowStep(supplierName: string, step: number, completed: boolean, referenceId?: string): Promise<SupplierAssessmentProgress | undefined>;
   checkSupplierStepAccess(supplierName: string, requestedStep: number): Promise<boolean>;
+
+  // Risk Assessment management
+  getRiskAssessments(): Promise<RiskAssessment[]>;
+  getRiskAssessment(id: string): Promise<RiskAssessment | undefined>;
+  getRiskAssessmentBySupplier(supplierId: string): Promise<RiskAssessment[]>;
+  createRiskAssessment(insertRiskAssessment: InsertRiskAssessment): Promise<RiskAssessment>;
+  updateRiskAssessment(id: string, updates: Partial<RiskAssessment>): Promise<RiskAssessment | undefined>;
+  deleteRiskAssessment(id: string): Promise<boolean>;
+
+  // Risk Assessment Items management
+  getRiskAssessmentItems(assessmentId: string): Promise<RiskAssessmentItem[]>;
+  getRiskAssessmentItem(id: string): Promise<RiskAssessmentItem | undefined>;
+  createRiskAssessmentItem(insertItem: InsertRiskAssessmentItem): Promise<RiskAssessmentItem>;
+  updateRiskAssessmentItem(id: string, updates: Partial<RiskAssessmentItem>): Promise<RiskAssessmentItem | undefined>;
+  deleteRiskAssessmentItem(id: string): Promise<boolean>;
+
+  // Risk scoring and classification utilities
+  calculateRiskScore(assessmentId: string): Promise<{ overallScore: number; riskClassification: string; }>;
+  generateRiskReport(assessmentId: string): Promise<any>;
 }
 
 // Database implementation of IStorage
@@ -1108,6 +1129,169 @@ export class DatabaseStorage implements IStorage {
       console.error("Error checking supplier step access:", error);
       return false;
     }
+  }
+
+  // Risk Assessment methods implementation
+  async getRiskAssessments(): Promise<RiskAssessment[]> {
+    return await db.select().from(riskAssessments).orderBy(desc(riskAssessments.assessmentDate));
+  }
+
+  async getRiskAssessment(id: string): Promise<RiskAssessment | undefined> {
+    const [assessment] = await db.select().from(riskAssessments).where(eq(riskAssessments.id, id));
+    return assessment;
+  }
+
+  async getRiskAssessmentBySupplier(supplierId: string): Promise<RiskAssessment[]> {
+    return await db.select().from(riskAssessments).where(eq(riskAssessments.supplierId, supplierId)).orderBy(desc(riskAssessments.assessmentDate));
+  }
+
+  async createRiskAssessment(insertRiskAssessment: InsertRiskAssessment): Promise<RiskAssessment> {
+    const [assessment] = await db.insert(riskAssessments).values(insertRiskAssessment).returning();
+    return assessment;
+  }
+
+  async updateRiskAssessment(id: string, updates: Partial<RiskAssessment>): Promise<RiskAssessment | undefined> {
+    const [assessment] = await db.update(riskAssessments).set(updates).where(eq(riskAssessments.id, id)).returning();
+    return assessment;
+  }
+
+  async deleteRiskAssessment(id: string): Promise<boolean> {
+    try {
+      // First delete all related assessment items
+      await db.delete(riskAssessmentItems).where(eq(riskAssessmentItems.riskAssessmentId, id));
+      
+      // Then delete the assessment
+      await db.delete(riskAssessments).where(eq(riskAssessments.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting risk assessment:", error);
+      return false;
+    }
+  }
+
+  // Risk Assessment Items methods
+  async getRiskAssessmentItems(assessmentId: string): Promise<RiskAssessmentItem[]> {
+    return await db.select().from(riskAssessmentItems).where(eq(riskAssessmentItems.riskAssessmentId, assessmentId));
+  }
+
+  async getRiskAssessmentItem(id: string): Promise<RiskAssessmentItem | undefined> {
+    const [item] = await db.select().from(riskAssessmentItems).where(eq(riskAssessmentItems.id, id));
+    return item;
+  }
+
+  async createRiskAssessmentItem(insertItem: InsertRiskAssessmentItem): Promise<RiskAssessmentItem> {
+    const [item] = await db.insert(riskAssessmentItems).values(insertItem).returning();
+    return item;
+  }
+
+  async updateRiskAssessmentItem(id: string, updates: Partial<RiskAssessmentItem>): Promise<RiskAssessmentItem | undefined> {
+    const [item] = await db.update(riskAssessmentItems).set(updates).where(eq(riskAssessmentItems.id, id)).returning();
+    return item;
+  }
+
+  async deleteRiskAssessmentItem(id: string): Promise<boolean> {
+    try {
+      await db.delete(riskAssessmentItems).where(eq(riskAssessmentItems.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting risk assessment item:", error);
+      return false;
+    }
+  }
+
+  // Risk scoring and classification utilities based on Excel methodology
+  async calculateRiskScore(assessmentId: string): Promise<{ overallScore: number; riskClassification: string; }> {
+    try {
+      const items = await this.getRiskAssessmentItems(assessmentId);
+      
+      if (items.length === 0) {
+        return { overallScore: 0, riskClassification: "high" };
+      }
+
+      // Calculate weighted score based on Excel methodology
+      let totalWeightedScore = 0;
+      let totalWeight = 0;
+
+      items.forEach(item => {
+        const weight = Number(item.weight);
+        const score = Number(item.finalScore);
+        totalWeightedScore += weight * score;
+        totalWeight += weight;
+      });
+
+      // Calculate overall score as percentage
+      const overallScore = totalWeight > 0 ? (totalWeightedScore / totalWeight) * 100 : 0;
+
+      // Apply Excel risk classification thresholds
+      let riskClassification: string;
+      if (overallScore >= 67) {
+        riskClassification = "low";
+      } else if (overallScore >= 61) {
+        riskClassification = "medium";
+      } else {
+        riskClassification = "high";
+      }
+
+      return { overallScore, riskClassification };
+    } catch (error) {
+      console.error("Error calculating risk score:", error);
+      return { overallScore: 0, riskClassification: "high" };
+    }
+  }
+
+  async generateRiskReport(assessmentId: string): Promise<any> {
+    try {
+      const assessment = await this.getRiskAssessment(assessmentId);
+      const items = await this.getRiskAssessmentItems(assessmentId);
+      const scoring = await this.calculateRiskScore(assessmentId);
+
+      if (!assessment) {
+        throw new Error("Assessment not found");
+      }
+
+      return {
+        assessment,
+        items: items.map(item => ({
+          ...item,
+          riskLevel: item.riskLevel,
+          category: item.category,
+          mitigationRequired: item.mitigationRequired,
+        })),
+        scoring,
+        recommendations: this.generateRecommendations(items, scoring.riskClassification),
+      };
+    } catch (error) {
+      console.error("Error generating risk report:", error);
+      throw error;
+    }
+  }
+
+  private generateRecommendations(items: RiskAssessmentItem[], overallRisk: string): string[] {
+    const recommendations: string[] = [];
+    
+    // High-risk items require immediate action
+    const highRiskItems = items.filter(item => item.riskLevel === "tinggi");
+    if (highRiskItems.length > 0) {
+      recommendations.push("Immediate remediation required for high-risk items");
+      highRiskItems.forEach(item => {
+        if (item.mitigationDescription) {
+          recommendations.push(`• ${item.itemName}: ${item.mitigationDescription}`);
+        }
+      });
+    }
+
+    // Overall recommendations based on classification
+    if (overallRisk === "high") {
+      recommendations.push("Supplier requires intensive monitoring and support");
+      recommendations.push("Consider exclusion from supply chain until remediation is complete");
+    } else if (overallRisk === "medium") {
+      recommendations.push("Enhanced monitoring and regular progress reviews recommended");
+      recommendations.push("Implement targeted improvement plans for medium-risk areas");
+    } else {
+      recommendations.push("Continue regular monitoring and maintain current practices");
+    }
+
+    return recommendations;
   }
 }
 

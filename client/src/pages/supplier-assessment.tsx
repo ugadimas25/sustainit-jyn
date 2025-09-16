@@ -3,8 +3,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Eye, FileText, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Eye, FileText, AlertTriangle, CheckCircle, XCircle, Clock, Shield, MapPin } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 
 // Dummy data for supplier assessment results
 const supplierAssessments = [

@@ -23,7 +23,9 @@ import {
   insertDdsReportSchema,
   insertEudrAssessmentSchema,
   insertMillSchema,
-  insertSupplierAssessmentProgressSchema
+  insertSupplierAssessmentProgressSchema,
+  insertRiskAssessmentSchema,
+  insertRiskAssessmentItemSchema
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -848,6 +850,275 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ supplierName, step: stepNumber, hasAccess });
     } catch (error) {
       res.status(500).json({ error: "Failed to check step access" });
+    }
+  });
+
+  // Risk Assessment API endpoints based on Excel methodology
+  app.get("/api/risk-assessments", isAuthenticated, async (req, res) => {
+    try {
+      const assessments = await storage.getRiskAssessments();
+      res.json(assessments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk assessments" });
+    }
+  });
+
+  app.get("/api/risk-assessments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const assessment = await storage.getRiskAssessment(id);
+      if (!assessment) {
+        res.status(404).json({ error: "Risk assessment not found" });
+      } else {
+        res.json(assessment);
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk assessment" });
+    }
+  });
+
+  app.get("/api/risk-assessments/supplier/:supplierId", isAuthenticated, async (req, res) => {
+    try {
+      const { supplierId } = req.params;
+      const assessments = await storage.getRiskAssessmentBySupplier(supplierId);
+      res.json(assessments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch supplier risk assessments" });
+    }
+  });
+
+  app.post("/api/risk-assessments", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertRiskAssessmentSchema.parse(req.body);
+      const assessment = await storage.createRiskAssessment(validatedData);
+      res.status(201).json(assessment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid risk assessment data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create risk assessment" });
+      }
+    }
+  });
+
+  app.put("/api/risk-assessments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertRiskAssessmentSchema.partial().parse(req.body);
+      const assessment = await storage.updateRiskAssessment(id, validatedData);
+      if (!assessment) {
+        res.status(404).json({ error: "Risk assessment not found" });
+      } else {
+        res.json(assessment);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid risk assessment data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to update risk assessment" });
+      }
+    }
+  });
+
+  app.delete("/api/risk-assessments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteRiskAssessment(id);
+      if (!deleted) {
+        res.status(404).json({ error: "Risk assessment not found" });
+      } else {
+        res.json({ success: true });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete risk assessment" });
+    }
+  });
+
+  // Risk Assessment Items endpoints
+  app.get("/api/risk-assessments/:assessmentId/items", isAuthenticated, async (req, res) => {
+    try {
+      const { assessmentId } = req.params;
+      const items = await storage.getRiskAssessmentItems(assessmentId);
+      res.json(items);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch risk assessment items" });
+    }
+  });
+
+  app.post("/api/risk-assessments/:assessmentId/items", isAuthenticated, async (req, res) => {
+    try {
+      const { assessmentId } = req.params;
+      const validatedData = insertRiskAssessmentItemSchema.parse({
+        ...req.body,
+        riskAssessmentId: assessmentId
+      });
+      const item = await storage.createRiskAssessmentItem(validatedData);
+      res.status(201).json(item);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid risk assessment item data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to create risk assessment item" });
+      }
+    }
+  });
+
+  app.put("/api/risk-assessment-items/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertRiskAssessmentItemSchema.partial().parse(req.body);
+      const item = await storage.updateRiskAssessmentItem(id, validatedData);
+      if (!item) {
+        res.status(404).json({ error: "Risk assessment item not found" });
+      } else {
+        res.json(item);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid risk assessment item data", details: error.errors });
+      } else {
+        res.status(500).json({ error: "Failed to update risk assessment item" });
+      }
+    }
+  });
+
+  app.delete("/api/risk-assessment-items/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteRiskAssessmentItem(id);
+      if (!deleted) {
+        res.status(404).json({ error: "Risk assessment item not found" });
+      } else {
+        res.json({ success: true });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete risk assessment item" });
+    }
+  });
+
+  // Risk scoring and reporting endpoints based on Excel methodology
+  app.get("/api/risk-assessments/:assessmentId/score", isAuthenticated, async (req, res) => {
+    try {
+      const { assessmentId } = req.params;
+      const scoring = await storage.calculateRiskScore(assessmentId);
+      res.json(scoring);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to calculate risk score" });
+    }
+  });
+
+  app.get("/api/risk-assessments/:assessmentId/report", isAuthenticated, async (req, res) => {
+    try {
+      const { assessmentId } = req.params;
+      const report = await storage.generateRiskReport(assessmentId);
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate risk report" });
+    }
+  });
+
+  // Excel-based risk template initialization endpoint
+  app.post("/api/risk-assessments/:assessmentId/init-excel-template", isAuthenticated, async (req, res) => {
+    try {
+      const { assessmentId } = req.params;
+      
+      // Initialize default risk items based on Excel methodology
+      const defaultRiskItems = [
+        // Spatial Risk Analysis items from Excel
+        {
+          riskAssessmentId: assessmentId,
+          category: "spatial",
+          itemType: "deforestasi",
+          itemName: "Deforestasi",
+          riskLevel: "rendah",
+          parameter: "Sumber TBS Berasal dari Kebun yang di kembangkan sebelum Desember 2020",
+          riskValue: 3,
+          weight: 45.00,
+          calculatedRisk: 135.00, // 45 * 3
+          normalizedScore: 0.45, // 135 / 300 (max possible score)
+          finalScore: 0.15,
+          mitigationRequired: false,
+          mitigationDescription: "Monitoring berkala plot sumber TBS",
+          dataSources: ["Hansen Alert", "Glad Alert", "JRC Natural Forest"],
+          sourceLinks: ["https://storage.googleapis.com/earthenginepartners-hansen/GFC-2024-v1.12/download.html", "http://glad-forest-alert.appspot.com/", "https://data.jrc.ec.europa.eu/dataset/10d1b337-b7d1-4938-a048-686c8185b290"]
+        },
+        {
+          riskAssessmentId: assessmentId,
+          category: "spatial",
+          itemType: "legalitas_lahan",
+          itemName: "Legalitas Lahan",
+          riskLevel: "rendah",
+          parameter: "Memiliki Izin dan Berada di Kawasan APL",
+          riskValue: 3,
+          weight: 35.00,
+          calculatedRisk: 105.00,
+          normalizedScore: 0.35,
+          finalScore: 0.12,
+          mitigationRequired: false,
+          mitigationDescription: "Monitoring Berkala plot Sumber TBS",
+          dataSources: ["Peta WDPA", "Peta Kawasan Hutan Indonesia"],
+          sourceLinks: ["https://www.protectedplanet.net/en/thematic-areas/wdpa?tab=WDPA", "https://geoportal.menlhk.go.id/portal/apps/webappviewer/index.html?id=2ee8bdda1d714899955fccbe7fdf8468&utm_"]
+        },
+        {
+          riskAssessmentId: assessmentId,
+          category: "spatial",
+          itemType: "kawasan_gambut",
+          itemName: "Kawasan Gambut",
+          riskLevel: "sedang",
+          parameter: "Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan sedang proses bimbingan teknis",
+          riskValue: 2,
+          weight: 10.00,
+          calculatedRisk: 20.00,
+          normalizedScore: 0.10,
+          finalScore: 0.03,
+          mitigationRequired: true,
+          mitigationDescription: "Sosialisasi kebijakan perusahaan kepada supplier",
+          dataSources: ["Peta Areal Gambut"],
+          sourceLinks: ["https://brgm.go.id/"]
+        },
+        {
+          riskAssessmentId: assessmentId,
+          category: "spatial",
+          itemType: "indigenous_people",
+          itemName: "Indigenous People",
+          riskLevel: "rendah",
+          parameter: "Tidak ada Overlap dan Memiliki SOP mengenai Penanganan Keluhan Stakeholder",
+          riskValue: 3,
+          weight: 10.00,
+          calculatedRisk: 30.00,
+          normalizedScore: 0.10,
+          finalScore: 0.03,
+          mitigationRequired: false,
+          mitigationDescription: "Monitoring isu sosial secara berkala untuk deteksi dini potensi konflik",
+          dataSources: ["Peta Masyarakat Adat"],
+          sourceLinks: ["https://www.aman.or.id/"]
+        }
+      ];
+
+      // Create all default items
+      const createdItems = [];
+      for (const itemData of defaultRiskItems) {
+        const item = await storage.createRiskAssessmentItem(itemData);
+        createdItems.push(item);
+      }
+
+      // Calculate initial score
+      const scoring = await storage.calculateRiskScore(assessmentId);
+
+      // Update assessment with initial scores
+      await storage.updateRiskAssessment(assessmentId, {
+        spatialRiskScore: scoring.overallScore,
+        spatialRiskLevel: scoring.riskClassification as any,
+        overallScore: scoring.overallScore,
+        riskClassification: scoring.riskClassification as any
+      });
+
+      res.json({
+        items: createdItems,
+        scoring
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to initialize Excel-based risk template" });
     }
   });
 

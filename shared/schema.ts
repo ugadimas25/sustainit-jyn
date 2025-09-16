@@ -1255,6 +1255,134 @@ export type EudrAssessment = typeof eudrAssessments.$inferSelect;
 export type InsertEudrAssessment = typeof eudrAssessments.$inferInsert;
 export const insertEudrAssessmentSchema = createInsertSchema(eudrAssessments);
 
+// Risk Assessment system based on KPNPLT-SST-XXXX.06.1 methodology
+export const riskCategoryEnum = pgEnum("risk_category", ["spatial", "non_spatial"]);
+export const riskItemTypeEnum = pgEnum("risk_item_type", ["deforestasi", "legalitas_lahan", "kawasan_gambut", "indigenous_people", "sertifikasi", "dokumentasi_legal"]);
+export const riskParameterLevelEnum = pgEnum("risk_parameter_level", ["tinggi", "sedang", "rendah"]); // High, Medium, Low
+export const mitigationStatusEnum = pgEnum("mitigation_status", ["pending", "in_progress", "completed", "not_applicable"]);
+
+// Comprehensive Risk Assessment table based on Excel methodology
+export const riskAssessments = pgTable("risk_assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Reference to supplier/party being assessed
+  supplierId: varchar("supplier_id").references(() => suppliers.id),
+  supplierName: text("supplier_name").notNull(),
+  assessorId: varchar("assessor_id").references(() => users.id),
+  assessorName: text("assessor_name"),
+  
+  // Assessment metadata
+  assessmentDate: timestamp("assessment_date").defaultNow().notNull(),
+  assessmentPeriod: text("assessment_period"), // e.g., "2024-Q1"
+  status: assessmentStatusEnum("status").default("Draft").notNull(),
+  
+  // Overall scoring and classification based on Excel methodology
+  overallScore: decimal("overall_score", { precision: 5, scale: 2 }), // 0-100
+  riskClassification: riskLevelEnum("risk_classification"), // low, medium, high based on score thresholds
+  
+  // Spatial Risk Analysis Section (Section I from Excel)
+  spatialRiskScore: decimal("spatial_risk_score", { precision: 5, scale: 2 }),
+  spatialRiskLevel: riskLevelEnum("spatial_risk_level"),
+  
+  // Non-Spatial Risk Analysis Section 
+  nonSpatialRiskScore: decimal("non_spatial_risk_score", { precision: 5, scale: 2 }),
+  nonSpatialRiskLevel: riskLevelEnum("non_spatial_risk_level"),
+  
+  // Individual risk item scores (JSON structure for flexibility)
+  riskItemScores: jsonb("risk_item_scores").$type<{
+    deforestasi: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
+    legalitas_lahan: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
+    kawasan_gambut: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
+    indigenous_people: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
+    sertifikasi?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
+    dokumentasi_legal?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
+  }>().default({}),
+  
+  // Mitigation actions and status tracking
+  mitigationActions: jsonb("mitigation_actions").$type<{
+    riskItem: string;
+    action: string;
+    status: string;
+    targetDate: string;
+    assignedTo: string;
+    progress: number;
+  }[]>().default([]),
+  
+  // Assessment evidence and supporting documents
+  evidenceDocuments: jsonb("evidence_documents").$type<string[]>().default([]),
+  supportingData: jsonb("supporting_data"), // Store references to analysis results, maps, etc.
+  
+  // Assessment review and approval workflow
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  
+  // Recommendations and next steps
+  recommendations: text("recommendations"),
+  nextReviewDate: timestamp("next_review_date"),
+  
+  // Metadata
+  notes: text("notes"),
+  version: integer("version").default(1), // For versioning assessments
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Risk Assessment Items - detailed breakdown of each risk factor
+export const riskAssessmentItems = pgTable("risk_assessment_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  riskAssessmentId: varchar("risk_assessment_id").references(() => riskAssessments.id).notNull(),
+  category: riskCategoryEnum("category").notNull(), // spatial or non_spatial
+  itemType: riskItemTypeEnum("item_type").notNull(),
+  itemName: text("item_name").notNull(), // e.g., "Deforestasi", "Legalitas Lahan"
+  
+  // Risk parameter details from Excel structure
+  riskLevel: riskParameterLevelEnum("risk_level").notNull(), // tinggi, sedang, rendah
+  parameter: text("parameter").notNull(), // Descriptive parameter from Excel
+  riskValue: integer("risk_value").notNull(), // 1, 2, or 3 based on Excel methodology
+  weight: decimal("weight", { precision: 5, scale: 2 }).notNull(), // Bobot (A) from Excel
+  calculatedRisk: decimal("calculated_risk", { precision: 5, scale: 2 }).notNull(), // Risk (B) = weight * riskValue
+  normalizedScore: decimal("normalized_score", { precision: 5, scale: 4 }).notNull(), // Ni from Excel
+  finalScore: decimal("final_score", { precision: 5, scale: 4 }).notNull(), // Final calculated score
+  
+  // Mitigation information
+  mitigationRequired: boolean("mitigation_required").default(false),
+  mitigationDescription: text("mitigation_description"), // From Excel "Mitigasi" column
+  mitigationStatus: mitigationStatusEnum("mitigation_status").default("pending"),
+  
+  // Evidence and data sources
+  dataSources: jsonb("data_sources").$type<string[]>().default([]), // e.g., "Hansen Alert", "WDPA"
+  sourceLinks: jsonb("source_links").$type<string[]>().default([]), // URLs to data sources
+  evidenceFiles: jsonb("evidence_files").$type<string[]>().default([]),
+  
+  // Assessment details
+  assessedBy: varchar("assessed_by").references(() => users.id),
+  assessedAt: timestamp("assessed_at").defaultNow(),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Export Risk Assessment types
+export type RiskAssessment = typeof riskAssessments.$inferSelect;
+export type InsertRiskAssessment = typeof riskAssessments.$inferInsert;
+export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type RiskAssessmentItem = typeof riskAssessmentItems.$inferSelect;
+export type InsertRiskAssessmentItem = typeof riskAssessmentItems.$inferInsert;
+export const insertRiskAssessmentItemSchema = createInsertSchema(riskAssessmentItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Export Supplier Assessment Progress types
 export type SupplierAssessmentProgress = typeof supplierAssessmentProgress.$inferSelect;
 export type InsertSupplierAssessmentProgress = typeof supplierAssessmentProgress.$inferInsert;
