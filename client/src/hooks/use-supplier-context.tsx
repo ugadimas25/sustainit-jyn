@@ -25,32 +25,16 @@ export function SupplierProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       try {
         const response = await fetch('/api/suppliers', { credentials: 'include' });
-        if (response.status === 401) {
-          // Auto-login with demo user for development
-          const loginResponse = await fetch('/api/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ username: 'kpneudr', password: 'kpneudr' })
-          });
-          
-          if (loginResponse.ok) {
-            // Retry suppliers fetch after login
-            const retryResponse = await fetch('/api/suppliers', { credentials: 'include' });
-            if (retryResponse.ok) {
-              return retryResponse.json();
-            }
-          }
-          
-          // Fallback to demo suppliers if login fails
-          return [
-            { name: 'PT Permata Hijau Estate', type: 'Estate' },
-            { name: 'Sumber Makmur Mill', type: 'Mill' },
-            { name: 'Riau Smallholder Cooperative', type: 'Smallholder' },
-          ];
+        if (response.ok) {
+          return response.json();
         }
         
-        return response.json();
+        // Fallback to demo suppliers for development/demo purposes
+        return [
+          { name: 'PT Permata Hijau Estate', type: 'Estate' },
+          { name: 'Sumber Makmur Mill', type: 'Mill' },
+          { name: 'Riau Smallholder Cooperative', type: 'Smallholder' },
+        ];
       } catch (error) {
         console.warn('Failed to fetch suppliers, using demo data:', error);
         return [
@@ -119,9 +103,12 @@ export function useSupplierStepAccess(step: number) {
         return { hasAccess: step === 1 }; // Only allow Data Collection without supplier
       }
       
-      const response = await fetch(`/api/supplier-step-access/${encodeURIComponent(currentSupplier)}/${step}`);
+      const response = await fetch(`/api/supplier-step-access/${encodeURIComponent(currentSupplier)}/${step}`, {
+        credentials: 'include'
+      });
       if (!response.ok) {
-        throw new Error('Failed to check step access');
+        console.warn(`Step access check failed with status ${response.status}`);
+        return { hasAccess: step === 1, error: `HTTP ${response.status}` };
       }
       return response.json();
     },

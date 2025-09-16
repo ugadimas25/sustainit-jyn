@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/use-auth";
 import { SupplierProvider } from "@/hooks/use-supplier-context";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { WorkflowGuard } from "@/components/route-guards/WorkflowGuard";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
@@ -32,9 +33,21 @@ function Router() {
       <ProtectedRoute path="/map-viewer" component={() => <MapViewer />} />
       <ProtectedRoute path="/edit-polygon" component={() => <EditPolygon />} />
       <ProtectedRoute path="/data-verification" component={() => <DataVerification />} />
-      <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
-      <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
-      <ProtectedRoute path="/risk-assessment" component={() => <RiskAssessment />} />
+      <ProtectedRoute path="/data-collection" component={() => (
+        <WorkflowGuard step={1}>
+          <LegalityAssessment />
+        </WorkflowGuard>
+      )} />
+      <ProtectedRoute path="/legality-compliance" component={() => (
+        <WorkflowGuard step={2}>
+          <LegalityCompliance />
+        </WorkflowGuard>
+      )} />
+      <ProtectedRoute path="/risk-assessment" component={() => (
+        <WorkflowGuard step={3}>
+          <RiskAssessment />
+        </WorkflowGuard>
+      )} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
       <ProtectedRoute path="/reports" component={() => <DDSReports />} />
       <ProtectedRoute path="/dds-reports" component={() => <DDSReports />} />
