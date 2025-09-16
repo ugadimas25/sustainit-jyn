@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useSupplierContext, useSupplierStepAccess } from "@/hooks/use-supplier-context";
 import { useState } from "react";
 import { 
   BarChart3, 
@@ -16,9 +17,12 @@ import {
   ChevronDown,
   ChevronRight,
   Users,
-  AlertTriangle
+  AlertTriangle,
+  Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SubModule {
   name: string;
@@ -56,6 +60,8 @@ const navigation: NavigationItem[] = [
 export function Sidebar() {
   const [location, setLocation] = useLocation();
   const [expandedModules, setExpandedModules] = useState<string[]>(['Supplier Assessment']);
+  const { currentSupplier, setCurrentSupplier, availableSuppliers, isLoading } = useSupplierContext();
+  const { toast } = useToast();
   
   // Temporarily bypass authentication for direct access
   const user = { name: 'Demo User', role: 'compliance_officer' };
@@ -79,10 +85,21 @@ export function Sidebar() {
     return subModules.some(sub => location === sub.href);
   };
 
-  // Mock function to check if a step is accessible (to be replaced with real workflow enforcement)
-  const isStepAccessible = (step: number, supplierName?: string) => {
-    // For now, allow all steps - will be implemented with real logic later
-    return true;
+  // Real workflow enforcement function
+  const checkStepAccess = (step: number, navigate: () => void) => {
+    if (!currentSupplier) {
+      if (step === 1) {
+        navigate(); // Allow Data Collection without supplier selection
+        return;
+      }
+      toast({
+        title: "Supplier Required",
+        description: "Please select a supplier before accessing this step.",
+        variant: "destructive"
+      });
+      return;
+    }
+    navigate(); // Navigate - access check will be handled by the step access query
   };
 
   const renderNavigationItem = (item: NavigationItem) => {
@@ -120,36 +137,16 @@ export function Sidebar() {
             <div className="ml-4 space-y-1">
               {item.subModules!.map((subModule) => {
                 const isActive = location === subModule.href;
-                const isAccessible = isStepAccessible(subModule.step);
                 
                 return (
-                  <button
+                  <WorkflowStepButton
                     key={subModule.name}
-                    onClick={() => isAccessible && setLocation(subModule.href)}
-                    disabled={!isAccessible}
-                    className={`w-full text-left px-4 py-2 rounded-lg flex items-center transition-colors duration-200 text-sm ${
-                      isActive 
-                        ? 'bg-forest-light text-forest font-medium' 
-                        : isAccessible
-                        ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                        : 'text-gray-400 cursor-not-allowed'
-                    }`}
-                    data-testid={subModule.testId}
-                  >
-                    <subModule.icon className={`w-4 h-4 ${!isAccessible ? 'opacity-50' : ''}`} />
-                    <span className="ml-3">{subModule.name}</span>
-                    {subModule.step && (
-                      <span className={`ml-auto text-xs px-2 py-1 rounded-full ${
-                        isActive 
-                          ? 'bg-forest text-white' 
-                          : isAccessible 
-                          ? 'bg-gray-200 text-gray-700'
-                          : 'bg-gray-100 text-gray-400'
-                      }`}>
-                        {subModule.step}
-                      </span>
-                    )}
-                  </button>
+                    subModule={subModule}
+                    isActive={isActive}
+                    currentSupplier={currentSupplier}
+                    onNavigate={checkStepAccess}
+                    setLocation={setLocation}
+                  />
                 );
               })}
             </div>
@@ -191,6 +188,30 @@ export function Sidebar() {
         </div>
       </div>
       
+      {/* Supplier Selection */}
+      <div className="p-4 border-b border-neutral-border">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Current Supplier</label>
+          <Select value={currentSupplier || ""} onValueChange={setCurrentSupplier}>
+            <SelectTrigger className="w-full" data-testid="select-current-supplier">
+              <SelectValue placeholder={isLoading ? "Loading..." : "Select supplier..."} />
+            </SelectTrigger>
+            <SelectContent>
+              {availableSuppliers.map((supplier) => (
+                <SelectItem key={supplier} value={supplier}>
+                  {supplier}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {currentSupplier && (
+            <p className="text-xs text-gray-500">
+              Workflow enforcement active for {currentSupplier}
+            </p>
+          )}
+        </div>
+      </div>
+
       <div className="flex-1 p-4">
         <div className="space-y-1">
           {navigation.map(renderNavigationItem)}
@@ -222,5 +243,78 @@ export function Sidebar() {
         </div>
       </div>
     </nav>
+  );
+}
+
+// WorkflowStepButton component for supplier assessment steps
+interface WorkflowStepButtonProps {
+  subModule: SubModule;
+  isActive: boolean;
+  currentSupplier: string | null;
+  onNavigate: (step: number, navigate: () => void) => void;
+  setLocation: (href: string) => void;
+}
+
+function WorkflowStepButton({ subModule, isActive, currentSupplier, onNavigate, setLocation }: WorkflowStepButtonProps) {
+  const { data: accessData, isLoading } = useSupplierStepAccess(subModule.step);
+  const { toast } = useToast();
+  
+  const hasAccess = accessData?.hasAccess ?? (subModule.step === 1); // Default to allow step 1
+  const isAccessible = !isLoading && hasAccess;
+  
+  const handleClick = () => {
+    if (isLoading) return;
+    
+    if (!hasAccess) {
+      let requiredStep = "";
+      if (subModule.step === 2) requiredStep = "Data Collection";
+      if (subModule.step === 3) requiredStep = "Data Collection and Legality Compliance";
+      
+      toast({
+        title: "Step Locked",
+        description: `Please complete ${requiredStep} first before accessing ${subModule.name}.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    onNavigate(subModule.step, () => setLocation(subModule.href));
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={isLoading || !isAccessible}
+      className={`w-full text-left px-4 py-2 rounded-lg flex items-center transition-colors duration-200 text-sm ${
+        isActive 
+          ? 'bg-forest-light text-forest font-medium' 
+          : isAccessible
+          ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+          : 'text-gray-400 cursor-not-allowed'
+      }`}
+      data-testid={subModule.testId}
+    >
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center">
+          {isLoading ? (
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+          ) : !isAccessible ? (
+            <Lock className="w-4 h-4 opacity-50" />
+          ) : (
+            <subModule.icon className="w-4 h-4" />
+          )}
+          <span className="ml-3">{subModule.name}</span>
+        </div>
+        <span className={`text-xs px-2 py-1 rounded-full ${
+          isActive 
+            ? 'bg-forest text-white' 
+            : isAccessible 
+            ? 'bg-gray-200 text-gray-700'
+            : 'bg-gray-100 text-gray-400'
+        }`}>
+          {subModule.step}
+        </span>
+      </div>
+    </button>
   );
 }
