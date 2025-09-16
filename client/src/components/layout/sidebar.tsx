@@ -43,23 +43,23 @@ const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/', icon: BarChart3, testId: 'nav-dashboard' },
   { name: 'Spatial Analysis', href: '/spatial-analysis', icon: Satellite, testId: 'nav-spatial-analysis' },
   { 
-    name: 'Supplier Assessment', 
-    href: '/supplier-assessment', 
+    name: 'Supply Chain Analysis', 
+    href: '/supply-chain-analysis', 
     icon: Users, 
-    testId: 'nav-supplier-assessment',
+    testId: 'nav-supply-chain-analysis',
     subModules: [
-      { name: '1. Data Collection', href: '/data-collection', icon: Shield, step: 1, testId: 'nav-supplier-assessment-step-1' },
-      { name: '2. Legality Compliance', href: '/legality-compliance', icon: Scale, step: 2, testId: 'nav-supplier-assessment-step-2' },
-      { name: '3. Risk Assessment', href: '/risk-assessment', icon: AlertTriangle, step: 3, testId: 'nav-supplier-assessment-step-3' },
+      { name: '1. Data Collection', href: '/data-collection', icon: Shield, step: 1, testId: 'nav-supply-chain-analysis-step-1' },
+      { name: '2. Legality Compliance', href: '/legality-compliance', icon: Scale, step: 2, testId: 'nav-supply-chain-analysis-step-2' },
+      { name: '3. Risk Assessment', href: '/risk-assessment', icon: AlertTriangle, step: 3, testId: 'nav-supply-chain-analysis-step-3' },
     ]
   },
-  { name: 'Supply Chain', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
-  { name: 'DDS Reports', href: '/reports', icon: FileText, testId: 'nav-reports' },
+  { name: 'Supply Chain Linkage', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
+  { name: 'Due Diligence Report', href: '/due-diligence-report', icon: FileText, testId: 'nav-due-diligence-report' },
 ];
 
 export function Sidebar() {
   const [location, setLocation] = useLocation();
-  const [expandedModules, setExpandedModules] = useState<string[]>(['Supplier Assessment']);
+  const [expandedModules, setExpandedModules] = useState<string[]>(['Supply Chain Analysis']);
   const { toast } = useToast();
   
   // Temporarily bypass authentication for direct access

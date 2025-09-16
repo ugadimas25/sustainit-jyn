@@ -11,7 +11,7 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
-import SupplierAssessment from "@/pages/supplier-assessment";
+import SupplyChainAnalysis from "@/pages/supply-chain-analysis";
 import LegalityAssessment from "@/pages/data-collection";
 import LegalityCompliance from "@/pages/legality-compliance";
 import RiskAssessment from "@/pages/risk-assessment";
@@ -21,7 +21,7 @@ import DeforestationMonitoring from "@/pages/deforestation-monitoring";
 import MapViewer from "@/pages/map-viewer";
 import EditPolygon from "@/pages/edit-polygon";
 import DataVerification from "@/pages/data-verification";
-import DDSReports from "@/pages/dds-reports";
+import DueDiligenceReport from "@/pages/due-diligence-report";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { VoiceAssistantToggle } from "@/components/voice-assistant/VoiceAssistantToggle";
@@ -34,13 +34,13 @@ function Router() {
       <ProtectedRoute path="/map-viewer" component={() => <MapViewer />} />
       <ProtectedRoute path="/edit-polygon" component={() => <EditPolygon />} />
       <ProtectedRoute path="/data-verification" component={() => <DataVerification />} />
-      <ProtectedRoute path="/supplier-assessment" component={() => <SupplierAssessment />} />
+      <ProtectedRoute path="/supply-chain-analysis" component={() => <SupplyChainAnalysis />} />
       <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
       <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
       <ProtectedRoute path="/risk-assessment" component={() => <RiskAssessment />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
-      <ProtectedRoute path="/reports" component={() => <DDSReports />} />
-      <ProtectedRoute path="/dds-reports" component={() => <DDSReports />} />
+      <ProtectedRoute path="/due-diligence-report" component={() => <DueDiligenceReport />} />
+      <ProtectedRoute path="/due-diligence-report" component={() => <DueDiligenceReport />} />
 
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />

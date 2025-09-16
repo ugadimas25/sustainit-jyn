@@ -7,7 +7,7 @@ import { Eye, FileText, AlertTriangle, CheckCircle, XCircle, Clock, Shield, MapP
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 
-// Dummy data for supplier assessment results
+// Dummy data for supplier analysis results
 const supplierAssessments = [
   {
     id: 1,
@@ -155,7 +155,7 @@ const StatusBadge = ({ status, score }: { status: string; score?: number | null 
   );
 };
 
-export default function SupplierAssessment() {
+export default function SupplyChainAnalysis() {
   const [, setLocation] = useLocation();
 
   const getOverallProgress = () => {
@@ -175,7 +175,7 @@ export default function SupplierAssessment() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Supplier Assessment</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Supply Chain Analysis</h1>
           <p className="text-gray-600 mt-1">Comprehensive overview of supplier compliance status across all assessment stages</p>
         </div>
       </div>
@@ -278,12 +278,12 @@ export default function SupplierAssessment() {
         </Card>
       </div>
 
-      {/* Assessment Results Table */}
+      {/* Analysis Results Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <FileText className="w-5 h-5 mr-2" />
-            Supplier Assessment Results
+            Supply Chain Analysis Results
           </CardTitle>
           <CardDescription>
             Detailed breakdown of each supplier's progress through the 3-stage assessment workflow
@@ -364,7 +364,7 @@ export default function SupplierAssessment() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setLocation('/reports')}
+                          onClick={() => setLocation('/due-diligence-report')}
                           data-testid={`generate-report-${supplier.id}`}
                         >
                           <FileText className="w-3 h-3 mr-1" />

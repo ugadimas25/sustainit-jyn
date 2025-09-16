@@ -977,7 +977,7 @@ export default function DataCollection() {
                   </p>
                 </div>
                 <Button 
-                  onClick={() => window.location.href = '/supplier-assessment'}
+                  onClick={() => window.location.href = '/supply-chain-analysis'}
                   size="lg"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 font-medium"
                   data-testid="button-view-consolidated-results"

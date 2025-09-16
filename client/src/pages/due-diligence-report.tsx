@@ -127,7 +127,7 @@ function TraceabilityConfigSelector({ onSelect, onCancel }: { onSelect: (config:
   );
 }
 
-export default function DdsReports() {
+export default function DueDiligenceReport() {
   const [activeTab, setActiveTab] = useState("overview");
   const [showDdsForm, setShowDdsForm] = useState(false);
   const [selectedReport, setSelectedReport] = useState<DdsReport | null>(null);
@@ -519,7 +519,7 @@ export default function DdsReports() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            DDS Reports
+            Due Diligence Report
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-2">
             EU Due Diligence Statement compliance reporting and submission system
@@ -549,17 +549,17 @@ export default function DdsReports() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">DDS Reports Overview</h2>
+              <h2 className="text-xl font-semibold">Due Diligence Reports Overview</h2>
               <Dialog open={showDdsForm} onOpenChange={handleDialogOpenChange}>
                 <DialogTrigger asChild>
                   <Button data-testid="button-create-dds">
                     <Plus className="h-4 w-4 mr-2" />
-                    Create DDS Report
+                    Create Due Diligence Report
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Create DDS Report</DialogTitle>
+                    <DialogTitle>Create Due Diligence Report</DialogTitle>
                   </DialogHeader>
                   <form onSubmit={handleDdsSubmit} className="space-y-6">
                     {/* Operator Details */}
