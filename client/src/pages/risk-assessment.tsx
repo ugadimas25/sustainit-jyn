@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Shield, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 export default function RiskAssessment() {
+  const [, setLocation] = useLocation();
+
   return (
     <div className="min-h-screen bg-neutral-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -71,6 +74,10 @@ export default function RiskAssessment() {
               <Button variant="outline" onClick={() => window.history.back()}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Go Back
+              </Button>
+              <Button onClick={() => setLocation('/supplier-assessment')}>
+                <FileText className="w-4 h-4 mr-2" />
+                View Consolidated Results
               </Button>
             </div>
           </CardContent>

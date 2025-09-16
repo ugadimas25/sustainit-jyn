@@ -370,6 +370,201 @@ export default function SupplierAssessment() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Hasil Koleksi Data */}
+      <Card data-testid="card-data-collection-results">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2" data-testid="title-data-collection-results">
+            <FileText className="w-5 h-5 text-blue-600" />
+            Hasil Koleksi Data
+          </CardTitle>
+          <CardDescription>
+            Data collection results with AI-based quality scoring
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">15</div>
+                <div className="text-sm text-gray-600">Estate Records</div>
+              </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">8</div>
+                <div className="text-sm text-gray-600">Mill Records</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">23</div>
+                <div className="text-sm text-gray-600">Smallholder Records</div>
+              </div>
+              <div className="text-center p-4 bg-orange-50 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">85%</div>
+                <div className="text-sm text-gray-600">Avg AI Score</div>
+              </div>
+            </div>
+            
+            {/* Recent Data Collection */}
+            <div>
+              <h4 className="font-semibold mb-3">Recent Data Collections</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">PT Permata Hijau Estate</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-100 text-green-800">92% Complete</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/data-collection')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">Sumber Makmur Mill</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-yellow-100 text-yellow-800">78% Complete</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/data-collection')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">Riau Smallholder Cooperative</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-100 text-green-800">95% Complete</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/data-collection')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Legality Compliance Results */}
+      <Card data-testid="card-legality-compliance-results">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2" data-testid="title-legality-compliance-results">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            Legality Compliance Results
+          </CardTitle>
+          <CardDescription>
+            Legal compliance verification results and indicators
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Compliance Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">42</div>
+                <div className="text-sm text-gray-600">Compliant Suppliers</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">8</div>
+                <div className="text-sm text-gray-600">Under Review</div>
+              </div>
+              <div className="text-center p-4 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">3</div>
+                <div className="text-sm text-gray-600">Non-Compliant</div>
+              </div>
+            </div>
+            
+            {/* Recent Assessments */}
+            <div>
+              <h4 className="font-semibold mb-3">Recent Legality Assessments</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">PT Permata Hijau Estate</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-100 text-green-800">Compliant</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/legality-compliance')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">Sumber Makmur Mill</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-yellow-100 text-yellow-800">Under Review</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/legality-compliance')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Risk Assessment Results */}
+      <Card data-testid="card-risk-assessment-results">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2" data-testid="title-risk-assessment-results">
+            <AlertTriangle className="w-5 h-5 text-red-600" />
+            Risk Assessment Results
+          </CardTitle>
+          <CardDescription>
+            Comprehensive risk evaluation and mitigation recommendations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Risk Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">38</div>
+                <div className="text-sm text-gray-600">Low Risk</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">12</div>
+                <div className="text-sm text-gray-600">Medium Risk</div>
+              </div>
+              <div className="text-center p-4 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">3</div>
+                <div className="text-sm text-gray-600">High Risk</div>
+              </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">7.2</div>
+                <div className="text-sm text-gray-600">Avg Risk Score</div>
+              </div>
+            </div>
+            
+            {/* Recent Risk Assessments */}
+            <div>
+              <h4 className="font-semibold mb-3">Recent Risk Assessments</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">PT Permata Hijau Estate</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-100 text-green-800">Low Risk (6.2)</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/risk-assessment')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">Sumber Makmur Mill</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-red-100 text-red-800">High Risk (8.7)</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/risk-assessment')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
