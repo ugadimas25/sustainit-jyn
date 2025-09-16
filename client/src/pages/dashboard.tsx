@@ -175,12 +175,11 @@ export default function Dashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-units">All Business Units</SelectItem>
-                  <SelectItem value="plantation-north">Plantation North</SelectItem>
-                  <SelectItem value="plantation-south">Plantation South</SelectItem>
-                  <SelectItem value="plantation-central">Plantation Central</SelectItem>
-                  <SelectItem value="mill-operations">Mill Operations</SelectItem>
-                  <SelectItem value="smallholder-program">Smallholder Program</SelectItem>
-                  <SelectItem value="estate-management">Estate Management</SelectItem>
+                  <SelectItem value="estate">Estate</SelectItem>
+                  <SelectItem value="mill-1">Mill 1</SelectItem>
+                  <SelectItem value="mill-2">Mill 2</SelectItem>
+                  <SelectItem value="mill-3">Mill 3</SelectItem>
+                  <SelectItem value="bulking">Bulking</SelectItem>
                 </SelectContent>
               </Select>
             </div>

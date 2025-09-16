@@ -11,6 +11,7 @@ import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
+import SupplierAssessment from "@/pages/supplier-assessment";
 import LegalityAssessment from "@/pages/data-collection";
 import LegalityCompliance from "@/pages/legality-compliance";
 import RiskAssessment from "@/pages/risk-assessment";
@@ -33,21 +34,10 @@ function Router() {
       <ProtectedRoute path="/map-viewer" component={() => <MapViewer />} />
       <ProtectedRoute path="/edit-polygon" component={() => <EditPolygon />} />
       <ProtectedRoute path="/data-verification" component={() => <DataVerification />} />
-      <ProtectedRoute path="/data-collection" component={() => (
-        <WorkflowGuard step={1}>
-          <LegalityAssessment />
-        </WorkflowGuard>
-      )} />
-      <ProtectedRoute path="/legality-compliance" component={() => (
-        <WorkflowGuard step={2}>
-          <LegalityCompliance />
-        </WorkflowGuard>
-      )} />
-      <ProtectedRoute path="/risk-assessment" component={() => (
-        <WorkflowGuard step={3}>
-          <RiskAssessment />
-        </WorkflowGuard>
-      )} />
+      <ProtectedRoute path="/supplier-assessment" component={() => <SupplierAssessment />} />
+      <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
+      <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
+      <ProtectedRoute path="/risk-assessment" component={() => <RiskAssessment />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
       <ProtectedRoute path="/reports" component={() => <DDSReports />} />
       <ProtectedRoute path="/dds-reports" component={() => <DDSReports />} />
