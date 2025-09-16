@@ -179,6 +179,62 @@ export default function SupplierAssessment() {
         </div>
       </div>
 
+      {/* Consolidated Results Hub - Three Module Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" data-testid="consolidated-results-hub">
+        <Card data-testid="card-data-collection-results">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2" data-testid="title-data-collection-results">
+              <FileText className="w-5 h-5" />
+              Hasil Koleksi Data
+            </CardTitle>
+            <CardDescription>Summary of data collection completeness and AI scoring</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-2xl font-bold">85%</div>
+              <div className="text-sm text-gray-600">Avg completeness</div>
+              <Progress value={85} className="mt-2" />
+              <Button className="mt-3" size="sm" onClick={() => setLocation('/data-collection')} data-testid="button-view-data-collection">View Details</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-legality-compliance-results">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2" data-testid="title-legality-compliance-results">
+              <CheckCircle className="w-5 h-5" />
+              Legality Compliance Results
+            </CardTitle>
+            <CardDescription>Compliant, under review, and gaps</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">42</span><span className="text-sm text-gray-600">Compliant</span></div>
+              <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">8</span><span className="text-sm text-gray-600">Under Review</span></div>
+              <Button className="mt-3" size="sm" onClick={() => setLocation('/legality-compliance')} data-testid="button-view-legality">View Details</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-risk-assessment-results">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2" data-testid="title-risk-assessment-results">
+              <AlertTriangle className="w-5 h-5" />
+              Risk Assessment Results
+            </CardTitle>
+            <CardDescription>Risk distribution and score</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">38</span><span className="text-sm text-gray-600">Low</span></div>
+              <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">12</span><span className="text-sm text-gray-600">Medium</span></div>
+              <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">3</span><span className="text-sm text-gray-600">High</span></div>
+              <Button className="mt-3" size="sm" onClick={() => setLocation('/risk-assessment')} data-testid="button-view-risk">View Details</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
