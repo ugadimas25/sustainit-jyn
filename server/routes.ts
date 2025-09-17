@@ -1434,7 +1434,243 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DDS Reports routes
+  // Enhanced DDS Reports routes for PRD implementation
+  
+  // Get available HS codes for product selection dropdown
+  app.get('/api/dds/hs-codes', isAuthenticated, async (req, res) => {
+    try {
+      const hsCodes = [
+        { code: '1511', description: 'Palm Oil and its fractions, crude', category: 'palm_oil' },
+        { code: '151110', description: 'Crude palm oil', category: 'palm_oil' },
+        { code: '151190', description: 'Palm oil and its fractions, refined', category: 'palm_oil' },
+        { code: '1513', description: 'Coconut (copra), palm kernel or babassu oil', category: 'palm_oil' },
+        { code: '151321', description: 'Crude coconut oil', category: 'coconut' },
+        { code: '0901', description: 'Coffee, not roasted or decaffeinated', category: 'coffee' },
+        { code: '090111', description: 'Coffee, not roasted, not decaffeinated', category: 'coffee' },
+        { code: '1801', description: 'Cocoa beans, whole or broken, raw or roasted', category: 'cocoa' },
+        { code: '180100', description: 'Cocoa beans, whole or broken', category: 'cocoa' },
+        { code: '4401', description: 'Fuel wood, in logs, billets, twigs, faggots', category: 'wood' },
+        { code: '440110', description: 'Fuel wood, in logs, billets, twigs', category: 'wood' },
+        { code: '1201', description: 'Soya beans, whether or not broken', category: 'soy' },
+        { code: '120100', description: 'Soya beans, whether or not broken', category: 'soy' }
+      ];
+      res.json(hsCodes);
+    } catch (error) {
+      console.error('Error fetching HS codes:', error);
+      res.status(500).json({ error: 'Failed to fetch HS codes' });
+    }
+  });
+
+  // Get scientific names for products dropdown
+  app.get('/api/dds/scientific-names', isAuthenticated, async (req, res) => {
+    try {
+      const { category } = req.query;
+      const scientificNames = {
+        palm_oil: [
+          { name: 'Elaeis guineensis', common: 'African Oil Palm' },
+          { name: 'Elaeis oleifera', common: 'American Oil Palm' }
+        ],
+        coconut: [
+          { name: 'Cocos nucifera', common: 'Coconut Palm' }
+        ],
+        coffee: [
+          { name: 'Coffea arabica', common: 'Arabica Coffee' },
+          { name: 'Coffea canephora', common: 'Robusta Coffee' },
+          { name: 'Coffea liberica', common: 'Liberica Coffee' }
+        ],
+        cocoa: [
+          { name: 'Theobroma cacao', common: 'Cacao Tree' }
+        ],
+        soy: [
+          { name: 'Glycine max', common: 'Soybean' }
+        ],
+        wood: [
+          { name: 'Various species', common: 'Mixed Forest Species' }
+        ]
+      };
+      
+      if (category && scientificNames[category as keyof typeof scientificNames]) {
+        res.json(scientificNames[category as keyof typeof scientificNames]);
+      } else {
+        res.json(Object.values(scientificNames).flat());
+      }
+    } catch (error) {
+      console.error('Error fetching scientific names:', error);
+      res.status(500).json({ error: 'Failed to fetch scientific names' });
+    }
+  });
+
+  // Validate GeoJSON data endpoint
+  app.post('/api/dds/validate-geojson', isAuthenticated, async (req, res) => {
+    try {
+      const { geojson } = req.body;
+      
+      if (!geojson) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'No GeoJSON data provided' 
+        });
+      }
+
+      let parsedGeoJson;
+      try {
+        parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
+      } catch (parseError) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Invalid JSON format' 
+        });
+      }
+
+      // Basic GeoJSON structure validation
+      if (!parsedGeoJson.type) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Missing type property' 
+        });
+      }
+
+      // Check for valid geometry types
+      const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
+      if (!validTypes.includes(parsedGeoJson.type)) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon` 
+        });
+      }
+
+      let polygonFound = false;
+      let boundingBox = null;
+      let area = 0;
+      let centroid = null;
+
+      // Extract polygon geometry and calculate metadata
+      if (parsedGeoJson.type === 'Polygon') {
+        polygonFound = true;
+        const coords = parsedGeoJson.coordinates;
+        if (coords && coords[0] && coords[0].length >= 4) {
+          boundingBox = calculateBoundingBox(coords[0]);
+          centroid = calculateCentroid(coords[0]);
+          area = calculatePolygonArea(coords[0]);
+        }
+      } else if (parsedGeoJson.type === 'MultiPolygon') {
+        polygonFound = true;
+        const coords = parsedGeoJson.coordinates;
+        if (coords && coords[0] && coords[0][0] && coords[0][0].length >= 4) {
+          boundingBox = calculateBoundingBox(coords[0][0]);
+          centroid = calculateCentroid(coords[0][0]);
+          area = calculatePolygonArea(coords[0][0]);
+        }
+      } else if (parsedGeoJson.type === 'Feature') {
+        const geometry = parsedGeoJson.geometry;
+        if (geometry && (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon')) {
+          polygonFound = true;
+          const coords = geometry.type === 'Polygon' ? geometry.coordinates : geometry.coordinates[0];
+          if (coords && coords[0] && coords[0].length >= 4) {
+            boundingBox = calculateBoundingBox(coords[0]);
+            centroid = calculateCentroid(coords[0]);
+            area = calculatePolygonArea(coords[0]);
+          }
+        }
+      } else if (parsedGeoJson.type === 'FeatureCollection') {
+        const features = parsedGeoJson.features;
+        if (features && features.length > 0) {
+          for (const feature of features) {
+            if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
+              polygonFound = true;
+              const coords = feature.geometry.type === 'Polygon' ? feature.geometry.coordinates : feature.geometry.coordinates[0];
+              if (coords && coords[0] && coords[0].length >= 4) {
+                boundingBox = calculateBoundingBox(coords[0]);
+                centroid = calculateCentroid(coords[0]);
+                area = calculatePolygonArea(coords[0]);
+                break; // Use first valid polygon
+              }
+            }
+          }
+        }
+      }
+
+      if (!polygonFound) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.' 
+        });
+      }
+
+      res.json({
+        valid: true,
+        metadata: {
+          area: area,
+          boundingBox: boundingBox,
+          centroid: centroid,
+          geometryType: parsedGeoJson.type
+        }
+      });
+
+    } catch (error) {
+      console.error('Error validating GeoJSON:', error);
+      res.status(500).json({ 
+        valid: false, 
+        error: 'Server error during validation' 
+      });
+    }
+  });
+
+  // Get session-based DDS list (PRD requirement for dashboard)
+  app.get('/api/dds/list', isAuthenticated, async (req, res) => {
+    try {
+      const sessionId = req.query.sessionId as string;
+      const reports = await storage.getDdsReports(sessionId);
+      
+      // Format for PRD dashboard requirements
+      const formattedReports = reports.map(report => ({
+        id: report.id,
+        statementId: report.id.slice(-8).toUpperCase(),
+        date: report.createdAt,
+        product: report.productDescription || report.commonName,
+        operator: report.operatorLegalName,
+        status: report.status,
+        downloadPath: report.pdfDocumentPath,
+        fileName: report.pdfFileName,
+        canDownload: report.status !== 'draft'
+      }));
+      
+      res.json(formattedReports);
+    } catch (error) {
+      console.error('Error fetching DDS list:', error);
+      res.status(500).json({ error: 'Failed to fetch DDS list' });
+    }
+  });
+
+  // Enhanced DDS creation endpoint for comprehensive form data
+  app.post('/api/dds/create', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertDdsReportSchema.parse(req.body);
+      
+      // Generate session ID if not provided
+      if (!validatedData.sessionId) {
+        validatedData.sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      }
+
+      // Auto-generate PDF filename
+      const operatorName = validatedData.operatorLegalName.replace(/[^a-zA-Z0-9]/g, '_');
+      const productName = (validatedData.commonName || validatedData.productDescription).replace(/[^a-zA-Z0-9]/g, '_');
+      const dateString = new Date().toISOString().split('T')[0];
+      validatedData.pdfFileName = `DDS_${operatorName}_${productName}_${dateString}.pdf`;
+      
+      const ddsReport = await storage.createDdsReport(validatedData);
+      res.status(201).json(ddsReport);
+    } catch (error) {
+      console.error('Error creating DDS report:', error);
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Invalid DDS report data', details: error.errors });
+      } else {
+        res.status(500).json({ error: 'Failed to create DDS report' });
+      }
+    }
+  });
+
+  // Original DDS reports endpoint (maintained for backward compatibility)
   app.get('/api/dds-reports', isAuthenticated, async (req, res) => {
     try {
       const reports = await storage.getDdsReports();
@@ -3427,4 +3663,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   return httpServer;
+}
+
+// Helper functions for GeoJSON processing
+function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
+  let north = -90, south = 90, east = -180, west = 180;
+  
+  for (const coord of coordinates) {
+    const [lng, lat] = coord;
+    north = Math.max(north, lat);
+    south = Math.min(south, lat);
+    east = Math.max(east, lng);
+    west = Math.min(west, lng);
+  }
+  
+  return { north, south, east, west };
+}
+
+function calculateCentroid(coordinates: number[][]): { lat: number, lng: number } {
+  let totalLat = 0, totalLng = 0;
+  const count = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
+  
+  for (let i = 0; i < count; i++) {
+    const [lng, lat] = coordinates[i];
+    totalLat += lat;
+    totalLng += lng;
+  }
+  
+  return {
+    lat: totalLat / count,
+    lng: totalLng / count
+  };
+}
+
+function calculatePolygonArea(coordinates: number[][]): number {
+  // Simple polygon area calculation using the shoelace formula
+  let area = 0;
+  const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
+  
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += coordinates[i][0] * coordinates[j][1];
+    area -= coordinates[j][0] * coordinates[i][1];
+  }
+  
+  area = Math.abs(area) / 2;
+  
+  // Convert from square degrees to hectares (rough approximation)
+  // This is a simplified conversion and should be improved for production use
+  const hectares = area * 11119.49; // Rough conversion factor
+  
+  return Math.round(hectares * 100) / 100; // Round to 2 decimal places
 }

@@ -114,11 +114,36 @@ export interface IStorage {
   getWorkflowShipments(): Promise<WorkflowShipment[]>;
   createWorkflowShipment(insertWorkflowShipment: InsertWorkflowShipment): Promise<WorkflowShipment>;
 
-  // DDS Reports management
-  getDdsReports(): Promise<DdsReport[]>;
+  // Enhanced DDS Reports management for PRD requirements
+  getDdsReports(sessionId?: string): Promise<DdsReport[]>;
   getDdsReportById(id: string): Promise<DdsReport | undefined>;
   createDdsReport(insertDdsReport: InsertDdsReport): Promise<DdsReport>;
   updateDdsReport(id: string, updates: Partial<DdsReport>): Promise<DdsReport | undefined>;
+  
+  // Session-based DDS management
+  getDdsReportsBySession(sessionId: string): Promise<DdsReport[]>;
+  updateDdsReportStatus(id: string, status: string): Promise<DdsReport | undefined>;
+  updateDdsReportPdfPath(id: string, pdfPath: string, fileName: string): Promise<DdsReport | undefined>;
+  
+  // GeoJSON validation and metadata
+  validateDdsGeojson(id: string, geojson: any): Promise<{
+    valid: boolean;
+    error?: string;
+    metadata?: {
+      area: number;
+      boundingBox: { north: number, south: number, east: number, west: number };
+      centroid: { lat: number, lng: number };
+    };
+  }>;
+  
+  // Available plots for selection
+  getAvailablePlots(): Promise<Array<{
+    id: string;
+    name: string;
+    location: string;
+    area: number;
+    geojson: any;
+  }>>;
 
 
   // Estate Data Collection management

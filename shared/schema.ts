@@ -429,7 +429,7 @@ export const massBalanceRecordsRelations = relations(massBalanceRecords, ({ one 
   }),
 }));
 
-// DDS (Due Diligence Statement) Reports
+// DDS (Due Diligence Statement) Reports - Enhanced for PRD requirements
 export const ddsReports = pgTable("dds_reports", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
   shipmentId: text("shipment_id").references(() => shipments.id),
@@ -438,25 +438,31 @@ export const ddsReports = pgTable("dds_reports", {
   companyInternalRef: text("company_internal_ref"),
   activity: text("activity"),
   
-  // Operator details
+  // Operator/Trader details (PRD Section 1)
   operatorLegalName: text("operator_legal_name").notNull(),
   operatorAddress: text("operator_address").notNull(),
+  placeOfActivity: text("place_of_activity"), // PRD: Place of activity (city/country where operations occur)
   operatorCountry: text("operator_country"),
   operatorIsoCode: text("operator_iso_code"),
   eoriNumber: text("eori_number"),
   
-  // Product details
-  hsCode: text("hs_code").notNull(),
+  // Product details (PRD Section 2)
+  hsCode: text("hs_code").notNull(), // Harmonized System code from dropdown
   productDescription: text("product_description").notNull(),
-  scientificName: text("scientific_name"),
-  commonName: text("common_name"),
+  scientificName: text("scientific_name"), // From dropdown to avoid misspelling
+  commonName: text("common_name"), // Common name of product
   producerName: text("producer_name"),
   netMassKg: decimal("net_mass_kg", { precision: 10, scale: 3 }).notNull(),
+  volumeUnit: text("volume_unit"), // cubic meters, liters, etc.
+  volumeQuantity: decimal("volume_quantity", { precision: 10, scale: 3 }),
   percentageEstimation: decimal("percentage_estimation", { precision: 5, scale: 2 }),
   supplementaryUnit: text("supplementary_unit"),
   supplementaryQuantity: decimal("supplementary_quantity", { precision: 10, scale: 3 }),
   
-  // Summary Plot Information
+  // Production Plot Information (PRD Section 3)
+  plotSelectionMethod: text("plot_selection_method"), // "existing_list" or "upload_geojson"
+  selectedPlotId: text("selected_plot_id"), // Reference to pre-existing plot
+  plotName: text("plot_name"), // Name/ID of the production plot
   totalProducers: integer("total_producers"),
   totalPlots: integer("total_plots"),
   totalProductionArea: decimal("total_production_area", { precision: 10, scale: 2 }),
@@ -466,19 +472,27 @@ export const ddsReports = pgTable("dds_reports", {
   expectedHarvestDate: date("expected_harvest_date"),
   productionDateRange: text("production_date_range"),
   
-  // Origin & geolocation
+  // GeoJSON and geolocation (Enhanced for PRD requirements)
   countryOfProduction: text("country_of_production").notNull(),
+  geolocationType: text("geolocation_type"), // "plot", "coordinates", "polygon"
+  geolocationCoordinates: text("geolocation_coordinates"), // Stored GeoJSON polygon
+  uploadedGeojson: jsonb("uploaded_geojson"), // Full GeoJSON object for processing
+  geojsonValidated: boolean("geojson_validated").default(false),
+  geojsonValidationErrors: text("geojson_validation_errors"),
   plotGeolocations: text("plot_geolocations").array(),
   establishmentGeolocations: text("establishment_geolocations").array(),
-  geolocationType: text("geolocation_type"),
-  geolocationCoordinates: text("geolocation_coordinates"),
   kmlFileName: text("kml_file_name"),
   geojsonFilePaths: text("geojson_file_paths"),
+  
+  // Map preview and validation metadata
+  plotBoundingBox: jsonb("plot_bounding_box"), // For map centering {north, south, east, west}
+  plotCentroid: jsonb("plot_centroid"), // {lat, lng} for map preview
+  plotArea: decimal("plot_area", { precision: 12, scale: 4 }), // Calculated area in hectares
   
   // Reference to prior DDS
   priorDdsReference: text("prior_dds_reference"),
   
-  // Declaration and signature
+  // Declaration and signature (PRD page 1 content)
   operatorDeclaration: text("operator_declaration").notNull(),
   signedBy: text("signed_by").notNull(),
   signedDate: timestamp("signed_date").notNull(),
@@ -486,10 +500,16 @@ export const ddsReports = pgTable("dds_reports", {
   digitalSignature: text("digital_signature"),
   
   // Status and processing
-  status: text("status").notNull().default("draft"),
+  status: text("status").notNull().default("draft"), // draft, generated, downloaded, submitted
   submissionDate: timestamp("submission_date"),
   euTraceReference: text("eu_trace_reference"),
   pdfDocumentPath: text("pdf_document_path"),
+  pdfFileName: text("pdf_file_name"), // Auto-generated filename
+  
+  // Session management for PRD dashboard
+  sessionId: text("session_id"), // For session-based storage
+  downloadCount: integer("download_count").default(0),
+  lastDownloaded: timestamp("last_downloaded"),
   
   // Cross-module integration
   deforestationRiskLevel: text("deforestation_risk_level"),
