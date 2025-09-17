@@ -23,72 +23,23 @@ interface Alert {
 export function AlertsWidget() {
   const { filters } = useDashboardFilters();
 
+  // Build query params from filters
+  const queryParams = new URLSearchParams();
+  if (filters.businessUnit) queryParams.set('businessUnit', filters.businessUnit);
+  if (filters.dateFrom) queryParams.set('dateFrom', filters.dateFrom.toISOString());
+  if (filters.dateTo) queryParams.set('dateTo', filters.dateTo.toISOString());
+  const queryString = queryParams.toString();
+
   // Build query key with filters for cache invalidation
-  const queryKey = ['/api/dashboard/alerts', filters.region, filters.businessUnit, filters.dateFrom, filters.dateTo];
+  const queryKey = ['/api/dashboard/alerts', filters];
 
   const { data: alerts = [], isLoading, error } = useQuery<Alert[]>({
     queryKey,
     queryFn: async () => {
-      // Mock data for now - in real implementation this would call the API with filters
-      const mockAlerts: Alert[] = [
-        {
-          id: "ALT001",
-          type: "deforestation",
-          severity: "high",
-          title: "Forest Loss Detected",
-          description: "Significant forest loss detected in Plot PLT-RIAU-045",
-          plotId: "PLT-RIAU-045",
-          supplierId: "SUP001",
-          supplierName: "PT Sawit Makmur",
-          region: "Indonesia",
-          coordinates: { lat: -0.5234, lng: 101.4467 },
-          detectedAt: new Date("2024-08-15T10:30:00Z"),
-          status: "new"
-        },
-        {
-          id: "ALT002", 
-          type: "compliance",
-          severity: "medium",
-          title: "Missing Documentation",
-          description: "Land tenure documents expired for multiple plots",
-          supplierId: "SUP003",
-          supplierName: "Green Valley Plantation",
-          region: "Malaysia",
-          detectedAt: new Date("2024-08-14T14:15:00Z"),
-          status: "acknowledged"
-        },
-        {
-          id: "ALT003",
-          type: "risk",
-          severity: "high", 
-          title: "High Risk Area Activity",
-          description: "Activity detected in protected area buffer zone",
-          plotId: "PLT-KAL-023",
-          supplierId: "SUP002",
-          supplierName: "Kalimantan Palm Industries",
-          region: "Indonesia",
-          coordinates: { lat: -2.1234, lng: 114.5678 },
-          detectedAt: new Date("2024-08-13T09:45:00Z"),
-          status: "new"
-        }
-      ];
-      
-      // Filter based on current dashboard filters
-      let filteredAlerts = mockAlerts;
-      
-      if (filters.region && filters.region !== "All Regions") {
-        filteredAlerts = filteredAlerts.filter(alert => alert.region === filters.region);
-      }
-      
-      if (filters.dateFrom) {
-        filteredAlerts = filteredAlerts.filter(alert => alert.detectedAt >= filters.dateFrom!);
-      }
-      
-      if (filters.dateTo) {
-        filteredAlerts = filteredAlerts.filter(alert => alert.detectedAt <= filters.dateTo!);
-      }
-      
-      return filteredAlerts.filter(alert => alert.status === "new" || alert.status === "acknowledged");
+      const url = queryString ? `/api/dashboard/alerts?${queryString}` : '/api/dashboard/alerts';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch alerts');
+      return response.json();
     }
   });
 
@@ -113,7 +64,6 @@ export function AlertsWidget() {
   const openSpatialAnalysis = () => {
     // In a real implementation, this would navigate to spatial analysis with current filters applied
     const params = new URLSearchParams();
-    if (filters.region) params.set('region', filters.region);
     if (filters.businessUnit) params.set('businessUnit', filters.businessUnit);  
     if (filters.dateFrom) params.set('dateFrom', filters.dateFrom.toISOString());
     if (filters.dateTo) params.set('dateTo', filters.dateTo.toISOString());

@@ -19,30 +19,23 @@ export function ComplianceTrendChart({ className = "", dataTestId }: ComplianceT
   const chartRef = useRef<HTMLCanvasElement>(null);
   const { filters } = useDashboardFilters();
 
+  // Build query params from filters
+  const queryParams = new URLSearchParams();
+  if (filters.businessUnit) queryParams.set('businessUnit', filters.businessUnit);
+  if (filters.dateFrom) queryParams.set('dateFrom', filters.dateFrom.toISOString());
+  if (filters.dateTo) queryParams.set('dateTo', filters.dateTo.toISOString());
+  const queryString = queryParams.toString();
+
   // Build query key with filters for cache invalidation
-  const queryKey = ['/api/dashboard/compliance-trend', filters.region, filters.businessUnit];
+  const queryKey = ['/api/dashboard/trend', filters];
 
   const { data: trendData = [], isLoading } = useQuery<ComplianceTrendPoint[]>({
     queryKey,
     queryFn: async () => {
-      // Mock data for last 12 months - in real implementation this would call the API
-      const mockData: ComplianceTrendPoint[] = [
-        { period: "2023-09", complianceRate: 87.2, totalPlots: 156, compliantPlots: 136, date: new Date("2023-09-01") },
-        { period: "2023-10", complianceRate: 89.1, totalPlots: 162, compliantPlots: 144, date: new Date("2023-10-01") },
-        { period: "2023-11", complianceRate: 91.3, totalPlots: 168, compliantPlots: 153, date: new Date("2023-11-01") },
-        { period: "2023-12", complianceRate: 88.7, totalPlots: 173, compliantPlots: 153, date: new Date("2023-12-01") },
-        { period: "2024-01", complianceRate: 90.5, totalPlots: 179, compliantPlots: 162, date: new Date("2024-01-01") },
-        { period: "2024-02", complianceRate: 92.8, totalPlots: 184, compliantPlots: 171, date: new Date("2024-02-01") },
-        { period: "2024-03", complianceRate: 89.9, totalPlots: 188, compliantPlots: 169, date: new Date("2024-03-01") },
-        { period: "2024-04", complianceRate: 93.2, totalPlots: 194, compliantPlots: 181, date: new Date("2024-04-01") },
-        { period: "2024-05", complianceRate: 91.7, totalPlots: 199, compliantPlots: 182, date: new Date("2024-05-01") },
-        { period: "2024-06", complianceRate: 94.1, totalPlots: 203, compliantPlots: 191, date: new Date("2024-06-01") },
-        { period: "2024-07", complianceRate: 92.5, totalPlots: 208, compliantPlots: 192, date: new Date("2024-07-01") },
-        { period: "2024-08", complianceRate: 95.2, totalPlots: 213, compliantPlots: 203, date: new Date("2024-08-01") }
-      ];
-
-      // Apply filters if needed (in real implementation, filters would be applied server-side)
-      return mockData;
+      const url = queryString ? `/api/dashboard/trend?${queryString}` : '/api/dashboard/trend';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch trend data');
+      return response.json();
     }
   });
 

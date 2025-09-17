@@ -29,68 +29,23 @@ export function SupplierComplianceTable() {
   const { filters } = useDashboardFilters();
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'complianceRate', direction: 'desc' });
 
+  // Build query params from filters
+  const queryParams = new URLSearchParams();
+  if (filters.businessUnit) queryParams.set('businessUnit', filters.businessUnit);
+  if (filters.dateFrom) queryParams.set('dateFrom', filters.dateFrom.toISOString());
+  if (filters.dateTo) queryParams.set('dateTo', filters.dateTo.toISOString());
+  const queryString = queryParams.toString();
+
   // Build query key with filters for cache invalidation
-  const queryKey = ['/api/supplier-summaries', filters.region, filters.businessUnit, filters.dateFrom, filters.dateTo];
+  const queryKey = ['/api/dashboard/suppliers', filters];
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
-      // Mock data for now - in real implementation this would call the API with filters
-      const mockSuppliers: SupplierData[] = [
-        {
-          supplierId: "SUP001",
-          supplierName: "PT Sawit Makmur",
-          totalPlots: 45,
-          compliantPlots: 42,
-          totalArea: 1250.5,
-          complianceRate: 93.3,
-          riskStatus: "low",
-          legalityStatus: "compliant",
-          region: "Indonesia",
-          businessUnit: "Estate Operations",
-          lastUpdated: new Date("2024-08-15")
-        },
-        {
-          supplierId: "SUP002", 
-          supplierName: "Kalimantan Palm Industries",
-          totalPlots: 23,
-          compliantPlots: 18,
-          totalArea: 678.2,
-          complianceRate: 78.3,
-          riskStatus: "medium",
-          legalityStatus: "under_review",
-          region: "Indonesia",
-          businessUnit: "Smallholder Program",
-          lastUpdated: new Date("2024-08-12")
-        },
-        {
-          supplierId: "SUP003",
-          supplierName: "Green Valley Plantation",
-          totalPlots: 67,
-          compliantPlots: 45,
-          totalArea: 2156.7,
-          complianceRate: 67.2,
-          riskStatus: "high",
-          legalityStatus: "non_compliant",
-          region: "Malaysia",
-          businessUnit: "Third Party Suppliers",
-          lastUpdated: new Date("2024-08-10")
-        },
-        {
-          supplierId: "SUP004",
-          supplierName: "Sustainable Oils Sdn Bhd",
-          totalPlots: 89,
-          compliantPlots: 85,
-          totalArea: 3421.8,
-          complianceRate: 95.5,
-          riskStatus: "low",
-          legalityStatus: "compliant",
-          region: "Malaysia",
-          businessUnit: "Mill Operations",
-          lastUpdated: new Date("2024-08-14")
-        }
-      ];
-      return mockSuppliers;
+      const url = queryString ? `/api/dashboard/suppliers?${queryString}` : '/api/dashboard/suppliers';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch suppliers');
+      return response.json();
     }
   });
 

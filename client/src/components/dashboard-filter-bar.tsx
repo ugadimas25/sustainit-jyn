@@ -153,11 +153,6 @@ export function DashboardFilterBar() {
           <div className="mt-3 pt-3 border-t" data-testid="active-filters-summary">
             <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
               <span>Active filters:</span>
-              {filters.region && (
-                <span className="px-2 py-1 bg-secondary rounded-md" data-testid={`active-filter-region-${filters.region}`}>
-                  Region: {filters.region}
-                </span>
-              )}
               {filters.businessUnit && (
                 <span className="px-2 py-1 bg-secondary rounded-md" data-testid={`active-filter-business-unit-${filters.businessUnit}`}>
                   Business Unit: {filters.businessUnit}

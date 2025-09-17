@@ -10,7 +10,7 @@ import type { DashboardMetrics } from "@shared/schema";
 import { DonutChart } from "@/components/charts/donut-chart";
 import { ComplianceTrendChart } from "@/components/charts/compliance-trend-chart";
 import { DashboardFilterBar } from "@/components/dashboard-filter-bar";
-import { DashboardFilterProvider } from "@/components/dashboard-filter-context";
+import { DashboardFilterProvider, useDashboardFilters } from "@/components/dashboard-filter-context";
 import { SupplierComplianceTable } from "@/components/supplier-compliance-table";
 import { AlertsWidget } from "@/components/alerts-widget";
 import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
@@ -47,6 +47,7 @@ function DashboardContent() {
   const [selectedModal, setSelectedModal] = useState<string | null>(null);
   const [currentMetrics, setCurrentMetrics] = useState<any>(null);
   const queryClient = useQueryClient();
+  const { filters } = useDashboardFilters();
   
   // Function to get modal title and data based on selected modal
   const getModalData = (modalType: string) => {
@@ -64,16 +65,58 @@ function DashboardContent() {
     }
   };
   
-  // Default metrics query - force fresh data from server
+  // Build query params from filters
+  const queryParams = new URLSearchParams();
+  if (filters.businessUnit) queryParams.set('businessUnit', filters.businessUnit);
+  if (filters.dateFrom) queryParams.set('dateFrom', filters.dateFrom.toISOString());
+  if (filters.dateTo) queryParams.set('dateTo', filters.dateTo.toISOString());
+  const queryString = queryParams.toString();
+
+  // Default metrics query with filters
   const { data: metrics, isLoading } = useQuery({
-    queryKey: ["/api/dashboard/metrics"],
+    queryKey: ["/api/dashboard/metrics", filters],
+    queryFn: async () => {
+      const url = queryString ? `/api/dashboard/metrics?${queryString}` : '/api/dashboard/metrics';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch metrics');
+      return response.json();
+    },
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     staleTime: 0, // Always fetch fresh data
   });
 
+  // Dashboard alerts with filters
   const { data: alerts } = useQuery({
-    queryKey: ["/api/alerts"],
+    queryKey: ["/api/dashboard/alerts", filters],
+    queryFn: async () => {
+      const url = queryString ? `/api/dashboard/alerts?${queryString}` : '/api/dashboard/alerts';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch alerts');
+      return response.json();
+    },
+  });
+
+  // Risk split data for donut chart
+  const { data: riskSplitData } = useQuery({
+    queryKey: ["/api/dashboard/risk-split", filters],
+    queryFn: async () => {
+      const url = queryString ? `/api/dashboard/risk-split?${queryString}` : '/api/dashboard/risk-split';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch risk split');
+      return response.json();
+    },
+  });
+
+  // Legality split data for donut chart
+  const { data: legalitySplitData } = useQuery({
+    queryKey: ["/api/dashboard/legality-split", filters],
+    queryFn: async () => {
+      const url = queryString ? `/api/dashboard/legality-split?${queryString}` : '/api/dashboard/legality-split';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch legality split');
+      return response.json();
+    },
   });
 
   // Mutation to calculate real-time metrics from current table data
@@ -157,48 +200,33 @@ function DashboardContent() {
   const atRiskRate = displayMetrics.totalPlots > 0 ? ((displayMetrics.highRiskPlots / displayMetrics.totalPlots) * 100).toFixed(1) : '0';
   const criticalRate = displayMetrics.totalPlots > 0 ? ((displayMetrics.deforestedPlots / displayMetrics.totalPlots) * 100).toFixed(1) : '0';
 
-  // Export functionality
+  // Export functionality using API endpoint
   const handleExportCompliance = async () => {
     try {
-      // In a real implementation, this would call the export API with current filters
-      const exportData = {
-        metrics: displayMetrics,
-        exportDate: new Date().toISOString(),
-        filters: {
-          region: 'All Regions', // Would get from filters context
-          businessUnit: 'All Units',
-          dateRange: 'All Time'
-        }
-      };
-
-      // Create CSV content
-      const csvContent = [
-        'Metric,Value',
-        `Total Plots,${displayMetrics.totalPlots}`,
-        `Compliant Plots,${displayMetrics.compliantPlots}`,
-        `High Risk Plots,${displayMetrics.highRiskPlots}`,
-        `Medium Risk Plots,${displayMetrics.mediumRiskPlots}`,
-        `Deforested Plots,${displayMetrics.deforestedPlots}`,
-        `Total Area (ha),${displayMetrics.totalAreaHa}`,
-        `Compliance Rate,${complianceRate}%`,
-        `At Risk Rate,${atRiskRate}%`,
-        `Critical Rate,${criticalRate}%`,
-        '',
-        `Export Date,${new Date().toLocaleString()}`,
-      ].join('\n');
-
+      const url = queryString ? `/api/dashboard/export?${queryString}` : '/api/dashboard/export';
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+      
+      // Get the CSV content from response
+      const csvContent = await response.text();
+      
       // Create and download file
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
+      const url2 = URL.createObjectURL(blob);
+      link.setAttribute('href', url2);
       link.setAttribute('download', `EUDR_Compliance_Overview_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url2);
     } catch (error) {
       console.error('Export failed:', error);
+      // TODO: Show user-friendly error message
     }
   };
 
@@ -383,13 +411,17 @@ function DashboardContent() {
             </CardHeader>
             <CardContent>
               <DonutChart 
-                data={[
+                data={riskSplitData ? [
+                  { label: "Low Risk", value: riskSplitData.low || 0, color: "#059669" },
+                  { label: "Medium Risk", value: riskSplitData.medium || 0, color: "#d97706" },
+                  { label: "High Risk", value: riskSplitData.high || 0, color: "#dc2626" }
+                ] : [
                   { label: "Low Risk", value: displayMetrics.totalPlots - displayMetrics.highRiskPlots - displayMetrics.mediumRiskPlots, color: "#059669" },
                   { label: "Medium Risk", value: displayMetrics.mediumRiskPlots, color: "#d97706" },
                   { label: "High Risk", value: displayMetrics.highRiskPlots, color: "#dc2626" }
                 ]}
                 title=""
-                centerText={displayMetrics.totalPlots.toString()}
+                centerText={riskSplitData ? (riskSplitData.low + riskSplitData.medium + riskSplitData.high).toString() : displayMetrics.totalPlots.toString()}
                 dataTestId="risk-split-chart"
               />
             </CardContent>
@@ -402,13 +434,17 @@ function DashboardContent() {
             </CardHeader>
             <CardContent>
               <DonutChart 
-                data={[
+                data={legalitySplitData ? [
+                  { label: "Compliant", value: legalitySplitData.compliant || 0, color: "#059669" },
+                  { label: "Under Review", value: legalitySplitData.underReview || 0, color: "#d97706" },
+                  { label: "Non-Compliant", value: legalitySplitData.nonCompliant || 0, color: "#dc2626" }
+                ] : [
                   { label: "Compliant", value: displayMetrics.compliantPlots, color: "#059669" },
                   { label: "Under Review", value: Math.floor(displayMetrics.totalPlots * 0.1), color: "#d97706" },
                   { label: "Non-Compliant", value: displayMetrics.totalPlots - displayMetrics.compliantPlots - Math.floor(displayMetrics.totalPlots * 0.1), color: "#dc2626" }
                 ]}
                 title=""
-                centerText={displayMetrics.totalPlots.toString()}
+                centerText={legalitySplitData ? (legalitySplitData.compliant + legalitySplitData.underReview + legalitySplitData.nonCompliant).toString() : displayMetrics.totalPlots.toString()}
                 dataTestId="legality-split-chart"
               />
             </CardContent>
