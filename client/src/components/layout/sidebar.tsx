@@ -80,8 +80,10 @@ export function Sidebar() {
     );
   };
 
-  const isSubModuleActive = (subModules: SubModule[]) => {
-    return subModules.some(sub => location === sub.href);
+  const isSubModuleActive = (item: NavigationItem) => {
+    // Check if on parent page or any submodule page
+    if (location === item.href) return true;
+    return item.subModules?.some(sub => location === sub.href) || false;
   };
 
   const checkStepAccess = (step: number, navigate: () => void) => {
@@ -93,30 +95,44 @@ export function Sidebar() {
     
     if (hasSubModules) {
       const isExpanded = expandedModules.includes(item.name);
-      const hasActiveSubModule = isSubModuleActive(item.subModules!);
+      const hasActiveSubModule = isSubModuleActive(item);
       
       return (
         <div key={item.name} className="space-y-1">
           {/* Parent Module */}
-          <button
-            onClick={() => toggleModule(item.name)}
-            className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between transition-colors duration-200 ${
+          <div
+            className={`w-full rounded-lg flex items-center transition-colors duration-200 ${
               hasActiveSubModule
                 ? 'bg-forest text-white' 
                 : 'text-gray-700 hover:bg-forest hover:text-white'
             }`}
-            data-testid={item.testId}
           >
-            <div className="flex items-center">
+            {/* Main clickable area for navigation */}
+            <button
+              onClick={() => item.href ? setLocation(item.href) : undefined}
+              className="flex-1 text-left px-4 py-3 flex items-center"
+              data-testid={item.testId}
+            >
               <item.icon className="w-5 h-5" />
               <span className="ml-3">{item.name}</span>
-            </div>
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-          </button>
+            </button>
+            
+            {/* Separate chevron button for toggle */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleModule(item.name);
+              }}
+              className="px-3 py-3 hover:bg-black hover:bg-opacity-10 rounded-r-lg"
+              data-testid={`${item.testId}-toggle`}
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
+            </button>
+          </div>
           
           {/* Sub Modules */}
           {isExpanded && (
