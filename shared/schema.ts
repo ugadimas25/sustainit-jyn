@@ -1467,7 +1467,6 @@ export type ComplianceTrendPoint = {
 };
 
 export type DashboardFilters = {
-  region?: string;
   businessUnit?: string;
   dateFrom?: Date;
   dateTo?: Date;
@@ -1482,7 +1481,6 @@ export type ExportData = {
 
 // Zod schemas for dashboard API validation
 export const dashboardFiltersSchema = z.object({
-  region: z.string().optional(),
   businessUnit: z.string().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),

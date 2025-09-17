@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, MapPin, Building, X } from "lucide-react";
+import { Calendar, Building, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,14 +10,6 @@ import { format } from "date-fns";
 import { useDashboardFilters } from "./dashboard-filter-context";
 
 // Sample data for the dropdowns - in a real app this would come from an API
-const regions = [
-  "Indonesia",
-  "Malaysia", 
-  "Thailand",
-  "Philippines",
-  "All Regions"
-];
-
 const businessUnits = [
   "Estate Operations",
   "Mill Operations", 
@@ -30,11 +22,6 @@ export function DashboardFilterBar() {
   const { filters, updateFilters, clearFilters, hasActiveFilters } = useDashboardFilters();
   const [dateFromOpen, setDateFromOpen] = useState(false);
   const [dateToOpen, setDateToOpen] = useState(false);
-
-  const handleRegionChange = (value: string) => {
-    const region = value === "All Regions" ? undefined : value;
-    updateFilters({ region });
-  };
 
   const handleBusinessUnitChange = (value: string) => {
     const businessUnit = value === "All Units" ? undefined : value;
@@ -56,26 +43,6 @@ export function DashboardFilterBar() {
       <CardContent className="py-4">
         <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 lg:space-x-4">
           <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-4">
-            {/* Region Filter */}
-            <div className="flex items-center space-x-2" data-testid="region-filter">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              <Select
-                value={filters.region || "All Regions"}
-                onValueChange={handleRegionChange}
-              >
-                <SelectTrigger className="w-[200px]" data-testid="region-select">
-                  <SelectValue placeholder="Select Region" />
-                </SelectTrigger>
-                <SelectContent>
-                  {regions.map((region) => (
-                    <SelectItem key={region} value={region} data-testid={`region-option-${region}`}>
-                      {region}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Business Unit Filter */}
             <div className="flex items-center space-x-2" data-testid="business-unit-filter">
               <Building className="h-4 w-4 text-muted-foreground" />

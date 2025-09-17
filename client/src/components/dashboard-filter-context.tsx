@@ -24,7 +24,6 @@ interface DashboardFilterProviderProps {
 
 export function DashboardFilterProvider({ children }: DashboardFilterProviderProps) {
   const [filters, setFilters] = useState<DashboardFilters>({
-    region: undefined,
     businessUnit: undefined,
     dateFrom: undefined,
     dateTo: undefined,
@@ -39,7 +38,6 @@ export function DashboardFilterProvider({ children }: DashboardFilterProviderPro
 
   const clearFilters = useCallback(() => {
     setFilters({
-      region: undefined,
       businessUnit: undefined,
       dateFrom: undefined,
       dateTo: undefined,
@@ -47,7 +45,6 @@ export function DashboardFilterProvider({ children }: DashboardFilterProviderPro
   }, []);
 
   const hasActiveFilters = Boolean(
-    filters.region || 
     filters.businessUnit || 
     filters.dateFrom || 
     filters.dateTo
