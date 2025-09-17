@@ -1,13 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, TrendingUp, BarChart3, X } from "lucide-react";
+import { MapPin, CheckCircle, AlertTriangle, XCircle, Download, Clock, TrendingUp, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
+import type { DashboardMetrics } from "@shared/schema";
 
-import { ComplianceChart } from "@/components/charts/compliance-chart";
+import { DonutChart } from "@/components/charts/donut-chart";
+import { ComplianceTrendChart } from "@/components/charts/compliance-trend-chart";
+import { DashboardFilterBar } from "@/components/dashboard-filter-bar";
+import { DashboardFilterProvider } from "@/components/dashboard-filter-context";
+import { SupplierComplianceTable } from "@/components/supplier-compliance-table";
+import { AlertsWidget } from "@/components/alerts-widget";
 import { kpnLogoDataUrl } from "@/assets/kpn-logo-base64";
 
 // Sample plot data for the modals
@@ -38,7 +43,7 @@ const samplePlotData = {
   ]
 };
 
-export default function Dashboard() {
+function DashboardContent() {
   const [selectedModal, setSelectedModal] = useState<string | null>(null);
   const [currentMetrics, setCurrentMetrics] = useState<any>(null);
   const queryClient = useQueryClient();
@@ -123,17 +128,19 @@ export default function Dashboard() {
       clearInterval(interval);
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [queryClient]);
 
   // Use server metrics directly - server now handles zero state properly
-  const displayMetrics = metrics || {
-    totalPlots: "0",
-    compliantPlots: "0", 
-    highRiskPlots: "0",
-    mediumRiskPlots: "0",
-    deforestedPlots: "0",
-    totalArea: "0.00"
+  const defaultMetrics: DashboardMetrics = {
+    totalPlots: 0,
+    compliantPlots: 0, 
+    highRiskPlots: 0,
+    mediumRiskPlots: 0,
+    deforestedPlots: 0,
+    totalAreaHa: 0,
+    complianceRate: 0
   };
+  const displayMetrics: DashboardMetrics = metrics ? metrics as DashboardMetrics : defaultMetrics;
 
   if (isLoading) {
     return (
@@ -146,362 +153,294 @@ export default function Dashboard() {
     );
   }
 
-  const complianceRate = (displayMetrics?.compliantPlots && displayMetrics?.totalPlots) ? ((Number(displayMetrics.compliantPlots) / Number(displayMetrics.totalPlots)) * 100).toFixed(1) : '0';
-  const atRiskRate = (displayMetrics?.highRiskPlots && displayMetrics?.totalPlots) ? ((Number(displayMetrics.highRiskPlots) / Number(displayMetrics.totalPlots)) * 100).toFixed(1) : '0';
-  const criticalRate = (displayMetrics?.deforestedPlots && displayMetrics?.totalPlots) ? ((Number(displayMetrics.deforestedPlots) / Number(displayMetrics.totalPlots)) * 100).toFixed(1) : '0';
+  const complianceRate = displayMetrics.totalPlots > 0 ? ((displayMetrics.compliantPlots / displayMetrics.totalPlots) * 100).toFixed(1) : '0';
+  const atRiskRate = displayMetrics.totalPlots > 0 ? ((displayMetrics.highRiskPlots / displayMetrics.totalPlots) * 100).toFixed(1) : '0';
+  const criticalRate = displayMetrics.totalPlots > 0 ? ((displayMetrics.deforestedPlots / displayMetrics.totalPlots) * 100).toFixed(1) : '0';
+
+  // Export functionality
+  const handleExportCompliance = async () => {
+    try {
+      // In a real implementation, this would call the export API with current filters
+      const exportData = {
+        metrics: displayMetrics,
+        exportDate: new Date().toISOString(),
+        filters: {
+          region: 'All Regions', // Would get from filters context
+          businessUnit: 'All Units',
+          dateRange: 'All Time'
+        }
+      };
+
+      // Create CSV content
+      const csvContent = [
+        'Metric,Value',
+        `Total Plots,${displayMetrics.totalPlots}`,
+        `Compliant Plots,${displayMetrics.compliantPlots}`,
+        `High Risk Plots,${displayMetrics.highRiskPlots}`,
+        `Medium Risk Plots,${displayMetrics.mediumRiskPlots}`,
+        `Deforested Plots,${displayMetrics.deforestedPlots}`,
+        `Total Area (ha),${displayMetrics.totalAreaHa}`,
+        `Compliance Rate,${complianceRate}%`,
+        `At Risk Rate,${atRiskRate}%`,
+        `Critical Rate,${criticalRate}%`,
+        '',
+        `Export Date,${new Date().toLocaleString()}`,
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `EUDR_Compliance_Overview_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
 
   return (
     <>
       <div className="p-6">
-      {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <div className="flex items-center mb-4">
-                <img 
-                  src={kpnLogoDataUrl} 
-                  alt="KPN Corp Logo" 
-                  className="h-8 w-8 rounded mr-3"
-                  data-testid="img-kpn-logo"
-                />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800">EUDR Compliance</h1>
-                </div>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <div className="flex items-center mb-4">
+              <img 
+                src={kpnLogoDataUrl} 
+                alt="KPN Corp Logo" 
+                className="h-8 w-8 rounded mr-3"
+                data-testid="img-kpn-logo"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">EUDR Compliance Dashboard</h1>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <Select defaultValue="all-units">
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Select Business Unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-units">All Business Units</SelectItem>
-                  <SelectItem value="estate">Estate</SelectItem>
-                  <SelectItem value="mill-1">Mill 1</SelectItem>
-                  <SelectItem value="mill-2">Mill 2</SelectItem>
-                  <SelectItem value="mill-3">Mill 3</SelectItem>
-                  <SelectItem value="bulking">Bulking</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
-
-          {/* Navigation Tabs */}
-          <div className="flex space-x-8 mb-8 border-b">
-            <button className="pb-2 text-sm font-medium border-b-2 border-green-600 text-green-600">
-              Summary
-            </button>
-          </div>
-
-          {/* Plot Section */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Plot</h2>
-            
-            {/* Plot Statistics Grid - 4 columns matching the screenshot */}
-            <div className="grid grid-cols-4 gap-6 mb-8">
-              {/* Row 1 - Basic Plot Counts */}
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <MapPin className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total plot mapped with polygon</p>
-                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-plots">{displayMetrics?.totalPlots || "0"}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <CheckCircle className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total compliant plots</p>
-                  <p className="text-3xl font-bold text-gray-900" data-testid="text-compliant-plots">{displayMetrics?.compliantPlots || "0"}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('highRisk')}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <AlertTriangle className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total high risk plot</p>
-                  <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900" data-testid="text-high-risk-plots">{displayMetrics?.highRiskPlots || "0"}</p>
-                    <span className="text-xs text-blue-600 font-medium">Details</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('mediumRisk')}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <Clock className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total medium risk plot</p>
-                  <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900" data-testid="text-medium-risk-plots">{displayMetrics?.mediumRiskPlots || "0"}</p>
-                    <span className="text-xs text-blue-600 font-medium">Details</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Row 2 - Deforestation and Compliance */}
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('deforested')}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <XCircle className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Deforested plot (after 31 Dec 2020)</p>
-                  <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900" data-testid="text-deforested-plots">{displayMetrics?.deforestedPlots || "0"}</p>
-                    <span className="text-xs text-blue-600 font-medium">Details</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('noPermit')}>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <XCircle className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Plots in no permitted area for farming</p>
-                  <div className="flex justify-between items-end">
-                    <p className="text-3xl font-bold text-gray-900">0</p>
-                    <span className="text-xs text-blue-600 font-medium">Details</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Row 2 continued - Polygon Areas */}
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <MapPin className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha)</p>
-                  <p className="text-3xl font-bold text-gray-900" data-testid="text-total-area">{displayMetrics?.totalArea || "0"}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white border border-gray-200">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="text-gray-400">
-                      <CheckCircle className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha) for low risk plot</p>
-                  <p className="text-3xl font-bold text-gray-900" data-testid="text-low-risk-area">
-                    {(() => {
-                      const totalPlots = Number(displayMetrics?.totalPlots || 0);
-                      const highRiskPlots = Number(displayMetrics?.highRiskPlots || 0);
-                      const mediumRiskPlots = Number(displayMetrics?.mediumRiskPlots || 0);
-                      const totalArea = Number(displayMetrics?.totalArea || 0);
-                      const lowRiskPlots = totalPlots - highRiskPlots - mediumRiskPlots;
-                      
-                      // Calculate proportional area for low risk plots
-                      const lowRiskArea = totalPlots > 0 ? (lowRiskPlots / totalPlots) * totalArea : 0;
-                      return lowRiskArea.toFixed(2);
-                    })()}
-                  </p>
-                </CardContent>
-              </Card>
-
-
-            </div>
-          </div>
-
-          {/* Additional Dashboard Sections */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Compliance Overview */}
-            <Card className="border-neutral-border">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Compliance Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Total Compliant Plots</span>
-                    <span className="font-semibold">{metrics?.compliantPlots || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Compliance Rate</span>
-                    <span className="font-semibold text-green-600">{complianceRate}%</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">At Risk Plots</span>
-                    <span className="font-semibold text-orange-600">{metrics?.atRiskPlots || 0}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Critical Issues</span>
-                    <span className="font-semibold text-red-600">{metrics?.criticalPlots || 0}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Alerts */}
-            <Card className="border-neutral-border">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Recent Deforestation Alerts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {alerts && alerts.length > 0 ? (
-                  <div className="space-y-3">
-                    {alerts.slice(0, 5).map((alert: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                        <div>
-                          <p className="font-medium text-sm">Plot #{alert.plotId}</p>
-                          <p className="text-xs text-gray-600">{alert.date}</p>
-                        </div>
-                        <div className="text-red-600">
-                          <AlertTriangle className="w-4 h-4" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-                    <p className="text-sm text-gray-600">No recent deforestation alerts</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* EUDR Compliance by Supplier Table */}
-          <div className="mb-8">
-            <Card className="border-neutral-border">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">EUDR Compliance by Supplier</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-gray-900">Supplier Name</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-900">Total Plots</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-900">Compliant</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-900">Low Risk</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-900">Medium Risk</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-900">High Risk</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-900">Area (Ha)</th>
-                        <th className="text-right py-3 px-4 font-medium text-gray-900">Compliance %</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">Estate 1</td>
-                        <td className="py-3 px-4 text-right">2,847</td>
-                        <td className="py-3 px-4 text-right text-green-600">2,765</td>
-                        <td className="py-3 px-4 text-right">2,765</td>
-                        <td className="py-3 px-4 text-right">67</td>
-                        <td className="py-3 px-4 text-right text-red-600">15</td>
-                        <td className="py-3 px-4 text-right">1,423</td>
-                        <td className="py-3 px-4 text-right text-green-600 font-semibold">97.1%</td>
-                      </tr>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">Estate 2</td>
-                        <td className="py-3 px-4 text-right">3,256</td>
-                        <td className="py-3 px-4 text-right text-green-600">3,198</td>
-                        <td className="py-3 px-4 text-right">3,198</td>
-                        <td className="py-3 px-4 text-right">45</td>
-                        <td className="py-3 px-4 text-right text-red-600">13</td>
-                        <td className="py-3 px-4 text-right">1,628</td>
-                        <td className="py-3 px-4 text-right text-green-600 font-semibold">98.2%</td>
-                      </tr>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">3rd Party Supplier 1</td>
-                        <td className="py-3 px-4 text-right">2,134</td>
-                        <td className="py-3 px-4 text-right text-green-600">2,067</td>
-                        <td className="py-3 px-4 text-right">2,067</td>
-                        <td className="py-3 px-4 text-right">59</td>
-                        <td className="py-3 px-4 text-right text-red-600">8</td>
-                        <td className="py-3 px-4 text-right">1,067</td>
-                        <td className="py-3 px-4 text-right text-green-600 font-semibold">96.9%</td>
-                      </tr>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">3rd Party Supplier 2</td>
-                        <td className="py-3 px-4 text-right">1,892</td>
-                        <td className="py-3 px-4 text-right text-green-600">1,834</td>
-                        <td className="py-3 px-4 text-right">1,834</td>
-                        <td className="py-3 px-4 text-right">58</td>
-                        <td className="py-3 px-4 text-right text-red-600">0</td>
-                        <td className="py-3 px-4 text-right">946</td>
-                        <td className="py-3 px-4 text-right text-green-600 font-semibold">96.9%</td>
-                      </tr>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">Smallholder 1</td>
-                        <td className="py-3 px-4 text-right">1,567</td>
-                        <td className="py-3 px-4 text-right text-green-600">1,498</td>
-                        <td className="py-3 px-4 text-right">1,498</td>
-                        <td className="py-3 px-4 text-right">69</td>
-                        <td className="py-3 px-4 text-right text-red-600">0</td>
-                        <td className="py-3 px-4 text-right">784</td>
-                        <td className="py-3 px-4 text-right text-green-600 font-semibold">95.6%</td>
-                      </tr>
-                      <tr className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">Smallholder 2</td>
-                        <td className="py-3 px-4 text-right">2,318</td>
-                        <td className="py-3 px-4 text-right text-green-600">1,905</td>
-                        <td className="py-3 px-4 text-right">1,905</td>
-                        <td className="py-3 px-4 text-right">413</td>
-                        <td className="py-3 px-4 text-right text-red-600">0</td>
-                        <td className="py-3 px-4 text-right">1,159</td>
-                        <td className="py-3 px-4 text-right text-orange-600 font-semibold">82.2%</td>
-                      </tr>
-                      <tr className="bg-gray-50 font-semibold">
-                        <td className="py-3 px-4">Total</td>
-                        <td className="py-3 px-4 text-right">14,014</td>
-                        <td className="py-3 px-4 text-right text-green-600">13,267</td>
-                        <td className="py-3 px-4 text-right">13,267</td>
-                        <td className="py-3 px-4 text-right">711</td>
-                        <td className="py-3 px-4 text-right text-red-600">36</td>
-                        <td className="py-3 px-4 text-right">7,007</td>
-                        <td className="py-3 px-4 text-right text-green-600">94.7%</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center space-x-3">
-            <Select defaultValue="all-regions">
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-regions">All Regions</SelectItem>
-                <SelectItem value="sumatra">Sumatra</SelectItem>
-                <SelectItem value="kalimantan">Kalimantan</SelectItem>
-                <SelectItem value="sulawesi">Sulawesi</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button className="bg-professional text-white hover:bg-blue-700" data-testid="button-export">
-              <Download className="w-4 h-4 mr-2" />
-              Export Report
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="outline" 
+              className="gap-2" 
+              onClick={handleExportCompliance}
+              data-testid="button-export-compliance"
+            >
+              <Download className="h-4 w-4" />
+              Export Compliance Overview
             </Button>
           </div>
         </div>
+
+        {/* Dashboard Filters */}
+        <DashboardFilterBar />
+
+        {/* Navigation Tabs */}
+        <div className="flex space-x-8 mb-8 border-b">
+          <button className="pb-2 text-sm font-medium border-b-2 border-green-600 text-green-600">
+            Summary
+          </button>
+        </div>
+
+        {/* Plot Section */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Plot</h2>
+          
+          {/* Plot Statistics Grid - 4 columns matching the screenshot */}
+          <div className="grid grid-cols-4 gap-6 mb-8">
+            {/* Row 1 - Basic Plot Counts */}
+            <Card className="bg-white border border-gray-200">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Total plot mapped with polygon</p>
+                <p className="text-3xl font-bold text-gray-900" data-testid="text-total-plots">{displayMetrics.totalPlots || 0}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border border-gray-200">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <CheckCircle className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Total compliant plots</p>
+                <p className="text-3xl font-bold text-gray-900" data-testid="text-compliant-plots">{displayMetrics.compliantPlots || 0}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('highRisk')}>
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Total high risk plot</p>
+                <div className="flex justify-between items-end">
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-high-risk-plots">{displayMetrics.highRiskPlots || 0}</p>
+                  <span className="text-xs text-blue-600 font-medium">Details</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('mediumRisk')}>
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Total medium risk plot</p>
+                <div className="flex justify-between items-end">
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-medium-risk-plots">{displayMetrics.mediumRiskPlots || 0}</p>
+                  <span className="text-xs text-blue-600 font-medium">Details</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Row 2 - Deforestation and Compliance */}
+            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('deforested')}>
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <XCircle className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Deforested plot (after 31 Dec 2020)</p>
+                <div className="flex justify-between items-end">
+                  <p className="text-3xl font-bold text-gray-900" data-testid="text-deforested-plots">{displayMetrics.deforestedPlots || 0}</p>
+                  <span className="text-xs text-blue-600 font-medium">Details</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('noPermit')}>
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <XCircle className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Plots in no permitted area for farming</p>
+                <div className="flex justify-between items-end">
+                  <p className="text-3xl font-bold text-gray-900">0</p>
+                  <span className="text-xs text-blue-600 font-medium">Details</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Row 2 continued - Polygon Areas */}
+            <Card className="bg-white border border-gray-200">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha)</p>
+                <p className="text-3xl font-bold text-gray-900" data-testid="text-total-area">{displayMetrics.totalAreaHa || 0} ha</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border border-gray-200">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="text-gray-400">
+                    <CheckCircle className="w-5 h-5" />
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha) for low risk plot</p>
+                <p className="text-3xl font-bold text-gray-900" data-testid="text-low-risk-area">
+                  {(() => {
+                    const totalPlots = displayMetrics.totalPlots || 0;
+                    const highRiskPlots = displayMetrics.highRiskPlots || 0;
+                    const mediumRiskPlots = displayMetrics.mediumRiskPlots || 0;
+                    const totalArea = displayMetrics.totalAreaHa || 0;
+                    const lowRiskPlots = totalPlots - highRiskPlots - mediumRiskPlots;
+                    
+                    // Calculate proportional area for low risk plots
+                    const lowRiskArea = totalPlots > 0 ? (lowRiskPlots / totalPlots) * totalArea : 0;
+                    return lowRiskArea.toFixed(2);
+                  })()}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Phase 4: Analytics Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Risk Split Donut Chart */}
+          <Card className="border-neutral-border" data-testid="risk-split-card">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Risk Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DonutChart 
+                data={[
+                  { label: "Low Risk", value: displayMetrics.totalPlots - displayMetrics.highRiskPlots - displayMetrics.mediumRiskPlots, color: "#059669" },
+                  { label: "Medium Risk", value: displayMetrics.mediumRiskPlots, color: "#d97706" },
+                  { label: "High Risk", value: displayMetrics.highRiskPlots, color: "#dc2626" }
+                ]}
+                title=""
+                centerText={displayMetrics.totalPlots.toString()}
+                dataTestId="risk-split-chart"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Legality Status Donut Chart */}
+          <Card className="border-neutral-border" data-testid="legality-split-card">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Legality Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DonutChart 
+                data={[
+                  { label: "Compliant", value: displayMetrics.compliantPlots, color: "#059669" },
+                  { label: "Under Review", value: Math.floor(displayMetrics.totalPlots * 0.1), color: "#d97706" },
+                  { label: "Non-Compliant", value: displayMetrics.totalPlots - displayMetrics.compliantPlots - Math.floor(displayMetrics.totalPlots * 0.1), color: "#dc2626" }
+                ]}
+                title=""
+                centerText={displayMetrics.totalPlots.toString()}
+                dataTestId="legality-split-chart"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Alerts Widget */}
+          <AlertsWidget />
+        </div>
+
+        {/* Compliance Trend Chart */}
+        <div className="mb-8">
+          <Card className="border-neutral-border" data-testid="compliance-trend-card">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2" />
+                Compliance Trend Over Time
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ComplianceTrendChart 
+                dataTestId="compliance-trend-chart"
+                className="w-full"
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Supplier Compliance Table */}
+        <div className="mb-8">
+          <SupplierComplianceTable />
+        </div>
+      </div>
         
       {selectedModal && (
         <Dialog open={!!selectedModal} onOpenChange={() => setSelectedModal(null)}>
@@ -562,9 +501,17 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
-        </DialogContent>
+          </DialogContent>
         </Dialog>
       )}
     </>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <DashboardFilterProvider>
+      <DashboardContent />
+    </DashboardFilterProvider>
   );
 }

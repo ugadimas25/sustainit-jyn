@@ -25,7 +25,17 @@ import {
   insertMillSchema,
   insertSupplierAssessmentProgressSchema,
   insertRiskAssessmentSchema,
-  insertRiskAssessmentItemSchema
+  insertRiskAssessmentItemSchema,
+  // Dashboard PRD imports
+  dashboardFiltersSchema,
+  dashboardMetricsSchema,
+  riskSplitSchema,
+  legalitySplitSchema,
+  supplierSummarySchema,
+  alertSchema,
+  complianceTrendPointSchema,
+  exportDataSchema,
+  plotSummarySchema
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -1140,92 +1150,234 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard metrics - only return data if there are current analysis results
+  // ========================================
+  // DASHBOARD COMPLIANCE PRD - PHASE 2: API ROUTES
+  // ========================================
+
+  // Dashboard metrics with optional filters
   app.get("/api/dashboard/metrics", async (req, res) => {
     try {
-      // Check if we have current analysis results in the database
-      const analysisResults = await storage.getAnalysisResults();
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
       
-      if (!analysisResults || analysisResults.length === 0) {
-        // Return zeros if no current analysis data
-        const zeroMetrics = {
-          totalPlots: "0",
-          compliantPlots: "0",
-          highRiskPlots: "0",
-          mediumRiskPlots: "0",
-          deforestedPlots: "0",
-          totalArea: "0.00"
-        };
-        return res.json(zeroMetrics);
-      }
+      const metrics = await storage.getDashboardMetrics(filters);
       
-      // Calculate metrics from current analysis results
-      const totalPlots = analysisResults.length;
-      const compliantPlots = analysisResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
-      const highRiskPlots = analysisResults.filter(r => r.overallRisk === 'HIGH').length;
-      const mediumRiskPlots = analysisResults.filter(r => r.overallRisk === 'MEDIUM').length;
-      const deforestedPlots = analysisResults.filter(r => 
-        r.highRiskDatasets?.includes('GFW Forest Loss') || 
-        r.highRiskDatasets?.includes('JRC Forest Loss')
-      ).length;
-      const totalArea = analysisResults.reduce((sum, r) => sum + (Number(r.area) || 0), 0).toFixed(2);
-
-      const metrics = {
-        totalPlots: totalPlots.toString(),
-        compliantPlots: compliantPlots.toString(),
-        highRiskPlots: highRiskPlots.toString(),
-        mediumRiskPlots: mediumRiskPlots.toString(),
-        deforestedPlots: deforestedPlots.toString(),
-        totalArea: totalArea
-      };
-      
-      res.json(metrics);
+      // Validate response with schema
+      const validatedMetrics = dashboardMetricsSchema.parse(metrics);
+      res.json(validatedMetrics);
     } catch (error) {
       console.error("Error fetching dashboard metrics:", error);
       // Return zeros in case of error to maintain zero state
       res.json({
-        totalPlots: "0",
-        compliantPlots: "0",
-        highRiskPlots: "0",
-        mediumRiskPlots: "0",
-        deforestedPlots: "0",
-        totalArea: "0.00"
+        totalPlots: 0,
+        compliantPlots: 0,
+        highRiskPlots: 0,
+        mediumRiskPlots: 0,
+        deforestedPlots: 0,
+        totalAreaHa: 0,
+        complianceRate: 0
       });
     }
   });
 
-  // Real-time dashboard metrics from current session data
-  app.post("/api/dashboard/calculate-metrics", async (req, res) => {
+  // Risk split data for donut charts
+  app.get("/api/dashboard/risk-split", async (req, res) => {
     try {
-      const { analysisResults } = req.body;
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
       
-      if (!Array.isArray(analysisResults)) {
-        return res.status(400).json({ error: "analysisResults must be an array" });
-      }
+      const riskSplit = await storage.getRiskSplit(filters);
       
-      const totalPlots = analysisResults.length;
-      const compliantPlots = analysisResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
-      const highRiskPlots = analysisResults.filter(r => r.overallRisk === 'HIGH').length;
-      const mediumRiskPlots = analysisResults.filter(r => r.overallRisk === 'MEDIUM').length;
-      const deforestedPlots = analysisResults.filter(r => 
-        r.highRiskDatasets?.includes('GFW Forest Loss') || 
-        r.highRiskDatasets?.includes('JRC Forest Loss')
-      ).length;
-      const totalArea = analysisResults.reduce((sum, r) => sum + (Number(r.area) || 0), 0).toFixed(2);
-
-      const metrics = {
-        totalPlots: totalPlots.toString(),
-        compliantPlots: compliantPlots.toString(),
-        highRiskPlots: highRiskPlots.toString(),
-        mediumRiskPlots: mediumRiskPlots.toString(),
-        deforestedPlots: deforestedPlots.toString(),
-        totalArea: totalArea
-      };
-      
-      res.json(metrics);
+      // Validate response with schema
+      const validatedRiskSplit = riskSplitSchema.parse(riskSplit);
+      res.json(validatedRiskSplit);
     } catch (error) {
-      console.error("Error calculating real-time dashboard metrics:", error);
-      res.status(500).json({ error: "Failed to calculate dashboard metrics" });
+      console.error("Error fetching risk split:", error);
+      res.status(500).json({ error: "Failed to fetch risk split data" });
+    }
+  });
+
+  // Legality split data for donut charts
+  app.get("/api/dashboard/legality-split", async (req, res) => {
+    try {
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
+      
+      const legalitySplit = await storage.getLegalitySplit(filters);
+      
+      // Validate response with schema
+      const validatedLegalitySplit = legalitySplitSchema.parse(legalitySplit);
+      res.json(validatedLegalitySplit);
+    } catch (error) {
+      console.error("Error fetching legality split:", error);
+      res.status(500).json({ error: "Failed to fetch legality split data" });
+    }
+  });
+
+  // Supplier compliance table data
+  app.get("/api/dashboard/suppliers", async (req, res) => {
+    try {
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
+      
+      const suppliers = await storage.getSupplierCompliance(filters);
+      
+      // Validate response with schema - validate each item
+      const validatedSuppliers = suppliers.map(supplier => supplierSummarySchema.parse(supplier));
+      res.json(validatedSuppliers);
+    } catch (error) {
+      console.error("Error fetching supplier compliance:", error);
+      res.status(500).json({ error: "Failed to fetch supplier compliance data" });
+    }
+  });
+
+  // Dashboard alerts for alerts widget
+  app.get("/api/dashboard/alerts", async (req, res) => {
+    try {
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
+      
+      const alerts = await storage.getDashboardAlerts(filters);
+      
+      // Validate response with schema - validate each alert
+      const validatedAlerts = alerts.map(alert => alertSchema.parse(alert));
+      res.json(validatedAlerts);
+    } catch (error) {
+      console.error("Error fetching dashboard alerts:", error);
+      res.status(500).json({ error: "Failed to fetch dashboard alerts" });
+    }
+  });
+
+  // Compliance trend data for line chart
+  app.get("/api/dashboard/trend", async (req, res) => {
+    try {
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
+      
+      const trendData = await storage.getComplianceTrend(filters);
+      
+      // Validate response with schema - validate each point
+      const validatedTrendData = trendData.map(point => complianceTrendPointSchema.parse(point));
+      res.json(validatedTrendData);
+    } catch (error) {
+      console.error("Error fetching compliance trend:", error);
+      res.status(500).json({ error: "Failed to fetch compliance trend data" });
+    }
+  });
+
+  // Export functionality for CSV/XLSX
+  app.get("/api/dashboard/export", async (req, res) => {
+    try {
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
+      
+      const format = req.query.format || 'json';
+      const exportData = await storage.getExportData(filters);
+      
+      // Validate response with schema
+      const validatedExportData = exportDataSchema.parse(exportData);
+      
+      if (format === 'csv') {
+        // Convert to CSV format
+        const csvLines: string[] = [];
+        
+        // Supplier summary CSV
+        csvLines.push('Supplier Summary');
+        csvLines.push('Supplier Name,Total Plots,Compliant Plots,Total Area (Ha),Compliance Rate (%),Risk Status,Legality Status,Region,Last Updated');
+        
+        validatedExportData.supplierSummaries.forEach(supplier => {
+          csvLines.push([
+            supplier.supplierName,
+            supplier.totalPlots,
+            supplier.compliantPlots,
+            supplier.totalArea,
+            supplier.complianceRate,
+            supplier.riskStatus,
+            supplier.legalityStatus,
+            supplier.region || '',
+            supplier.lastUpdated.toISOString()
+          ].join(','));
+        });
+        
+        csvLines.push(''); // Empty line
+        
+        // Plot summary CSV
+        csvLines.push('Plot Summary');
+        csvLines.push('Plot ID,Supplier Name,Region,Area (Ha),Risk Status,Legality Status,Last Updated');
+        
+        validatedExportData.plotSummaries.forEach(plot => {
+          csvLines.push([
+            plot.plotId,
+            plot.supplierName,
+            plot.region || '',
+            plot.area,
+            plot.riskStatus,
+            plot.legalityStatus,
+            plot.lastUpdated.toISOString()
+          ].join(','));
+        });
+        
+        const csvContent = csvLines.join('\n');
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="compliance-overview-${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csvContent);
+      } else {
+        // Return JSON format
+        res.json(validatedExportData);
+      }
+    } catch (error) {
+      console.error("Error generating export data:", error);
+      res.status(500).json({ error: "Failed to generate export data" });
+    }
+  });
+
+  // Plot summaries for drill-down functionality
+  app.get("/api/dashboard/plots", async (req, res) => {
+    try {
+      const filters = dashboardFiltersSchema.parse({
+        region: req.query.region,
+        businessUnit: req.query.businessUnit,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+      });
+      
+      const plots = await storage.getPlotSummaries(filters);
+      
+      // Validate response with schema - validate each plot
+      const validatedPlots = plots.map(plot => plotSummarySchema.parse(plot));
+      res.json(validatedPlots);
+    } catch (error) {
+      console.error("Error fetching plot summaries:", error);
+      res.status(500).json({ error: "Failed to fetch plot summaries" });
     }
   });
 

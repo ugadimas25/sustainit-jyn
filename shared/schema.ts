@@ -1296,7 +1296,7 @@ export const riskAssessments = pgTable("risk_assessments", {
     indigenous_people: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
     sertifikasi?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
     dokumentasi_legal?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
-  }>().default({}),
+  }>(),
   
   // Mitigation actions and status tracking
   mitigationActions: jsonb("mitigation_actions").$type<{
@@ -1387,3 +1387,182 @@ export const insertRiskAssessmentItemSchema = createInsertSchema(riskAssessmentI
 export type SupplierAssessmentProgress = typeof supplierAssessmentProgress.$inferSelect;
 export type InsertSupplierAssessmentProgress = typeof supplierAssessmentProgress.$inferInsert;
 export const insertSupplierAssessmentProgressSchema = createInsertSchema(supplierAssessmentProgress);
+
+// ========================================
+// DASHBOARD COMPLIANCE PRD - PHASE 0: DATA MODEL
+// ========================================
+
+// Dashboard-specific enums for compliance tracking
+export const riskStatusEnum = pgEnum("risk_status", ["low", "medium", "high"]);
+export const legalityStatusEnum = pgEnum("legality_status", ["compliant", "under_review", "non_compliant"]);
+
+// Dashboard data model types for aggregated metrics and analytics
+export type DashboardMetrics = {
+  totalPlots: number;
+  compliantPlots: number;
+  highRiskPlots: number;
+  mediumRiskPlots: number;
+  deforestedPlots: number;
+  totalAreaHa: number;
+  complianceRate: number;
+};
+
+export type RiskSplit = {
+  low: number;
+  medium: number; 
+  high: number;
+};
+
+export type LegalitySplit = {
+  compliant: number;
+  underReview: number;
+  nonCompliant: number;
+};
+
+export type PlotSummary = {
+  plotId: string;
+  supplierName: string;
+  region?: string;
+  businessUnit?: string;
+  area: number;
+  riskStatus: "low" | "medium" | "high";
+  legalityStatus: "compliant" | "under_review" | "non_compliant";
+  lastUpdated: Date;
+};
+
+export type SupplierSummary = {
+  supplierId: string;
+  supplierName: string;
+  totalPlots: number;
+  compliantPlots: number;
+  totalArea: number;
+  complianceRate: number;
+  riskStatus: "low" | "medium" | "high";
+  legalityStatus: "compliant" | "under_review" | "non_compliant";
+  region?: string;
+  businessUnit?: string;
+  lastUpdated: Date;
+};
+
+export type Alert = {
+  id: string;
+  type: "deforestation" | "compliance" | "risk";
+  severity: "low" | "medium" | "high";
+  title: string;
+  description: string;
+  plotId?: string;
+  supplierId?: string;
+  region?: string;
+  coordinates?: { lat: number; lng: number };
+  detectedAt: Date;
+  status: "new" | "acknowledged" | "resolved";
+};
+
+export type ComplianceTrendPoint = {
+  period: string; // YYYY-MM format
+  complianceRate: number;
+  totalPlots: number;
+  compliantPlots: number;
+  date: Date;
+};
+
+export type DashboardFilters = {
+  region?: string;
+  businessUnit?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+};
+
+export type ExportData = {
+  plotSummaries: PlotSummary[];
+  supplierSummaries: SupplierSummary[];
+  metrics: DashboardMetrics;
+  generatedAt: Date;
+};
+
+// Zod schemas for dashboard API validation
+export const dashboardFiltersSchema = z.object({
+  region: z.string().optional(),
+  businessUnit: z.string().optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
+}).optional();
+
+export const dashboardMetricsSchema = z.object({
+  totalPlots: z.number(),
+  compliantPlots: z.number(),
+  highRiskPlots: z.number(),
+  mediumRiskPlots: z.number(),
+  deforestedPlots: z.number(),
+  totalAreaHa: z.number(),
+  complianceRate: z.number(),
+});
+
+export const riskSplitSchema = z.object({
+  low: z.number(),
+  medium: z.number(),
+  high: z.number(),
+});
+
+export const legalitySplitSchema = z.object({
+  compliant: z.number(),
+  underReview: z.number(),
+  nonCompliant: z.number(),
+});
+
+export const plotSummarySchema = z.object({
+  plotId: z.string(),
+  supplierName: z.string(),
+  region: z.string().optional(),
+  businessUnit: z.string().optional(),
+  area: z.number(),
+  riskStatus: z.enum(["low", "medium", "high"]),
+  legalityStatus: z.enum(["compliant", "under_review", "non_compliant"]),
+  lastUpdated: z.date(),
+});
+
+export const supplierSummarySchema = z.object({
+  supplierId: z.string(),
+  supplierName: z.string(),
+  totalPlots: z.number(),
+  compliantPlots: z.number(),
+  totalArea: z.number(),
+  complianceRate: z.number(),
+  riskStatus: z.enum(["low", "medium", "high"]),
+  legalityStatus: z.enum(["compliant", "under_review", "non_compliant"]),
+  region: z.string().optional(),
+  businessUnit: z.string().optional(),
+  lastUpdated: z.date(),
+});
+
+export const alertSchema = z.object({
+  id: z.string(),
+  type: z.enum(["deforestation", "compliance", "risk"]),
+  severity: z.enum(["low", "medium", "high"]),
+  title: z.string(),
+  description: z.string(),
+  plotId: z.string().optional(),
+  supplierId: z.string().optional(),
+  region: z.string().optional(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
+  detectedAt: z.date(),
+  status: z.enum(["new", "acknowledged", "resolved"]),
+});
+
+export const complianceTrendPointSchema = z.object({
+  period: z.string(),
+  complianceRate: z.number(),
+  totalPlots: z.number(),
+  compliantPlots: z.number(),
+  date: z.date(),
+});
+
+export const exportDataSchema = z.object({
+  plotSummaries: z.array(plotSummarySchema),
+  supplierSummaries: z.array(supplierSummarySchema),
+  metrics: dashboardMetricsSchema,
+  generatedAt: z.date(),
+});

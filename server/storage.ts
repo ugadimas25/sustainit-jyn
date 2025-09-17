@@ -199,6 +199,32 @@ export interface IStorage {
   // Risk scoring and classification utilities
   calculateRiskScore(assessmentId: string): Promise<{ overallScore: number; riskClassification: string; }>;
   generateRiskReport(assessmentId: string): Promise<any>;
+
+  // ========================================
+  // DASHBOARD COMPLIANCE PRD - PHASE 1: FILTERED AGGREGATION METHODS
+  // ========================================
+
+  // Dashboard metrics with optional filters
+  getDashboardMetrics(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").DashboardMetrics>;
+  
+  // Risk and legality split aggregations 
+  getRiskSplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").RiskSplit>;
+  getLegalitySplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").LegalitySplit>;
+  
+  // Supplier compliance table data
+  getSupplierCompliance(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").SupplierSummary[]>;
+  
+  // Alert management for dashboard
+  getDashboardAlerts(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").Alert[]>;
+  
+  // Compliance trend data (12 months)
+  getComplianceTrend(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ComplianceTrendPoint[]>;
+  
+  // Export functionality
+  getExportData(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ExportData>;
+  
+  // Plot summaries for detailed views and drill-downs
+  getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]>;
 }
 
 // Database implementation of IStorage
@@ -1292,6 +1318,334 @@ export class DatabaseStorage implements IStorage {
     }
 
     return recommendations;
+  }
+
+  // ========================================
+  // DASHBOARD COMPLIANCE PRD - PHASE 1: FILTERED AGGREGATION IMPLEMENTATIONS
+  // ========================================
+
+  async getDashboardMetrics(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").DashboardMetrics> {
+    try {
+      // Get all analysis results (this is our main plot data source)
+      const results = await db.select().from(analysisResults);
+      
+      // Apply filters if provided
+      let filteredResults = results;
+      if (filters?.dateFrom || filters?.dateTo) {
+        filteredResults = results.filter(r => {
+          const created = new Date(r.createdAt);
+          if (filters.dateFrom && created < filters.dateFrom) return false;
+          if (filters.dateTo && created > filters.dateTo) return false;
+          return true;
+        });
+      }
+
+      const totalPlots = filteredResults.length;
+      const compliantPlots = filteredResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
+      const highRiskPlots = filteredResults.filter(r => r.overallRisk === 'HIGH').length;
+      const mediumRiskPlots = filteredResults.filter(r => r.overallRisk === 'MEDIUM').length;
+      const deforestedPlots = filteredResults.filter(r => 
+        r.gfwLoss === 'TRUE' || r.jrcLoss === 'TRUE' || r.sbtnLoss === 'TRUE'
+      ).length;
+      const totalAreaHa = filteredResults.reduce((sum, r) => sum + parseFloat(r.area.toString()), 0);
+      const complianceRate = totalPlots > 0 ? (compliantPlots / totalPlots) * 100 : 0;
+
+      return {
+        totalPlots,
+        compliantPlots,
+        highRiskPlots,
+        mediumRiskPlots,
+        deforestedPlots,
+        totalAreaHa,
+        complianceRate: Math.round(complianceRate * 100) / 100
+      };
+    } catch (error) {
+      console.error("Error getting dashboard metrics:", error);
+      throw error;
+    }
+  }
+
+  async getRiskSplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").RiskSplit> {
+    try {
+      const results = await db.select().from(analysisResults);
+      
+      let filteredResults = results;
+      if (filters?.dateFrom || filters?.dateTo) {
+        filteredResults = results.filter(r => {
+          const created = new Date(r.createdAt);
+          if (filters.dateFrom && created < filters.dateFrom) return false;
+          if (filters.dateTo && created > filters.dateTo) return false;
+          return true;
+        });
+      }
+
+      const total = filteredResults.length;
+      if (total === 0) return { low: 0, medium: 0, high: 0 };
+
+      const low = filteredResults.filter(r => r.overallRisk === 'LOW').length;
+      const medium = filteredResults.filter(r => r.overallRisk === 'MEDIUM').length;
+      const high = filteredResults.filter(r => r.overallRisk === 'HIGH').length;
+
+      return { low, medium, high };
+    } catch (error) {
+      console.error("Error getting risk split:", error);
+      throw error;
+    }
+  }
+
+  async getLegalitySplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").LegalitySplit> {
+    try {
+      const results = await db.select().from(analysisResults);
+      
+      let filteredResults = results;
+      if (filters?.dateFrom || filters?.dateTo) {
+        filteredResults = results.filter(r => {
+          const created = new Date(r.createdAt);
+          if (filters.dateFrom && created < filters.dateFrom) return false;
+          if (filters.dateTo && created > filters.dateTo) return false;
+          return true;
+        });
+      }
+
+      const total = filteredResults.length;
+      if (total === 0) return { compliant: 0, underReview: 0, nonCompliant: 0 };
+
+      const compliant = filteredResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
+      const nonCompliant = filteredResults.filter(r => r.complianceStatus === 'NON-COMPLIANT').length;
+      const underReview = total - compliant - nonCompliant; // Remainder as under review
+
+      return { 
+        compliant, 
+        underReview, 
+        nonCompliant 
+      };
+    } catch (error) {
+      console.error("Error getting legality split:", error);
+      throw error;
+    }
+  }
+
+  async getSupplierCompliance(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").SupplierSummary[]> {
+    try {
+      const results = await db.select().from(analysisResults);
+      const suppliersData = await db.select().from(suppliers);
+      
+      // Apply date filters
+      let filteredResults = results;
+      if (filters?.dateFrom || filters?.dateTo) {
+        filteredResults = results.filter(r => {
+          const created = new Date(r.createdAt);
+          if (filters.dateFrom && created < filters.dateFrom) return false;
+          if (filters.dateTo && created > filters.dateTo) return false;
+          return true;
+        });
+      }
+
+      // Group results by country (using as proxy for supplier since we don't have supplier linkage yet)
+      const supplierGroups = filteredResults.reduce((groups, result) => {
+        const key = result.country || 'Unknown';
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(result);
+        return groups;
+      }, {} as Record<string, typeof filteredResults>);
+
+      const supplierSummaries: import("@shared/schema").SupplierSummary[] = [];
+
+      Object.entries(supplierGroups).forEach(([supplierName, plots]) => {
+        const totalPlots = plots.length;
+        const compliantPlots = plots.filter(p => p.complianceStatus === 'COMPLIANT').length;
+        const totalArea = plots.reduce((sum, p) => sum + parseFloat(p.area.toString()), 0);
+        const complianceRate = totalPlots > 0 ? (compliantPlots / totalPlots) * 100 : 0;
+        
+        // Determine overall risk and legality status
+        const highRiskCount = plots.filter(p => p.overallRisk === 'HIGH').length;
+        const mediumRiskCount = plots.filter(p => p.overallRisk === 'MEDIUM').length;
+        const riskStatus = highRiskCount > 0 ? 'high' : mediumRiskCount > 0 ? 'medium' : 'low';
+        
+        const nonCompliantCount = plots.filter(p => p.complianceStatus === 'NON-COMPLIANT').length;
+        const legalityStatus = nonCompliantCount > 0 ? 'non_compliant' : 
+          compliantPlots === totalPlots ? 'compliant' : 'under_review';
+
+        supplierSummaries.push({
+          supplierId: supplierName.replace(/\s+/g, '_').toLowerCase(),
+          supplierName,
+          totalPlots,
+          compliantPlots,
+          totalArea: Math.round(totalArea * 100) / 100,
+          complianceRate: Math.round(complianceRate * 100) / 100,
+          riskStatus: riskStatus as 'low' | 'medium' | 'high',
+          legalityStatus: legalityStatus as 'compliant' | 'under_review' | 'non_compliant',
+          region: supplierName, // Using supplier name as region for now
+          lastUpdated: new Date(Math.max(...plots.map(p => new Date(p.updatedAt).getTime())))
+        });
+      });
+
+      // Sort by compliance rate descending
+      return supplierSummaries.sort((a, b) => b.complianceRate - a.complianceRate);
+    } catch (error) {
+      console.error("Error getting supplier compliance:", error);
+      throw error;
+    }
+  }
+
+  async getDashboardAlerts(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").Alert[]> {
+    try {
+      const results = await db.select().from(analysisResults);
+      
+      // Apply date filters
+      let filteredResults = results;
+      if (filters?.dateFrom || filters?.dateTo) {
+        filteredResults = results.filter(r => {
+          const created = new Date(r.createdAt);
+          if (filters.dateFrom && created < filters.dateFrom) return false;
+          if (filters.dateTo && created > filters.dateTo) return false;
+          return true;
+        });
+      }
+
+      const alerts: import("@shared/schema").Alert[] = [];
+
+      // Generate deforestation alerts for plots with forest loss
+      filteredResults.forEach(result => {
+        if (result.gfwLoss === 'TRUE' || result.jrcLoss === 'TRUE' || result.sbtnLoss === 'TRUE') {
+          const datasets = [];
+          if (result.gfwLoss === 'TRUE') datasets.push('GFW');
+          if (result.jrcLoss === 'TRUE') datasets.push('JRC');
+          if (result.sbtnLoss === 'TRUE') datasets.push('SBTN');
+          
+          alerts.push({
+            id: `defor-${result.plotId}-${Date.now()}`,
+            type: 'deforestation',
+            severity: result.overallRisk.toLowerCase() as 'low' | 'medium' | 'high',
+            title: `Deforestation detected in Plot ${result.plotId}`,
+            description: `Forest loss detected by ${datasets.join(', ')} in ${result.country}`,
+            plotId: result.plotId,
+            region: result.country,
+            detectedAt: new Date(result.updatedAt),
+            status: 'new'
+          });
+        }
+
+        // Generate compliance alerts for non-compliant plots
+        if (result.complianceStatus === 'NON-COMPLIANT') {
+          alerts.push({
+            id: `comp-${result.plotId}-${Date.now()}`,
+            type: 'compliance',
+            severity: result.overallRisk.toLowerCase() as 'low' | 'medium' | 'high',
+            title: `Compliance issue in Plot ${result.plotId}`,
+            description: `Non-compliant plot identified in ${result.country}`,
+            plotId: result.plotId,
+            region: result.country,
+            detectedAt: new Date(result.updatedAt),
+            status: 'new'
+          });
+        }
+
+        // Generate risk alerts for high-risk plots
+        if (result.overallRisk === 'HIGH') {
+          alerts.push({
+            id: `risk-${result.plotId}-${Date.now()}`,
+            type: 'risk',
+            severity: 'high',
+            title: `High risk plot ${result.plotId}`,
+            description: `Plot classified as high risk in ${result.country}`,
+            plotId: result.plotId,
+            region: result.country,
+            detectedAt: new Date(result.updatedAt),
+            status: 'new'
+          });
+        }
+      });
+
+      // Sort by detected date, most recent first
+      return alerts.sort((a, b) => b.detectedAt.getTime() - a.detectedAt.getTime()).slice(0, 50); // Limit to 50 alerts
+    } catch (error) {
+      console.error("Error getting dashboard alerts:", error);
+      throw error;
+    }
+  }
+
+  async getComplianceTrend(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ComplianceTrendPoint[]> {
+    try {
+      // Generate 12 months of mock trend data since we don't have historical data yet
+      const trend: import("@shared/schema").ComplianceTrendPoint[] = [];
+      const currentDate = new Date();
+      
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const period = date.toISOString().substring(0, 7); // YYYY-MM format
+        
+        // Mock data with slight variation (would be real historical data in production)
+        const baseCompliance = 75;
+        const variation = Math.sin(i * 0.5) * 10 + Math.random() * 5;
+        const complianceRate = Math.max(60, Math.min(95, baseCompliance + variation));
+        
+        const totalPlots = 100 + Math.floor(Math.random() * 50);
+        const compliantPlots = Math.floor((totalPlots * complianceRate) / 100);
+        
+        trend.push({
+          period,
+          complianceRate: Math.round(complianceRate * 100) / 100,
+          totalPlots,
+          compliantPlots,
+          date
+        });
+      }
+
+      return trend;
+    } catch (error) {
+      console.error("Error getting compliance trend:", error);
+      throw error;
+    }
+  }
+
+  async getExportData(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ExportData> {
+    try {
+      const metrics = await this.getDashboardMetrics(filters);
+      const plotSummaries = await this.getPlotSummaries(filters);
+      const supplierSummaries = await this.getSupplierCompliance(filters);
+
+      return {
+        plotSummaries,
+        supplierSummaries,
+        metrics,
+        generatedAt: new Date()
+      };
+    } catch (error) {
+      console.error("Error getting export data:", error);
+      throw error;
+    }
+  }
+
+  async getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]> {
+    try {
+      const results = await db.select().from(analysisResults);
+      
+      // Apply date filters
+      let filteredResults = results;
+      if (filters?.dateFrom || filters?.dateTo) {
+        filteredResults = results.filter(r => {
+          const created = new Date(r.createdAt);
+          if (filters.dateFrom && created < filters.dateFrom) return false;
+          if (filters.dateTo && created > filters.dateTo) return false;
+          return true;
+        });
+      }
+
+      return filteredResults.map(result => ({
+        plotId: result.plotId,
+        supplierName: result.country || 'Unknown Supplier', // Using country as supplier proxy
+        region: result.country,
+        area: parseFloat(result.area.toString()),
+        riskStatus: result.overallRisk.toLowerCase() as 'low' | 'medium' | 'high',
+        legalityStatus: result.complianceStatus === 'COMPLIANT' ? 'compliant' : 
+          result.complianceStatus === 'NON-COMPLIANT' ? 'non_compliant' : 'under_review',
+        lastUpdated: new Date(result.updatedAt)
+      }));
+    } catch (error) {
+      console.error("Error getting plot summaries:", error);
+      throw error;
+    }
   }
 }
 

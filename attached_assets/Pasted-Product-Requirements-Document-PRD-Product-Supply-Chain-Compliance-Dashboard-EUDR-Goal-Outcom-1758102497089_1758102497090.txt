@@ -1,0 +1,270 @@
+Product Requirements Document (PRD)
+Product
+
+Supply Chain Compliance Dashboard (EUDR)
+
+Goal & Outcomes
+
+Give Compliance/Operations a single, interactive view of plot compliance, supplier risk, deforestation alerts, and traceability.
+
+Enable drill-down from region → supplier → plot → shipment to prepare evidence for audits and generate DDS. 
+
+System Design Document & Techni…
+
+Success Metrics
+
+Time to prepare a compliance pack (baseline vs target −50%).
+
+% plots with verified status.
+
+DDS completeness rate per shipment.
+
+Mean time to resolve deforestation alerts. 
+
+System Design Document & Techni…
+
+Primary Users & Permissions
+
+Compliance Officer (full read, approve DDS, export).
+
+Field Officer (create/edit plots, upload docs, resolve alerts).
+
+Analyst (bulk uploads, run spatial checks).
+
+Viewer/Auditor (read-only, exports). RBAC via JWT. 
+
+System Design Document & Techni…
+
+Data Sources (back-end already planned)
+
+PostgreSQL/PostGIS for plots, suppliers, alerts, shipments.
+
+External layers: GLAD/RADD alerts, WDPA overlaps, JRC multilayer scores. 
+
+System Design Document & Techni…
+
+DDS generator (PDF/CSV), EPCIS events for chain-of-custody. 
+
+System Design Document & Techni…
+
+Information Architecture (Pages)
+
+Dashboard › EUDR Compliance (Summary)
+
+KPI cards:
+
+Total plots mapped, Compliant plots, High/Medium risk plots, Deforested after 31-Dec-2020, Area (ha), Compliance rate.
+
+Donut charts: Risk split (Low/Med/High), Legality status (Compliant/Under Review/Non-compliant).
+
+Table: “Compliance by Supplier” (Supplier, Total Plots, Compliant, Risk counts, Area, Compliance %) with row drill-down to Supplier page.
+
+Alert widget: “Recent Deforestation Alerts” count + link to Spatial Analysis with pre-applied filters.
+
+Line chart: Compliance rate trend (last 12 months).
+
+Export: CSV/XLSX “Compliance Overview”.
+
+Spatial Analysis
+
+Upload panel for GeoJSON/KML (bulk).
+
+Map (Leaflet/OpenLayers): plot polygons, heat layer for recent alerts, WDPA overlays.
+
+Results table (server-side pagination): Plot ID, Supplier, Area, Alert (Y/N), Alert type, Alert date, WDPA overlap (Y/N), EUDR status, Last check.
+
+Actions: Run analysis (GLAD/RADD), mark alert Valid/False Positive, add notes & photos.
+
+Charts:
+
+Bar: Alerts per month.
+
+Donut: Alerts by severity (AI-assisted L/M/H).
+
+Filters: Region, Supplier, Date range, Severity, WDPA overlap. 
+
+System Design Document & Techni…
+
+Supply Chain Analysis
+
+Workflow tiles: Data Collection completeness, Legality Compliance results, Risk Assessment results (with % and counts).
+
+Supplier list table: Type, Completeness %, Legality %, Risk score, Overall status, “View/Report” actions.
+
+Sankey: Flow from Plots → Estates/Mills → Shipments with volumes and compliance coloring.
+
+Mass-balance bar: Inputs vs outputs per facility (flag discrepancies).
+
+Heatmap: Risk score by supplier × indicator (e.g., legality, WDPA overlap, alerts).
+
+Trend line: % compliant plots over time by region.
+
+Report: generate supplier PDF pack (summary + tables + map snapshots). 
+
+System Design Document & Techni…
+
+Supply Chain Linkage (Traceability)
+
+Graph view: Node-link of lots/shipments (EPCIS TRANSFER/PROCESS events).
+
+Click a shipment to see its full lineage (upstream plots, risk flags, documents).
+
+Table: Shipment ID, HS code, Net mass, Producers, #Plots, Compliance score, Prior DDS reference.
+
+Action: “Prepare DDS”.
+
+Due Diligence Report (DDS)
+
+Form sections: Operator, Product details, Summary plot info, Geolocation, Compliance integration (risk, legality status, score), Prior DDS reference, Signature.
+
+Create DDS → store JSON, generate PDF/CSV. (No EU submission simulation in this scope.) 
+
+System Design Document & Techni…
+
+Global UX Elements
+
+Top filters (persist across pages): Region, Business unit, Date range.
+
+Search omnibox: plots, suppliers, shipments.
+
+i18n: EN/ID labels.
+
+Audit trail link on all records. 
+
+System Design Document & Techni…
+
+Charts Specification (minimal dev brief)
+
+Donut: category share (risk, legality).
+
+Input: { label, value }[]
+
+Line: monthly compliance trend.
+
+Input: { month, compliance_rate }[]
+
+Bar (stacked): alerts by month & severity.
+
+Input: { month, low, med, high }[]
+
+Heatmap: supplier × indicator risk scores (0–100).
+
+Input: matrix with supplier keys & indicators.
+
+Sankey: plot→facility→shipment volumes.
+
+Input: links: [{ source, target, value }] + nodes: [{ id, label, status }]
+
+Mass-balance bars: per facility in/out.
+
+Input: { facility, input, output }[]
+
+Use a lightweight chart lib (Recharts/Apache ECharts). Map via Leaflet/OpenLayers.
+
+Core KPIs (formulas)
+
+Compliance Rate = Compliant Plots / Total Plots * 100.
+
+Deforestation Incidence = # Valid alerts (since 2021) / Total plots.
+
+Legality Pass Rate = Suppliers “Compliant” / Total assessed.
+
+DDS Readiness = % shipments with complete fields for Annex II. 
+
+System Design Document & Techni…
+
+Data Model (high level)
+
+suppliers(id, name, type, region, legality_status, risk_score, …)
+
+plots(id, supplier_id, geom, area_ha, status, last_check_at, wdpa_overlap, …)
+
+alerts(id, plot_id, type, severity, detected_at, status, evidence_url, …)
+
+facilities(id, supplier_id, kind, …)
+
+lots(id, plot_id, mass_kg, harvest_date, …)
+
+shipments(id, hs_code, country_of_prod, mass_kg, prior_dds_ref, …)
+
+events(id, type[TRANSFER|PROCESS|AGGREGATE], from_id, to_id, qty, ts) (EPCIS)
+
+dds(id, shipment_id, json, pdf_url, created_by, created_at)
+
+documents(id, owner_type, owner_id, kind, url, …)
+
+users(id, role, business_unit, …)
+(Spatial types via PostGIS; all edits logged.) 
+
+System Design Document & Techni…
+
+APIs (example)
+
+GET /api/kpi/summary?region=…&bu=…&from=…&to=…
+
+GET /api/plots?filters… (bbox, supplier, risk, wdpa)
+
+POST /api/analysis/run (file upload → async job to GLAD/RADD/WDPA)
+
+GET /api/alerts?status=active
+
+GET /api/traceability/sankey?shipmentId=…
+
+POST /api/dds → returns { id, pdf_url }
+
+GET /api/export/compliance.csv
+Secure with JWT; roles gate endpoints. 
+
+System Design Document & Techni…
+
+Interactions & Drill-downs
+
+Clicking a KPI opens its filtered table.
+
+Map → click polygon → side panel: plot stats, alerts, legality docs, “Go to Supplier”.
+
+Supplier row → opens Supplier page: tabs for Plots, Legality, Risk, Shipments; “Generate Supplier Report”.
+
+Sankey node click → highlights path; shipment node → “Prepare DDS”.
+
+Non-functional
+
+Performance: Server-side pagination; async jobs for spatial analysis; cache latest KPIs per filter preset.
+
+Accessibility: keyboard nav, alt texts; min color contrast.
+
+Auditability: immutable logs on creates/updates/deletes.
+
+Localization: EN/ID labels & number/date formats.
+
+Security: HTTPS, JWT, row-level access by business unit; signed URLs for files. 
+
+System Design Document & Techni…
+
+Tech Notes (Replit-friendly)
+
+Frontend: React + TypeScript + Vite; Recharts (charts), Leaflet (map), TanStack Table (large tables).
+
+Backend: Node.js (Express) + Postgres/PostGIS; job queue (BullMQ) for spatial/alerts; file storage GCS/S3-compatible.
+
+Infra: Env secrets in Replit; daily DB backup; gzip; indices on plots(geom), alerts(plot_id, detected_at). 
+
+System Design Document & Techni…
+
+Milestones
+
+MVP (2–3 weeks): Summary dashboard, Spatial Analysis (map + table + alerts), Supplier table, basic DDS form, CSV export.
+
+Traceability (2 weeks): EPCIS events, Sankey, mass-balance bars.
+
+UAT & Ops (1 week): Reports (PDF packs), role gating, polish.
+
+Acceptance Criteria (samples)
+
+Uploading a GeoJSON runs alert/WDPA checks and returns results within <60s for ≤1,000 plots.
+
+“Compliance by Supplier” matches backend KPI within ±0.5% for the same filters.
+
+Sankey correctly reflects event chain; mass-balance error flagged when output > input + tolerance.
+
+DDS PDF is generated with all Annex II fields present; file saved and listed under the shipment.
