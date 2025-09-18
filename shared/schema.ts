@@ -498,6 +498,9 @@ export const ddsReports = pgTable("dds_reports", {
   signedDate: timestamp("signed_date").notNull(),
   signatoryFunction: text("signatory_function").notNull(),
   digitalSignature: text("digital_signature"),
+  signatureType: text("signature_type"), // "upload" or "canvas"
+  signatureImagePath: text("signature_image_path"), // File path for uploaded signature images
+  signatureData: text("signature_data"), // Base64 data for canvas signatures
   
   // Status and processing
   status: text("status").notNull().default("draft"), // draft, generated, downloaded, submitted
@@ -1085,6 +1088,15 @@ export type KcpDataCollection = typeof kcpDataCollection.$inferSelect;
 export type InsertKcpDataCollection = typeof kcpDataCollection.$inferInsert;
 export type BulkingDataCollection = typeof bulkingDataCollection.$inferSelect;
 export type InsertBulkingDataCollection = typeof bulkingDataCollection.$inferInsert;
+
+// Digital Signature Types
+export interface SignatureData {
+  type: "upload" | "canvas";
+  data?: string; // Base64 data for canvas signatures or uploaded images
+  imagePath?: string; // File path for uploaded images  
+  fileName?: string; // Original filename for uploads
+  timestamp: string;
+}
 
 // EUDR Legality Assessment Schema - Comprehensive 8-indicator compliance audit
 export const eudrAssessments = pgTable("eudr_assessments", {

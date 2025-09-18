@@ -20,7 +20,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DdsReport, InsertDdsReport } from "@shared/schema";
 import { KMLUploader } from "@/components/kml-uploader";
 import { GeoJSONGenerator } from "@/components/geojson-generator";
-import { PALM_OIL_HS_CODES, STORAGE_KEYS } from "@/lib/constants";
+import { SignaturePad, SignatureData } from "@/components/ui/signature-pad";
+import { PALM_OIL_HS_CODES, STORAGE_KEYS, HS_CODE_SCIENTIFIC_MAPPING } from "@/lib/constants";
 
 // TraceabilityConfigSelector Component
 function TraceabilityConfigSelector({ onSelect, onCancel }: { onSelect: (config: any) => void; onCancel: () => void }) {
@@ -139,7 +140,27 @@ export default function DueDiligenceReport() {
   const [selectedPlots, setSelectedPlots] = useState<any[]>([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState<any[]>([]);
   const [selectedTraceability, setSelectedTraceability] = useState<any>(null);
+  const [selectedScientificName, setSelectedScientificName] = useState<string>("");
+  const [selectedCommonName, setSelectedCommonName] = useState<string>("");
+  const [signatureData, setSignatureData] = useState<SignatureData | null>(null);
   const { toast } = useToast();
+
+  // Auto-populate scientific name and common name when HS codes are selected
+  useEffect(() => {
+    if (selectedHsCodes.length > 0) {
+      // Get the first selected HS code for auto-population
+      const firstHsCode = selectedHsCodes[0];
+      const mapping = HS_CODE_SCIENTIFIC_MAPPING[firstHsCode as keyof typeof HS_CODE_SCIENTIFIC_MAPPING];
+      
+      if (mapping) {
+        setSelectedScientificName(mapping.scientificName);
+        setSelectedCommonName(mapping.commonName);
+      }
+    } else {
+      setSelectedScientificName("");
+      setSelectedCommonName("");
+    }
+  }, [selectedHsCodes]);
 
   // Fetch DDS reports using the required endpoint with fallback
   const { data: ddsReportsFromList = [], isLoading: loadingDdsList, error: ddsListError } = useQuery<DdsReport[]>({
@@ -161,9 +182,9 @@ export default function DueDiligenceReport() {
       operatorIsoCode: null,
       eoriNumber: null,
       hsCode: '15190910',
-      productDescription: 'Crude Palm Oil (CPO) - Elaeis guineensis',
-      scientificName: null,
-      commonName: null,
+      productDescription: 'Crude Palm Oil (CPO)',
+      scientificName: 'Elaeis guineensis',
+      commonName: 'African oil palm',
       producerName: null,
       netMassKg: "50000",
       volumeUnit: null,
@@ -201,6 +222,9 @@ export default function DueDiligenceReport() {
       signedDate: new Date('2024-01-15'),
       signatoryFunction: 'Operations Director',
       digitalSignature: null,
+      signatureType: null,
+      signatureImagePath: null,
+      signatureData: null,
       status: 'generated',
       submissionDate: null,
       euTraceReference: null,
@@ -228,9 +252,9 @@ export default function DueDiligenceReport() {
       operatorIsoCode: null,
       eoriNumber: null,
       hsCode: '15119000',
-      productDescription: 'Refined Palm Oil - Elaeis guineensis',
-      scientificName: null,
-      commonName: null,
+      productDescription: 'Refined Palm Oil',
+      scientificName: 'Elaeis guineensis',
+      commonName: 'African oil palm',
       producerName: null,
       netMassKg: "25000",
       volumeUnit: null,
@@ -268,6 +292,9 @@ export default function DueDiligenceReport() {
       signedDate: new Date('2024-01-18'),
       signatoryFunction: 'General Manager',
       digitalSignature: null,
+      signatureType: null,
+      signatureImagePath: null,
+      signatureData: null,
       status: 'submitted',
       submissionDate: null,
       euTraceReference: null,
@@ -295,9 +322,9 @@ export default function DueDiligenceReport() {
       operatorIsoCode: null,
       eoriNumber: null,
       hsCode: '15132100',
-      productDescription: 'Palm Kernel Oil - Elaeis guineensis',
-      scientificName: null,
-      commonName: null,
+      productDescription: 'Palm Kernel Oil',
+      scientificName: 'Elaeis guineensis',
+      commonName: 'African oil palm',
       producerName: null,
       netMassKg: "15000",
       volumeUnit: null,
@@ -335,6 +362,9 @@ export default function DueDiligenceReport() {
       signedDate: new Date('2024-01-22'),
       signatoryFunction: 'Sustainability Director',
       digitalSignature: null,
+      signatureType: null,
+      signatureImagePath: null,
+      signatureData: null,
       status: 'generated',
       submissionDate: null,
       euTraceReference: null,
@@ -362,9 +392,9 @@ export default function DueDiligenceReport() {
       operatorIsoCode: null,
       eoriNumber: null,
       hsCode: '23066990',
-      productDescription: 'Palm Oil Residues - Elaeis guineensis',
-      scientificName: null,
-      commonName: null,
+      productDescription: 'Palm Oil Residues',
+      scientificName: 'Elaeis guineensis',
+      commonName: 'African oil palm',
       producerName: null,
       netMassKg: "8000",
       volumeUnit: null,
@@ -402,6 +432,9 @@ export default function DueDiligenceReport() {
       signedDate: new Date('2024-01-25'),
       signatoryFunction: 'Estate Manager',
       digitalSignature: null,
+      signatureType: null,
+      signatureImagePath: null,
+      signatureData: null,
       status: 'generated',
       submissionDate: null,
       euTraceReference: null,
@@ -429,9 +462,9 @@ export default function DueDiligenceReport() {
       operatorIsoCode: null,
       eoriNumber: null,
       hsCode: '38231900',
-      productDescription: 'Industrial Fatty Acids (Palm-based) - Elaeis guineensis',
-      scientificName: null,
-      commonName: null,
+      productDescription: 'Industrial Fatty Acids (Palm-based)',
+      scientificName: 'Elaeis guineensis',
+      commonName: 'African oil palm',
       producerName: null,
       netMassKg: "12500",
       volumeUnit: null,
@@ -469,6 +502,9 @@ export default function DueDiligenceReport() {
       signedDate: new Date('2024-01-28'),
       signatoryFunction: 'Head of Compliance',
       digitalSignature: null,
+      signatureType: null,
+      signatureImagePath: null,
+      signatureData: null,
       status: 'submitted',
       submissionDate: null,
       euTraceReference: null,
@@ -582,6 +618,16 @@ export default function DueDiligenceReport() {
       });
       return;
     }
+
+    // Validate signature requirement
+    if (!signatureData) {
+      toast({
+        title: "Signature Required",
+        description: "Please provide a digital signature before submitting the DDS report.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const formData = new FormData(e.currentTarget);
     
@@ -622,7 +668,10 @@ export default function DueDiligenceReport() {
       signedBy: formData.get('signedBy') as string,
       signedDate: new Date(formData.get('signedDate') as string),
       signatoryFunction: formData.get('signatoryFunction') as string,
-      digitalSignature: formData.get('digitalSignature') as string || undefined,
+      digitalSignature: signatureData?.data || undefined,
+      signatureType: signatureData?.type || undefined,
+      signatureImagePath: signatureData?.imagePath || undefined,
+      signatureData: signatureData?.data || undefined,
       status: 'draft',
       deforestationRiskLevel: formData.get('deforestationRiskLevel') as string || undefined,
       legalityStatus: formData.get('legalityStatus') as string || undefined,
@@ -645,6 +694,7 @@ export default function DueDiligenceReport() {
       setSelectedPlots([]);
       setSelectedSuppliers([]);
       setSelectedTraceability(null);
+      setSignatureData(null);
     }
   };
 
@@ -1130,18 +1180,34 @@ export default function DueDiligenceReport() {
                           <Input 
                             id="scientificName" 
                             name="scientificName" 
+                            value={selectedScientificName}
+                            onChange={(e) => setSelectedScientificName(e.target.value)}
                             placeholder="Elaeis guineensis"
+                            className={selectedScientificName ? "bg-green-50 dark:bg-green-900/20" : ""}
                             data-testid="input-scientific-name"
                           />
+                          {selectedScientificName && (
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              ✓ Auto-populated from selected HS code
+                            </div>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="commonName">Common Name</Label>
                           <Input 
                             id="commonName" 
                             name="commonName" 
+                            value={selectedCommonName}
+                            onChange={(e) => setSelectedCommonName(e.target.value)}
                             placeholder="Palm Oil"
+                            className={selectedCommonName ? "bg-green-50 dark:bg-green-900/20" : ""}
                             data-testid="input-common-name"
                           />
+                          {selectedCommonName && (
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              ✓ Auto-populated from selected HS code
+                            </div>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="producerName">Producer Name</Label>
@@ -1966,15 +2032,14 @@ export default function DueDiligenceReport() {
                               data-testid="input-signed-date"
                             />
                           </div>
-                          <div>
-                            <Label htmlFor="digitalSignature">Digital Signature</Label>
-                            <Input 
-                              id="digitalSignature" 
-                              name="digitalSignature" 
-                              placeholder="Base64 signature"
-                              data-testid="input-digital-signature"
-                            />
-                          </div>
+                        </div>
+                        <div className="col-span-2 mt-4">
+                          <SignaturePad
+                            onSignatureChange={setSignatureData}
+                            initialSignature={signatureData}
+                            required={true}
+                            className="w-full"
+                          />
                         </div>
                       </CardContent>
                     </Card>

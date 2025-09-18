@@ -54,6 +54,28 @@ export const SCIENTIFIC_NAMES = [
   { name: 'Hevea brasiliensis', description: 'Rubber tree' }
 ] as const;
 
+// HS Code to Scientific Name mapping for palm oil products
+export const HS_CODE_SCIENTIFIC_MAPPING = {
+  '15190910': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Crude Palm Oil (CPO)' },
+  '15119000': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Refined Palm Oil' },
+  '15132100': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Palm Kernel Oil' },
+  '23066990': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Palm Oil Residues' },
+  '38231900': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Industrial Fatty Acids (Palm-based)' },
+  '1207.10': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Palm nuts and kernels' },
+  '1511.10': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Crude palm oil and its fractions' },
+  '1511.90': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Refined palm oil and its fractions' },
+  '1513.21': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Crude palm kernel oil' },
+  '1513.29': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Refined palm kernel oil' },
+  '2306.60': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Palm oil cake residues' },
+  '2905.45': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Glycerol (95% purity)' },
+  '2915.70': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Palmitic acid, stearic acid' },
+  '2915.90': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Saturated monocarboxylic acids' },
+  '3823.11': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Stearic acid, industrial' },
+  '3823.12': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Oleic acid, industrial' },
+  '3823.19': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Industrial fatty acids' },
+  '3823.70': { scientificName: 'Elaeis guineensis', commonName: 'African oil palm', productType: 'Industrial fatty alcohols' }
+} as const;
+
 // Plot Status Types
 export const PLOT_STATUS = {
   COMPLIANT: 'compliant',

@@ -678,6 +678,118 @@ export class DatabaseStorage implements IStorage {
     return updatedReport || undefined;
   }
 
+  // Session-based DDS management
+  async getDdsReportsBySession(sessionId: string): Promise<DdsReport[]> {
+    return await db.select().from(ddsReports).where(eq(ddsReports.sessionId, sessionId)).orderBy(desc(ddsReports.createdAt));
+  }
+
+  async updateDdsReportStatus(id: string, status: string): Promise<DdsReport | undefined> {
+    const [updatedReport] = await db
+      .update(ddsReports)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(ddsReports.id, id))
+      .returning();
+    return updatedReport || undefined;
+  }
+
+  async updateDdsReportPdfPath(id: string, pdfPath: string, fileName: string): Promise<DdsReport | undefined> {
+    const [updatedReport] = await db
+      .update(ddsReports)
+      .set({ pdfDocumentPath: pdfPath, updatedAt: new Date() })
+      .where(eq(ddsReports.id, id))
+      .returning();
+    return updatedReport || undefined;
+  }
+
+  // GeoJSON validation and metadata
+  async validateDdsGeojson(id: string, geojson: any): Promise<{
+    valid: boolean;
+    error?: string;
+    metadata?: {
+      area: number;
+      boundingBox: { north: number, south: number, east: number, west: number };
+      centroid: { lat: number, lng: number };
+    };
+  }> {
+    try {
+      if (!geojson || !geojson.features || !Array.isArray(geojson.features)) {
+        return { valid: false, error: "Invalid GeoJSON format: missing or invalid features array" };
+      }
+
+      if (geojson.features.length === 0) {
+        return { valid: false, error: "GeoJSON has no features" };
+      }
+
+      let totalArea = 0;
+      let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+
+      for (const feature of geojson.features) {
+        if (!feature.geometry || !feature.geometry.coordinates) {
+          return { valid: false, error: "Feature missing geometry or coordinates" };
+        }
+
+        // Simple area calculation (approximation)
+        if (feature.geometry.type === 'Polygon') {
+          const coords = feature.geometry.coordinates[0];
+          if (coords.length < 4) {
+            return { valid: false, error: "Polygon must have at least 4 coordinates" };
+          }
+          
+          // Update bounding box
+          for (const coord of coords) {
+            const [lng, lat] = coord;
+            minLat = Math.min(minLat, lat);
+            maxLat = Math.max(maxLat, lat);
+            minLng = Math.min(minLng, lng);
+            maxLng = Math.max(maxLng, lng);
+          }
+          
+          // Simple area calculation (not accurate for large polygons)
+          totalArea += Math.abs((maxLng - minLng) * (maxLat - minLat)) * 111320 * 111320; // rough m² conversion
+        }
+      }
+
+      const centroid = {
+        lat: (minLat + maxLat) / 2,
+        lng: (minLng + maxLng) / 2
+      };
+
+      return {
+        valid: true,
+        metadata: {
+          area: totalArea,
+          boundingBox: { north: maxLat, south: minLat, east: maxLng, west: minLng },
+          centroid
+        }
+      };
+    } catch (error) {
+      return { valid: false, error: `GeoJSON validation error: ${error}` };
+    }
+  }
+
+  // Available plots for selection
+  async getAvailablePlots(): Promise<Array<{
+    id: string;
+    name: string;
+    location: string;
+    area: number;
+    geojson: any;
+  }>> {
+    try {
+      const plotList = await db.select().from(plots).limit(50);
+      return plotList.map(plot => ({
+        id: plot.id,
+        name: plot.plotId || `Plot ${plot.id}`,
+        location: plot.crop || 'Unknown',
+        area: parseFloat(plot.areaHa?.toString() || '0'),
+        geojson: plot.polygon ? JSON.parse(plot.polygon) : null
+      }));
+    } catch (error) {
+      console.error("Error getting available plots:", error);
+      return [];
+    }
+  }
+
   // Estate Data Collection management
   async getEstateDataCollection(): Promise<import("@shared/schema").EstateDataCollection[]> {
     try {
