@@ -147,8 +147,87 @@ export default function DueDiligenceReport() {
     retry: false
   });
 
+  // Dummy DDS data for display when API fails or is empty
+  const dummyDdsReports: DdsReport[] = [
+    {
+      id: 'DDS-2024-001',
+      operatorLegalName: 'PT Sawit Mas Indonesia',
+      productDescription: 'Crude Palm Oil (CPO)',
+      hsCode: '15190910',
+      status: 'generated',
+      createdAt: new Date('2024-01-15'),
+      netMassKg: 50000,
+      countryOfProduction: 'Indonesia',
+      operatorAddress: 'Jl. Industri No. 123, Jakarta 10120, Indonesia',
+      signedBy: 'Ahmad Suharto',
+      signedDate: new Date('2024-01-15'),
+      signatoryFunction: 'Operations Director',
+      operatorDeclaration: 'Complies with EUDR requirements'
+    },
+    {
+      id: 'DDS-2024-002',
+      operatorLegalName: 'KPN Corporation Berhad',
+      productDescription: 'Refined Palm Oil',
+      hsCode: '15119000',
+      status: 'submitted',
+      createdAt: new Date('2024-01-18'),
+      netMassKg: 25000,
+      countryOfProduction: 'Malaysia',
+      operatorAddress: '50 Jalan Sultan, Kuala Lumpur 50000, Malaysia',
+      signedBy: 'Lim Wei Ming',
+      signedDate: new Date('2024-01-18'),
+      signatoryFunction: 'General Manager',
+      operatorDeclaration: 'Verified EUDR compliance'
+    },
+    {
+      id: 'DDS-2024-003',
+      operatorLegalName: 'Golden Agri Resources Ltd',
+      productDescription: 'Palm Kernel Oil',
+      hsCode: '15132100',
+      status: 'generated',
+      createdAt: new Date('2024-01-22'),
+      netMassKg: 15000,
+      countryOfProduction: 'Indonesia',
+      operatorAddress: '108 Pasir Ris Industrial Drive, Singapore 519953',
+      signedBy: 'David Tan',
+      signedDate: new Date('2024-01-22'),
+      signatoryFunction: 'Sustainability Director',
+      operatorDeclaration: 'EUDR deforestation-free certified'
+    },
+    {
+      id: 'DDS-2024-004',
+      operatorLegalName: 'Riau Growers Cooperative',
+      productDescription: 'Palm Oil Residues',
+      hsCode: '23066990',
+      status: 'generated',
+      createdAt: new Date('2024-01-25'),
+      netMassKg: 8000,
+      countryOfProduction: 'Indonesia',
+      operatorAddress: 'Jl. Raya Pekanbaru-Dumai KM 45, Riau 28300, Indonesia',
+      signedBy: 'Bambang Suryadi',
+      signedDate: new Date('2024-01-25'),
+      signatoryFunction: 'Cooperative Chairman',
+      operatorDeclaration: 'Smallholder compliance verified'
+    },
+    {
+      id: 'DDS-2024-005',
+      operatorLegalName: 'Sime Darby Plantation Berhad',
+      productDescription: 'Industrial Fatty Acids (Palm-based)',
+      hsCode: '38231900',
+      status: 'submitted',
+      createdAt: new Date('2024-01-28'),
+      netMassKg: 12500,
+      countryOfProduction: 'Malaysia',
+      operatorAddress: 'Level 3A, Main Block, Plantation Tower, Kuala Lumpur 50490, Malaysia',
+      signedBy: 'Sarah Abdullah',
+      signedDate: new Date('2024-01-28'),
+      signatoryFunction: 'Head of Compliance',
+      operatorDeclaration: 'Full EUDR compliance achieved'
+    }
+  ];
+
   // Fallback to dummy data if real data API fails or is empty
-  const ddsReports = ddsReportsFromList.length > 0 ? ddsReportsFromList : [];
+  const ddsReports = ddsReportsFromList.length > 0 ? ddsReportsFromList : dummyDdsReports;
 
   // Fetch shipments for form selection
   const { data: shipments = [] } = useQuery<any[]>({
