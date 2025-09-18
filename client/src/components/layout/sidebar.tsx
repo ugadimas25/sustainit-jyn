@@ -183,7 +183,7 @@ export function Sidebar() {
             <Leaf className="w-5 h-5 text-white" />
           </div>
           <div className="ml-3">
-            <h2 className="font-bold text-gray-800">KPN EUDR</h2>
+            <h2 className="font-bold text-gray-800">KPN Compliance</h2>
             <p className="text-sm text-gray-500">Compliance Platform</p>
           </div>
         </div>

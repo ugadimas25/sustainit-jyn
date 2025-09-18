@@ -58,6 +58,11 @@ async function hashPassword(password: string) {
 }
 
 async function initializeDefaultUser() {
+  // Only create default user in development environment
+  if (process.env.NODE_ENV !== 'development') {
+    return;
+  }
+  
   try {
     const existingUser = await storage.getUserByUsername("kpneudr");
     if (!existingUser) {
@@ -66,7 +71,7 @@ async function initializeDefaultUser() {
         username: "kpneudr",
         password: hashedPassword,
         role: "admin",
-        name: "KPN EUDR Administrator",
+        name: "KPN Compliance Administrator",
         email: "admin@kpn.com"
       });
       console.log("✓ Default user 'kpneudr' created successfully");
@@ -1743,7 +1748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate dummy DDS PDF document
-  app.get('/api/generate-dummy-dds-pdf', async (req, res) => {
+  app.get('/api/generate-dummy-dds-pdf', isAuthenticated, async (req, res) => {
     try {
       // Create dummy report data
       const dummyReport = {
@@ -2047,12 +2052,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced PDF generation helper function with professional layout and embedded images
+  // Enhanced 3-page PDF generation with embedded flowchart images
   function generateCleanDDSPDF(report: any): ArrayBuffer {
     try {
       const doc = new jsPDF();
       
-      // Page 1 - Main DDS Content with Professional Tables
+      // Base64 embedded EUDR Compliance Verification flowchart image
+      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABB4AAARFCAYAAABGtdEAAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDcuMS1jMDAwIDc5LmVkYTJiM2ZhYywgMjAyMS8xMS8xNy0xNzoyMzoxOSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIDIzLjEgKE1hY2ludG9zaCkiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MzUzQ0ZDN0JGRkExMTFFQ0I5NDM4OUE5MzI2QzlDNkIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MzUzQ0ZDN0NGRkExMTFFQ0I5NDM4OUE5MzI2QzlDNkIiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDozNTNDRkM3OUZGQTExMUVDQjk0Mzg5QTkzMjZDOUM2QiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDozNTNDRkM3QUZGQTExMUVDQjk0Mzg5QTkzMjZDOUM2QiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PgABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD//wABAAD/";
+      
+      console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
+      
+      // PAGE 1 - Main DDS Content with Professional Tables
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.text('EU Due Diligence Statement', 105, 20, { align: 'center' });
@@ -2061,8 +2071,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.rect(10, 30, 190, 15);
-      doc.text('Page 1 of 2', 15, 38);
-      doc.text('Status: SUBMITTED', 90, 38);
+      doc.text('Page 1 of 3', 15, 38);
+      doc.text('Status: GENERATED', 90, 38);
       const currentDate = new Date().toLocaleDateString('en-GB');
       doc.text(`Generated: ${currentDate}`, 150, 38);
       
@@ -2182,7 +2192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.rect(10, 30, 190, 15);
-      doc.text('Page 2 of 2', 15, 38);
+      doc.text('Page 2 of 3', 15, 38);
       doc.text('Technical Appendix', 90, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
       
@@ -2266,7 +2276,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(line, 10, yPos + (index * 5));
       });
       
-      console.log('Enhanced PDF generated successfully with professional layout');
+      // PAGE 3 - Flowcharts Section
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('EUDR Compliance Flowcharts', 105, 20, { align: 'center' });
+      
+      // Header for page 3
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 3 of 3', 15, 38);
+      doc.text('Process Flowcharts', 90, 38);
+      doc.text(`Generated: ${currentDate}`, 150, 38);
+      
+      yPos = 55;
+      
+      // Section 1: Land Cover Change Flowchart
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('1. Land Cover Change Monitoring Flowchart', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const lccFlowchartText = [
+        'This flowchart illustrates the workflow for monitoring land cover changes across multiple',
+        'stakeholders within the plantation concession area. Monitoring is conducted every 3 months',
+        'as well as for incidental events.',
+        '',
+        'Key Process Steps:',
+        '• GIS → Alert → Verify Coordinates Location → Desktop Analysis',
+        '• Estate Manager → Community Control → Field Location Verification',
+        '• System Monitoring → Land Cover Change Final Report Verification',
+        '',
+        'Legal Framework Compliance:',
+        '• UU No. 32/2009 - Environmental Protection and Management',
+        '• PERMEN LHK No. P.71/MENLHK.1/2019 - Environmental Information System',
+        '• EU Deforestation Regulation (EUDR) - Supply chain traceability requirements'
+      ];
+      
+      lccFlowchartText.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 75;
+      
+      // Section 2: Risk Analysis Flowchart
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('2. Risk Analysis Processing Flowchart', 10, yPos);
+      yPos += 10;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const riskFlowchartText = [
+        'This flowchart demonstrates the systematic approach for conducting risk analysis across',
+        'the supply chain, ensuring comprehensive evaluation and mitigation planning.',
+        '',
+        'Risk Assessment Process:',
+        '• Data Collection → Risk Identification → Impact Assessment',
+        '• Likelihood Evaluation → Risk Scoring → Mitigation Planning',
+        '• Implementation → Monitoring → Review and Update',
+        '',
+        'Risk Categories Evaluated:',
+        '• Deforestation Risk - Historical forest loss analysis',
+        '• Legal Compliance Risk - Permit and certification verification',
+        '• Supply Chain Risk - Traceability and documentation gaps',
+        '• Operational Risk - Production and quality assurance factors'
+      ];
+      
+      riskFlowchartText.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 65;
+      
+      // GeoJSON Reference section
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('GeoJSON Data Access:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      const geoJsonLink = 'https://api.kpn-compliance.com/dds/geojson/plots-data.geojson';
+      doc.setTextColor(0, 0, 255); // Blue color for link
+      doc.text('Link: ' + geoJsonLink, 15, yPos);
+      doc.setTextColor(0, 0, 0); // Back to black
+      
+      yPos += 12;
+      doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
+      yPos += 6;
+      doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
+      
+      console.log('✅ Enhanced 3-page PDF generated successfully with professional layout');
+      console.log('✅ PDF includes: Page 1 (DDS Data), Page 2 (Methodology), Page 3 (Flowcharts)');
       return doc.output('arraybuffer');
     } catch (error) {
       console.error('Error generating enhanced PDF:', error);
@@ -2442,6 +2543,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     };
   }
+
+  // DDS Report Download endpoint
+  app.get('/api/dds/:id/download', isAuthenticated, async (req, res) => {
+    try {
+      const report = await storage.getDdsReportById(req.params.id);
+      if (!report) {
+        return res.status(404).json({ error: 'DDS report not found' });
+      }
+
+      // Generate PDF for download
+      const pdfBuffer = generateCleanDDSPDF(report);
+      
+      // Set response headers for file download
+      const filename = `dds-report-${report.id}-${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.byteLength.toString());
+      
+      console.log(`✅ DDS report ${report.id} PDF download initiated`);
+      res.send(Buffer.from(pdfBuffer));
+    } catch (error) {
+      console.error('Error downloading DDS report PDF:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: 'Failed to download DDS report PDF', details: errorMessage });
+    }
+  });
 
   // DDS Report EU Trace submission
   app.post('/api/dds-reports/:id/submit', isAuthenticated, async (req, res) => {

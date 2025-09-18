@@ -1,4 +1,4 @@
-// Application Constants for KPN EUDR Platform
+// Application Constants for KPN Compliance Platform
 
 // EUDR Compliance Constants
 export const EUDR_CONSTANTS = {
@@ -39,6 +39,19 @@ export const PALM_OIL_HS_CODES = [
   { code: '3823.12', description: 'Oleic acid, industrial' },
   { code: '3823.19', description: 'Industrial monocarboxylic fatty acids; acid oils from refining (excluding stearic acid, oleic acid and tall oil fatty acids)' },
   { code: '3823.70', description: 'Industrial fatty alcohols' }
+] as const;
+
+// Scientific names for EUDR commodities
+export const SCIENTIFIC_NAMES = [
+  { name: 'Elaeis guineensis', description: 'African oil palm' },
+  { name: 'Elaeis oleifera', description: 'American oil palm' },
+  { name: 'Cocos nucifera', description: 'Coconut palm' },
+  { name: 'Theobroma cacao', description: 'Cacao tree' },
+  { name: 'Coffea arabica', description: 'Arabica coffee' },
+  { name: 'Coffea canephora', description: 'Robusta coffee' },
+  { name: 'Glycine max', description: 'Soybean' },
+  { name: 'Bos taurus', description: 'Cattle' },
+  { name: 'Hevea brasiliensis', description: 'Rubber tree' }
 ] as const;
 
 // Plot Status Types
@@ -138,6 +151,20 @@ export const DDS_REPORT_STATUS = {
   DRAFT: 'draft',
   GENERATED: 'generated',
   SUBMITTED: 'submitted'
+} as const;
+
+// DDS Statement Types
+export const DDS_STATEMENT_TYPES = {
+  INITIAL: 'initial',
+  UPDATED: 'updated',
+  CORRECTIVE: 'corrective'
+} as const;
+
+// DDS Geolocation Types
+export const DDS_GEOLOCATION_TYPES = {
+  PLOT: 'plot',
+  FACILITY: 'facility',
+  POINT: 'point'
 } as const;
 
 // Survey Templates

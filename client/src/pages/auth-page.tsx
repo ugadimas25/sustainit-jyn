@@ -62,7 +62,7 @@ export default function AuthPage() {
               data-testid="img-kpn-logo-auth"
             />
           </div>
-          <h1 className="text-4xl font-bold mb-4">KPN EUDR Platform</h1>
+          <h1 className="text-4xl font-bold mb-4">KPN Compliance Platform</h1>
           <p className="text-xl mb-8 text-green-100">
             Comprehensive supply chain compliance monitoring for EU Deforestation Regulation
           </p>
@@ -108,7 +108,7 @@ export default function AuthPage() {
             <div className="w-16 h-16 bg-forest rounded-xl flex items-center justify-center mx-auto mb-4">
               <Leaf className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Welcome to KPN EUDR Platform</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Welcome to KPN Compliance Platform</h2>
             <p className="text-gray-600 mt-2">Sign in to access your compliance dashboard</p>
           </div>
 

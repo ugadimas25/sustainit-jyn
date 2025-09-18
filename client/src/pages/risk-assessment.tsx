@@ -83,7 +83,7 @@ export default function RiskAssessment() {
         body: JSON.stringify({
           ...data,
           status: 'Draft',
-          assessorName: 'KPN EUDR Administrator' // TODO: Get from user context
+          assessorName: 'KPN Compliance Administrator' // TODO: Get from user context
         })
       });
     },

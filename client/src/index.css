@@ -24,7 +24,10 @@
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
 
-  /* KPN EUDR Platform Custom Colors */
+  /* KPN Compliance Platform Custom Colors */
+  --kpn-red: hsl(0, 89%, 42%); /* #DC2626 */
+  --kpn-green: hsl(142, 71%, 45%); /* #16A34A */
+  --kpn-white: hsl(0, 0%, 100%); /* #FFFFFF */
   --forest: hsl(142, 36%, 28%);
   --forest-light: hsl(142, 49%, 53%);
   --forest-dark: hsl(142, 43%, 20%);
@@ -91,7 +94,19 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 
-  /* Custom utility classes for KPN EUDR Platform */
+  /* Custom utility classes for KPN Compliance Platform */
+  .bg-kpn-red {
+    background-color: var(--kpn-red);
+  }
+
+  .bg-kpn-green {
+    background-color: var(--kpn-green);
+  }
+
+  .bg-kpn-white {
+    background-color: var(--kpn-white);
+  }
+
   .bg-forest {
     background-color: var(--forest);
   }
