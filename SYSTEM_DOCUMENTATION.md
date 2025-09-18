@@ -74,11 +74,117 @@ The KPN EUDR Platform is a comprehensive supply chain traceability and complianc
 - **Background Processing**: Queue-based job processing
 
 ### Data Flow Architecture
+
+#### Comprehensive Data Processing Pipeline
 ```
-Plot Data → Data Collection → Validation → Storage → Analysis → Reporting
-    ↓              ↓             ↓         ↓         ↓         ↓
-Geospatial → Form Validation → Database → Risk AI → Dashboard → DDS Reports
-Coordinates    Field Rules     PostgreSQL  OpenAI    Metrics   PDF Export
+Data Input → Validation → Processing → Storage → Analysis → Visualization → Export
+     ↓           ↓            ↓          ↓         ↓           ↓          ↓
+GeoJSON/KML → Schema     → External   → PostgreSQL → AI      → Dashboard → Reports
+Forms       Validation    API Calls    PostGIS     Analysis   Charts     PDF/Excel
+Documents                 GFW/JRC                  OpenAI     Maps       DDS
+Voice                     WDPA                     Scoring    Tables     Certificates
+```
+
+#### Real-time Data Synchronization
+```
+User Actions → LocalStorage → Database → Dashboard Refresh → External APIs → Alert Systems
+      ↓             ↓            ↓            ↓               ↓             ↓
+Form Edits → Session Cache → PostgreSQL → Metric Update → GFW Polling → Email Notifications
+File Upload   Plot Results   Analysis     Chart Refresh    WDPA Check    Mobile Alerts  
+```
+
+#### Multi-Source Data Integration
+```
+Primary Data Sources:
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│   User Forms    │  │   GeoJSON       │  │   Documents     │
+│   • Estate      │  │   • Polygons    │  │   • Certificates│
+│   • Mill        │  │   • Coordinates │  │   • Permits     │
+│   • Smallholder │  │   • Metadata    │  │   • Legal Docs  │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+         ↓                      ↓                      ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │                 Data Validation Layer                       │
+    │   • Schema Validation  • Spatial Validation  • File Types  │
+    └─────────────────────────────────────────────────────────────┘
+         ↓                      ↓                      ↓
+    ┌─────────────────────────────────────────────────────────────┐
+    │                 Processing Engine                           │
+    │   • Risk Analysis  • Compliance Scoring  • AI Insights     │
+    └─────────────────────────────────────────────────────────────┘
+         ↓
+External Data Sources:
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ Global Forest   │  │ WDPA Protected  │  │ EUDR Multilayer│
+│ Watch API       │  │ Areas Database  │  │ Analysis API    │
+│ • Deforestation │  │ • Protected     │  │ • GFW + JRC     │
+│ • GLAD Alerts   │  │   Area Overlaps │  │ • SBTN Natural  │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
+
+#### Database Architecture Flow
+```
+Application Layer:
+┌────────────────────────────────────────────────────────────────┐
+│                          React Frontend                        │
+│  Dashboard • Forms • Maps • Charts • Tables • Export          │
+└────────────────────────────────────────────────────────────────┘
+                                  ↕
+API Layer:
+┌────────────────────────────────────────────────────────────────┐
+│                        Express.js Backend                     │
+│  REST APIs • GraphQL • Authentication • File Upload          │
+└────────────────────────────────────────────────────────────────┘
+                                  ↕
+Business Logic:
+┌────────────────────────────────────────────────────────────────┐
+│                      Processing Services                       │
+│  Risk Analysis • Compliance Scoring • AI Integration          │
+│  Mass Balance • Chain of Custody • Report Generation          │
+└────────────────────────────────────────────────────────────────┘
+                                  ↕
+Data Persistence:
+┌────────────────────────────────────────────────────────────────┐
+│                     PostgreSQL + PostGIS                      │
+│  EPCIS Tables • Geospatial Data • Document Storage            │
+│  Compliance Records • Risk Assessments • Audit Trails        │
+└────────────────────────────────────────────────────────────────┘
+```
+
+#### Real-time Processing Architecture
+```
+Event-Driven Processing:
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   User Action   │ →  │   Event Queue   │ →  │   Processing    │
+│   • File Upload │    │   • Validation  │    │   • Analysis    │
+│   • Form Submit │    │   • Transform   │    │   • Scoring     │
+│   • Map Click   │    │   • Enrich      │    │   • Alerting    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                                        ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    Real-time Updates                            │
+│   Dashboard Metrics • Map Visualization • Alert Systems        │
+│   Compliance Scores • Risk Classifications • Status Changes    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Data Quality & Validation Pipeline
+```
+Input Validation:
+┌─────────────────┐ → ┌─────────────────┐ → ┌─────────────────┐
+│   Raw Data      │   │   Schema        │   │   Business      │
+│   • Forms       │   │   Validation    │   │   Rules         │
+│   • Files       │   │   • Type Check  │   │   • Mandatory   │
+│   • Coordinates │   │   • Format      │   │   • Logic       │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+                                                      ↓
+Spatial Validation:
+┌─────────────────┐ → ┌─────────────────┐ → ┌─────────────────┐
+│   Geometry      │   │   PostGIS       │   │   Quality       │
+│   • Polygons    │   │   Analysis      │   │   Scoring       │
+│   • Overlaps    │   │   • Validation  │   │   • Confidence  │
+│   • Duplicates  │   │   • Correction  │   │   • Reliability │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
 ```
 
 ## Core Modules
@@ -463,28 +569,201 @@ const response = await fetch('https://eudr-multilayer-api.fly.dev/analyze', {
 - **Document Management**: Multi-file upload with progress tracking
 - **Report Generation**: Automated PDF report creation
 
-## User Workflows
+## User Workflows & Data Journeys
 
-### 1. New Supplier Onboarding
-1. **Data Collection**: Complete supplier information form
-2. **Plot Mapping**: Upload plot boundaries (GeoJSON/KML)
-3. **Document Upload**: Submit required legal documents
-4. **Legality Assessment**: Complete 8-indicator EUDR evaluation
-5. **Review & Approval**: Supervisor review and approval process
+### 1. Comprehensive EUDR Compliance Journey
 
-### 2. Deforestation Alert Response
-1. **Alert Detection**: Automated satellite monitoring triggers alert
-2. **Risk Classification**: AI-powered severity assessment
-3. **Investigation**: Field verification and documentation
-4. **Resolution**: Corrective action plan and implementation
-5. **Reporting**: Compliance report generation
+#### Phase 1: Data Collection & Supplier Onboarding
+**User Flow:**
+1. **Supplier Type Selection**: Choose from Estate, Mill, Smallholders, KCP, or Bulking
+2. **Form Completion**: Fill comprehensive data collection forms with:
+   - Basic company information (name, group, legal documents)
+   - Geographical coordinates and addresses
+   - Certification details (RSPO, ISPO, ISCC)
+   - Responsible personnel contacts
+   - Production capacity and operational details
+3. **Document Upload**: Submit supporting documents via integrated uploader
+   - Estate: Akta Pendirian, Akta Perubahan, certificates
+   - Smallholders: KTP, business permits, land legality documents
+   - Mill: Processing licenses, facility certifications
+4. **Multi-Entity Management**: Add multiple farms, suppliers, or processing units
+5. **Auto-Save & Validation**: Real-time form validation with progress tracking
 
-### 3. Supply Chain Traceability
-1. **Chain Creation**: Initialize custody chain from harvest
-2. **Event Tracking**: Record transformation and transfer events
+**Data Journey:**
+```
+User Input → Form Validation → Database Storage → AI Analysis → Compliance Scoring
+```
+
+#### Phase 2: Geospatial Risk Analysis
+**User Flow:**
+1. **Plot Upload**: Upload GeoJSON/KML files containing plot polygons
+2. **Automated Analysis**: System processes against multiple satellite datasets:
+   - Global Forest Watch (GFW) deforestation alerts
+   - JRC Forest Loss monitoring
+   - SBTN Natural Lands assessment
+   - WDPA Protected Areas validation
+3. **Real-time Processing**: Progress tracking with status updates
+4. **Results Visualization**: Interactive table with risk classifications
+5. **Map Integration**: View results in comprehensive EUDR Map Viewer
+6. **Export Options**: Download results as Excel CSV or enhanced GeoJSON
+
+**Data Journey:**
+```
+GeoJSON Upload → External API Calls → Spatial Analysis → Risk Classification → Dashboard Updates
+```
+
+#### Phase 3: Legal Compliance Assessment
+**User Flow:**
+1. **8-Indicator Evaluation**: Complete comprehensive EUDR legality assessment:
+   - **Land Tenure Rights**: Land ownership and usage rights verification
+   - **Environmental Compliance**: Environmental permits and impact assessments
+   - **Forest Legislation**: Forest management and conservation compliance
+   - **Third-Party Rights**: Indigenous peoples and community rights
+   - **Labor Rights**: Worker rights and fair labor practices
+   - **Human Rights**: Anti-discrimination and safety standards
+   - **Tax & Anti-Corruption**: Financial transparency and anti-corruption measures
+   - **Other Applicable Laws**: Additional regulatory requirements
+2. **Dynamic Validation**: Context-aware mandatory fields based on supplier type
+3. **Document Management**: Upload and link supporting legal documents
+4. **Status Tracking**: Draft → Review → Approval workflow
+5. **Compliance Scoring**: Automated compliance percentage calculation
+
+**Data Journey:**
+```
+Legal Forms → Validation Rules → Document Storage → Compliance Calculation → Approval Workflow
+```
+
+#### Phase 4: Spatial Risk Assessment (Excel Methodology)
+**User Flow:**
+1. **Assessment Creation**: Initialize risk assessment for specific supplier
+2. **Spatial Risk Analysis**: Evaluate geographic risk factors:
+   - Deforestation risk (45% weight)
+   - Land legality (35% weight) 
+   - Peat area overlap (10% weight)
+   - Indigenous peoples' rights (10% weight)
+3. **Risk Parameter Configuration**: Adjust risk levels and mitigation strategies
+4. **Scoring Calculation**: Real-time risk score updates based on Excel methodology
+5. **Mitigation Planning**: Document required mitigation actions
+
+**Data Journey:**
+```
+Risk Parameters → Excel Calculation Engine → Score Computation → Mitigation Recommendations
+```
+
+### 2. Dashboard Analytics & Monitoring Journey
+
+#### Real-time Compliance Monitoring
+**User Flow:**
+1. **Dashboard Access**: Navigate to centralized compliance dashboard
+2. **Key Metrics Overview**: View real-time compliance statistics:
+   - Total plots mapped with polygons
+   - Compliant vs non-compliant plots
+   - High/medium/low risk classifications
+   - Deforestation alerts and violations
+3. **Interactive Analytics**:
+   - Risk distribution donut charts
+   - Legality status breakdowns
+   - Compliance trends over time
+   - Critical alerts widget
+4. **Supplier Performance Table**: Detailed supplier-by-supplier compliance view
+5. **Export & Reporting**: Download compliance overview reports
+
+**Data Flow Architecture:**
+```
+Analysis Results DB → API Aggregation → Dashboard Visualization → Export Generation
+```
+
+#### Deforestation Alert Response Workflow
+**User Flow:**
+1. **Alert Detection**: Automated satellite monitoring triggers alerts
+2. **Severity Classification**: AI-powered risk assessment
+3. **Spatial Verification**: Plot-level deforestation mapping
+4. **Investigation Protocol**: Field verification workflow
+5. **Resolution Tracking**: Corrective action monitoring
+6. **Compliance Reporting**: Impact on overall compliance status
+
+### 3. Supply Chain Traceability Journey
+
+#### End-to-End Lineage Tracking
+**User Flow:**
+1. **Chain Initialization**: Create custody chain from harvest point
+2. **Event Recording**: Track supply chain events:
+   - TRANSFER: Product movement between facilities
+   - TRANSFORM: Processing and conversion events
+   - AGGREGATE: Batch combination operations
+   - DISAGGREGATE: Product splitting operations
 3. **Mass Balance Validation**: Automated input/output reconciliation
-4. **Lineage Analysis**: Full backward/forward traceability
-5. **Export Documentation**: Generate chain-of-custody certificates
+4. **Lineage Visualization**: Interactive supply chain mapping
+5. **Traceability Reports**: Generate chain-of-custody certificates
+
+**Data Journey (EPCIS 2.0 Compliant):**
+```
+Harvest → Collection Center → Mill Processing → Refinery → Port → Export Shipment
+   ↓            ↓             ↓              ↓        ↓         ↓
+EPCIS Events → Mass Balance → Compliance Check → Documentation → Export
+```
+
+### 4. Advanced Analytics & AI Integration
+
+#### AI-Powered Insights Journey
+**User Flow:**
+1. **Data Analysis Request**: Query specific compliance or risk patterns
+2. **AI Processing**: OpenAI integration analyzes:
+   - Historical compliance trends
+   - Risk pattern identification
+   - Predictive compliance scoring
+   - Mitigation recommendations
+3. **Insight Generation**: Actionable recommendations and alerts
+4. **Report Integration**: AI insights embedded in compliance reports
+
+#### Voice Assistant Integration
+**User Flow:**
+1. **Voice Query**: Natural language questions about compliance status
+2. **Intent Recognition**: AI processes and categorizes user requests
+3. **Data Retrieval**: Real-time data access and analysis
+4. **Voice Response**: Spoken compliance updates and recommendations
+
+### 5. Document & Report Management
+
+#### Due Diligence Statement (DDS) Generation
+**User Flow:**
+1. **Report Configuration**: Select supplier and assessment period
+2. **Data Aggregation**: Combine data from all assessment phases
+3. **Template Processing**: Apply EUDR-compliant report template
+4. **PDF Generation**: Create signed, branded compliance reports
+5. **Digital Signature**: Apply digital signatures and verification
+6. **Distribution**: Secure report sharing and archival
+
+### 6. Data Integration & External Services
+
+#### Multi-Source Data Integration
+**External API Integrations:**
+- **Global Forest Watch**: Real-time deforestation alerts
+- **WDPA Database**: Protected area overlap detection
+- **EUDR Multilayer API**: Comprehensive satellite analysis
+- **Google Cloud Storage**: Secure document management
+
+**Data Synchronization Flow:**
+```
+External APIs → Data Validation → Database Storage → Dashboard Updates → User Notifications
+```
+
+### 7. Quality Assurance & Validation
+
+#### Polygon Validation Workflow
+**User Flow:**
+1. **Polygon Selection**: Choose plots for validation
+2. **PostGIS Analysis**: Server-side geometric validation
+3. **Issue Detection**: Identify overlaps, duplicates, orientation errors
+4. **Correction Workflow**: Edit polygon geometry via dedicated editor
+5. **Re-validation**: Confirm fixes and update compliance status
+
+#### Data Quality Monitoring
+**Continuous Validation:**
+- Real-time form validation during data entry
+- Automated compliance score recalculation
+- Cross-reference verification with external datasets
+- Regular data integrity checks and reporting
 
 ## Development Guidelines
 
@@ -514,23 +793,110 @@ const response = await fetch('https://eudr-multilayer-api.fly.dev/analyze', {
 
 ## Monitoring & Analytics
 
-### Application Monitoring
-- **Performance Metrics**: Response times, throughput, error rates
-- **User Analytics**: Feature usage, user journey tracking
-- **System Health**: Database performance, API availability
-- **Alert System**: Automated alerting for critical issues
+### Real-time System Monitoring
 
-### Business Intelligence
-- **Compliance Dashboard**: Real-time compliance metrics
-- **Risk Analytics**: Trend analysis and predictive insights
-- **Supply Chain Visibility**: End-to-end traceability reports
-- **Regulatory Reporting**: Automated EUDR compliance reports
+#### Performance Dashboard
+- **API Response Times**: Track endpoint performance (target <2s)
+- **Database Query Performance**: Monitor complex spatial queries
+- **File Upload Processing**: Track large GeoJSON processing times
+- **External API Integration**: Monitor GFW, WDPA, EUDR API response times
+- **User Session Analytics**: Track user engagement and workflow completion
 
-### Data Analytics
-- **Plot Analysis**: Deforestation risk assessment
-- **Supplier Performance**: Compliance scoring and ranking
-- **Geographic Insights**: Regional risk pattern analysis
-- **Trend Analysis**: Historical compliance trend monitoring
+#### System Health Metrics
+```
+Infrastructure Monitoring:
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│   Frontend      │  │   Backend       │  │   Database      │
+│   • Load Times  │  │   • API Latency │  │   • Query Time  │
+│   • Bundle Size │  │   • Memory Usage│  │   • Connections │
+│   • Error Rate  │  │   • CPU Usage   │  │   • Disk Usage  │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
+
+### Business Intelligence & Analytics
+
+#### Compliance Intelligence Dashboard
+- **Real-time Compliance Metrics**: Live updates across all suppliers
+- **Predictive Risk Modeling**: AI-powered future risk projections
+- **Regulatory Trend Analysis**: EUDR compliance pattern recognition
+- **Supplier Performance Benchmarking**: Comparative compliance analysis
+- **Geographic Risk Mapping**: Regional deforestation pattern analysis
+
+#### Advanced Analytics Pipeline
+```
+Data Collection → Processing → Analysis → Insights → Actions
+      ↓              ↓           ↓          ↓         ↓
+Plot Data      → Risk Calc → AI Analysis → Reports → Alerts
+Supplier Info  → Compliance → Predictions → Dashboard → Workflow
+Documents      → Validation → Trends     → Export  → Notifications
+```
+
+#### User Experience Analytics
+- **Workflow Completion Rates**: Track user success through assessment phases
+- **Feature Adoption**: Monitor usage of advanced features (AI assistant, map viewer)
+- **User Journey Analysis**: Identify optimization opportunities
+- **Error Pattern Recognition**: Proactive issue identification and resolution
+
+### Automated Alerting & Notification System
+
+#### Critical Alert Categories
+1. **Compliance Alerts**: 
+   - New deforestation detected in supplier plots
+   - Certification expiration warnings
+   - Non-compliance status changes
+   
+2. **System Alerts**:
+   - External API failures or slowdowns
+   - Large file processing failures
+   - Database performance degradation
+
+3. **Business Process Alerts**:
+   - Pending assessments requiring review
+   - Document upload failures
+   - Mass balance discrepancies
+
+#### Alert Distribution Channels
+```
+Alert Generation → Classification → Distribution → Response Tracking
+       ↓               ↓              ↓              ↓
+System Events → Severity Level → Email/SMS/App → Resolution Status
+User Actions    Critical/High    Stakeholders   Automated Actions
+Data Changes    Medium/Low       Mobile Push    Manual Review
+```
+
+### Data Analytics & Reporting
+
+#### Comprehensive Reporting Suite
+- **EUDR Compliance Reports**: Automated regulatory compliance documentation
+- **Supply Chain Analytics**: End-to-end traceability performance reports
+- **Risk Assessment Summaries**: Detailed risk analysis with mitigation recommendations
+- **Operational Dashboards**: Real-time operational metrics and KPIs
+
+#### Advanced Data Analysis Features
+```
+Historical Analysis:
+┌─────────────────┐ → ┌─────────────────┐ → ┌─────────────────┐
+│   Time Series   │   │   Trend         │   │   Predictive    │
+│   Data          │   │   Analysis      │   │   Modeling      │
+│   • Compliance  │   │   • Patterns    │   │   • Risk Forecast│
+│   • Deforestation│   │   • Seasonality │   │   • Compliance  │
+│   • Certifications│   │   • Outliers    │   │   • Resource Planning│
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+```
+
+### User Experience Optimization
+
+#### Personalized User Journeys
+- **Role-based Dashboards**: Customized interfaces for different user types
+- **Workflow Optimization**: Streamlined processes based on user behavior analysis
+- **Contextual Help System**: Dynamic assistance based on current user context
+- **Progressive Disclosure**: Information presented based on user expertise level
+
+#### Performance Optimization Monitoring
+- **Page Load Analytics**: Monitor and optimize critical user workflows
+- **Mobile Experience Tracking**: Ensure optimal mobile performance
+- **Accessibility Compliance**: Monitor and maintain WCAG compliance levels
+- **User Satisfaction Metrics**: Regular user experience surveys and feedback loops
 
 ---
 
