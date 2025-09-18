@@ -130,32 +130,32 @@ async function seedSampleData() {
       });
     }
 
-    // Create sample DDS reports - temporarily disabled due to schema migration
-    // const ddsReports = await storage.getDdsReports();
-    // if (ddsReports.length === 0) {
-      /* const ddsReport1 = await storage.createDdsReport({
-        operatorLegalName: "KPN Plantations Berhad",
-        operatorAddress: "Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia",
-        eoriNumber: "MY123456789000",
+    // Create sample DDS reports with required operators
+    const ddsReports = await storage.getDdsReports();
+    if (ddsReports.length === 0) {
+      const ddsReport1 = await storage.createDdsReport({
+        operatorLegalName: "PT TH Indo Plantations",
+        operatorAddress: "Jl. Jenderal Sudirman No. 45, Jakarta 12930, Indonesia",
+        eoriNumber: "ID123456789000",
         hsCode: "151110",
         productDescription: "Crude Palm Oil (CPO)",
         netMassKg: "2150.000",
-        countryOfProduction: "Malaysia",
+        countryOfProduction: "Indonesia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
-          { latitude: 3.1390, longitude: 101.6869, plotId: "PLT-SELANGOR-001" },
-          { latitude: 2.9300, longitude: 101.8000, plotId: "PLT-SELANGOR-002" }
+          { latitude: -0.7893, longitude: 101.4467, plotId: "PLT-RIAU-TH-001" },
+          { latitude: -0.5333, longitude: 101.4500, plotId: "PLT-RIAU-TH-002" }
         ]),
         operatorDeclaration: "I hereby declare that the information provided is accurate and complete.",
-        signedBy: "Datuk Seri Ahmad Bin Abdullah",
+        signedBy: "Dr. Bambang Suharto",
         signedDate: new Date("2024-08-15"),
         signatoryFunction: "Chief Executive Officer",
         status: "draft"
       });
 
       const ddsReport2 = await storage.createDdsReport({
-        operatorLegalName: "PT Sawit Mas Indonesia",
-        operatorAddress: "Jl. Sudirman No. 123, Jakarta 10220, Indonesia",
+        operatorLegalName: "KPN Upstream",
+        operatorAddress: "Jl. MH Thamrin No. 28, Jakarta 10350, Indonesia",
         eoriNumber: "ID987654321000",
         hsCode: "151110",
         productDescription: "Refined Palm Oil",
@@ -163,42 +163,42 @@ async function seedSampleData() {
         countryOfProduction: "Indonesia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
-          { latitude: 0.7893, longitude: 101.4467, plotId: "PLT-RIAU-001" },
-          { latitude: 0.5333, longitude: 101.4500, plotId: "PLT-RIAU-002" }
+          { latitude: -1.2708, longitude: 103.7367, plotId: "PLT-JAMBI-UP-001" },
+          { latitude: -1.6000, longitude: 103.6000, plotId: "PLT-JAMBI-UP-002" }
         ]),
         priorDdsReference: "EU-DDS-2024-001",
         operatorDeclaration: "This shipment complies with all EU deforestation regulations.",
-        signedBy: "Dr. Siti Nurhaliza",
+        signedBy: "Ir. Sari Indrawati",
         signedDate: new Date("2024-08-10"),
         signatoryFunction: "Operations Director",
         status: "generated",
         pdfDocumentPath: "/pdfs/dds-sample-001.pdf"
       });
 
-      // const ddsReport3 = await storage.createDdsReport({
-        operatorLegalName: "Golden Agri Resources Ltd",
-        operatorAddress: "108 Pasir Panjang Road, #08-01, Golden Agri Plaza, Singapore 118535",
-        eoriNumber: "SG456789123000",
+      const ddsReport3 = await storage.createDdsReport({
+        operatorLegalName: "KPN Downstream",
+        operatorAddress: "Kawasan Industri Pulogadung, Jakarta 13260, Indonesia",
+        eoriNumber: "ID456789123000",
         hsCode: "151190",
         productDescription: "Palm Kernel Oil",
         netMassKg: "850.000",
         countryOfProduction: "Indonesia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
-          { latitude: -1.2708, longitude: 103.7367, plotId: "PLT-JAMBI-001" },
-          { latitude: -1.6000, longitude: 103.6000, plotId: "PLT-JAMBI-002" }
+          { latitude: -2.1234, longitude: 102.8567, plotId: "PLT-SUMSEL-DS-001" },
+          { latitude: -2.5678, longitude: 103.1234, plotId: "PLT-SUMSEL-DS-002" }
         ]),
         operatorDeclaration: "All products sourced from verified deforestation-free areas.",
-        signedBy: "Mr. Lim Wei Ming",
+        signedBy: "Drs. Agus Wibowo",
         signedDate: new Date("2024-08-05"),
         signatoryFunction: "Supply Chain Manager",
         status: "submitted",
         pdfDocumentPath: "/pdfs/dds-sample-002.pdf",
         euTraceReference: "EU-TRACE-1755198000-456789ab",
         submissionDate: new Date("2024-08-06")
-      */
-      // console.log("✓ Sample DDS reports created");
-    // }
+      });
+      console.log("✓ Sample DDS reports created");
+    }
 
     console.log("✓ Sample data seeded successfully");
   } catch (error) {
