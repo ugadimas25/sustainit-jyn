@@ -4,7 +4,7 @@ import express from 'express';
 import { setupAuth, isAuthenticated } from "./auth";
 import { voiceAssistantRouter } from "./routes/voice-assistant";
 import { storage } from "./storage";
-import {
+import { 
   insertCommoditySchema,
   insertPartySchema,
   insertFacilitySchema,
@@ -71,7 +71,7 @@ async function initializeDefaultUser() {
   if (process.env.NODE_ENV !== 'development') {
     return;
   }
-
+  
   try {
     const existingUser = await storage.getUserByUsername("kpneudr");
     if (!existingUser) {
@@ -101,7 +101,7 @@ async function seedSampleData() {
         uomBase: "kg",
         category: "palm_oil"
       });
-
+      
       await storage.createCommodity({
         code: "FFB",
         name: "Fresh Fruit Bunches",
@@ -123,7 +123,7 @@ async function seedSampleData() {
 
       const millParty = await storage.createParty({
         name: "Central Palm Mill",
-        type: "mill",
+        type: "mill", 
         address: "Central Sumatra, Indonesia",
         country: "Indonesia",
         certifications: ["RSPO", "ISCC", "SFC"]
@@ -208,7 +208,7 @@ async function seedSampleData() {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
-
+  
   await setupAuth(app);
   await initializeDefaultUser();
   await seedSampleData();
@@ -220,11 +220,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/graphql', isAuthenticated, async (req, res) => {
     try {
       const { query, variables } = req.body;
-
+      
       if (query.includes('traceForward') || query.includes('traceBackward') || query.includes('getFullLineage')) {
         const entityId = variables?.entityId;
         const entityType = variables?.entityType;
-
+        
         // Mock comprehensive lineage data for testing
         const mockLineageResult = {
           entityId,
@@ -236,9 +236,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'plot-riau-001',
               type: 'plot',
               name: 'Palm Plot A - Riau Province',
-              data: {
-                level: 0,
-                area: '5.2 hectares',
+              data: { 
+                level: 0, 
+                area: '5.2 hectares', 
                 farmer: 'Budi Santoso',
                 crop: 'oil_palm',
                 plantingYear: 2018
@@ -253,9 +253,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'collection-riau-001',
               type: 'facility',
               name: 'Riau Collection Center A',
-              data: {
-                level: 1,
-                facilityType: 'collection_center',
+              data: { 
+                level: 1, 
+                facilityType: 'collection_center', 
                 capacity: '1000 tonnes/day',
                 operatingHours: '24/7'
               },
@@ -269,9 +269,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'mill-sumatra-001',
               type: 'facility',
               name: 'Central Palm Mill Complex',
-              data: {
-                level: 2,
-                facilityType: 'mill',
+              data: { 
+                level: 2, 
+                facilityType: 'mill', 
                 capacity: '200 tonnes/hour',
                 processes: ['sterilization', 'pressing', 'clarification']
               },
@@ -283,11 +283,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             {
               id: 'refinery-jakarta-001',
-              type: 'facility',
+              type: 'facility', 
               name: 'Jakarta Oil Refinery Complex',
-              data: {
-                level: 3,
-                facilityType: 'refinery',
+              data: { 
+                level: 3, 
+                facilityType: 'refinery', 
                 capacity: '500 tonnes/day',
                 processes: ['neutralization', 'bleaching', 'deodorization']
               },
@@ -301,9 +301,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'port-jakarta-001',
               type: 'facility',
               name: 'Tanjung Priok Export Terminal',
-              data: {
-                level: 4,
-                facilityType: 'port',
+              data: { 
+                level: 4, 
+                facilityType: 'port', 
                 capacity: '10000 tonnes storage',
                 exportDestinations: ['Rotterdam', 'Hamburg', 'Antwerp']
               },
@@ -317,9 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'shipment-exp-001',
               type: 'shipment',
               name: 'Export Shipment EXP-2024-001',
-              data: {
-                level: 5,
-                destination: 'Rotterdam, Netherlands',
+              data: { 
+                level: 5, 
+                destination: 'Rotterdam, Netherlands', 
                 vessel: 'MV Palm Carrier',
                 departureDate: '2024-08-15',
                 estimatedArrival: '2024-09-10'
@@ -332,47 +332,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ],
           edges: [
-            {
-              source: 'plot-riau-001',
-              target: 'collection-riau-001',
-              type: 'delivery',
-              quantity: 50.5,
+            { 
+              source: 'plot-riau-001', 
+              target: 'collection-riau-001', 
+              type: 'delivery', 
+              quantity: 50.5, 
               uom: 'tonnes',
               date: '2024-08-10',
               eventType: 'TRANSFER'
             },
-            {
-              source: 'collection-riau-001',
-              target: 'mill-sumatra-001',
-              type: 'processing',
-              quantity: 48.2,
+            { 
+              source: 'collection-riau-001', 
+              target: 'mill-sumatra-001', 
+              type: 'processing', 
+              quantity: 48.2, 
               uom: 'tonnes',
               date: '2024-08-11',
               eventType: 'TRANSFORM'
             },
-            {
-              source: 'mill-sumatra-001',
-              target: 'refinery-jakarta-001',
-              type: 'transformation',
-              quantity: 22.1,
+            { 
+              source: 'mill-sumatra-001', 
+              target: 'refinery-jakarta-001', 
+              type: 'transformation', 
+              quantity: 22.1, 
               uom: 'tonnes',
               date: '2024-08-12',
               eventType: 'TRANSFER'
             },
-            {
-              source: 'refinery-jakarta-001',
-              target: 'port-jakarta-001',
-              type: 'transfer',
-              quantity: 21.8,
+            { 
+              source: 'refinery-jakarta-001', 
+              target: 'port-jakarta-001', 
+              type: 'transfer', 
+              quantity: 21.8, 
               uom: 'tonnes',
               date: '2024-08-13',
               eventType: 'TRANSFER'
             },
-            {
-              source: 'port-jakarta-001',
-              target: 'shipment-exp-001',
-              type: 'shipment',
-              quantity: 21.8,
+            { 
+              source: 'port-jakarta-001', 
+              target: 'shipment-exp-001', 
+              type: 'shipment', 
+              quantity: 21.8, 
               uom: 'tonnes',
               date: '2024-08-15',
               eventType: 'TRANSFER'
@@ -442,8 +442,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ]
         };
-
-        const operation = query.includes('traceForward') ? 'traceForward' :
+        
+        const operation = query.includes('traceForward') ? 'traceForward' : 
                          query.includes('traceBackward') ? 'traceBackward' : 'getFullLineage';
         res.json({ data: { [operation]: mockLineageResult } });
       } else if (query.includes('getCustodyChains')) {
@@ -850,7 +850,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!supplierName || typeof step !== 'number' || typeof completed !== 'boolean') {
         return res.status(400).json({ error: "Missing required fields: supplierName, step, completed" });
       }
-
+      
       const progress = await storage.updateSupplierWorkflowStep(supplierName, step, completed, referenceId);
       if (!progress) {
         res.status(404).json({ error: "Failed to update workflow step" });
@@ -869,7 +869,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 3) {
         return res.status(400).json({ error: "Step must be a number between 1 and 3" });
       }
-
+      
       const hasAccess = await storage.checkSupplierStepAccess(decodeURIComponent(supplierName), stepNumber);
       res.json({ supplierName, step: stepNumber, hasAccess });
     } catch (error) {
@@ -1045,7 +1045,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/risk-assessments/:assessmentId/init-excel-template", isAuthenticated, async (req, res) => {
     try {
       const { assessmentId } = req.params;
-
+      
       // Initialize default risk items based on Excel methodology
       const defaultRiskItems = [
         // Spatial Risk Analysis items from Excel
@@ -1177,9 +1177,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const metrics = await storage.getDashboardMetrics(filters);
-
+      
       // Validate response with schema
       const validatedMetrics = dashboardMetricsSchema.parse(metrics);
       res.json(validatedMetrics);
@@ -1207,9 +1207,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const riskSplit = await storage.getRiskSplit(filters);
-
+      
       // Validate response with schema
       const validatedRiskSplit = riskSplitSchema.parse(riskSplit);
       res.json(validatedRiskSplit);
@@ -1228,9 +1228,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const legalitySplit = await storage.getLegalitySplit(filters);
-
+      
       // Validate response with schema
       const validatedLegalitySplit = legalitySplitSchema.parse(legalitySplit);
       res.json(validatedLegalitySplit);
@@ -1249,9 +1249,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const suppliers = await storage.getSupplierCompliance(filters);
-
+      
       // Validate response with schema - validate each item
       const validatedSuppliers = suppliers.map(supplier => supplierSummarySchema.parse(supplier));
       res.json(validatedSuppliers);
@@ -1270,9 +1270,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const alerts = await storage.getDashboardAlerts(filters);
-
+      
       // Validate response with schema - validate each alert
       const validatedAlerts = alerts.map(alert => alertSchema.parse(alert));
       res.json(validatedAlerts);
@@ -1291,9 +1291,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const trendData = await storage.getComplianceTrend(filters);
-
+      
       // Validate response with schema - validate each point
       const validatedTrendData = trendData.map(point => complianceTrendPointSchema.parse(point));
       res.json(validatedTrendData);
@@ -1312,21 +1312,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const format = req.query.format || 'json';
       const exportData = await storage.getExportData(filters);
-
+      
       // Validate response with schema
       const validatedExportData = exportDataSchema.parse(exportData);
-
+      
       if (format === 'csv') {
         // Convert to CSV format
         const csvLines: string[] = [];
-
+        
         // Supplier summary CSV
         csvLines.push('Supplier Summary');
         csvLines.push('Supplier Name,Total Plots,Compliant Plots,Total Area (Ha),Compliance Rate (%),Risk Status,Legality Status,Region,Last Updated');
-
+        
         validatedExportData.supplierSummaries.forEach(supplier => {
           csvLines.push([
             supplier.supplierName,
@@ -1340,13 +1340,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             supplier.lastUpdated.toISOString()
           ].join(','));
         });
-
+        
         csvLines.push(''); // Empty line
-
+        
         // Plot summary CSV
         csvLines.push('Plot Summary');
         csvLines.push('Plot ID,Supplier Name,Region,Area (Ha),Risk Status,Legality Status,Last Updated');
-
+        
         validatedExportData.plotSummaries.forEach(plot => {
           csvLines.push([
             plot.plotId,
@@ -1358,9 +1358,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             plot.lastUpdated.toISOString()
           ].join(','));
         });
-
+        
         const csvContent = csvLines.join('\n');
-
+        
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="compliance-overview-${new Date().toISOString().split('T')[0]}.csv"`);
         res.send(csvContent);
@@ -1383,9 +1383,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
       });
-
+      
       const plots = await storage.getPlotSummaries(filters);
-
+      
       // Validate response with schema - validate each plot
       const validatedPlots = plots.map(plot => plotSummarySchema.parse(plot));
       res.json(validatedPlots);
@@ -1418,7 +1418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/shipments/:shipmentId/traceability", isAuthenticated, async (req, res) => {
     try {
       const { shipmentId } = req.params;
-
+      
       // Mock traceability data
       const mockTraceability = {
         shipment: {
@@ -1441,7 +1441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         ]
       };
-
+      
       res.json(mockTraceability);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch traceability data" });
@@ -1449,7 +1449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced DDS Reports routes for PRD implementation
-
+  
   // Get available HS codes for product selection dropdown
   app.get('/api/dds/hs-codes', isAuthenticated, async (req, res) => {
     try {
@@ -1502,7 +1502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { name: 'Various species', common: 'Mixed Forest Species' }
         ]
       };
-
+      
       if (category && scientificNames[category as keyof typeof scientificNames]) {
         res.json(scientificNames[category as keyof typeof scientificNames]);
       } else {
@@ -1518,11 +1518,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/dds/validate-geojson', isAuthenticated, async (req, res) => {
     try {
       const { geojson } = req.body;
-
+      
       if (!geojson) {
-        return res.status(400).json({
-          valid: false,
-          error: 'No GeoJSON data provided'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'No GeoJSON data provided' 
         });
       }
 
@@ -1530,26 +1530,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
       } catch (parseError) {
-        return res.status(400).json({
-          valid: false,
-          error: 'Invalid JSON format'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Invalid JSON format' 
         });
       }
 
       // Basic GeoJSON structure validation
       if (!parsedGeoJson.type) {
-        return res.status(400).json({
-          valid: false,
-          error: 'Missing type property'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Missing type property' 
         });
       }
 
       // Check for valid geometry types
       const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
       if (!validTypes.includes(parsedGeoJson.type)) {
-        return res.status(400).json({
-          valid: false,
-          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
+        return res.status(400).json({ 
+          valid: false, 
+          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon` 
         });
       }
 
@@ -1605,9 +1605,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!polygonFound) {
-        return res.status(400).json({
-          valid: false,
-          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.' 
         });
       }
 
@@ -1623,9 +1623,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error validating GeoJSON:', error);
-      res.status(500).json({
-        valid: false,
-        error: 'Server error during validation'
+      res.status(500).json({ 
+        valid: false, 
+        error: 'Server error during validation' 
       });
     }
   });
@@ -1635,7 +1635,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sessionId = req.query.sessionId as string;
       const reports = sessionId ? await storage.getDdsReportsBySession(sessionId) : await storage.getDdsReports();
-
+      
       // Format for PRD dashboard requirements
       const formattedReports = reports.map(report => ({
         id: report.id,
@@ -1648,7 +1648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileName: report.pdfFileName,
         canDownload: report.status !== 'draft'
       }));
-
+      
       res.json(formattedReports);
     } catch (error) {
       console.error('Error fetching DDS list:', error);
@@ -1660,7 +1660,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/dds/create', isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertDdsReportSchema.parse(req.body);
-
+      
       // Generate session ID if not provided
       if (!validatedData.sessionId) {
         validatedData.sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -1671,7 +1671,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productName = (validatedData.commonName || validatedData.productDescription).replace(/[^a-zA-Z0-9]/g, '_');
       const dateString = new Date().toISOString().split('T')[0];
       validatedData.pdfFileName = `DDS_${operatorName}_${productName}_${dateString}.pdf`;
-
+      
       const ddsReport = await storage.createDdsReport(validatedData);
       res.status(201).json(ddsReport);
     } catch (error) {
@@ -1745,7 +1745,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate actual PDF file
       const pdfBuffer = generateCleanDDSPDF(report);
-
+      
       // For demo purposes, we'll return the PDF directly
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="dds-${report.id}.pdf"`);
@@ -1786,49 +1786,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log('Starting PDF generation...');
-
+      
       // Generate the PDF using jsPDF
       const doc = new jsPDF();
-
+      
       // Set up the document
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
       doc.text('Due Diligence Statement', 105, 20, { align: 'center' });
-
+      
       // Page info
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('-------------------------------------------------------------------------------------------------------------', 10, 30);
       doc.text('Page 1', 10, 40);
       doc.text('Status: SUBMITTED', 150, 40);
-
+      
       const currentDate = new Date().toLocaleDateString('en-GB');
       doc.text(`Created On: ${currentDate}`, 10, 50);
-
+      
       // Section 1
       let yPos = 70;
       doc.setFont('helvetica', 'bold');
       doc.text('1. Company Internal Ref:', 10, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.companyInternalRef, 80, yPos);
-
+      
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('2. Activity:', 10, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.activity, 50, yPos);
-
+      
       // Section 3 - Operator Information
       yPos += 20;
       doc.setFont('helvetica', 'bold');
       doc.text('3. Operator/Trader name and address:', 10, yPos);
-
+      
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('Name:', 15, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.operatorLegalName, 40, yPos);
-
+      
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('Address:', 15, yPos);
@@ -1836,24 +1836,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const addressLines = doc.splitTextToSize(dummyReport.operatorAddress, 140);
       doc.text(addressLines, 45, yPos);
       yPos += addressLines.length * 5;
-
+      
       yPos += 5;
       doc.setFont('helvetica', 'bold');
       doc.text('Country:', 15, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.operatorCountry, 45, yPos);
-
+      
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('ISO Code:', 15, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.operatorIsoCode, 45, yPos);
-
+      
       // Commodity Section
       yPos += 20;
       doc.setFont('helvetica', 'bold');
       doc.text('Commodity(ies) or Product(s)', 10, yPos);
-
+      
       yPos += 15;
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
@@ -1861,44 +1861,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text('Net Mass (Kg)', 70, yPos);
       doc.text('% Est.', 120, yPos);
       doc.text('Units', 150, yPos);
-
+      
       yPos += 10;
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.productDescription, 10, yPos);
       doc.text(dummyReport.netMassKg.toString(), 70, yPos);
       doc.text(dummyReport.percentageEstimation.toString() + '%', 120, yPos);
       doc.text(dummyReport.supplementaryUnit, 150, yPos);
-
+      
       yPos += 15;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.text('Scientific Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.scientificName, 60, yPos);
-
+      
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Common Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.commonName, 60, yPos);
-
+      
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Producer Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.producerName, 60, yPos);
-
+      
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Country of Production:', 10, yPos);
       doc.setFont('helvetica', 'normal');
       doc.text(dummyReport.countryOfProduction, 80, yPos);
-
+      
       // Summary Plot Information
       yPos += 20;
       doc.setFont('helvetica', 'bold');
       doc.text('Summary Plot Information', 10, yPos);
-
+      
       yPos += 10;
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
@@ -1910,311 +1910,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text(`Traceability Method: ${dummyReport.traceabilityMethod}`, 10, yPos + 40);
       doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
       doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
-
+      
       // Page 2 - Methodology with Embedded Images
       doc.addPage();
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
-
-      // Add text content for methodology
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EUDR Compliance Verification Process', 10, yPos);
-      yPos += 10;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      const methodologyOverview = [
-        'The EUDR compliance verification follows Article 2.40 requirements through a systematic',
-        'three-step process: Proof of No Deforestation after 2020, Proof located on Approved Land,',
-        'and Proof of Legality across 8 key indicators.',
-        '',
-        'Data Sources:',
-        '• Geospatial data based on plot GPS/Polygon coordinates',
-        '• On-site surveys from farmers and plot assessments',
-        '• Satellite imagery analysis and desktop verification',
-        '• Field verification and land legality confirmation'
-      ];
-      methodologyOverview.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
-      });
-      yPos += 55;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Deforestation Analysis Methodology', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const methodologyText1 = [
-        'Our deforestation analysis employs a multi-layer satellite monitoring approach:',
-        '',
-        '• Global Forest Watch (GFW) - Provides annual tree cover loss data',
-        '• Joint Research Centre (JRC) - EU\'s forest monitoring system',
-        '• Science Based Targets Network (SBTN) - Advanced deforestation alerts',
-        '',
-        'Analysis Workflow:',
-        '1. Plot boundary verification using GPS coordinates',
-        '2. Historical forest cover analysis (2000-2023)',
-        '3. Cross-reference with protected area databases',
-        '4. Risk assessment scoring and compliance determination'
-      ];
-      methodologyText1.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
-      });
-      yPos += 70;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Risk Assessment & Compliance Framework', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const methodologyText2 = [
-        'Risk Classification System:',
-        '',
-        '• HIGH RISK: Forest loss detected after December 31, 2020',
-        '• MEDIUM RISK: Forest loss between 2018-2020 (requires additional verification)',
-        '• LOW RISK: No significant forest loss detected in monitoring period',
-        '',
-        'Compliance Determination Process:',
-        '• COMPLIANT: No deforestation after cutoff date, all documentation verified',
-        '• NON-COMPLIANT: Evidence of post-2020 deforestation or legal violations',
-        '• UNDER REVIEW: Additional verification required for final determination'
-      ];
-      methodologyText2.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
-      });
-      yPos += 60;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Data Integration & Verification Sources', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const methodologyText3 = [
-        'Plot boundaries and verification data are provided in standardized GeoJSON format',
-        'ensuring full compatibility with EU TRACE system requirements and regulations.',
-        '',
-        'Primary Data Sources:',
-        '• Verified plot coordinates with sub-meter GPS accuracy',
-        '• Multi-temporal satellite imagery analysis (Sentinel-2, Landsat)',
-        '• Ground-truthing surveys and farmer documentation',
-        '• Integration with national land tenure and forest databases',
-        '• Cross-validation with protected area and conservation datasets',
-        '',
-        'All verification data and plot geometries are accessible through the',
-        'accompanying GeoJSON files referenced in this Due Diligence Statement.'
-      ];
-      methodologyText3.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
-      });
-
-      // PAGE 3 - Risk Analysis and Process Flowcharts
-      doc.addPage();
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Risk Analysis & Process Flowcharts', 105, 20, { align: 'center' });
-
-      // Header for page 3
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.rect(10, 30, 190, 15);
-      doc.text('Page 3 of 4', 15, 38);
-      doc.text('Risk Assessment Processes', 85, 38);
-      doc.text(`Generated: ${currentDate}`, 150, 38);
-
-      yPos = 55;
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Risk Assessment Process Overview', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 45);
-      yPos += 8;
-      const riskOverviewText = [
-        'This section outlines the systematic risk assessment approach used to evaluate',
-        'deforestation risks and ensure EUDR compliance across all production plots.',
-        '',
-        'Key Process Components:',
-        '  • Data Collection → Risk Identification → Impact Assessment → Scoring',
-        '  • Satellite Monitoring → Field Verification → Documentation Review',
-        '  • Legal Compliance Check → Final Risk Determination → Mitigation Planning'
-      ];
-      riskOverviewText.forEach((line, index) => {
-        doc.text(line, 12, yPos + (index * 5));
-      });
-      yPos += 50;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Risk Categories & Assessment Matrix', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.rect(10, yPos, 190, 60);
-      doc.line(10, yPos + 15, 200, yPos + 15);
-      doc.line(60, yPos, 60, yPos + 60);
-      doc.line(120, yPos, 120, yPos + 60);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Risk Category', 12, yPos + 10);
-      doc.text('Assessment Criteria', 62, yPos + 10);
-      doc.text('Compliance Action', 122, yPos + 10);
-      doc.setFont('helvetica', 'normal');
-      yPos += 20;
-      const riskMatrix = [
-        ['Deforestation', 'Satellite imagery analysis', 'No forest loss post-2020'],
-        ['Legal Compliance', 'Permits & certifications', 'Valid documentation'],
-        ['Supply Chain', 'Traceability verification', 'Complete chain of custody'],
-        ['Operational', 'Quality & production data', 'Standards compliance']
-      ];
-      riskMatrix.forEach((row, index) => {
-        const rowY = yPos + (index * 10);
-        doc.text(row[0], 12, rowY);
-        doc.text(row[1], 62, rowY);
-        doc.text(row[2], 122, rowY);
-        if (index < riskMatrix.length - 1) {
-          doc.line(10, rowY + 5, 200, rowY + 5);
-        }
-      });
-      yPos += 50;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Data Verification & Quality Assurance', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const qaText = [
-        'Quality assurance measures ensure accuracy and reliability of all compliance data:',
-        '',
-        '• Multi-source data cross-validation and consistency checks',
-        '• Independent third-party verification of critical findings',
-        '• Automated monitoring systems with manual verification protocols',
-        '• Regular audit trails and documentation review processes',
-        '',
-        'All verification data and plot geometries are accessible through standardized',
-        'GeoJSON files that accompany this Due Diligence Statement.'
-      ];
-      qaText.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
-      });
-
-      // PAGE 4 - Land Cover Change Monitoring Flowchart
-      doc.addPage();
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Land Cover Change Monitoring', 105, 20, { align: 'center' });
-
-      // Header for page 4
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.rect(10, 30, 190, 15);
-      doc.text('Page 4 of 4', 15, 38);
-      doc.text('Land Cover Change Monitoring System', 75, 38);
-      doc.text(`Generated: ${currentDate}`, 150, 38);
-
-      yPos = 55;
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Land Cover Change Monitoring Flowchart', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const lccIntroText = [
-        'This flowchart illustrates the systematic workflow for monitoring and verifying',
-        'deforestation alerts across plantation concession areas. The monitoring system',
-        'operates on both scheduled (bi-weekly) and incident-based protocols.',
-        ''
-      ];
-      lccIntroText.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
-      });
-      yPos += 25;
-
-      // Embed the LCC flowchart image
+      
+      // Load methodology flowchart from filesystem
+      const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIiIiIbGAKdUVEREREREREREREREREREREN';
+      
       try {
         const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757586584997.png');
         const imgBase64 = fs.readFileSync(imgPath).toString('base64');
-        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 10, yPos, 190, 100);
-        yPos += 110;
-        console.log('✅ Successfully embedded Land Cover Change flowchart image');
+        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 10, 30, 180, 120);
+        console.log(`✅ Embedded EUDR Compliance methodology image, base64 length: ${imgBase64.length}`);
       } catch (error) {
-        console.log('⚠️  LCC flowchart image embedding failed, using fallback text');
-        doc.setFontSize(10);
+        console.log('Failed to add methodology image, using text fallback');
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('[LAND COVER CHANGE MONITORING FLOWCHART]', 105, yPos + 40, { align: 'center' });
+        doc.text('Deforestation Analysis Methodology', 10, 50);
+        doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.text('(See attached flowchart document for complete monitoring process)', 105, yPos + 50, { align: 'center' });
-        yPos += 70;
+        doc.text('Methodology flowchart showing deforestation risk assessment process', 10, 70);
       }
-
-      // Process Components
+      
+      // Page 3 - Risk Assessment Description  
+      doc.addPage();
+      doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
+      doc.text('PAGE 3 - PLOT RISK ASSESSMENT', 105, 20, { align: 'center' });
+      
+      // Add text content for plot risk assessment
+      yPos = 40;
       doc.setFontSize(12);
-      doc.text('Key Process Components:', 10, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.text('The plot risk assessment is based on the geospatial analysis on deforestation and land approved for', 10, yPos);
+      yPos += 8;
+      doc.text('farming map.', 10, yPos);
+      
+      yPos += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const riskText = 'Geospatial analysis involves capturing plot polygons or GPS coordinates using advanced satellite monitoring systems and analyzing them to ensure no deforestation occurred after December 2020 and that the plots are on legally approved land. If deforestation is detected, further verifications are conducted. Plots showing no deforestation proceed to land legality analysis. The map reference for deforestation and land approved for farming is provided in the following information.';
+      const wrappedText = doc.splitTextToSize(riskText, 180);
+      doc.text(wrappedText, 10, yPos);
+      yPos += wrappedText.length * 6 + 15;
+      
+      doc.setFont('helvetica', 'bold');
+      doc.text('Geospatial analysis reference', 10, yPos);
       yPos += 10;
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 80);
-      doc.line(10, yPos + 15, 200, yPos + 15);
-      doc.line(100, yPos, 100, yPos + 80);
+      doc.text('Deforestation map: GFW', 10, yPos);
+      yPos += 8;
+      doc.text('Land approved for farming map: WDPA & Or National Map. Please clarify with Koliva directly which map is being used.', 10, yPos);
+      
+      yPos += 15;
       doc.setFont('helvetica', 'bold');
-      doc.text('Process Stage', 12, yPos + 10);
-      doc.text('Responsible Party & Action', 102, yPos + 10);
+      doc.text('Outputs: ', 10, yPos);
       doc.setFont('helvetica', 'normal');
+      doc.text('The output includes deforestation, land-approved-for-farming maps, and land legality analysis, as well as providing negligibility status information:', 10, yPos + 8);
+      
+      yPos += 25;
+      doc.text('• Low: Assessment indicates that there is high certainty for EUDR negligible risk and proof is available. The low risk is categorized as negligible.', 15, yPos);
+      yPos += 10;
+      doc.text('• Medium: Assessment shows that there is an indication of negligible risk. However, further mitigation actions are encouraged. The medium risk is categorized as negligible.', 15, yPos);
+      yPos += 10;
+      doc.text('• High: Assessment indicates that the farmer/plots are high risk and categorized as non negligible.', 15, yPos);
+      
+      yPos += 15;
+      const finalText = 'Non-negligible plots are flagged with warning indicators, and users can view details of negligibility status and reasons for non-negligible through interactive map features. This detailed methodology ensures that operators can systematically assess and verify their negligibility status with the EUDR, promoting sustainable agricultural practices and mitigating deforestation risks.';
+      const finalWrapped = doc.splitTextToSize(finalText, 180);
+      doc.text(finalWrapped, 10, yPos);
+      
+      // Page 4 - Land Cover Change Monitoring
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PAGE 4 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
+      
+      yPos = 40;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FLOWCHART LAND COVER CHANGE MONITORING', 105, yPos, { align: 'center' });
+      
       yPos += 20;
-      const lccProcesses = [
-        ['1. GIS Alert Detection', 'System Monitoring - Automated satellite analysis'],
-        ['2. Coordinate Verification', 'GIS Team - Location accuracy confirmation'],
-        ['3. Desktop Analysis', 'Technical Team - Preliminary assessment'],
-        ['4. Field Verification', 'Estate Manager - On-ground validation'],
-        ['5. Final Report', 'System Monitoring - Compliance determination']
-      ];
-      lccProcesses.forEach((process, index) => {
-        const processY = yPos + (index * 12);
-        doc.text(process[0], 12, processY);
-        doc.text(process[1], 102, processY);
-        if (index < lccProcesses.length - 1) {
-          doc.line(10, processY + 6, 200, processY + 6);
-        }
-      });
-
-      // Legal Framework
-      yPos += 70;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('This flowchart illustrates the workflow for monitoring land cover changes across multiple stakeholders', 10, yPos);
+      yPos += 8;
+      doc.text('within the KPN Plantation concession area. It aims to conduct monitoring every 3 months as', 10, yPos);
+      yPos += 8;
+      doc.text('well as incidental events.', 10, yPos);
+      
+      yPos += 20;
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('Legal Framework & Compliance:', 10, yPos);
+      doc.text('Process Flow:', 10, yPos);
       yPos += 10;
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      const legalFramework = [
-        '• UU No. 41 Tahun 1999 - Forestry Law: Prohibits unauthorized land clearing',
-        '• UU No. 32 Tahun 2009 - Environmental Protection: Requires environmental monitoring',
-        '• UU No. 39 Tahun 2014 - Plantation Law: Mandates sustainable practices',
-        '• PERMEN LHK No. P.8/2019 - Environmental information systems',
-        '• ISPO (Indonesian Sustainable Palm Oil) - No deforestation requirements',
-        '• NDPE Policy KPN Plantations - No Deforestation, No Peat, No Exploitation',
-        '• EU Deforestation Regulation (EUDR) - Supply chain traceability since 2020'
-      ];
-      legalFramework.forEach((item, index) => {
-        doc.text(item, 10, yPos + (index * 5));
-      });
-
+      doc.text('1. GIS → Alert → Verify Coordinates Location → Desktop Analysis', 15, yPos);
+      yPos += 8;
+      doc.text('2. Estate Manager → Controlled by Community → Verify Field Location', 15, yPos);
+      yPos += 8;
+      doc.text('3. System And Monitoring → Verify Land Cover Change Final Report', 15, yPos);
+      
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Legal Framework:', 10, yPos);
+      yPos += 10;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('1. UU No. 32 / 2009 on Environmental Protection and Management - Requires forest area clearing without permits', 15, yPos);
+      yPos += 6;
+      doc.text('2. UU No. 32 / 2014 on Marine and Fisheries - Protection and Management - Requires plantation business activities', 15, yPos);
+      yPos += 6;
+      doc.text('3. PERMEN LHK No. P.71/MENLHK.1/2019 - Environmental Information System - Including through monitoring system', 15, yPos);
+      yPos += 6;
+      doc.text('4. EU Deforestation Regulation (EUDR) - Ensures supply chain traceability and proof of deforestation-free since 2020', 15, yPos);
+      
+      yPos += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('GeoJSON Data Access:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      const geoJsonLink = 'https://api.kpn-eudr.com/geojson/plots-data.geojson';
+      doc.setTextColor(0, 0, 255); // Blue color for link
+      doc.text('Link: ' + geoJsonLink, 15, yPos);
+      doc.setTextColor(0, 0, 0); // Back to black
+      
+      yPos += 12;
+      doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
+      yPos += 6;
+      doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
+      
       // Generate PDF buffer
       const pdfBuffer = doc.output('arraybuffer');
-
+      
       console.log('PDF generated successfully');
-
+      
       // Return the PDF file
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
       res.send(Buffer.from(pdfBuffer));
-
+      
     } catch (error) {
       console.error('Error generating dummy DDS PDF:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -2226,17 +2065,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function generateCleanDDSPDF(report: any): ArrayBuffer {
     try {
       const doc = new jsPDF();
-
+      
       // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
-      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiJS6QKsCSIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
-
+      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiJS6QKsCSIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxE5vD4XBYEyvCNu9+a5KIiIiIiIiIiIiIXCCOER9Yk0TkAvJpjxkFZURERERERERERESqFtXbilQtPgvM6MctIiIiIiIiIiIiUjWp/lak6vBZYEZERERERERERERERERKpsCMiIiIiIiIiIiIiIiInygwIyIiIiIiIiIiIiIi4ic2h8PhsCaWR0ljFDpGfGBNEhEREREREREREZFKUFxdreppRaoG9ZgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+      
+      // Base64 embedded Land Cover Change flowchart image (Page 4)  
+      const lccFlowchartImageBase64 = "iVBORw0KGgoAAAANSUhEUgAACbEAAAbaCAIAAAB+5T+0AAAACXBIWXMAABcRAAAXEQHKJvM/AAAgAElEQVR42uzdeZQU1dn48edWVc/CsCM4ahBEIIgwoiAqgxEjihKUVSJjfmqiEAIR9xxf8BUxaqJxN+qrRo2R3SiiIgIjCgJi3FiC4gqI4sCwwwwz3VV1f3/UUBaz9PRM92w938/xeG73VFd1PXXvrep6uLeU1loAAAAAAAAAAAAAIEkZhAAAAAAAAAAAAABAEiMnCgAAAAAAAAAAACCZkRMFAAAAAAAAAAAAkMzIiQIAAAAAAAAAAABIZuREAQAAAAAAAAAAACQzcqIAAAAAAAAAAAAAkhk5UQAAAAAAAAAAAADJjJwoAAAAAAAAAAAAgGRGThQAAAAAAAAAAABAMiMnCgAAAAAAAAAAACCZkRMFAAAAAAAAAAAAkMzIiQIAAAAAAAAAAABIZuREAQAAAAAAAAAAACQzcqIAAAAAAAAAAAAAkhk5UQAAAAAAAAAAAADJjJwoAAAAAAAAAAAAgGRGThQAAAAAAAAAAABAMiMnCgAAAAAAAAAAACCZkRMFAAAAAAAAAAAAkMzIiQIAAAAAAAAAAABIZuREAQAAAAAAAAAAACQzcqIAAAAAAAAAAAAAkplFCAAgdjNnzrzpppvy8vIIBQAAAAAAAEQkMzPz3//+d3Z2NqEAgPpMaa2JAgDE6JhjjiEhCgAAAAAAgKDMzMwff/yROABAfUZOFACq0mkqRRAAAAAAAABQCnfaAaCe43miAAAAAAAAAAAAAJIZzxMFgGriX/8BAAAAAAA0ZswoBgANCONEAQAAAAAAAAAAACQzxokCQN2wbfv7778nDgAAAAAAALWvbdu2GRkZxAEAGg9yogBQe/Lz8+fMmTN//vzc3FyiAQAAAAAAULeysrJGjhw5fPjwnj17Eg0ASG6K5+EBQBU6zcBTImLvP23bvueee5588sm8vDxiCAAAAAAAUA9NmjTptttua9u2bewfqd6dIgBAnSAnCgBV6TSreKVr2/bcuXNvuukmsqEAAAAAAAD137Rp02666aYYp9UlJwoADQg5UQCoSqdZlSvd9evXX3DBBWRDAQAAAAAAGpYZM2bk5ORUuhg5UQBoQMiJAkBVOs2Yr3Rnzpx5+eWXl/unrKyssWPHnnrqqccdd5yIdOzYkcACAAAAAADUjvz8/IKCggMHDqxfv/7555/Pzc0td7FJkyY98MADlmVFWRU5UQBoQMiJAkBVOs0YrnS9p4dOnTq11PuZmZkPPPDA0KFDY5x9BQAAAAAAADXNtu0PPvhgwoQJ69atK/WngQMHvvrqq1Hu5JATBYAGhJwoAFSl04zhSve666579NFHS705Y8aM0aNHR/+nhQAAAAAAAKgrK1euHDVqVKmnIGVlZX388ccV3dIhJwoADYhBCAAggf7+97+XSogOHDhwx44dOTk5JEQBAAAAAADqrezs7K1bt06aNCn45rp16y666CKCAwBJgJwoACTMypUrr7322uA7kyZNWrhwYdu2bQkOAAAAAABAPWdZ1iOPPDJjxozgm7m5uXfeeSfBAYCGjrlzAaAqnWbFM6IUFBQ0bdo0+M60adNuv/12ggYAAAAAANCwrFy5sn///sF3VqxYkZ2dXWox5s4FgAaEcaIAkBiTJ08Ovhw4cGCpdwAAAAAAANAgZGdnT5s2LfjOhAkTbNsmMgDQcDFOFACq0mlW8K//Nm/efMIJJ/gvMzMzt27dygNEAQAAAAAAGq6cnJxZs2b5L2fMmJGTkxNcgHGiANCAkBMFgKp0mhVc6Za6RC53NhUAAAAAAAA0IKWelFT2H8GTEwWABoS5cwEgXvn5+cGE6MCBA0mIAgAAAAAANHQZGRmPPfaY/zIvL2/x4sWEBQAaKHKiABCvDz/8MPjymWeeISYAAAAAAABJYPz48ZmZmf7LRYsWERMAaKDIiQJAvB566CG/nJWV1bFjR2ICAAAAAACQBIY75QAAIABJREFU78Z2XN7K2sGPRVfXxjvJjJwoACTMypUrr7322uA7kyZNWrhwYdu2bQkOAAAAAABAPWdZ1iOPPDJjxozgm7m5uXfeeSfBAYCGjrlzAaAqnWbFM6IUFBQ0bdo0+M60adNuv/12ggYAAAAAANCwrFy5sn///sF3VqxYkZ2dXWox5s4FgAaEcaIAkBiTJ08Ovhw4cGCpdwAAAAAAANAgZGdnT5s2LfjOhAkTbNsmMgDQcDFOFACq0mlW8K//Nm/efMIJJ/gvMzMzt27dygNEAQAAAAAAGq6cnJxZs2b5L2fMmJGTkxNcgHGiANCAkBMFgKp0mhVc6Za6RC53NhUAAAAAAAA0IKWelFT2H8GTEwWABoS5cwEgXvn5+cGE6MCBA0mIAgAAAAAANHQZGRmPPfaY/zIvL2/x4sWEBQAaKHKiABCvDz/8MPjymWeeISYAAAAAAABJYPz48ZmZmf7LRYsWERMAaKDIiQJAvB566CG/nJWV1bFjR2ICAAAAAACQBI475QfSg8+/9977AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130Bd..."
+      
       console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
-
+      
       // PAGE 1 - Main DDS Content with Professional Tables
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.text('EU Due Diligence Statement', 105, 20, { align: 'center' });
-
+      
       // Header section with border
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -2245,22 +2087,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text('Status: GENERATED', 90, 38);
       const currentDate = new Date().toLocaleDateString('en-GB');
       doc.text(`Generated: ${currentDate}`, 150, 38);
-
+      
       let yPos = 55;
-
+      
       // Section 1: Reference Information Table
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('1. Reference Information', 10, yPos);
       yPos += 10;
-
+      
       // Create table for reference info
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.rect(10, yPos, 190, 25);
       doc.line(10, yPos + 12, 200, yPos + 12);
       doc.line(80, yPos, 80, yPos + 25);
-
+      
       doc.setFont('helvetica', 'bold');
       doc.text('Company Internal Ref:', 12, yPos + 8);
       doc.text('Activity:', 12, yPos + 20);
@@ -2268,25 +2110,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text(report.companyInternalRef || 'DDS-2024-001', 82, yPos + 8);
       doc.text(report.activity || 'Import of Palm Oil Products', 82, yPos + 20);
       yPos += 35;
-
+      
       // Section 2: Operator Information Table
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('2. Operator/Trader Information', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.rect(10, yPos, 190, 35);
       doc.line(10, yPos + 12, 200, yPos + 12);
       doc.line(10, yPos + 24, 200, yPos + 24);
       doc.line(60, yPos, 60, yPos + 35);
-
+      
       doc.setFont('helvetica', 'bold');
       doc.text('Name:', 12, yPos + 8);
       doc.text('Address:', 12, yPos + 20);
       doc.text('Country:', 12, yPos + 32);
-
+      
       doc.setFont('helvetica', 'normal');
       doc.text(report.operatorLegalName || 'KPN Corporation Berhad', 62, yPos + 8);
       const address = report.operatorAddress || 'Level 6, Menara KPN, Jalan Sultan Ismail, Kuala Lumpur, Malaysia';
@@ -2294,70 +2136,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text(addressLines, 62, yPos + 16);
       doc.text(report.operatorCountry || 'Malaysia', 62, yPos + 32);
       yPos += 45;
-
+      
       // Section 3: Commodity Information Table
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('3. Commodity Information', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.rect(10, yPos, 190, 35);
-
+      
       // Table headers
       doc.line(10, yPos + 12, 200, yPos + 12);
       doc.line(70, yPos, 70, yPos + 35);
       doc.line(120, yPos, 120, yPos + 35);
       doc.line(150, yPos, 150, yPos + 35);
-
+      
       doc.setFont('helvetica', 'bold');
       doc.text('Description', 12, yPos + 8);
       doc.text('Net Mass (Kg)', 72, yPos + 8);
       doc.text('% Est.', 122, yPos + 8);
       doc.text('Units', 152, yPos + 8);
-
+      
       doc.setFont('helvetica', 'normal');
       doc.text(report.productDescription || 'Crude Palm Oil (CPO)', 12, yPos + 20);
       doc.text(report.netMassKg?.toString() || '2150.000', 72, yPos + 20);
       doc.text(report.percentageEstimation?.toString() + '%' || '5%', 122, yPos + 20);
       doc.text(report.supplementaryUnit || 'MT', 152, yPos + 20);
-
+      
       // Scientific details
       doc.text(`Scientific: ${report.scientificName || 'Elaeis guineensis'}`, 12, yPos + 28);
       doc.text(`Common: ${report.commonName || 'Oil Palm'}`, 72, yPos + 28);
       yPos += 45;
-
+      
       // Section 4: Summary Statistics Table
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('4. Summary Statistics', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.rect(10, yPos, 190, 25);
       doc.line(10, yPos + 12, 200, yPos + 12);
       doc.line(95, yPos, 95, yPos + 25);
-
+      
       doc.setFont('helvetica', 'bold');
       doc.text('Total Producers:', 12, yPos + 8);
       doc.text('Total Plots:', 12, yPos + 20);
       doc.text('Total Area (ha):', 97, yPos + 8);
       doc.text('Country of Harvest:', 97, yPos + 20);
-
+      
       doc.setFont('helvetica', 'normal');
       doc.text(report.totalProducers?.toString() || '15', 55, yPos + 8);
       doc.text(report.totalPlots?.toString() || '45', 40, yPos + 20);
       doc.text(report.totalProductionArea?.toString() || '1250.50', 140, yPos + 8);
       doc.text(report.countryOfHarvest || 'Malaysia', 150, yPos + 20);
-
+      
       // PAGE 2 - Methodology Section with Embedded Image
       doc.addPage();
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.text('EUDR Compliance Methodology', 105, 20, { align: 'center' });
-
+      
       // Header for page 2
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -2365,9 +2207,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text('Page 2 of 4', 15, 38);
       doc.text('Methodology & Verification Process', 80, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
-
+      
       yPos = 55;
-
+      
       // Embed the EUDR Compliance Verification flowchart image
       try {
         doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
@@ -2376,13 +2218,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Note: Image embedding not supported, using text description');
         yPos += 10;
       }
-
+      
       // Methodology Section 1: Overview
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('1. EUDR Compliance Verification Process', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       const methodologyOverview = [
@@ -2396,18 +2238,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '• Satellite imagery analysis and desktop verification',
         '• Field verification and land legality confirmation'
       ];
-
+      
       methodologyOverview.forEach((line, index) => {
         doc.text(line, 10, yPos + (index * 5));
       });
       yPos += 55;
-
+      
       // Methodology Section 1: Deforestation Analysis
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('1. Deforestation Analysis Methodology', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       const methodologyText1 = [
@@ -2423,18 +2265,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '3. Cross-reference with protected area databases',
         '4. Risk assessment scoring and compliance determination'
       ];
-
+      
       methodologyText1.forEach((line, index) => {
         doc.text(line, 10, yPos + (index * 5));
       });
       yPos += 70;
-
+      
       // Methodology Section 2: Risk Assessment Framework
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('2. Risk Assessment & Compliance Framework', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       const methodologyText2 = [
@@ -2449,18 +2291,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '• NON-COMPLIANT: Evidence of post-2020 deforestation or legal violations',
         '• UNDER REVIEW: Additional verification required for final determination'
       ];
-
+      
       methodologyText2.forEach((line, index) => {
         doc.text(line, 10, yPos + (index * 5));
       });
       yPos += 60;
-
+      
       // Methodology Section 3: Data Integration & Sources
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('3. Data Integration & Verification Sources', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       const methodologyText3 = [
@@ -2477,41 +2319,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'All verification data and plot geometries are accessible through the',
         'accompanying GeoJSON files referenced in this Due Diligence Statement.'
       ];
-
+      
       methodologyText3.forEach((line, index) => {
         doc.text(line, 10, yPos + (index * 5));
       });
       yPos += 65;
-
+      
       // PAGE 3 - Risk Analysis and Process Flowcharts
       doc.addPage();
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.text('Risk Analysis & Process Flowcharts', 105, 20, { align: 'center' });
-
-      // Header for page 3
+      
+      // Header for page 3 with improved styling
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.rect(10, 30, 190, 15);
       doc.text('Page 3 of 4', 15, 38);
       doc.text('Risk Assessment Processes', 85, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
-
+      
       yPos = 55;
-
+      
       // Section 1: Risk Assessment Process Overview
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('1. Risk Assessment Process Overview', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-
+      
       // Create styled box for process overview
       doc.rect(10, yPos, 190, 45);
       yPos += 8;
-
+      
       const riskOverviewText = [
         'This section outlines the systematic risk assessment approach used to evaluate',
         'deforestation risks and ensure EUDR compliance across all production plots.',
@@ -2521,37 +2363,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '  • Satellite Monitoring → Field Verification → Documentation Review',
         '  • Legal Compliance Check → Final Risk Determination → Mitigation Planning'
       ];
-
+      
       riskOverviewText.forEach((line, index) => {
         doc.text(line, 12, yPos + (index * 5));
       });
       yPos += 50;
-
+      
       // Section 2: Detailed Risk Categories & Assessment Matrix
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('2. Risk Categories & Assessment Matrix', 10, yPos);
       yPos += 10;
-
+      
       // Create assessment matrix table
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-
+      
       // Table borders
       doc.rect(10, yPos, 190, 60);
       doc.line(10, yPos + 15, 200, yPos + 15);  // Header line
       doc.line(60, yPos, 60, yPos + 60);        // First column divider
       doc.line(120, yPos, 120, yPos + 60);      // Second column divider
-
+      
       // Table headers
       doc.setFont('helvetica', 'bold');
       doc.text('Risk Category', 12, yPos + 10);
       doc.text('Assessment Criteria', 62, yPos + 10);
       doc.text('Compliance Action', 122, yPos + 10);
-
+      
       doc.setFont('helvetica', 'normal');
       yPos += 20;
-
+      
       // Table content
       const riskMatrix = [
         ['Deforestation', 'Satellite imagery analysis', 'No forest loss post-2020'],
@@ -2559,7 +2401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ['Supply Chain', 'Traceability verification', 'Complete chain of custody'],
         ['Operational', 'Quality & production data', 'Standards compliance']
       ];
-
+      
       riskMatrix.forEach((row, index) => {
         const rowY = yPos + (index * 10);
         doc.text(row[0], 12, rowY);
@@ -2569,15 +2411,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           doc.line(10, rowY + 5, 200, rowY + 5);
         }
       });
-
+      
       yPos += 50;
-
+      
       // Section 3: Data Verification & Quality Assurance
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('3. Data Verification & Quality Assurance', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       const qaText = [
@@ -2591,12 +2433,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'All verification data and plot geometries are accessible through standardized',
         'GeoJSON files that accompany this Due Diligence Statement.'
       ];
-
+      
       qaText.forEach((line, index) => {
         doc.text(line, 10, yPos + (index * 5));
       });
       yPos += 50;
-
+      
       // Reference to GeoJSON data
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
@@ -2608,13 +2450,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setTextColor(0, 0, 255);
       doc.text('Link: ' + geoJsonLink, 15, yPos);
       doc.setTextColor(0, 0, 0);
-
+      
       // PAGE 4 - Land Cover Change Monitoring Flowchart
       doc.addPage();
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.text('Land Cover Change Monitoring', 105, 20, { align: 'center' });
-
+      
       // Header for page 4
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -2622,15 +2464,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text('Page 4 of 4', 15, 38);
       doc.text('Land Cover Change Monitoring System', 75, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
-
+      
       yPos = 55;
-
+      
       // Section 1: Monitoring System Overview
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('Land Cover Change Monitoring Flowchart', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       const lccIntroText = [
@@ -2639,17 +2481,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'operates on both scheduled (bi-weekly) and incident-based protocols.',
         ''
       ];
-
+      
       lccIntroText.forEach((line, index) => {
         doc.text(line, 10, yPos + (index * 5));
       });
       yPos += 25;
-
+      
       // Embed the LCC flowchart image
       try {
-        const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757586584997.png');
-        const imgBase64 = fs.readFileSync(imgPath).toString('base64');
-        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 10, yPos, 190, 100);
+        doc.addImage(lccFlowchartImageBase64, 'PNG', 10, yPos, 190, 100);
         yPos += 110;
         console.log('✅ Successfully embedded Land Cover Change flowchart image');
       } catch (error) {
@@ -2662,28 +2502,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text('(See attached flowchart document for complete monitoring process)', 105, yPos + 50, { align: 'center' });
         yPos += 70;
       }
-
+      
       // Section 2: Process Components
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('Key Process Components:', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
-
+      
       // Create process flow table
       doc.rect(10, yPos, 190, 80);
       doc.line(10, yPos + 15, 200, yPos + 15);
       doc.line(100, yPos, 100, yPos + 80);
-
+      
       doc.setFont('helvetica', 'bold');
       doc.text('Process Stage', 12, yPos + 10);
       doc.text('Responsible Party & Action', 102, yPos + 10);
-
+      
       doc.setFont('helvetica', 'normal');
       yPos += 20;
-
+      
       const lccProcesses = [
         ['1. GIS Alert Detection', 'System Monitoring - Automated satellite analysis'],
         ['2. Coordinate Verification', 'GIS Team - Location accuracy confirmation'],
@@ -2691,7 +2531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ['4. Field Verification', 'Estate Manager - On-ground validation'],
         ['5. Final Report', 'System Monitoring - Compliance determination']
       ];
-
+      
       lccProcesses.forEach((process, index) => {
         const processY = yPos + (index * 12);
         doc.text(process[0], 12, processY);
@@ -2700,15 +2540,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           doc.line(10, processY + 6, 200, processY + 6);
         }
       });
-
+      
       yPos += 70;
-
+      
       // Section 3: Legal Framework
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('Legal Framework & Compliance:', 10, yPos);
       yPos += 10;
-
+      
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       const legalFramework = [
@@ -2720,11 +2560,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '• NDPE Policy KPN Plantations - No Deforestation, No Peat, No Exploitation',
         '• EU Deforestation Regulation (EUDR) - Supply chain traceability since 2020'
       ];
-
+      
       legalFramework.forEach((item, index) => {
         doc.text(item, 10, yPos + (index * 5));
       });
-
+      
       console.log('✅ Enhanced 4-page PDF generated successfully with professional layout');
       console.log('✅ PDF includes: Page 1 (DDS Data), Page 2 (Methodology), Page 3 (Risk Analysis), Page 4 (LCC Monitoring)');
       return doc.output('arraybuffer');
@@ -2735,66 +2575,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Helper functions for GeoJSON processing and geometry calculations
-  function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
-    let north = -90, south = 90, east = -180, west = 180;
-
-    for (const coord of coordinates) {
-      const [lng, lat] = coord;
-      north = Math.max(north, lat);
-      south = Math.min(south, lat);
-      east = Math.max(east, lng);
-      west = Math.min(west, lng);
-    }
-
-    return { north, south, east, west };
+  function calculateBoundingBox(coordinates: number[][]) {
+    if (!coordinates || coordinates.length === 0) return null;
+    
+    let minLng = coordinates[0][0], maxLng = coordinates[0][0];
+    let minLat = coordinates[0][1], maxLat = coordinates[0][1];
+    
+    coordinates.forEach(([lng, lat]) => {
+      minLng = Math.min(minLng, lng);
+      maxLng = Math.max(maxLng, lng);
+      minLat = Math.min(minLat, lat);
+      maxLat = Math.max(maxLat, lat);
+    });
+    
+    return { north: maxLat, south: minLat, east: maxLng, west: minLng };
   }
-
-  function calculateCentroid(coordinates: number[][]): { lat: number, lng: number } {
-    let totalLat = 0, totalLng = 0;
-    const count = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
-    for (let i = 0; i < count; i++) {
-      const [lng, lat] = coordinates[i];
-      totalLat += lat;
-      totalLng += lng;
-    }
-
+  
+  function calculateCentroid(coordinates: number[][]) {
+    if (!coordinates || coordinates.length === 0) return null;
+    
+    let sumLng = 0, sumLat = 0;
+    coordinates.forEach(([lng, lat]) => {
+      sumLng += lng;
+      sumLat += lat;
+    });
+    
     return {
-      lat: totalLat / count,
-      lng: totalLng / count
+      lng: sumLng / coordinates.length,
+      lat: sumLat / coordinates.length
     };
   }
-
-  function calculatePolygonArea(coordinates: number[][]): number {
-    // Simple polygon area calculation using the shoelace formula
+  
+  function calculatePolygonArea(coordinates: number[][]) {
+    if (!coordinates || coordinates.length < 3) return 0;
+    
+    // Simple area calculation using shoelace formula (approximate for small areas)
     let area = 0;
-    const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
+    const n = coordinates.length;
+    
     for (let i = 0; i < n; i++) {
       const j = (i + 1) % n;
       area += coordinates[i][0] * coordinates[j][1];
       area -= coordinates[j][0] * coordinates[i][1];
     }
-
-    area = Math.abs(area) / 2;
-
-    // Convert from square degrees to hectares (rough approximation)
-    // This is a simplified conversion and should be improved for production use
-    const hectares = area * 11119.49; // Rough conversion factor
-
-    return Math.round(hectares * 100) / 100; // Round to 2 decimal places
+    
+    // Convert to hectares (rough approximation)
+    return Math.abs(area) / 2 * 111000 * 111000 / 10000; // Very rough conversion
   }
 
   // Helper function to generate PDF template matching the exact structure
   function generateDDSPDFTemplate(report: any) {
     const currentDate = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
-      month: '2-digit',
+      month: '2-digit', 
       year: 'numeric'
-    }) + ' ' + new Date().toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    }) + ' ' + new Date().toLocaleTimeString('en-GB', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
     });
 
     return {
@@ -2807,7 +2645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: "SUBMITTED",
           createdOn: currentDate
         },
-
+        
         section1: {
           companyInternalRef: {
             label: "1. Company Internal Ref:",
@@ -2847,7 +2685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             headers: [
               "Commodity(ies) or Product(s) Description",
               "Net Mass (Kg)",
-              "% Est. or Deviation",
+              "% Est. or Deviation", 
               "Supplementary Units"
             ],
             data: {
@@ -2964,13 +2802,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate PDF for download
       const pdfBuffer = generateCleanDDSPDF(report);
-
+      
       // Set response headers for file download
       const filename = `dds-report-${report.id}-${new Date().toISOString().split('T')[0]}.pdf`;
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Length', pdfBuffer.byteLength.toString());
-
+      
       console.log(`✅ DDS report ${report.id} PDF download initiated`);
       res.send(Buffer.from(pdfBuffer));
     } catch (error) {
@@ -2990,7 +2828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Mock EU Trace submission - in real implementation, integrate with EU Trace API
       const euTraceRef = `EU-TRACE-${Date.now()}-${report.id.slice(0, 8)}`;
-
+      
       // Update report with submission details
       await storage.updateDdsReport(req.params.id, {
         euTraceReference: euTraceRef,
@@ -2998,10 +2836,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'submitted'
       });
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'DDS report submitted to EU Trace system',
-        euTraceReference: euTraceRef
+        euTraceReference: euTraceRef 
       });
     } catch (error) {
       console.error('Error submitting to EU Trace:', error);
@@ -3036,10 +2874,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         kmlFileName: fileName || 'uploaded-polygons.kml'
       });
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'KML file processed successfully',
-        extractedPlots: mockPolygonCoordinates.length
+        extractedPlots: mockPolygonCoordinates.length 
       });
     } catch (error) {
       console.error('Error processing KML upload:', error);
@@ -3110,7 +2948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Mock file paths - in real implementation, save to storage
-      const filePaths = geoJsonFiles.map((file: { fileName: string; }) => `/geojson/${report.id}/${file.fileName}`);
+      const filePaths = geoJsonFiles.map((file: { fileName: string }) => `/geojson/${report.id}/${file.fileName}`);
       const combinedFilePath = `/geojson/${report.id}/combined-verified-polygons.geojson`;
 
       // Update report with generated GeoJSON paths
@@ -3118,11 +2956,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         geojsonFilePaths: JSON.stringify([...filePaths, combinedFilePath])
       });
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'GeoJSON files generated successfully',
         files: [
-          ...geoJsonFiles.map((file: { fileName: string; plotId: string; }) => ({
+          ...geoJsonFiles.map((file: { fileName: string; plotId: string }) => ({
             fileName: file.fileName,
             path: `/geojson/${report.id}/${file.fileName}`,
             plotId: file.plotId
@@ -3150,7 +2988,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { fileName } = req.params;
-
+      
       // In real implementation, serve from actual file storage
       // Mock GeoJSON content for now
       const mockGeoJson = {
@@ -3175,7 +3013,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Content-Type': 'application/geo+json',
         'Content-Disposition': `attachment; filename=${fileName}`
       });
-
+      
       res.json(mockGeoJson);
     } catch (error) {
       console.error('Error downloading GeoJSON:', error);
@@ -3268,11 +3106,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { ObjectStorageService } = await import("./objectStorage");
       const objectStorageService = new ObjectStorageService();
-
+      
       // Search for TIFF files in public search paths
       const searchPaths = objectStorageService.getPublicObjectSearchPaths();
       const tiffFiles = [];
-
+      
       for (const searchPath of searchPaths) {
         try {
           // List files in the bucket (simplified implementation)
@@ -3287,7 +3125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.warn(`Could not list files in path: ${searchPath}`, error);
         }
       }
-
+      
       res.json({ files: tiffFiles });
     } catch (error) {
       console.error("Error listing TIFF files:", error);
@@ -3460,7 +3298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
       const { geojsonFile, fileName } = req.body;
-
+      
       if (!geojsonFile) {
         return res.status(400).json({ error: 'GeoJSON file is required' });
       }
@@ -3474,13 +3312,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Flexible data extraction function
-      const extractPlotInfo = (feature: any) => {
+      const extractPlotInfo = (feature) => {
         const props = feature.properties || {};
-
+        
         // Extract ID - try multiple possible fields
-        const plotId = props.id || props.plot_id || props.ID || props.Plot_ID ||
+        const plotId = props.id || props.plot_id || props.ID || props.Plot_ID || 
                       props.Name || props.name || props.plotId || `plot_${Math.random().toString(36).substr(2, 9)}`;
-
+        
         // Extract area - handle various formats
         let area = 0;
         if (props['.Plot size']) {
@@ -3494,7 +3332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (props.Area) {
           area = parseFloat(props.Area) || 0;
         }
-
+        
         // Extract country - try multiple sources
         let country = 'Unknown';
         if (props.country_name) {
@@ -3509,14 +3347,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Default to Indonesia if we have district info
           country = 'Indonesia';
         }
-
+        
         // Extract additional metadata
         const farmerName = props['.Farmer Name'] || props.farmer_name || '';
         const farmName = props.farm_name || farmerName || '';
         const district = props['.Distict'] || props.district || '';
         const aggregatorName = props['.Aggregator Name'] || '';
         const farmersId = props['.Farmers ID'] || '';
-
+        
         return {
           plotId: String(plotId),
           area: area,
@@ -3534,7 +3372,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`=== PROCESSING GEOJSON UPLOAD ===`);
       if (parsedGeoJson.features) {
         console.log(`Input file contains ${parsedGeoJson.features.length} features`);
-        parsedGeoJson.features.forEach((feature: any, index: number) => {
+        parsedGeoJson.features.forEach((feature, index) => {
           const info = extractPlotInfo(feature);
           console.log(`Plot ${index + 1}: ID="${info.plotId}", Area=${info.area}ha, Country="${info.country}", District="${info.district}"`);
         });
@@ -3543,7 +3381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Normalize GeoJSON for API compatibility
       const normalizedGeoJson = {
         type: 'FeatureCollection',
-        features: parsedGeoJson.features?.map((feature: any) => ({
+        features: parsedGeoJson.features?.map(feature => ({
           type: 'Feature',
           properties: {
             // Extract and normalize key properties
@@ -3554,42 +3392,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           geometry: {
             ...feature.geometry,
             // Remove Z-coordinates if present for API compatibility
-            coordinates: feature.geometry.coordinates?.map((ring: any) => {
+            coordinates: feature.geometry.coordinates?.map(ring => {
               if (Array.isArray(ring[0]) && Array.isArray(ring[0][0])) {
                 // MultiPolygon or Polygon with holes
-                return ring.map((coord: any) =>
-                  Array.isArray(coord[0]) ? coord.map((point: any) => [point[0], point[1]]) : [coord[0], coord[1]]
+                return ring.map(coord => 
+                  Array.isArray(coord[0]) ? coord.map(point => [point[0], point[1]]) : [coord[0], coord[1]]
                 );
               } else {
                 // Simple Polygon
-                return ring.map((coord: any) => [coord[0], coord[1]]);
+                return ring.map(coord => [coord[0], coord[1]]);
               }
             })
           }
         })) || []
       };
 
-      // Create a combined GeoJSON file for analysis
-      const combinedGeoJsonForAnalysis = {
-        type: 'FeatureCollection',
-        features: normalizedGeoJson.features.map((feature: any) => ({
-          type: 'Feature',
-          properties: {
-            plot_id: feature.properties.plotId,
-            country_name: feature.properties.country,
-            total_area_hectares: feature.properties.area,
-            // Add potential fields that the multilayer API might expect for analysis
-            // For example, if specific data fields are required for peatland analysis
-          },
-          geometry: feature.geometry
-        }))
-      };
-
       // Create a proper multipart/form-data request
       const boundary = `----formdata-node-${Date.now()}`;
-      const fileContent = JSON.stringify(combinedGeoJsonForAnalysis);
+      const fileContent = JSON.stringify(normalizedGeoJson);
       const uploadFileName = fileName || 'processed_plot_boundaries.json';
-
+      
       const formBody = [
         `--${boundary}`,
         `Content-Disposition: form-data; name="file"; filename="${uploadFileName}"`,
@@ -3599,7 +3421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `--${boundary}--`
       ].join('\r\n');
 
-      console.log(`Sending ${normalizedGeoJson.features.length} normalized features to EUDR API for analysis...`);
+      console.log(`Sending ${normalizedGeoJson.features.length} normalized features to EUDR API...`);
 
       // Call EUDR Multilayer API
       const response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
@@ -3613,14 +3435,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('EUDR API Error:', response.status, errorText);
-        return res.status(response.status).json({
+        return res.status(response.status).json({ 
           error: 'Failed to analyze GeoJSON file',
-          details: errorText
+          details: errorText 
         });
       }
 
       const analysisResults = await response.json();
-
+      
       // Enhanced logging with feature matching
       const inputFeatures = normalizedGeoJson.features?.length || 0;
       const outputFeatures = analysisResults.data?.features?.length || 0;
@@ -3629,67 +3451,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Output features received from API: ${outputFeatures}`);
       console.log(`Processing time: ${analysisResults.analysis_summary?.processing_time_seconds || 'N/A'}s`);
       console.log(`File info from API:`, analysisResults.file_info);
-
+      
       if (inputFeatures !== outputFeatures) {
         console.log(`⚠️  FEATURE MISMATCH: Sent ${inputFeatures} but received ${outputFeatures}`);
         console.log(`This may be due to API processing limitations or invalid geometries.`);
-
+        
         // Add a warning to the response
         analysisResults.warning = {
           message: `Only ${outputFeatures} out of ${inputFeatures} features were processed successfully.`,
           recommendation: "Check for invalid geometries or split large files into smaller batches."
         };
       }
-
+      
       // Store analysis results in database with enhanced metadata
       if (analysisResults.data?.features) {
         const uploadSession = `session-${Date.now()}`;
-
+        
         // Clear previous analysis results
         await storage.clearAnalysisResults();
-
+        
         // Store each analysis result in the database
-        const transformedResults = await Promise.all(analysisResults.data.features.map(async (feature: any) => {
-          const plotId = feature.properties.plot_id;
-          const area = feature.properties.total_area_hectares || 0;
-
-          // Calculate peatland intersection area
-          let peatlandArea = 0;
+        for (const feature of analysisResults.data.features) {
           try {
-            if (feature.geometry) {
-              const peatlandIntersection = await storage.calculatePeatlandIntersection(feature.geometry);
-              peatlandArea = peatlandIntersection.intersectionArea || 0;
-              console.log(`🌿 Plot ${plotId} - Peatland intersection: ${peatlandArea.toFixed(4)}ha`);
-            }
-          } catch (error) {
-            console.error(`Error calculating peatland intersection for plot ${plotId}:`, error);
-          }
-
-          return {
-            plotId,
-            country: feature.properties.country_name || 'Unknown',
-            area,
-            overallRisk: feature.properties.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
-            complianceStatus: feature.properties.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
-            gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
-            jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
-            sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
-            // Calculate actual loss area (percentage * total area, use 0.01 minimum for HIGH status)
-            gfwLossArea: (Number(feature.properties.gfw_loss?.gfw_loss_area || 0) || (feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * area,
-            jrcLossArea: (Number(feature.properties.jrc_loss?.jrc_loss_area || 0) || (feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * area,
-            sbtnLossArea: (Number(feature.properties.sbtn_loss?.sbtn_loss_area || 0) || (feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * area,
-            peatlandArea,
-            highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
-            // Preserve the actual geometry data from GeoJSON
-            geometry: feature.geometry
-          };
-        }));
-
-        // Store each analysis result in the database
-        for (const result of transformedResults) {
-          try {
+            // Enhanced debugging with plot information
+            const gfwArea = feature.properties.gfw_loss?.gfw_loss_area;
+            const jrcArea = feature.properties.jrc_loss?.jrc_loss_area;
+            const sbtnArea = feature.properties.sbtn_loss?.sbtn_loss_area;
+            const plotId = feature.properties.plot_id || feature.properties.plotId || 'unknown';
+            
+            console.log(`🔍 Plot ${plotId} - GFW: ${gfwArea}ha, JRC: ${jrcArea}ha, SBTN: ${sbtnArea}ha`);
+            
+            // Find matching original data
+            const originalFeature = parsedGeoJson.features?.find(f => {
+              const origInfo = extractPlotInfo(f);
+              return origInfo.plotId === plotId;
+            });
+            
+            const originalInfo = originalFeature ? extractPlotInfo(originalFeature) : {};
+            
             await storage.createAnalysisResult({
-              ...result,
+              plotId: plotId,
+              country: feature.properties.country_name || originalInfo.country || 'Unknown',
+              area: String(feature.properties.total_area_hectares || originalInfo.area || 0),
+              overallRisk: feature.properties.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
+              complianceStatus: feature.properties.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
+              gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
+              jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
+              sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
+              // Include intersection area data for high-risk datasets
+              gfwLossArea: String(Number(gfwArea || 0)),
+              jrcLossArea: String(Number(jrcArea || 0)),
+              sbtnLossArea: String(Number(sbtnArea || 0)),
+              highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
+              geometry: feature.geometry,
               uploadSession: uploadSession
             });
           } catch (err) {
@@ -3697,10 +3511,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log("Could not store analysis result:", errMessage);
           }
         }
-
-        console.log(`✅ Stored ${transformedResults.length} analysis results in database for reactive dashboard`);
+        
+        console.log(`✅ Stored ${analysisResults.data.features.length} analysis results in database for reactive dashboard`);
       }
-
+      
       // Enhance response with extracted metadata
       const enhancedResponse = {
         ...analysisResults,
@@ -3710,15 +3524,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           extractedInfo: parsedGeoJson.features?.map(extractPlotInfo) || []
         }
       };
-
+      
       res.json(enhancedResponse);
 
     } catch (error) {
       console.error('GeoJSON upload error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Internal server error during GeoJSON analysis',
-        details: errorMessage
+        details: errorMessage 
       });
     }
   });
@@ -3750,20 +3564,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { plotId } = req.params;
       const { coordinates } = req.body;
-
+      
       if (!coordinates || !Array.isArray(coordinates)) {
         return res.status(400).json({ error: 'Invalid coordinates provided' });
       }
-
+      
       // Update the geometry in analysis results
       const result = await storage.updateAnalysisResultGeometry(plotId, coordinates);
-
+      
       if (!result) {
         return res.status(404).json({ error: 'Plot not found' });
       }
-
-      res.json({
-        success: true,
+      
+      res.json({ 
+        success: true, 
         message: `Updated geometry for ${plotId}`,
         plotId,
         coordinatesCount: coordinates.length
@@ -3778,7 +3592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/supply-chain/analytics', isAuthenticated, async (req, res) => {
     try {
       const { range = '6months' } = req.query;
-
+      
       // Mock analytics data with renamed external suppliers
       const analyticsData = {
         suppliers: [
@@ -3952,7 +3766,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         }
       };
-
+      
       res.json(analyticsData);
     } catch (error) {
       console.error('Error fetching supply chain analytics:', error);
@@ -3960,12 +3774,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Supply Chain Tier Management endpoint
+  // Supply Chain Tier Management endpoint  
   app.post('/api/supply-chain/tiers', isAuthenticated, async (req, res) => {
     try {
       const tierAssignments = req.body;
       console.log('✅ Received tier assignments for saving:', JSON.stringify(tierAssignments, null, 2));
-
+      
       // Validate that tierAssignments is an object
       if (!tierAssignments || typeof tierAssignments !== 'object') {
         return res.status(400).json({ error: 'Invalid tier assignments data' });
@@ -3973,15 +3787,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // For now, we'll store it in memory or could extend to database storage later
       console.log('✅ Supply chain tier configuration saved successfully');
-
-      res.json({
-        success: true,
+      
+      res.json({ 
+        success: true, 
         message: 'Supply chain configuration saved successfully!',
         savedAt: new Date().toISOString(),
         tierCount: Object.keys(tierAssignments).length,
         totalSuppliers: Object.values(tierAssignments).reduce((total: number, tier: any) => total + (Array.isArray(tier) ? tier.length : 0), 0)
       });
-
+      
     } catch (error) {
       console.error('❌ Error saving supply chain tier configuration:', error);
       res.status(500).json({ error: 'Failed to save supply chain configuration' });
@@ -3992,13 +3806,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/suppliers/auto-fill', isAuthenticated, async (req, res) => {
     try {
       console.log('📋 Fetching suppliers for auto-fill from data collection forms...');
-
+      
       // Fetch estate data collection
       const estates = await storage.getEstateDataCollection();
-
-      // Fetch mill data collection
+      
+      // Fetch mill data collection  
       const mills = await storage.getMillDataCollection();
-
+      
       // Combine and format supplier data for auto-fill
       const suppliers: Array<{
         id: string;
@@ -4025,7 +3839,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         internalTeamPhone?: string;
         originalData: any;
       }> = [];
-
+      
       // Add estate suppliers
       estates.forEach(estate => {
         suppliers.push({
@@ -4054,8 +3868,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           originalData: estate
         });
       });
-
-      // Add mill suppliers
+      
+      // Add mill suppliers  
       mills.forEach(mill => {
         suppliers.push({
           id: mill.id,
@@ -4083,9 +3897,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           originalData: mill
         });
       });
-
+      
       console.log(`✅ Found ${suppliers.length} suppliers for auto-fill (${estates.length} estates, ${mills.length} mills)`);
-
+      
       res.json(suppliers);
     } catch (error) {
       console.error('❌ Error fetching suppliers for auto-fill:', error);
@@ -4098,11 +3912,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const supplierComplianceData = req.body;
       console.log('Saving supplier compliance data:', supplierComplianceData.namaSupplier);
-
+      
       // Store the data (you may want to add this to your storage interface)
       // For now, we'll just return success
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'Supplier compliance data saved successfully',
         id: Date.now().toString()
       });
@@ -4147,7 +3961,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           analysisData: null
         }
       ];
-
+      
       res.json(supplierComplianceData);
     } catch (error) {
       console.error('Error fetching supplier compliance data:', error);
@@ -4186,9 +4000,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error analyzing supplier compliance:', error);
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Failed to analyze supplier compliance',
-        details: error.message
+        details: error.message 
       });
     }
   });
@@ -4241,9 +4055,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error in bulk analysis:', error);
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Failed to perform bulk analysis',
-        details: error.message
+        details: error.message 
       });
     }
   });
@@ -4279,7 +4093,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // Use PostGIS ST_Intersection to detect overlap
             const result = await db.execute(sql`
-              SELECT
+              SELECT 
                 ST_Area(ST_Intersection(
                   ST_GeomFromText(${wkt1}, 4326),
                   ST_GeomFromText(${wkt2}, 4326)
@@ -4320,9 +4134,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in PostGIS overlap detection:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Failed to detect overlaps using PostGIS',
-        details: errorMessage
+        details: errorMessage 
       });
     }
   });
@@ -4346,4 +4160,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   return httpServer;
+}
+
+// Helper functions for GeoJSON processing
+function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
+  let north = -90, south = 90, east = -180, west = 180;
+  
+  for (const coord of coordinates) {
+    const [lng, lat] = coord;
+    north = Math.max(north, lat);
+    south = Math.min(south, lat);
+    east = Math.max(east, lng);
+    west = Math.min(west, lng);
+  }
+  
+  return { north, south, east, west };
+}
+
+function calculateCentroid(coordinates: number[][]): { lat: number, lng: number } {
+  let totalLat = 0, totalLng = 0;
+  const count = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
+  
+  for (let i = 0; i < count; i++) {
+    const [lng, lat] = coordinates[i];
+    totalLat += lat;
+    totalLng += lng;
+  }
+  
+  return {
+    lat: totalLat / count,
+    lng: totalLng / count
+  };
+}
+
+function calculatePolygonArea(coordinates: number[][]): number {
+  // Simple polygon area calculation using the shoelace formula
+  let area = 0;
+  const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
+  
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += coordinates[i][0] * coordinates[j][1];
+    area -= coordinates[j][0] * coordinates[i][1];
+  }
+  
+  area = Math.abs(area) / 2;
+  
+  // Convert from square degrees to hectares (rough approximation)
+  // This is a simplified conversion and should be improved for production use
+  const hectares = area * 11119.49; // Rough conversion factor
+  
+  return Math.round(hectares * 100) / 100; // Round to 2 decimal places
 }
