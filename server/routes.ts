@@ -2574,6 +2574,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Helper functions for GeoJSON processing and geometry calculations
+  function calculateBoundingBox(coordinates: number[][]) {
+    if (!coordinates || coordinates.length === 0) return null;
+    
+    let minLng = coordinates[0][0], maxLng = coordinates[0][0];
+    let minLat = coordinates[0][1], maxLat = coordinates[0][1];
+    
+    coordinates.forEach(([lng, lat]) => {
+      minLng = Math.min(minLng, lng);
+      maxLng = Math.max(maxLng, lng);
+      minLat = Math.min(minLat, lat);
+      maxLat = Math.max(maxLat, lat);
+    });
+    
+    return { north: maxLat, south: minLat, east: maxLng, west: minLng };
+  }
+  
+  function calculateCentroid(coordinates: number[][]) {
+    if (!coordinates || coordinates.length === 0) return null;
+    
+    let sumLng = 0, sumLat = 0;
+    coordinates.forEach(([lng, lat]) => {
+      sumLng += lng;
+      sumLat += lat;
+    });
+    
+    return {
+      lng: sumLng / coordinates.length,
+      lat: sumLat / coordinates.length
+    };
+  }
+  
+  function calculatePolygonArea(coordinates: number[][]) {
+    if (!coordinates || coordinates.length < 3) return 0;
+    
+    // Simple area calculation using shoelace formula (approximate for small areas)
+    let area = 0;
+    const n = coordinates.length;
+    
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      area += coordinates[i][0] * coordinates[j][1];
+      area -= coordinates[j][0] * coordinates[i][1];
+    }
+    
+    // Convert to hectares (rough approximation)
+    return Math.abs(area) / 2 * 111000 * 111000 / 10000; // Very rough conversion
+  }
+
   // Helper function to generate PDF template matching the exact structure
   function generateDDSPDFTemplate(report: any) {
     const currentDate = new Date().toLocaleDateString('en-GB', {
@@ -3245,7 +3294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // GeoJSON upload and analysis endpoint
+  // Enhanced GeoJSON upload and analysis endpoint with flexible data format support
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
       const { geojsonFile, fileName } = req.body;
@@ -3254,10 +3303,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'GeoJSON file is required' });
       }
 
+      // Parse and validate the input GeoJSON
+      let parsedGeoJson;
+      try {
+        parsedGeoJson = typeof geojsonFile === 'string' ? JSON.parse(geojsonFile) : geojsonFile;
+      } catch (parseError) {
+        return res.status(400).json({ error: 'Invalid JSON format' });
+      }
+
+      // Flexible data extraction function
+      const extractPlotInfo = (feature) => {
+        const props = feature.properties || {};
+        
+        // Extract ID - try multiple possible fields
+        const plotId = props.id || props.plot_id || props.ID || props.Plot_ID || 
+                      props.Name || props.name || props.plotId || `plot_${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Extract area - handle various formats
+        let area = 0;
+        if (props['.Plot size']) {
+          // Handle "0.50 Ha" format
+          const areaMatch = props['.Plot size'].match(/([0-9.]+)/);
+          area = areaMatch ? parseFloat(areaMatch[1]) : 0;
+        } else if (props.area_ha) {
+          area = parseFloat(props.area_ha) || 0;
+        } else if (props.area) {
+          area = parseFloat(props.area) || 0;
+        } else if (props.Area) {
+          area = parseFloat(props.Area) || 0;
+        }
+        
+        // Extract country - try multiple sources
+        let country = 'Unknown';
+        if (props.country_name) {
+          country = props.country_name;
+        } else if (props.country) {
+          country = props.country;
+        } else if (props['.Aggregator Location']) {
+          // Extract from "Makassar, South Sulawesi - Indonesia" format
+          const locationParts = props['.Aggregator Location'].split(' - ');
+          country = locationParts[locationParts.length - 1] || 'Unknown';
+        } else if (props['.Distict']) {
+          // Default to Indonesia if we have district info
+          country = 'Indonesia';
+        }
+        
+        // Extract additional metadata
+        const farmerName = props['.Farmer Name'] || props.farmer_name || '';
+        const farmName = props.farm_name || farmerName || '';
+        const district = props['.Distict'] || props.district || '';
+        const aggregatorName = props['.Aggregator Name'] || '';
+        const farmersId = props['.Farmers ID'] || '';
+        
+        return {
+          plotId: String(plotId),
+          area: area,
+          country: country,
+          farmerName: farmerName,
+          farmName: farmName,
+          district: district,
+          aggregatorName: aggregatorName,
+          farmersId: farmersId,
+          originalProperties: props
+        };
+      };
+
+      // Process input data and log extracted information
+      console.log(`=== PROCESSING GEOJSON UPLOAD ===`);
+      if (parsedGeoJson.features) {
+        console.log(`Input file contains ${parsedGeoJson.features.length} features`);
+        parsedGeoJson.features.forEach((feature, index) => {
+          const info = extractPlotInfo(feature);
+          console.log(`Plot ${index + 1}: ID="${info.plotId}", Area=${info.area}ha, Country="${info.country}", District="${info.district}"`);
+        });
+      }
+
+      // Normalize GeoJSON for API compatibility
+      const normalizedGeoJson = {
+        type: 'FeatureCollection',
+        features: parsedGeoJson.features?.map(feature => ({
+          type: 'Feature',
+          properties: {
+            // Extract and normalize key properties
+            ...extractPlotInfo(feature),
+            // Keep original properties for reference
+            _original: feature.properties
+          },
+          geometry: {
+            ...feature.geometry,
+            // Remove Z-coordinates if present for API compatibility
+            coordinates: feature.geometry.coordinates?.map(ring => {
+              if (Array.isArray(ring[0]) && Array.isArray(ring[0][0])) {
+                // MultiPolygon or Polygon with holes
+                return ring.map(coord => 
+                  Array.isArray(coord[0]) ? coord.map(point => [point[0], point[1]]) : [coord[0], coord[1]]
+                );
+              } else {
+                // Simple Polygon
+                return ring.map(coord => [coord[0], coord[1]]);
+              }
+            })
+          }
+        })) || []
+      };
+
       // Create a proper multipart/form-data request
       const boundary = `----formdata-node-${Date.now()}`;
-      const fileContent = geojsonFile;
-      const uploadFileName = fileName || 'plot_boundaries.json';
+      const fileContent = JSON.stringify(normalizedGeoJson);
+      const uploadFileName = fileName || 'processed_plot_boundaries.json';
       
       const formBody = [
         `--${boundary}`,
@@ -3267,6 +3420,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileContent,
         `--${boundary}--`
       ].join('\r\n');
+
+      console.log(`Sending ${normalizedGeoJson.features.length} normalized features to EUDR API...`);
 
       // Call EUDR Multilayer API
       const response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
@@ -3279,7 +3434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('RapidAPI Error:', response.status, errorText);
+        console.error('EUDR API Error:', response.status, errorText);
         return res.status(response.status).json({ 
           error: 'Failed to analyze GeoJSON file',
           details: errorText 
@@ -3288,29 +3443,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysisResults = await response.json();
       
-      // Log both request and response for debugging
-      const inputFeatures = JSON.parse(geojsonFile).features?.length || 0;
+      // Enhanced logging with feature matching
+      const inputFeatures = normalizedGeoJson.features?.length || 0;
       const outputFeatures = analysisResults.data?.features?.length || 0;
-      console.log(`=== DEBUGGING FEATURE COUNT ===`);
+      console.log(`=== ANALYSIS RESULTS ===`);
       console.log(`Input features sent to API: ${inputFeatures}`);
       console.log(`Output features received from API: ${outputFeatures}`);
-      console.log(`Processing stats:`, analysisResults.processing_stats);
+      console.log(`Processing time: ${analysisResults.analysis_summary?.processing_time_seconds || 'N/A'}s`);
       console.log(`File info from API:`, analysisResults.file_info);
-      console.log(`Analysis summary:`, analysisResults.analysis_summary);
       
       if (inputFeatures !== outputFeatures) {
         console.log(`⚠️  FEATURE MISMATCH: Sent ${inputFeatures} but received ${outputFeatures}`);
-        console.log(`This appears to be an API-side processing limitation when handling large files.`);
-        console.log(`Recommendation: Split large files into smaller batches (5-10 features each) for complete processing.`);
+        console.log(`This may be due to API processing limitations or invalid geometries.`);
         
-        // Add a warning to the response for users
+        // Add a warning to the response
         analysisResults.warning = {
           message: `Only ${outputFeatures} out of ${inputFeatures} features were processed successfully.`,
-          recommendation: "For better results, split large files into smaller batches of 5-10 features each."
+          recommendation: "Check for invalid geometries or split large files into smaller batches."
         };
       }
       
-      // Store analysis results in database for dashboard metrics
+      // Store analysis results in database with enhanced metadata
       if (analysisResults.data?.features) {
         const uploadSession = `session-${Date.now()}`;
         
@@ -3320,17 +3473,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store each analysis result in the database
         for (const feature of analysisResults.data.features) {
           try {
-            // Debug logging for intersection area values
+            // Enhanced debugging with plot information
             const gfwArea = feature.properties.gfw_loss?.gfw_loss_area;
             const jrcArea = feature.properties.jrc_loss?.jrc_loss_area;
             const sbtnArea = feature.properties.sbtn_loss?.sbtn_loss_area;
+            const plotId = feature.properties.plot_id || feature.properties.plotId || 'unknown';
             
-            console.log(`🔍 Plot ${feature.properties.plot_id} - GFW: ${gfwArea}ha, JRC: ${jrcArea}ha, SBTN: ${sbtnArea}ha`);
+            console.log(`🔍 Plot ${plotId} - GFW: ${gfwArea}ha, JRC: ${jrcArea}ha, SBTN: ${sbtnArea}ha`);
+            
+            // Find matching original data
+            const originalFeature = parsedGeoJson.features?.find(f => {
+              const origInfo = extractPlotInfo(f);
+              return origInfo.plotId === plotId;
+            });
+            
+            const originalInfo = originalFeature ? extractPlotInfo(originalFeature) : {};
             
             await storage.createAnalysisResult({
-              plotId: feature.properties.plot_id || 'unknown',
-              country: feature.properties.country_name || 'Unknown',
-              area: String(feature.properties.total_area_hectares || 0),
+              plotId: plotId,
+              country: feature.properties.country_name || originalInfo.country || 'Unknown',
+              area: String(feature.properties.total_area_hectares || originalInfo.area || 0),
               overallRisk: feature.properties.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
               complianceStatus: feature.properties.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
               gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
@@ -3353,8 +3515,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ Stored ${analysisResults.data.features.length} analysis results in database for reactive dashboard`);
       }
       
-      // Return the response directly as it already has the expected structure
-      res.json(analysisResults);
+      // Enhance response with extracted metadata
+      const enhancedResponse = {
+        ...analysisResults,
+        extractedMetadata: {
+          totalFeatures: inputFeatures,
+          processedFeatures: outputFeatures,
+          extractedInfo: parsedGeoJson.features?.map(extractPlotInfo) || []
+        }
+      };
+      
+      res.json(enhancedResponse);
 
     } catch (error) {
       console.error('GeoJSON upload error:', error);
