@@ -1051,14 +1051,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Spatial Risk Analysis items from Excel
         {
           riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "deforestasi",
+          category: "spatial" as const,
+          itemType: "deforestasi" as const,
           itemName: "Deforestasi",
-          riskLevel: "rendah",
+          riskLevel: "rendah" as const,
           parameter: "Sumber TBS Berasal dari Kebun yang di kembangkan sebelum Desember 2020",
           riskValue: 3,
           weight: "45.00",
-          calculatedRisk: 135.00, // 45 * 3
+          calculatedRisk: "135.00", // 45 * 3
           normalizedScore: 0.45, // 135 / 300 (max possible score)
           finalScore: 0.15,
           mitigationRequired: false,
@@ -1068,14 +1068,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         {
           riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "legalitas_lahan",
+          category: "spatial" as const,
+          itemType: "legalitas_lahan" as const,
           itemName: "Legalitas Lahan",
-          riskLevel: "rendah",
+          riskLevel: "rendah" as const,
           parameter: "Memiliki Izin dan Berada di Kawasan APL",
           riskValue: 3,
           weight: "35.00",
-          calculatedRisk: 105.00,
+          calculatedRisk: "105.00",
           normalizedScore: 0.35,
           finalScore: 0.12,
           mitigationRequired: false,
@@ -1085,14 +1085,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         {
           riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "kawasan_gambut",
+          category: "spatial" as const,
+          itemType: "kawasan_gambut" as const,
           itemName: "Kawasan Gambut",
-          riskLevel: "sedang",
+          riskLevel: "sedang" as const,
           parameter: "Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan sedang proses bimbingan teknis",
           riskValue: 2,
           weight: "10.00",
-          calculatedRisk: 20.00,
+          calculatedRisk: "20.00",
           normalizedScore: 0.10,
           finalScore: 0.03,
           mitigationRequired: true,
@@ -1102,14 +1102,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         {
           riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "indigenous_people",
+          category: "spatial" as const,
+          itemType: "indigenous_people" as const,
           itemName: "Indigenous People",
-          riskLevel: "rendah",
+          riskLevel: "rendah" as const,
           parameter: "Tidak ada Overlap dan Memiliki SOP mengenai Penanganan Keluhan Stakeholder",
           riskValue: 3,
           weight: "10.00",
-          calculatedRisk: 30.00,
+          calculatedRisk: "30.00"
           normalizedScore: 0.10,
           finalScore: 0.03,
           mitigationRequired: false,
@@ -3831,7 +3831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error analyzing supplier compliance:', error);
       res.status(500).json({ 
         error: 'Failed to analyze supplier compliance',
-        details: error.message 
+        details: error instanceof Error ? error.message : String(error) 
       });
     }
   });
@@ -3868,7 +3868,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           results.push({
             supplierId: supplier.id || Date.now().toString(),
             supplierName: supplier.namaSupplier,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
             analyzedAt: new Date().toISOString()
           });
         }
@@ -3886,7 +3886,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error in bulk analysis:', error);
       res.status(500).json({ 
         error: 'Failed to perform bulk analysis',
-        details: error.message 
+        details: error instanceof Error ? error.message : String(error) 
       });
     }
   });
@@ -3933,7 +3933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 ) as intersects
             `);
 
-            const intersectionArea = parseFloat(result.rows[0]?.intersection_area || '0');
+            const intersectionArea = parseFloat(String(result.rows[0]?.intersection_area || '0'));
             const intersects = result.rows[0]?.intersects || false;
 
             console.log(`Intersection area between ${polygon1.plotId} and ${polygon2.plotId}: ${intersectionArea}`);
