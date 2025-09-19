@@ -2062,9 +2062,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function generateCleanDDSPDF(report: any): ArrayBuffer {
     try {
       const doc = new jsPDF();
+      let yPos = 50; // Initialize Y position for PDF content
+      const currentDate = new Date().toLocaleDateString(); // Initialize current date
 
       // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
-      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxE5vD4XBYEyvCNu9+a5KIiIiIiIiIiIiIXCCOER9Yk0TkAvJpjxkFZURERERERERERESqFtXbilQtPgvM6MctIiIiIiIiIiIiUjWp/lak6vBZYEZERERERERERERERERKpsCMiIiIiIiIiIiIiIiInygwIyIiIiIiIiIiIiIi4ic2h8PhsCaWR0ljFDpGfGBNEhEREREREREREZFKUFxdreppRaoG9ZgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxE5vD4XBYEyvCNu9+a5KIiIiIiIiIiIiIXCCOER9Yk0TkAvJpjxkFZURERERERERERESqFtXbilQtPgvM6MctIiIiIiIiIiIiUjWp/lak6vBZYEZERERERERERERERERKpsCMiIiIiIiIiIiIiIiInygwIyIiIiIiIiIiIiIi4ic2h8PhsCaWR0ljFDpGfGBNEhEREREREREREZFKUFxdreppRaoG9ZgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERER9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7ki6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+      
+      // Base64 for LCC flowchart image (Page 4)
+      const lccFlowchartImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABaAAAAO0CAYAAACdcNFHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17fFV1vfcPQ2xwMHEBATRkCKJIGKfGKFWzCFc0Gc="; // Simplified example - this would be full base64
 
       try {
         doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
@@ -4014,57 +4019,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const ring = coords[0];
     const wktCoords = ring.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
     return `POLYGON((${wktCoords}))`;
-  }
-
-  // Helper functions for GeoJSON processing
-  function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
-    let north = -90, south = 90, east = -180, west = 180;
-
-    for (const coord of coordinates) {
-      const [lng, lat] = coord;
-      north = Math.max(north, lat);
-      south = Math.min(south, lat);
-      east = Math.max(east, lng);
-      west = Math.min(west, lng);
-    }
-
-    return { north, south, east, west };
-  }
-
-  function calculateCentroid(coordinates: number[][]): { lat: number, lng: number } {
-    let totalLat = 0, totalLng = 0;
-    const count = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
-    for (let i = 0; i < count; i++) {
-      const [lng, lat] = coordinates[i];
-      totalLat += lat;
-      totalLng += lng;
-    }
-
-    return {
-      lat: totalLat / count,
-      lng: totalLng / count
-    };
-  }
-
-  function calculatePolygonArea(coordinates: number[][]): number {
-    // Simple polygon area calculation using the shoelace formula
-    let area = 0;
-    const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
-    for (let i = 0; i < n; i++) {
-      const j = (i + 1) % n;
-      area += coordinates[i][0] * coordinates[j][1];
-      area -= coordinates[j][0] * coordinates[i][1];
-    }
-
-    area = Math.abs(area) / 2;
-
-    // Convert from square degrees to hectares (rough approximation)
-    // This is a simplified conversion and should be improved for production use
-    const hectares = area * 11119.49; // Rough conversion factor
-
-    return Math.round(hectares * 100) / 100; // Round to 2 decimal places
   }
 
   return httpServer;
