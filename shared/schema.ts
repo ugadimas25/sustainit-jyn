@@ -47,6 +47,7 @@ export const analysisResults = pgTable("analysis_results", {
   gfwLossArea: decimal("gfw_loss_area", { precision: 12, scale: 4 }).default("0"),
   jrcLossArea: decimal("jrc_loss_area", { precision: 12, scale: 4 }).default("0"),
   sbtnLossArea: decimal("sbtn_loss_area", { precision: 12, scale: 4 }).default("0"),
+  peatlandArea: decimal("peatland_area", { precision: 12, scale: 4 }).default("0"),
   highRiskDatasets: jsonb("high_risk_datasets").$type<string[]>().default([]),
   geometry: jsonb("geometry"), // Store the original GeoJSON geometry
   uploadSession: text("upload_session"), // Track which upload session this belongs to
@@ -1071,6 +1072,17 @@ export const insertTraceabilityDataCollectionSchema = createInsertSchema(traceab
 export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollection);
 export const insertBulkingDataCollectionSchema = createInsertSchema(bulkingDataCollection);
 
+// Peatland (Gambut) data table for Indonesia
+export const gambut_idn_new = pgTable("gambut_idn_new", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  namaKhg: text("nama_khg"), // Peat Hydrological Unit Name
+  kodeKhg: text("kode_khg"), // Peat Hydrological Unit Code
+  kubahGbt: text("kubah_gbt"), // Peat Dome classification
+  luasHa: decimal("luas_ha", { precision: 12, scale: 4 }), // Area in hectares
+  geometry: text("geometry"), // PostGIS geometry stored as text
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Export types for workflow entities (supplement to existing Supplier types)
 export type SupplierWorkflowLink = typeof supplierWorkflowLinks.$inferSelect;
 export type InsertSupplierWorkflowLink = z.infer<typeof insertSupplierWorkflowLinkSchema>;
@@ -1088,6 +1100,10 @@ export type KcpDataCollection = typeof kcpDataCollection.$inferSelect;
 export type InsertKcpDataCollection = typeof kcpDataCollection.$inferInsert;
 export type BulkingDataCollection = typeof bulkingDataCollection.$inferSelect;
 export type InsertBulkingDataCollection = typeof bulkingDataCollection.$inferInsert;
+
+// Peatland types
+export type GambutIdnNew = typeof gambut_idn_new.$inferSelect;
+export type InsertGambutIdnNew = typeof gambut_idn_new.$inferInsert;
 
 // Digital Signature Types
 export interface SignatureData {

@@ -579,6 +579,11 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     <span class="checkmark"></span>
                     <span class="layer-name">SBTN Natural Loss</span>
                   </label>
+                  <label class="layer-checkbox">
+                    <input type="checkbox" id="peatlandLayer">
+                    <span class="checkmark"></span>
+                    <span class="layer-name">Peatland (Gambut)</span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -606,6 +611,14 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               <div class="legend-item">
                 <div class="legend-color" style="background-color: #ff00ff;"></div>
                 <span>SBTN Natural Loss</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background-color: #2c7fb8;"></div>
+                <span>Non Kubah Gambut</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-color" style="background-color: #7fcdbb;"></div>
+                <span>Kubah Gambut</span>
               </div>
             </div>
           </div>
@@ -649,11 +662,105 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
                 attribution: '© SBTN',
                 opacity: 0.7
-              })
+              }),
+              peatland: L.layerGroup() // Will be populated with peatland polygons
             };
 
             // Analysis results from React (contains actual polygon geometries)
             const analysisResults = ${JSON.stringify(analysisResults)};
+            
+            // Mock peatland data for Indonesia
+            const mockPeatlandData = [
+              {
+                id: 'peat_001',
+                nama_khg: 'Kesatuan Hidrologi Gambut Riau',
+                kode_khg: 'KHG-RIAU-001',
+                kubah_gbt: 'Kubah Gambut',
+                luas_ha: 1250.5,
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [[[101.0, -0.5], [101.5, -0.5], [101.5, 0.0], [101.0, 0.0], [101.0, -0.5]]]
+                }
+              },
+              {
+                id: 'peat_002',
+                nama_khg: 'Kesatuan Hidrologi Gambut Jambi',
+                kode_khg: 'KHG-JAMBI-002',
+                kubah_gbt: 'Non Kubah Gambut',
+                luas_ha: 850.3,
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [[[103.0, -1.5], [103.5, -1.5], [103.5, -1.0], [103.0, -1.0], [103.0, -1.5]]]
+                }
+              },
+              {
+                id: 'peat_003',
+                nama_khg: 'Kesatuan Hidrologi Gambut Kalimantan',
+                kode_khg: 'KHG-KALTENG-003',
+                kubah_gbt: 'Kubah Gambut',
+                luas_ha: 2100.8,
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [[[114.0, -2.0], [115.0, -2.0], [115.0, -1.0], [114.0, -1.0], [114.0, -2.0]]]
+                }
+              }
+            ];
+            
+            // Create peatland polygons
+            mockPeatlandData.forEach(peatData => {
+              const color = peatData.kubah_gbt === 'Kubah Gambut' ? '#7fcdbb' : '#2c7fb8';
+              const coordinates = peatData.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
+              
+              const peatPolygon = L.polygon(coordinates, {
+                fillColor: color,
+                color: color,
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.6
+              });
+              
+              // Add modern popup for peatland data
+              const peatPopupContent = \`
+                <div class="modern-popup-content">
+                  <div class="popup-header">
+                    <div class="popup-icon" style="background: \${color};">
+                      🌿
+                    </div>
+                    <h3 class="popup-title">Peatland Area</h3>
+                  </div>
+                  
+                  <div class="popup-body">
+                    <div class="popup-row">
+                      <span class="popup-label">Peat Hydrological Unit Name</span>
+                      <span class="popup-value">\${peatData.nama_khg}</span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">Peat Hydrological Unit Code</span>
+                      <span class="popup-value">\${peatData.kode_khg}</span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">Peat Dome</span>
+                      <span class="popup-value">\${peatData.kubah_gbt}</span>
+                    </div>
+                    
+                    <div class="popup-row">
+                      <span class="popup-label">Area</span>
+                      <span class="popup-value">\${peatData.luas_ha} ha</span>
+                    </div>
+                  </div>
+                </div>
+              \`;
+              
+              peatPolygon.bindPopup(peatPopupContent, {
+                maxWidth: 400,
+                minWidth: 300,
+                className: 'modern-popup'
+              });
+              
+              deforestationLayers.peatland.addLayer(peatPolygon);
+            });
             
             // Add polygons for each plot using actual geometry data
             const polygons = [];
@@ -1013,6 +1120,16 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 deforestationLayers.sbtn.addTo(map);
               } else {
                 map.removeLayer(deforestationLayers.sbtn);
+              }
+            });
+
+            document.getElementById('peatlandLayer').addEventListener('change', function(e) {
+              if (e.target.checked) {
+                deforestationLayers.peatland.addTo(map);
+                console.log('Peatland layer added to map');
+              } else {
+                map.removeLayer(deforestationLayers.peatland);
+                console.log('Peatland layer removed from map');
               }
             });
 
