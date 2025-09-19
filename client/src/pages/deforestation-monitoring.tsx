@@ -620,9 +620,9 @@ export default function DeforestationMonitoring() {
   };
 
   // Get unique values for filters
-  const uniqueCountries = [...new Set(analysisResults.map(r => r.country))].sort();
-  const uniqueRisks = [...new Set(analysisResults.map(r => r.overallRisk))].sort();
-  const uniqueCompliance = [...new Set(analysisResults.map(r => r.complianceStatus))].sort();
+  const uniqueCountries = Array.from(new Set(analysisResults.map(r => r.country))).sort();
+  const uniqueRisks = Array.from(new Set(analysisResults.map(r => r.overallRisk))).sort();
+  const uniqueCompliance = Array.from(new Set(analysisResults.map(r => r.complianceStatus))).sort();
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredResults.length / rowsPerPage);
@@ -641,7 +641,7 @@ export default function DeforestationMonitoring() {
     const coordinates = result.geometry.coordinates[0];
 
     // 1. Check for duplicate vertices
-    const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
+    const uniqueCoords = new Set(coordinates.map((coord: [number, number]) => `${coord[0]},${coord[1]}`));
     if (uniqueCoords.size < coordinates.length - 1) { // -1 because first and last should be same
       issues.push('Duplicate Vertices');
     }
@@ -679,7 +679,7 @@ export default function DeforestationMonitoring() {
     const coordinates = result.geometry.coordinates[0];
 
     // 1. Check for duplicate vertices
-    const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
+    const uniqueCoords = new Set(coordinates.map((coord: [number, number]) => `${coord[0]},${coord[1]}`));
     if (uniqueCoords.size < coordinates.length - 1) { 
       issues.push('Duplicate Vertices');
     }
@@ -849,7 +849,7 @@ export default function DeforestationMonitoring() {
 
       const overlappingPlots = new Set<string>();
       if (overlapResponse.overlaps) {
-        overlapResponse.overlaps.forEach(overlap => {
+        overlapResponse.overlaps.forEach((overlap: any) => {
           overlappingPlots.add(overlap.polygon1);
           overlappingPlots.add(overlap.polygon2);
         });
@@ -971,7 +971,7 @@ export default function DeforestationMonitoring() {
         headers.join(','),
         ...excelData.map(row => 
           headers.map(header => {
-            const value = row[header] || '';
+            const value = (row as any)[header] || '';
             return value.toString().includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
           }).join(',')
         )

@@ -1048,7 +1048,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { assessmentId } = req.params;
 
       // Initialize default risk items based on Excel methodology
-      const defaultRiskItems = [
+      const defaultRiskItems: any[] = [
         // Spatial Risk Analysis items from Excel
         {
           riskAssessmentId: assessmentId,
@@ -2429,7 +2429,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Embed the LCC flowchart image
       try {
-        doc.addImage(lccFlowchartImageBase64, 'PNG', 10, yPos, 190, 100);
+        // TODO: Define lccFlowchartImageBase64 or import from assets
+        const lccFlowchartImageBase64 = ''; // Placeholder for base64 image
+        if (lccFlowchartImageBase64) {
+          doc.addImage(lccFlowchartImageBase64, 'PNG', 10, yPos, 190, 100);
+        } else {
+          throw new Error('Flowchart image not available');
+        }
         yPos += 110;
         console.log('✅ Successfully embedded Land Cover Change flowchart image');
       } catch (error) {
@@ -3349,7 +3355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
           geometry: geometry
         };
-      }).filter(f => f !== null); // Remove any null features that failed processing
+      }).filter((f: any) => f !== null); // Remove any null features that failed processing
 
       // Validate processed features
       if (processedFeatures.length === 0) {
@@ -3961,7 +3967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             analyzedAt: new Date().toISOString()
           });
 
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Error analyzing supplier ${supplier.namaSupplier}:`, error);
           results.push({
             supplierId: supplier.id || Date.now().toString(),
@@ -3980,7 +3986,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in bulk analysis:', error);
       res.status(500).json({ 
         error: 'Failed to perform bulk analysis',
@@ -4031,7 +4037,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 ) as intersects
             `);
 
-            const intersectionArea = parseFloat(result.rows[0]?.intersection_area || '0');
+            const intersectionArea = parseFloat(String(result.rows[0]?.intersection_area || '0'));
             const intersects = result.rows[0]?.intersects || false;
 
             console.log(`Intersection area between ${polygon1.plotId} and ${polygon2.plotId}: ${intersectionArea}`);
