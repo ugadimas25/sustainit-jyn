@@ -3474,7 +3474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Flexible data extraction function
-      const extractPlotInfo = (feature) => {
+      const extractPlotInfo = (feature: any) => {
         const props = feature.properties || {};
 
         // Extract ID - try multiple possible fields
@@ -3534,7 +3534,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`=== PROCESSING GEOJSON UPLOAD ===`);
       if (parsedGeoJson.features) {
         console.log(`Input file contains ${parsedGeoJson.features.length} features`);
-        parsedGeoJson.features.forEach((feature, index) => {
+        parsedGeoJson.features.forEach((feature: any, index: number) => {
           const info = extractPlotInfo(feature);
           console.log(`Plot ${index + 1}: ID="${info.plotId}", Area=${info.area}ha, Country="${info.country}", District="${info.district}"`);
         });
@@ -3543,7 +3543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Normalize GeoJSON for API compatibility
       const normalizedGeoJson = {
         type: 'FeatureCollection',
-        features: parsedGeoJson.features?.map(feature => ({
+        features: parsedGeoJson.features?.map((feature: any) => ({
           type: 'Feature',
           properties: {
             // Extract and normalize key properties
@@ -3554,15 +3554,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           geometry: {
             ...feature.geometry,
             // Remove Z-coordinates if present for API compatibility
-            coordinates: feature.geometry.coordinates?.map(ring => {
+            coordinates: feature.geometry.coordinates?.map((ring: any) => {
               if (Array.isArray(ring[0]) && Array.isArray(ring[0][0])) {
                 // MultiPolygon or Polygon with holes
-                return ring.map(coord =>
-                  Array.isArray(coord[0]) ? coord.map(point => [point[0], point[1]]) : [coord[0], coord[1]]
+                return ring.map((coord: any) =>
+                  Array.isArray(coord[0]) ? coord.map((point: any) => [point[0], point[1]]) : [coord[0], coord[1]]
                 );
               } else {
                 // Simple Polygon
-                return ring.map(coord => [coord[0], coord[1]]);
+                return ring.map((coord: any) => [coord[0], coord[1]]);
               }
             })
           }
@@ -3572,7 +3572,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create a combined GeoJSON file for analysis
       const combinedGeoJsonForAnalysis = {
         type: 'FeatureCollection',
-        features: normalizedGeoJson.features.map(feature => ({
+        features: normalizedGeoJson.features.map((feature: any) => ({
           type: 'Feature',
           properties: {
             plot_id: feature.properties.plotId,
