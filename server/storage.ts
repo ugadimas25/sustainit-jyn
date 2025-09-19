@@ -1,4 +1,4 @@
-import {
+import { 
   users, type User, type InsertUser,
   commodities, type Commodity, type InsertCommodity,
   parties, type Party, type InsertParty,
@@ -33,7 +33,7 @@ import ConnectPgSimple from "connect-pg-simple";
 // Enhanced IStorage interface for EPCIS-compliant traceability
 export interface IStorage {
   sessionStore: session.Store;
-
+  
   // User management
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -119,12 +119,12 @@ export interface IStorage {
   getDdsReportById(id: string): Promise<DdsReport | undefined>;
   createDdsReport(insertDdsReport: InsertDdsReport): Promise<DdsReport>;
   updateDdsReport(id: string, updates: Partial<DdsReport>): Promise<DdsReport | undefined>;
-
+  
   // Session-based DDS management
   getDdsReportsBySession(sessionId: string): Promise<DdsReport[]>;
   updateDdsReportStatus(id: string, status: string): Promise<DdsReport | undefined>;
   updateDdsReportPdfPath(id: string, pdfPath: string, fileName: string): Promise<DdsReport | undefined>;
-
+  
   // GeoJSON validation and metadata
   validateDdsGeojson(id: string, geojson: any): Promise<{
     valid: boolean;
@@ -135,7 +135,7 @@ export interface IStorage {
       centroid: { lat: number, lng: number };
     };
   }>;
-
+  
   // Available plots for selection
   getAvailablePlots(): Promise<Array<{
     id: string;
@@ -159,17 +159,17 @@ export interface IStorage {
   createMillDataCollection(insertMillData: import("@shared/schema").InsertMillDataCollection): Promise<import("@shared/schema").MillDataCollection>;
   updateMillDataCollection(id: string, updates: Partial<import("@shared/schema").MillDataCollection>): Promise<import("@shared/schema").MillDataCollection | undefined>;
   deleteMillDataCollection(id: string): Promise<boolean>;
-
+  
   // Traceability Data Collection methods
   getTraceabilityDataCollections(): Promise<import("@shared/schema").TraceabilityDataCollection[]>;
   getTraceabilityDataCollectionById(id: string): Promise<import("@shared/schema").TraceabilityDataCollection | undefined>;
   createTraceabilityDataCollection(insertData: import("@shared/schema").InsertTraceabilityDataCollection): Promise<import("@shared/schema").TraceabilityDataCollection>;
-
+  
   // KCP Data Collection methods
   getKcpDataCollections(): Promise<import("@shared/schema").KcpDataCollection[]>;
   getKcpDataCollectionById(id: string): Promise<import("@shared/schema").KcpDataCollection | undefined>;
   createKcpDataCollection(insertData: import("@shared/schema").InsertKcpDataCollection): Promise<import("@shared/schema").KcpDataCollection>;
-
+  
   // Bulking Data Collection methods
   getBulkingDataCollections(): Promise<import("@shared/schema").BulkingDataCollection[]>;
   getBulkingDataCollectionById(id: string): Promise<import("@shared/schema").BulkingDataCollection | undefined>;
@@ -231,23 +231,23 @@ export interface IStorage {
 
   // Dashboard metrics with optional filters
   getDashboardMetrics(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").DashboardMetrics>;
-
-  // Risk and legality split aggregations
+  
+  // Risk and legality split aggregations 
   getRiskSplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").RiskSplit>;
   getLegalitySplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").LegalitySplit>;
-
+  
   // Supplier compliance table data
   getSupplierCompliance(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").SupplierSummary[]>;
-
+  
   // Alert management for dashboard
   getDashboardAlerts(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").Alert[]>;
-
+  
   // Compliance trend data (12 months)
   getComplianceTrend(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ComplianceTrendPoint[]>;
-
+  
   // Export functionality
   getExportData(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ExportData>;
-
+  
   // Plot summaries for detailed views and drill-downs
   getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]>;
 }
@@ -606,7 +606,7 @@ export class DatabaseStorage implements IStorage {
     // Calculate tiers based on parent/child relationship
     const parentSupplier = await db.select().from(suppliers).where(eq(suppliers.id, insertLink.parentSupplierId)).limit(1);
     const childSupplier = await db.select().from(suppliers).where(eq(suppliers.id, insertLink.childSupplierId)).limit(1);
-
+    
     const parentTier = parentSupplier[0]?.tier || 1;
     const childTier = childSupplier[0]?.tier || 1;
 
@@ -734,7 +734,7 @@ export class DatabaseStorage implements IStorage {
           if (coords.length < 4) {
             return { valid: false, error: "Polygon must have at least 4 coordinates" };
           }
-
+          
           // Update bounding box
           for (const coord of coords) {
             const [lng, lat] = coord;
@@ -743,7 +743,7 @@ export class DatabaseStorage implements IStorage {
             minLng = Math.min(minLng, lng);
             maxLng = Math.max(maxLng, lng);
           }
-
+          
           // Simple area calculation (not accurate for large polygons)
           totalArea += Math.abs((maxLng - minLng) * (maxLat - minLat)) * 111320 * 111320; // rough m² conversion
         }
@@ -1109,7 +1109,7 @@ export class DatabaseStorage implements IStorage {
 
       const [updatedResult] = await db
         .update(analysisResults)
-        .set({
+        .set({ 
           geometry: geometry
         })
         .where(eq(analysisResults.plotId, plotId))
@@ -1142,13 +1142,13 @@ export class DatabaseStorage implements IStorage {
   }> {
     try {
       const results = await this.getAnalysisResults();
-
+      
       const totalPlots = results.length;
       const compliantPlots = results.filter(r => r.complianceStatus === 'COMPLIANT').length;
       const highRiskPlots = results.filter(r => r.overallRisk === 'HIGH').length;
       const mediumRiskPlots = results.filter(r => r.overallRisk === 'MEDIUM').length;
-      const deforestedPlots = results.filter(r =>
-        r.highRiskDatasets?.includes('GFW Forest Loss') ||
+      const deforestedPlots = results.filter(r => 
+        r.highRiskDatasets?.includes('GFW Forest Loss') || 
         r.highRiskDatasets?.includes('JRC Forest Loss')
       ).length;
       const totalArea = results.reduce((sum, r) => sum + Number(r.area), 0).toFixed(2);
@@ -1166,7 +1166,7 @@ export class DatabaseStorage implements IStorage {
       // Return default values if calculation fails
       return {
         totalPlots: "0",
-        compliantPlots: "0",
+        compliantPlots: "0", 
         highRiskPlots: "0",
         mediumRiskPlots: "0",
         deforestedPlots: "0",
@@ -1210,7 +1210,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // First, get or create the progress record
       let progress = await this.getSupplierAssessmentProgressByName(supplierName);
-
+      
       if (!progress) {
         // Create new progress record
         progress = await this.createSupplierAssessmentProgress({
@@ -1266,7 +1266,7 @@ export class DatabaseStorage implements IStorage {
   async checkSupplierStepAccess(supplierName: string, requestedStep: number): Promise<boolean> {
     try {
       const progress = await this.getSupplierAssessmentProgressByName(supplierName);
-
+      
       if (!progress) {
         // No progress record - only allow step 1 (Data Collection)
         return requestedStep === 1;
@@ -1322,7 +1322,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // First delete all related assessment items
       await db.delete(riskAssessmentItems).where(eq(riskAssessmentItems.riskAssessmentId, id));
-
+      
       // Then delete the assessment
       await db.delete(riskAssessments).where(eq(riskAssessments.id, id));
       return true;
@@ -1366,7 +1366,7 @@ export class DatabaseStorage implements IStorage {
   async calculateRiskScore(assessmentId: string): Promise<{ overallScore: number; riskClassification: string; }> {
     try {
       const items = await this.getRiskAssessmentItems(assessmentId);
-
+      
       if (items.length === 0) {
         return { overallScore: 0, riskClassification: "high" };
       }
@@ -1431,7 +1431,7 @@ export class DatabaseStorage implements IStorage {
 
   private generateRecommendations(items: RiskAssessmentItem[], overallRisk: string): string[] {
     const recommendations: string[] = [];
-
+    
     // High-risk items require immediate action
     const highRiskItems = items.filter(item => item.riskLevel === "tinggi");
     if (highRiskItems.length > 0) {
@@ -1465,7 +1465,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // Get all analysis results (this is our main plot data source)
       const results = await db.select().from(analysisResults);
-
+      
       // Apply filters if provided
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1481,7 +1481,7 @@ export class DatabaseStorage implements IStorage {
       const compliantPlots = filteredResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
       const highRiskPlots = filteredResults.filter(r => r.overallRisk === 'HIGH').length;
       const mediumRiskPlots = filteredResults.filter(r => r.overallRisk === 'MEDIUM').length;
-      const deforestedPlots = filteredResults.filter(r =>
+      const deforestedPlots = filteredResults.filter(r => 
         r.gfwLoss === 'TRUE' || r.jrcLoss === 'TRUE' || r.sbtnLoss === 'TRUE'
       ).length;
       const totalAreaHa = filteredResults.reduce((sum, r) => sum + parseFloat(r.area.toString()), 0);
@@ -1505,7 +1505,7 @@ export class DatabaseStorage implements IStorage {
   async getRiskSplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").RiskSplit> {
     try {
       const results = await db.select().from(analysisResults);
-
+      
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
         filteredResults = results.filter(r => {
@@ -1533,7 +1533,7 @@ export class DatabaseStorage implements IStorage {
   async getLegalitySplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").LegalitySplit> {
     try {
       const results = await db.select().from(analysisResults);
-
+      
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
         filteredResults = results.filter(r => {
@@ -1551,10 +1551,10 @@ export class DatabaseStorage implements IStorage {
       const nonCompliant = filteredResults.filter(r => r.complianceStatus === 'NON-COMPLIANT').length;
       const underReview = total - compliant - nonCompliant; // Remainder as under review
 
-      return {
-        compliant,
-        underReview,
-        nonCompliant
+      return { 
+        compliant, 
+        underReview, 
+        nonCompliant 
       };
     } catch (error) {
       console.error("Error getting legality split:", error);
@@ -1566,7 +1566,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const results = await db.select().from(analysisResults);
       const suppliersData = await db.select().from(suppliers);
-
+      
       // Apply date filters
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1593,14 +1593,14 @@ export class DatabaseStorage implements IStorage {
         const compliantPlots = plots.filter(p => p.complianceStatus === 'COMPLIANT').length;
         const totalArea = plots.reduce((sum, p) => sum + parseFloat(p.area.toString()), 0);
         const complianceRate = totalPlots > 0 ? (compliantPlots / totalPlots) * 100 : 0;
-
+        
         // Determine overall risk and legality status
         const highRiskCount = plots.filter(p => p.overallRisk === 'HIGH').length;
         const mediumRiskCount = plots.filter(p => p.overallRisk === 'MEDIUM').length;
         const riskStatus = highRiskCount > 0 ? 'high' : mediumRiskCount > 0 ? 'medium' : 'low';
-
+        
         const nonCompliantCount = plots.filter(p => p.complianceStatus === 'NON-COMPLIANT').length;
-        const legalityStatus = nonCompliantCount > 0 ? 'non_compliant' :
+        const legalityStatus = nonCompliantCount > 0 ? 'non_compliant' : 
           compliantPlots === totalPlots ? 'compliant' : 'under_review';
 
         supplierSummaries.push({
@@ -1628,7 +1628,7 @@ export class DatabaseStorage implements IStorage {
   async getDashboardAlerts(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").Alert[]> {
     try {
       const results = await db.select().from(analysisResults);
-
+      
       // Apply date filters
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1649,7 +1649,7 @@ export class DatabaseStorage implements IStorage {
           if (result.gfwLoss === 'TRUE') datasets.push('GFW');
           if (result.jrcLoss === 'TRUE') datasets.push('JRC');
           if (result.sbtnLoss === 'TRUE') datasets.push('SBTN');
-
+          
           alerts.push({
             id: `defor-${result.plotId}-${Date.now()}`,
             type: 'deforestation',
@@ -1707,19 +1707,19 @@ export class DatabaseStorage implements IStorage {
       // Generate 12 months of mock trend data since we don't have historical data yet
       const trend: import("@shared/schema").ComplianceTrendPoint[] = [];
       const currentDate = new Date();
-
+      
       for (let i = 11; i >= 0; i--) {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const period = date.toISOString().substring(0, 7); // YYYY-MM format
-
+        
         // Mock data with slight variation (would be real historical data in production)
         const baseCompliance = 75;
         const variation = Math.sin(i * 0.5) * 10 + Math.random() * 5;
         const complianceRate = Math.max(60, Math.min(95, baseCompliance + variation));
-
+        
         const totalPlots = 100 + Math.floor(Math.random() * 50);
         const compliantPlots = Math.floor((totalPlots * complianceRate) / 100);
-
+        
         trend.push({
           period,
           complianceRate: Math.round(complianceRate * 100) / 100,
@@ -1757,7 +1757,7 @@ export class DatabaseStorage implements IStorage {
   async getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]> {
     try {
       const results = await db.select().from(analysisResults);
-
+      
       // Apply date filters
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1775,7 +1775,7 @@ export class DatabaseStorage implements IStorage {
         region: result.country,
         area: parseFloat(result.area.toString()),
         riskStatus: result.overallRisk.toLowerCase() as 'low' | 'medium' | 'high',
-        legalityStatus: result.complianceStatus === 'COMPLIANT' ? 'compliant' :
+        legalityStatus: result.complianceStatus === 'COMPLIANT' ? 'compliant' : 
           result.complianceStatus === 'NON-COMPLIANT' ? 'non_compliant' : 'under_review',
         lastUpdated: new Date(result.updatedAt)
       }));
