@@ -22,25 +22,12 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { AnalysisResult } from "@shared/schema";
 
-interface AnalysisResult {
-  plotId: string;
-  country: string;
-  area: number;
-  overallRisk: 'LOW' | 'MEDIUM' | 'HIGH';
-  complianceStatus: 'COMPLIANT' | 'NON-COMPLIANT';
-  gfwLoss: 'LOW' | 'MEDIUM' | 'HIGH';
-  jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH';
-  sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH';
-  highRiskDatasets: string[];
-  // Intersection areas for high-risk datasets
-  gfwLossArea?: number;
-  jrcLossArea?: number;
-  sbtnLossArea?: number;
+// Extended interface for frontend-specific properties
+interface ExtendedAnalysisResult extends AnalysisResult {
   polygonIssues?: string;
-  // Peatland analysis results
-  peatlandArea?: number; // Area of intersection with peatland
-  peatlandStatus?: 'OVERLAP' | 'NO_OVERLAP' | 'NOT_ANALYZED'; // Status of peatland analysis
+  peatlandStatus?: 'OVERLAP' | 'NO_OVERLAP' | 'NOT_ANALYZED';
 }
 
 interface UploadedFile {
@@ -50,7 +37,7 @@ interface UploadedFile {
   content: string | ArrayBuffer | null;
 }
 
-const defaultAnalysisResults = [
+const defaultAnalysisResults: ExtendedAnalysisResult[] = [
   { 
     plotId: "PLOT_005", country: "Indonesia", area: 31.35, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
     gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
