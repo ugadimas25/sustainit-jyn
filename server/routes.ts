@@ -57,7 +57,7 @@ import { Readable } from "stream";
 import { jsPDF } from "jspdf";
 import * as fs from 'fs';
 import * as path from 'path';
-import { parse as parseKML } from 'fast-xml-parser';
+import { XMLParser } from 'fast-xml-parser';
 
 const scryptAsync = promisify(scrypt);
 
@@ -2753,16 +2753,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Parse KML and extract coordinates
       // In real implementation, use a proper KML parser like @mapbox/togeojson
-      const kmlJson = parseKML(kmlData, {
-        extractStyles: false,
-        trackStyles: false,
-        flatten: true,
-        errrorOnMissing: false,
-        ignoreRoot: false,
-        geojson: true,
-        bounds: false,
-        layers: false
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: "@_"
       });
+      const kmlJson = parser.parse(kmlData);
 
       let mockPolygonCoordinates = [];
       if (kmlJson && kmlJson.features) {
