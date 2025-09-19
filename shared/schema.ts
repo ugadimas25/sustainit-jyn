@@ -47,9 +47,6 @@ export const analysisResults = pgTable("analysis_results", {
   gfwLossArea: decimal("gfw_loss_area", { precision: 12, scale: 4 }).default("0"),
   jrcLossArea: decimal("jrc_loss_area", { precision: 12, scale: 4 }).default("0"),
   sbtnLossArea: decimal("sbtn_loss_area", { precision: 12, scale: 4 }).default("0"),
-  // Peatland intersection data
-  peatlandArea: decimal("peatland_area", { precision: 12, scale: 4 }).default("0"),
-  peatlandStatus: text("peatland_status").default("NO_OVERLAP"), // NO_OVERLAP, OVERLAP
   highRiskDatasets: jsonb("high_risk_datasets").$type<string[]>().default([]),
   geometry: jsonb("geometry"), // Store the original GeoJSON geometry
   uploadSession: text("upload_session"), // Track which upload session this belongs to

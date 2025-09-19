@@ -24,25 +24,20 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 interface AnalysisResult {
-  id: string;
   plotId: string;
   country: string;
   area: number;
-  overallRisk: string;
-  complianceStatus: string;
-  gfwLoss: string;
-  jrcLoss: string;
-  sbtnLoss: string;
-  gfwLossArea: number;
-  jrcLossArea: number;
-  sbtnLossArea: number;
-  peatlandArea: number; // Added peatlandArea
-  peatlandStatus: string; // Added peatlandStatus
+  overallRisk: 'LOW' | 'MEDIUM' | 'HIGH';
+  complianceStatus: 'COMPLIANT' | 'NON-COMPLIANT';
+  gfwLoss: 'LOW' | 'MEDIUM' | 'HIGH';
+  jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH';
+  sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH';
   highRiskDatasets: string[];
-  geometry: any;
-  uploadSession?: string;
-  createdAt: string;
-  updatedAt: string;
+  // Intersection areas for high-risk datasets
+  gfwLossArea?: number;
+  jrcLossArea?: number;
+  sbtnLossArea?: number;
+  polygonIssues?: string;
 }
 
 interface UploadedFile {
@@ -55,92 +50,92 @@ interface UploadedFile {
 const defaultAnalysisResults = [
   { 
     plotId: "PLOT_005", country: "Indonesia", area: 31.35, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[113.921327, -2.147871], [113.943567, -2.147871], [113.943567, -2.169234], [113.921327, -2.169234], [113.921327, -2.147871]]] }
   },
   { 
     plotId: "PLOT_002", country: "Ivory Coast", area: 1439.07, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 50.2, peatlandStatus: "OVERLAP", highRiskDatasets: ["GFW Forest Loss"],
+    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"],
     geometry: { type: "Polygon", coordinates: [[[-5.547945, 7.539989], [-5.510712, 7.539989], [-5.510712, 7.577221], [-5.547945, 7.577221], [-5.547945, 7.539989]]] }
   },
   { 
     plotId: "PLOT_009", country: "Nigeria", area: 1.02, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[8.675277, 9.081999], [8.677777, 9.081999], [8.677777, 9.084499], [8.675277, 9.084499], [8.675277, 9.081999]]] }
   },
   { 
     plotId: "PLOT_004", country: "Ghana", area: 1.95, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[-1.094512, 7.946527], [-1.092012, 7.946527], [-1.092012, 7.949027], [-1.094512, 7.949027], [-1.094512, 7.946527]]] }
   },
   { 
     plotId: "PLOT_001", country: "Central African Republic", area: 5604.60, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", peatlandArea: 1200.5, peatlandStatus: "OVERLAP", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"],
+    gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"],
     geometry: { type: "Polygon", coordinates: [[[18.555696, 4.361002], [18.655696, 4.361002], [18.655696, 4.461002], [18.555696, 4.461002], [18.555696, 4.361002]]] }
   },
   { 
     plotId: "PLOT_010", country: "Brazil", area: 8.12, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[-60.025902, -3.119028], [-60.020902, -3.119028], [-60.020902, -3.114028], [-60.025902, -3.114028], [-60.025902, -3.119028]]] }
   },
   { 
     plotId: "PLOT_007", country: "Indonesia", area: 20.98, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 2.5, peatlandStatus: "OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[114.921327, -2.247871], [114.935327, -2.247871], [114.935327, -2.261871], [114.921327, -2.261871], [114.921327, -2.247871]]] }
   },
   { 
     plotId: "PLOT_006", country: "Indonesia", area: 1.97, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[115.421327, -2.347871], [115.423827, -2.347871], [115.423827, -2.350371], [115.421327, -2.350371], [115.421327, -2.347871]]] }
   },
   { 
     plotId: "PLOT_008", country: "Ivory Coast", area: 8.32, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"],
+    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"],
     geometry: { type: "Polygon", coordinates: [[[-5.647945, 7.639989], [-5.640945, 7.639989], [-5.640945, 7.646989], [-5.647945, 7.646989], [-5.647945, 7.639989]]] }
   },
   { 
     plotId: "PLOT_013", country: "Ghana", area: 4.17, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", peatlandArea: 1.1, peatlandStatus: "OVERLAP", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"],
+    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"],
     geometry: { type: "Polygon", coordinates: [[[-1.194512, 7.846527], [-1.188512, 7.846527], [-1.188512, 7.852527], [-1.194512, 7.852527], [-1.194512, 7.846527]]] }
   },
   { 
     plotId: "PLOT_003", country: "Brazil", area: 197.59, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", peatlandArea: 30.0, peatlandStatus: "OVERLAP", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"],
+    gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"],
     geometry: { type: "Polygon", coordinates: [[[-60.125902, -3.219028], [-60.105902, -3.219028], [-60.105902, -3.199028], [-60.125902, -3.199028], [-60.125902, -3.219028]]] }
   },
   { 
     plotId: "PLOT_018", country: "Ivory Coast", area: 1.99, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: ["GFW Forest Loss"],
+    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"],
     geometry: { type: "Polygon", coordinates: [[[-5.447945, 7.439989], [-5.445445, 7.439989], [-5.445445, 7.442489], [-5.447945, 7.442489], [-5.447945, 7.439989]]] }
   },
   { 
     plotId: "PLOT_011", country: "China", area: 7.61, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[116.383331, 39.916668], [116.389331, 39.916668], [116.389331, 39.922668], [116.383331, 39.922668], [116.383331, 39.916668]]] }
   },
   { 
     plotId: "PLOT_015", country: "Brazil", area: 873.31, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 450.75, peatlandStatus: "OVERLAP", highRiskDatasets: ["GFW Forest Loss"],
+    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"],
     geometry: { type: "Polygon", coordinates: [[[-60.325902, -3.419028], [-60.275902, -3.419028], [-60.275902, -3.369028], [-60.325902, -3.369028], [-60.325902, -3.419028]]] }
   },
   { 
     plotId: "PLOT_017", country: "Nigeria", area: 4.26, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[8.775277, 9.181999], [8.781277, 9.181999], [8.781277, 9.187999], [8.775277, 9.187999], [8.775277, 9.181999]]] }
   },
   { 
     plotId: "PLOT_016", country: "Indonesia", area: 5.67, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[115.521327, -2.447871], [115.527327, -2.447871], [115.527327, -2.441871], [115.521327, -2.441871], [115.521327, -2.447871]]] }
   },
   { 
     plotId: "PLOT_012", country: "China", area: 6.23, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[116.483331, 39.816668], [116.489331, 39.816668], [116.489331, 39.822668], [116.483331, 39.822668], [116.483331, 39.816668]]] }
   },
   { 
     plotId: "PLOT_014", country: "Nigeria", area: 1.01, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", peatlandArea: 0, peatlandStatus: "NO_OVERLAP", highRiskDatasets: [],
+    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
     geometry: { type: "Polygon", coordinates: [[[8.875277, 9.281999], [8.877277, 9.281999], [8.877277, 9.283999], [8.875277, 9.283999], [8.875277, 9.281999]]] }
   }
 ] as const;
@@ -159,7 +154,7 @@ export default function DeforestationMonitoring() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [, setLocation] = useLocation();
   const [hasRealData, setHasRealData] = useState(false);
-
+  
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10);
@@ -169,14 +164,14 @@ export default function DeforestationMonitoring() {
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [complianceFilter, setComplianceFilter] = useState<string>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
-
+  
   // Row selection state
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
-
+  
   // Revalidation state
   const [isValidating, setIsValidating] = useState(false);
-
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -195,7 +190,7 @@ export default function DeforestationMonitoring() {
         // Check if we have persisted analysis results
         const storedResults = localStorage.getItem('currentAnalysisResults');
         const hasRealData = localStorage.getItem('hasRealAnalysisData') === 'true';
-
+        
         if (hasRealData && storedResults) {
           const parsedResults = JSON.parse(storedResults);
           if (Array.isArray(parsedResults) && parsedResults.length > 0) {
@@ -205,7 +200,7 @@ export default function DeforestationMonitoring() {
             setTotalRecords(parsedResults.length);
             setHasRealData(true);
             console.log(`Restored ${parsedResults.length} analysis results from storage`);
-
+            
             // If refresh flag was set, trigger a toast to show data was updated
             if (shouldRefresh) {
               toast({
@@ -214,24 +209,24 @@ export default function DeforestationMonitoring() {
                 duration: 3000,
               });
             }
-
+            
             return; // Exit early, don't clear data
           }
         }
-
+        
         // Only clear if no persisted data exists
         localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
         localStorage.setItem('hasRealAnalysisData', 'false');
-
+        
         // Clear database results only if no persisted data
         await apiRequest('DELETE', '/api/analysis-results');
-
+        
         // Initialize with empty state
         setAnalysisResults([]);
         setFilteredResults([]);
         setTotalRecords(0);
         setHasRealData(false);
-
+        
         console.log("Table Result initialized as empty - dashboard will start with zero values");
       } catch (error) {
         console.error("Error loading persisted data:", error);
@@ -242,7 +237,7 @@ export default function DeforestationMonitoring() {
         setHasRealData(false);
       }
     };
-
+    
     loadPersistedData();
   }, [toast]);
 
@@ -255,7 +250,7 @@ export default function DeforestationMonitoring() {
     onSuccess: (response) => {
       const processedFeatures = response.data?.features?.length || 0;
       const originalFeatures = response.file_info?.features_count || 0;
-
+      
       if (response.warning) {
         toast({
           title: "Analysis Completed with Warning",
@@ -268,7 +263,7 @@ export default function DeforestationMonitoring() {
           description: `GeoJSON analysis completed successfully. Processing ${processedFeatures} plots.`
         });
       }
-
+      
       // Transform real API response to our expected format (preserve geometry data)
       if (response.data?.features) {
         const transformedResults = response.data.features.map((feature: any) => ({
@@ -284,24 +279,21 @@ export default function DeforestationMonitoring() {
           gfwLossArea: (Number(feature.properties.gfw_loss?.gfw_loss_area || 0) || (feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
           jrcLossArea: (Number(feature.properties.jrc_loss?.jrc_loss_area || 0) || (feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
           sbtnLossArea: (Number(feature.properties.sbtn_loss?.sbtn_loss_area || 0) || (feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
-          // Peatland analysis results from API
-          peatlandArea: feature.properties.peatland_analysis?.intersect_area_ha || 0,
-          peatlandStatus: feature.properties.peatland_analysis?.status?.toUpperCase() || 'NO_OVERLAP',
           highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
           // Preserve the actual geometry data from GeoJSON
           geometry: feature.geometry
         }));
-
+        
         setAnalysisResults(transformedResults);
         setFilteredResults(transformedResults);
         setTotalRecords(transformedResults.length);
         setHasRealData(true);
-
+        
         // Store real analysis results in localStorage for dashboard reactivity
         localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
         localStorage.setItem('hasRealAnalysisData', 'true');
       }
-
+      
       setIsAnalyzing(false);
       setAnalysisProgress(100);
     },
@@ -324,7 +316,7 @@ export default function DeforestationMonitoring() {
     // Validate file type
     const validTypes = ['.geojson', '.json', '.kml'];
     const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
-
+    
     if (!validTypes.includes(fileExtension)) {
       toast({
         title: "Invalid file type",
@@ -362,11 +354,11 @@ export default function DeforestationMonitoring() {
     setRiskFilter('all');
     setComplianceFilter('all');
     setCountryFilter('all');
-
+    
     // Clear both localStorage and database when user explicitly clears
     localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
     localStorage.setItem('hasRealAnalysisData', 'false');
-
+    
     try {
       await apiRequest('DELETE', '/api/analysis-results');
       toast({
@@ -376,7 +368,7 @@ export default function DeforestationMonitoring() {
     } catch (error) {
       console.error('Error clearing database results:', error);
     }
-
+    
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -465,7 +457,7 @@ export default function DeforestationMonitoring() {
   // Filter and sort functionality
   useEffect(() => {
     let filtered = [...analysisResults];
-
+    
     // Apply search filter
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
@@ -475,28 +467,28 @@ export default function DeforestationMonitoring() {
         result.area.toString().includes(search)
       );
     }
-
+    
     // Apply risk filter
     if (riskFilter !== 'all') {
       filtered = filtered.filter(result => result.overallRisk === riskFilter.toUpperCase());
     }
-
+    
     // Apply compliance filter
     if (complianceFilter !== 'all') {
       filtered = filtered.filter(result => result.complianceStatus === complianceFilter.toUpperCase());
     }
-
+    
     // Apply country filter
     if (countryFilter !== 'all') {
       filtered = filtered.filter(result => result.country === countryFilter);
     }
-
+    
     // Apply sorting
     if (sortColumn) {
       filtered.sort((a, b) => {
         const aVal = a[sortColumn];
         const bVal = b[sortColumn];
-
+        
         if (typeof aVal === 'number' && typeof bVal === 'number') {
           return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
         } else {
@@ -510,7 +502,7 @@ export default function DeforestationMonitoring() {
         }
       });
     }
-
+    
     setFilteredResults(filtered);
     setCurrentPage(1); // Reset to first page when filtering
   }, [analysisResults, searchTerm, riskFilter, complianceFilter, countryFilter, sortColumn, sortDirection]);
@@ -539,33 +531,33 @@ export default function DeforestationMonitoring() {
   // New polygon validation function using PostGIS overlap detection
   const validatePolygonWithPostGIS = (result: AnalysisResult, allResults: AnalysisResult[], overlappingPlots: Set<string>) => {
     const issues: string[] = [];
-
+    
     console.log(`Validating polygon ${result.plotId} with PostGIS results`);
-
+    
     if (!result.geometry?.coordinates?.[0]) {
       console.log(`No valid geometry for ${result.plotId}`);
       return ['Invalid Geometry'];
     }
-
+    
     const coordinates = result.geometry.coordinates[0];
-
+    
     // 1. Check for duplicate vertices
     const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
     if (uniqueCoords.size < coordinates.length - 1) { // -1 because first and last should be same
       issues.push('Duplicate Vertices');
     }
-
+    
     // 2. Check right hand rule (should be counter-clockwise)
     if (!isCounterClockwise(coordinates)) {
       issues.push('Wrong Orientation');
     }
-
+    
     // 3. Check for overlaps using PostGIS results
     if (overlappingPlots.has(result.plotId)) {
       issues.push('Overlap Detected');
       console.log(`PostGIS detected overlap for ${result.plotId}`);
     }
-
+    
     // 4. Check for duplicate polygons (keep existing JavaScript logic for this)
     const isDuplicate = allResults.some(other => {
       if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
@@ -574,35 +566,35 @@ export default function DeforestationMonitoring() {
     if (isDuplicate) {
       issues.push('Duplicate Polygon');
     }
-
+    
     return issues;
   };
 
   // Original polygon validation function (keeping for backup)
   const validatePolygon = (result: AnalysisResult, allResults: AnalysisResult[]) => {
     const issues: string[] = [];
-
+    
     console.log(`Validating polygon ${result.plotId}:`, result.geometry);
-
+    
     if (!result.geometry?.coordinates?.[0]) {
       console.log(`No valid geometry for ${result.plotId}`);
       return ['Invalid Geometry'];
     }
-
+    
     const coordinates = result.geometry.coordinates[0];
     console.log(`Coordinates for ${result.plotId}:`, coordinates);
-
+    
     // 1. Check for duplicate vertices
     const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
     if (uniqueCoords.size < coordinates.length - 1) { // -1 because first and last should be same
       issues.push('Duplicate Vertices');
     }
-
+    
     // 2. Check right hand rule (should be counter-clockwise)
     if (!isCounterClockwise(coordinates)) {
       issues.push('Wrong Orientation');
     }
-
+    
     // 3. Check for overlaps with other polygons
     console.log(`Checking overlaps for ${result.plotId} against ${allResults.length - 1} other polygons`);
     const hasOverlap = allResults.some(other => {
@@ -618,7 +610,7 @@ export default function DeforestationMonitoring() {
       issues.push('Overlap Detected');
       console.log(`Adding overlap issue for ${result.plotId}`);
     }
-
+    
     // 4. Check for duplicate polygons
     const isDuplicate = allResults.some(other => {
       if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
@@ -627,10 +619,10 @@ export default function DeforestationMonitoring() {
     if (isDuplicate) {
       issues.push('Duplicate Polygon');
     }
-
+    
     return issues;
   };
-
+  
   const isCounterClockwise = (coords: number[][]) => {
     let sum = 0;
     for (let i = 0; i < coords.length - 1; i++) {
@@ -638,22 +630,22 @@ export default function DeforestationMonitoring() {
     }
     return sum < 0;
   };
-
+  
   const polygonsOverlap = (coords1: number[][], coords2: number[][]) => {
     // Debug logging
     console.log('Checking overlap between:', coords1.length, 'vs', coords2.length, 'points');
-
+    
     // More comprehensive overlap detection with bounding box check first
     const bbox1 = getBoundingBox(coords1);
     const bbox2 = getBoundingBox(coords2);
-
+    
     // Quick bounding box check - if bounding boxes don't overlap, polygons can't overlap
     if (!boundingBoxesOverlap(bbox1, bbox2)) {
       return false;
     }
-
+    
     console.log('Bounding boxes overlap, checking detailed overlap...');
-
+    
     // 1. Check if any vertex of polygon1 is inside polygon2
     for (let i = 0; i < coords1.length; i++) {
       if (pointInPolygon(coords1[i], coords2)) {
@@ -661,7 +653,7 @@ export default function DeforestationMonitoring() {
         return true;
       }
     }
-
+    
     // 2. Check if any vertex of polygon2 is inside polygon1
     for (let i = 0; i < coords2.length; i++) {
       if (pointInPolygon(coords2[i], coords1)) {
@@ -669,7 +661,7 @@ export default function DeforestationMonitoring() {
         return true;
       }
     }
-
+    
     // 3. Check if any edges intersect
     for (let i = 0; i < coords1.length - 1; i++) {
       for (let j = 0; j < coords2.length - 1; j++) {
@@ -682,31 +674,31 @@ export default function DeforestationMonitoring() {
         }
       }
     }
-
+    
     return false;
   };
-
+  
   // Helper function to get bounding box
   const getBoundingBox = (coords: number[][]) => {
     let minX = coords[0][0], maxX = coords[0][0];
     let minY = coords[0][1], maxY = coords[0][1];
-
+    
     for (const [x, y] of coords) {
       if (x < minX) minX = x;
       if (x > maxX) maxX = x;
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
     }
-
+    
     return { minX, maxX, minY, maxY };
   };
-
+  
   // Helper function to check if bounding boxes overlap
   const boundingBoxesOverlap = (box1: any, box2: any) => {
     return !(box1.maxX < box2.minX || box2.maxX < box1.minX || 
              box1.maxY < box2.minY || box2.maxY < box1.minY);
   };
-
+  
   // Helper function to check if two line segments intersect
   const lineSegmentsIntersect = (p1: number[], q1: number[], p2: number[], q2: number[]) => {
     const orientation = (p: number[], q: number[], r: number[]) => {
@@ -714,29 +706,29 @@ export default function DeforestationMonitoring() {
       if (val === 0) return 0; // collinear
       return val > 0 ? 1 : 2; // clockwise or counterclockwise
     };
-
+    
     const onSegment = (p: number[], q: number[], r: number[]) => {
       return q[0] <= Math.max(p[0], r[0]) && q[0] >= Math.min(p[0], r[0]) &&
              q[1] <= Math.max(p[1], r[1]) && q[1] >= Math.min(p[1], r[1]);
     };
-
+    
     const o1 = orientation(p1, q1, p2);
     const o2 = orientation(p1, q1, q2);
     const o3 = orientation(p2, q2, p1);
     const o4 = orientation(p2, q2, q1);
-
+    
     // General case
     if (o1 !== o2 && o3 !== o4) return true;
-
+    
     // Special cases for collinear points
     if (o1 === 0 && onSegment(p1, p2, q1)) return true;
     if (o2 === 0 && onSegment(p1, q2, q1)) return true;
     if (o3 === 0 && onSegment(p2, p1, q2)) return true;
     if (o4 === 0 && onSegment(p2, q1, q2)) return true;
-
+    
     return false;
   };
-
+  
   const pointInPolygon = (point: number[], polygon: number[][]) => {
     let inside = false;
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -747,7 +739,7 @@ export default function DeforestationMonitoring() {
     }
     return inside;
   };
-
+  
   const runPolygonValidation = async () => {
     if (selectedRows.size === 0) {
       toast({
@@ -757,13 +749,13 @@ export default function DeforestationMonitoring() {
       });
       return;
     }
-
+    
     setIsValidating(true);
-
+    
     try {
       // Get selected polygons for validation
       const selectedPolygons = analysisResults.filter(result => selectedRows.has(result.plotId));
-
+      
       // Prepare polygon data for PostGIS overlap detection
       const polygonData = selectedPolygons
         .filter(result => result.geometry?.coordinates)
@@ -788,7 +780,7 @@ export default function DeforestationMonitoring() {
           overlappingPlots.add(overlap.polygon2);
         });
       }
-
+      
       const updatedResults = analysisResults.map(result => {
         if (selectedRows.has(result.plotId)) {
           const issues = validatePolygonWithPostGIS(result, analysisResults, overlappingPlots);
@@ -799,19 +791,19 @@ export default function DeforestationMonitoring() {
         }
         return result;
       });
-
+      
       setAnalysisResults(updatedResults);
       setFilteredResults(updatedResults);
-
+      
       // Update localStorage
       localStorage.setItem('currentAnalysisResults', JSON.stringify(updatedResults));
-
+      
       toast({
         title: "Validation Complete",
         description: `Validated ${selectedRows.size} polygon(s) successfully. Found ${overlapResponse.overlapsDetected || 0} overlaps.`,
         variant: "default",
       });
-
+      
     } catch (error) {
       console.error('Validation error:', error);
       toast({
@@ -843,20 +835,27 @@ export default function DeforestationMonitoring() {
       <ChevronDown className="w-4 h-4" />;
   };
 
-  const getRiskColor = (risk: string) => {
+  const getRiskBadge = (risk: string) => {
     switch (risk) {
-      case 'LOW': return 'bg-green-600 hover:bg-green-700';
-      case 'MEDIUM': return 'bg-yellow-600 hover:bg-yellow-700';
-      case 'HIGH': return 'bg-red-600 hover:bg-red-700';
-      default: return 'bg-gray-400';
+      case 'LOW':
+        return <Badge className="bg-green-100 text-green-800">LOW</Badge>;
+      case 'MEDIUM':
+        return <Badge className="bg-yellow-100 text-yellow-800">MEDIUM</Badge>;
+      case 'HIGH':
+        return <Badge className="bg-red-100 text-red-800">HIGH</Badge>;
+      default:
+        return <Badge variant="secondary">{risk}</Badge>;
     }
   };
 
-  const getComplianceColor = (status: string) => {
+  const getComplianceBadge = (status: string) => {
     switch (status) {
-      case 'COMPLIANT': return 'bg-green-600 hover:bg-green-700';
-      case 'NON-COMPLIANT': return 'bg-red-600 hover:bg-red-700';
-      default: return 'bg-gray-400';
+      case 'COMPLIANT':
+        return <Badge className="bg-green-100 text-green-800">COMPLIANT</Badge>;
+      case 'NON-COMPLIANT':
+        return <Badge className="bg-red-100 text-red-800">NON-COMPLIANT</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -878,17 +877,7 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  const getPeatlandBadge = (status: string, area: number) => {
-    if (status === 'OVERLAP') {
-      return (
-        <Badge className="bg-red-600 hover:bg-red-700 text-white">
-          {area}ha
-        </Badge>
-      );
-    } else {
-      return <Badge className="bg-green-600 hover:bg-green-700 text-white">No overlap</Badge>;
-    }
-  };
+
 
   const downloadExcel = () => {
     try {
@@ -905,8 +894,6 @@ export default function DeforestationMonitoring() {
         'JRC Loss Area (ha)': result.jrcLossArea || 0,
         'SBTN Natural Loss': result.sbtnLoss,
         'SBTN Loss Area (ha)': result.sbtnLossArea || 0,
-        'Peatland Area (ha)': result.peatlandArea, // Add peatland area
-        'Peatland Status': result.peatlandStatus === 'OVERLAP' ? 'Overlap' : 'No Overlap', // Add peatland status
         'Polygon Issues': result.polygonIssues || 'No Analysis Run Yet'
       }));
 
@@ -927,7 +914,7 @@ export default function DeforestationMonitoring() {
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-
+      
       link.setAttribute('href', url);
       link.setAttribute('download', `eudr-analysis-results-${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
@@ -967,8 +954,6 @@ export default function DeforestationMonitoring() {
           jrcLossArea: result.jrcLossArea,
           sbtnLoss: result.sbtnLoss,
           sbtnLossArea: result.sbtnLossArea,
-          peatlandArea: result.peatlandArea, // Add peatland area
-          peatlandStatus: result.peatlandStatus, // Add peatland status
           polygonIssues: result.polygonIssues || 'No Analysis Run Yet',
           highRiskDatasets: result.highRiskDatasets
         },
@@ -986,7 +971,7 @@ export default function DeforestationMonitoring() {
       });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-
+      
       link.setAttribute('href', url);
       link.setAttribute('download', `eudr-analysis-results-${new Date().toISOString().split('T')[0]}.geojson`);
       link.style.visibility = 'hidden';
@@ -1134,7 +1119,7 @@ export default function DeforestationMonitoring() {
                     </Button>
                   </div>
                 </div>
-
+                
                 {isAnalyzing && (
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between text-sm">
@@ -1214,7 +1199,7 @@ export default function DeforestationMonitoring() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-
+                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
@@ -1237,15 +1222,15 @@ export default function DeforestationMonitoring() {
                         });
                         return;
                       }
-
+                      
                       // Filter selected polygons from analysis results
                       const selectedPolygons = filteredResults.filter(result => 
                         selectedRows.has(result.plotId)
                       );
-
+                      
                       // Store selected polygons in localStorage
                       localStorage.setItem('selectedPolygonsForEdit', JSON.stringify(selectedPolygons));
-
+                      
                       // Navigate to edit polygon page
                       setLocation('/edit-polygon');
                     }} data-testid="action-edit-polygon">
@@ -1269,7 +1254,7 @@ export default function DeforestationMonitoring() {
                         });
                         return;
                       }
-
+                      
                       if (selectedRows.size > 1) {
                         toast({
                           title: "Multiple Polygons Selected",
@@ -1278,16 +1263,16 @@ export default function DeforestationMonitoring() {
                         });
                         return;
                       }
-
+                      
                       // Get the single selected polygon
                       const selectedPolygon = filteredResults.find(result => 
                         selectedRows.has(result.plotId)
                       );
-
+                      
                       if (selectedPolygon) {
                         // Store selected polygon for verification
                         localStorage.setItem('selectedPolygonForVerification', JSON.stringify(selectedPolygon));
-
+                        
                         // Navigate to verification page
                         setLocation('/data-verification');
                       }
@@ -1300,37 +1285,6 @@ export default function DeforestationMonitoring() {
 
               </div>
             </CardHeader>
-
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-6 py-4 bg-gray-50 dark:bg-gray-800 border-b">
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{analysisResults.length}</div>
-                  <div className="text-sm text-gray-600 mt-1">Total Plots</div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{filteredResults.filter(r => r.overallRisk === 'HIGH').length}</div>
-                  <div className="text-sm text-gray-600 mt-1">High Risk Plots</div>
-                </div>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{analysisResults.filter(r => r.complianceStatus === 'COMPLIANT').length}</div>
-                  <div className="text-sm text-gray-600 mt-1">Compliant Plots</div>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{filteredResults.filter(r => r.peatlandStatus === 'OVERLAP').length}</div>
-                  <div className="text-sm text-gray-600 mt-1">Peatland Overlap</div>
-                </div>
-              </div>
-            </div>
 
             {/* Search and Filter Controls */}
             <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-b">
@@ -1346,7 +1300,7 @@ export default function DeforestationMonitoring() {
                     data-testid="search-input"
                   />
                 </div>
-
+                
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-400" />
                   <Select value={countryFilter} onValueChange={setCountryFilter}>
@@ -1494,9 +1448,6 @@ export default function DeforestationMonitoring() {
                           {getSortIcon('sbtnLoss')}
                         </div>
                       </th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                        Peatland
-                      </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Spatial Legality
                       </th>
@@ -1522,7 +1473,7 @@ export default function DeforestationMonitoring() {
                             return <Badge variant="outline">{legality}</Badge>;
                         }
                       };
-
+                      
                       return (
                         <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800" data-testid={`table-row-${result.plotId}`}>
                           <td className="px-4 py-4 text-sm">
@@ -1536,7 +1487,7 @@ export default function DeforestationMonitoring() {
                                   newSelectedRows.delete(result.plotId);
                                 }
                                 setSelectedRows(newSelectedRows);
-
+                                
                                 // Update select all state
                                 const allSelected = filteredResults.every(row => newSelectedRows.has(row.plotId));
                                 setSelectAll(allSelected && newSelectedRows.size > 0);
@@ -1567,9 +1518,6 @@ export default function DeforestationMonitoring() {
                           </td>
                           <td className="px-4 py-4 text-sm">
                             {getLossDisplay(result.sbtnLoss, result.sbtnLossArea)}
-                          </td>
-                          <td className="text-center px-4 py-4 text-sm">
-                            {getPeatlandBadge(result.peatlandStatus, result.peatlandArea)}
                           </td>
                           <td className="px-4 py-4 text-sm">
                             {getSpatialLegalityBadge(randomSpatialLegality)}
@@ -1610,7 +1558,7 @@ export default function DeforestationMonitoring() {
                         <ChevronLeft className="h-4 w-4" />
                         Previous
                       </Button>
-
+                      
                       <div className="flex items-center gap-1">
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                           let pageNum;
@@ -1623,7 +1571,7 @@ export default function DeforestationMonitoring() {
                           } else {
                             pageNum = currentPage - 2 + i;
                           }
-
+                          
                           return (
                             <Button
                               key={pageNum}
@@ -1638,7 +1586,7 @@ export default function DeforestationMonitoring() {
                           );
                         })}
                       </div>
-
+                      
                       <Button
                         variant="outline"
                         size="sm"

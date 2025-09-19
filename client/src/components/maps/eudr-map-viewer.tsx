@@ -485,26 +485,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               border: 1px solid rgba(220, 38, 38, 0.3) !important;
             }
 
-            /* Peatland polygon styling */
-            .peatland-polygon {
-              transition: all 0.3s ease !important;
-            }
-
-            .peatland-polygon:hover {
-              opacity: 0.9 !important;
-              fill-opacity: 0.8 !important;
-              stroke-width: 3 !important;
-            }
-
-            /* Peatland popup specific styling */
-            .modern-popup .peatland-info {
-              background: linear-gradient(135deg, #2c7fb8, #7fcdbb) !important;
-              color: white !important;
-              padding: 8px 12px !important;
-              border-radius: 6px !important;
-              margin-bottom: 12px !important;
-            }
-
             .datasets-list {
               margin-top: 8px !important;
               padding: 12px !important;
@@ -599,11 +579,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     <span class="checkmark"></span>
                     <span class="layer-name">SBTN Natural Loss</span>
                   </label>
-                  <label class="layer-checkbox">
-                    <input type="checkbox" id="peatlandLayer">
-                    <span class="checkmark"></span>
-                    <span class="layer-name">Peatland Areas</span>
-                  </label>
                 </div>
               </div>
             </div>
@@ -631,14 +606,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               <div class="legend-item">
                 <div class="legend-color" style="background-color: #ff00ff;"></div>
                 <span>SBTN Natural Loss</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background-color: #2c7fb8;"></div>
-                <span>Non Kubah Gambut</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background-color: #7fcdbb;"></div>
-                <span>Kubah Gambut</span>
               </div>
             </div>
           </div>
@@ -684,100 +651,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 opacity: 0.7
               })
             };
-
-            // Mock peatland data for Indonesia region
-            const peatlandData = [
-              {
-                id: 1,
-                NAMA_KHG: "Kesatuan Hidrologi Gambut Riau Selatan",
-                KODE_KHG: "KHG-RS-001",
-                Kubah_GBT: "Kubah Gambut",
-                Luas_HA: 12450.75,
-                coordinates: [[-0.5, 101.5], [-0.6, 101.6], [-0.7, 101.5], [-0.6, 101.4]]
-              },
-              {
-                id: 2,
-                NAMA_KHG: "Kesatuan Hidrologi Gambut Jambi Utara",
-                KODE_KHG: "KHG-JU-002",
-                Kubah_GBT: "Non Kubah Gambut",
-                Luas_HA: 8320.25,
-                coordinates: [[-1.2, 103.5], [-1.3, 103.6], [-1.4, 103.5], [-1.3, 103.4]]
-              },
-              {
-                id: 3,
-                NAMA_KHG: "Kesatuan Hidrologi Gambut Sumatra Selatan",
-                KODE_KHG: "KHG-SS-003",
-                Kubah_GBT: "Kubah Gambut",
-                Luas_HA: 15680.90,
-                coordinates: [[-2.8, 104.2], [-2.9, 104.3], [-3.0, 104.2], [-2.9, 104.1]]
-              },
-              {
-                id: 4,
-                NAMA_KHG: "Kesatuan Hidrologi Gambut Kalimantan Tengah",
-                KODE_KHG: "KHG-KT-004",
-                Kubah_GBT: "Non Kubah Gambut",
-                Luas_HA: 22150.45,
-                coordinates: [[-1.8, 113.8], [-1.9, 113.9], [-2.0, 113.8], [-1.9, 113.7]]
-              }
-            ];
-
-            // Create peatland layer
-            const peatlandLayer = L.layerGroup();
-            
-            peatlandData.forEach(peat => {
-              const color = peat.Kubah_GBT === "Kubah Gambut" ? "#7fcdbb" : "#2c7fb8";
-              
-              const polygon = L.polygon(peat.coordinates, {
-                fillColor: color,
-                color: color,
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.6,
-                className: 'peatland-polygon'
-              });
-
-              // Create modern popup content for peatland
-              const popupContent = \`
-                <div class="modern-popup-content">
-                  <div class="popup-header">
-                    <div class="popup-icon" style="background: \${color};">
-                      🌿
-                    </div>
-                    <h3 class="popup-title">Peatland Information</h3>
-                  </div>
-                  
-                  <div class="popup-body">
-                    <div class="popup-row">
-                      <span class="popup-label">Peat Hydrological Unit Name</span>
-                      <span class="popup-value">\${peat.NAMA_KHG}</span>
-                    </div>
-                    
-                    <div class="popup-row">
-                      <span class="popup-label">Peat Hydrological Unit Code</span>
-                      <span class="popup-value">\${peat.KODE_KHG}</span>
-                    </div>
-                    
-                    <div class="popup-row">
-                      <span class="popup-label">Peat Dome</span>
-                      <span class="popup-value">\${peat.Kubah_GBT}</span>
-                    </div>
-                    
-                    <div class="popup-row">
-                      <span class="popup-label">Area</span>
-                      <span class="popup-value">\${peat.Luas_HA.toLocaleString()} ha</span>
-                    </div>
-                  </div>
-                </div>
-              \`;
-
-              polygon.bindPopup(popupContent, {
-                maxWidth: 400,
-                minWidth: 300,
-                className: 'modern-popup'
-              });
-
-              peatlandLayer.addLayer(polygon);
-            });
 
             // Analysis results from React (contains actual polygon geometries)
             const analysisResults = ${JSON.stringify(analysisResults)};
@@ -1140,16 +1013,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 deforestationLayers.sbtn.addTo(map);
               } else {
                 map.removeLayer(deforestationLayers.sbtn);
-              }
-            });
-
-            document.getElementById('peatlandLayer').addEventListener('change', function(e) {
-              if (e.target.checked) {
-                peatlandLayer.addTo(map);
-                console.log('Peatland layer added to map');
-              } else {
-                map.removeLayer(peatlandLayer);
-                console.log('Peatland layer removed from map');
               }
             });
 
