@@ -3301,6 +3301,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to get country from coordinates using Nominatim API
+  async function getCountryFromCoordinates(lat: number, lng: number): Promise<string> {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=3&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'KPN-EUDR-Compliance-System/1.0 (support@kpn.com)'
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.address && data.address.country) {
+          return data.address.country;
+        }
+      }
+      
+      // Fallback based on coordinate ranges
+      if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
+        return 'Indonesia';
+      } else if (lat >= 4 && lat <= 15 && lng >= -8 && lng <= 16) {
+        return 'Nigeria';
+      } else if (lat >= 4 && lat <= 12 && lng >= -8 && lng <= 3) {
+        return 'Ghana';
+      } else if (lat >= 4 && lat <= 11 && lng >= -9 && lng <= -2) {
+        return 'Ivory Coast';
+      } else if (lat >= -25 && lat <= 5 && lng >= -74 && lng <= -32) {
+        return 'Brazil';
+      }
+      
+      return 'Unknown';
+    } catch (error) {
+      console.warn('Nominatim API error, using coordinate fallback:', error);
+      
+      // Fallback based on coordinate ranges
+      if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
+        return 'Indonesia';
+      } else if (lat >= 4 && lat <= 15 && lng >= -8 && lng <= 16) {
+        return 'Nigeria';
+      } else if (lat >= 4 && lat <= 12 && lng >= -8 && lng <= 3) {
+        return 'Ghana';
+      } else if (lat >= 4 && lat <= 11 && lng >= -9 && lng <= -2) {
+        return 'Ivory Coast';
+      } else if (lat >= -25 && lat <= 5 && lng >= -74 && lng <= -32) {
+        return 'Brazil';
+      }
+      
+      return 'Unknown';
+    }
+  }
+
+  // Helper function to extract centroid coordinates from geometry
+  function getCentroidFromGeometry(geometry: any): { lat: number, lng: number } | null {
+    try {
+      if (!geometry || !geometry.coordinates) return null;
+      
+      if (geometry.type === 'Point') {
+        return { lng: geometry.coordinates[0], lat: geometry.coordinates[1] };
+      } else if (geometry.type === 'Polygon') {
+        const coords = geometry.coordinates[0];
+        if (coords && coords.length > 0) {
+          const lngs = coords.map((c: number[]) => c[0]);
+          const lats = coords.map((c: number[]) => c[1]);
+          return {
+            lng: lngs.reduce((a: number, b: number) => a + b, 0) / lngs.length,
+            lat: lats.reduce((a: number, b: number) => a + b, 0) / lats.length
+          };
+        }
+      } else if (geometry.type === 'MultiPolygon') {
+        const coords = geometry.coordinates[0][0];
+        if (coords && coords.length > 0) {
+          const lngs = coords.map((c: number[]) => c[0]);
+          const lats = coords.map((c: number[]) => c[1]);
+          return {
+            lng: lngs.reduce((a: number, b: number) => a + b, 0) / lngs.length,
+            lat: lats.reduce((a: number, b: number) => a + b, 0) / lats.length
+          };
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.warn('Error extracting centroid:', error);
+      return null;
+    }
+  }
+
   // GeoJSON upload and analysis endpoint
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
@@ -3344,60 +3433,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       };
 
-      // Enhanced validation for Indonesian GeoJSON format
-      const validatedFeatures = cleanedGeojson.features.filter((feature: any) => {
-        const props = feature.properties;
+      // Enhanced validation for different GeoJSON formats
+      const validatedFeatures = [];
+      
+      for (const feature of cleanedGeojson.features) {
+        const props = feature.properties || {};
         
         // More comprehensive ID extraction
-        const hasValidId = props && (
-          props['.Farmers ID'] ||     // Indonesian format
-          props.id || 
-          props.Name || 
-          props.name ||
-          props.plot_id || 
-          props.farmer_id ||
-          props.plotId
-        );
+        const hasValidId = props['.Farmers ID'] || props.id || props.Name || 
+                          props.name || props.plot_id || props.farmer_id || props.plotId;
         
-        // Enhanced area extraction - handle Indonesian "Ha" format
-        const hasValidArea = props && (
-          props['.Plot size'] ||      // Indonesian format: "0.50 Ha"
-          props.area_ha || 
-          props.area || 
-          props.area_hectares ||
-          props.Plot_Size ||
-          true // Always accept - we can calculate from geometry if needed
-        );
-        
-        // Enhanced location/country extraction
-        const hasValidLocation = props && (
-          props['.Distict'] ||        // Indonesian format: "Bone"
-          props['.Aggregator Location'] || // Indonesian format
-          props.country_name || 
-          props.country || 
-          props.district ||
-          props.region ||
-          props.province ||
-          props.kabupaten ||
-          true // Default fallback to "Indonesia" for Indonesian data
-        );
-
         if (!hasValidId) {
-          console.warn('Feature missing ID:', {
-            availableProps: Object.keys(props),
-            farmersId: props['.Farmers ID'],
-            id: props.id,
-            name: props.Name
-          });
-          return false;
+          console.warn('Feature missing ID, skipping:', Object.keys(props));
+          continue;
         }
 
-        return true;
-      });
+        // Get country using Nominatim API based on geometry centroid
+        let detectedCountry = 'Unknown';
+        const centroid = getCentroidFromGeometry(feature.geometry);
+        
+        if (centroid) {
+          console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
+          detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
+          console.log(`✅ Country detected: ${detectedCountry}`);
+          
+          // Add a small delay to respect Nominatim rate limits (1 request per second)
+          await new Promise(resolve => setTimeout(resolve, 1100));
+        } else {
+          // Fallback to property-based detection
+          detectedCountry = props['.Distict'] || props['.Aggregator Location'] || 
+                           props.country_name || props.country || props.district || 
+                           props.region || props.province || props.kabupaten || 'Indonesia';
+        }
+
+        // Update feature properties with detected country
+        feature.properties.detected_country = detectedCountry;
+        validatedFeatures.push(feature);
+      }
 
       if (validatedFeatures.length === 0) {
         return res.status(400).json({ 
-          error: 'No valid features found. Each feature must have ID, area, and country/district information.' 
+          error: 'No valid features found. Each feature must have geometry and identifiable properties.' 
         });
       }
 
@@ -3481,26 +3557,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           feature.properties?.farmer_id ||
                           `PLOT_${analysisResults.data.features.indexOf(feature) + 1}`;
 
-            // Enhanced country/location extraction for Indonesian format
-            let country = 'Indonesia'; // Default for Indonesian data
-            if (feature.properties?.['.Distict']) {
-              country = `${feature.properties['.Distict']}, Indonesia`;
-            } else if (feature.properties?.['.Aggregator Location']) {
-              // Extract location from "Makassar, South Sulawesi - Indonesia"
-              const location = feature.properties['.Aggregator Location'];
-              if (location.includes('Indonesia')) {
-                country = location;
+            // Use detected country from Nominatim API or fallback to property extraction
+            let country = feature.properties?.detected_country || 'Unknown';
+            
+            // If we still don't have a good country, try property-based extraction
+            if (country === 'Unknown') {
+              if (feature.properties?.['.Distict']) {
+                country = `${feature.properties['.Distict']}, Indonesia`;
+              } else if (feature.properties?.['.Aggregator Location']) {
+                const location = feature.properties['.Aggregator Location'];
+                country = location.includes('Indonesia') ? location : `${location}, Indonesia`;
+              } else if (feature.properties?.country_name) {
+                country = feature.properties.country_name;
+              } else if (feature.properties?.country) {
+                country = feature.properties.country;
+              } else if (feature.properties?.district) {
+                country = `${feature.properties.district}, Indonesia`;
+              } else if (feature.properties?.region) {
+                country = feature.properties.region;
               } else {
-                country = `${location}, Indonesia`;
+                country = 'Indonesia'; // Default fallback
               }
-            } else if (feature.properties?.country_name) {
-              country = feature.properties.country_name;
-            } else if (feature.properties?.country) {
-              country = feature.properties.country;
-            } else if (feature.properties?.district) {
-              country = `${feature.properties.district}, Indonesia`;
-            } else if (feature.properties?.region) {
-              country = feature.properties.region;
             }
 
             // Enhanced area parsing for Indonesian format

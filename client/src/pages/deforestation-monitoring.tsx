@@ -682,12 +682,19 @@ export default function DeforestationMonitoring() {
                 {isAnalyzing && (
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Analyzing with satellite data...</span>
+                      <span>
+                        {analysisProgress < 20 ? 'Detecting countries using Nominatim API...' :
+                         analysisProgress < 40 ? 'Uploading cleaned GeoJSON data...' :
+                         analysisProgress < 70 ? 'Analyzing with satellite data...' :
+                         analysisProgress < 90 ? 'Processing against datasets...' :
+                         'Finalizing results...'}
+                      </span>
                       <span className="text-blue-600 font-medium">{analysisProgress}%</span>
                     </div>
                     <Progress value={analysisProgress} className="w-full" />
                     <p className="text-sm text-blue-600">
-                      Processing against GFW Loss, JRC, SBTN, and WDPA datasets
+                      {analysisProgress < 20 ? 'Using reverse geocoding for accurate country detection' :
+                       'Processing against GFW Loss, JRC, SBTN, and WDPA datasets'}
                     </p>
                   </div>
                 )}
