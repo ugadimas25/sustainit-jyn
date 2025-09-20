@@ -4,7 +4,7 @@ import express from 'express';
 import { setupAuth, isAuthenticated } from "./auth";
 import { voiceAssistantRouter } from "./routes/voice-assistant";
 import { storage } from "./storage";
-import {
+import { 
   insertCommoditySchema,
   insertPartySchema,
   insertFacilitySchema,
@@ -123,7 +123,7 @@ async function seedSampleData() {
 
       const millParty = await storage.createParty({
         name: "Central Palm Mill",
-        type: "mill",
+        type: "mill", 
         address: "Central Sumatra, Indonesia",
         country: "Indonesia",
         certifications: ["RSPO", "ISCC", "SFC"]
@@ -236,9 +236,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'plot-riau-001',
               type: 'plot',
               name: 'Palm Plot A - Riau Province',
-              data: {
-                level: 0,
-                area: '5.2 hectares',
+              data: { 
+                level: 0, 
+                area: '5.2 hectares', 
                 farmer: 'Budi Santoso',
                 crop: 'oil_palm',
                 plantingYear: 2018
@@ -253,9 +253,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'collection-riau-001',
               type: 'facility',
               name: 'Riau Collection Center A',
-              data: {
-                level: 1,
-                facilityType: 'collection_center',
+              data: { 
+                level: 1, 
+                facilityType: 'collection_center', 
                 capacity: '1000 tonnes/day',
                 operatingHours: '24/7'
               },
@@ -269,9 +269,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'mill-sumatra-001',
               type: 'facility',
               name: 'Central Palm Mill Complex',
-              data: {
-                level: 2,
-                facilityType: 'mill',
+              data: { 
+                level: 2, 
+                facilityType: 'mill', 
                 capacity: '200 tonnes/hour',
                 processes: ['sterilization', 'pressing', 'clarification']
               },
@@ -283,11 +283,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             {
               id: 'refinery-jakarta-001',
-              type: 'facility',
+              type: 'facility', 
               name: 'Jakarta Oil Refinery Complex',
-              data: {
-                level: 3,
-                facilityType: 'refinery',
+              data: { 
+                level: 3, 
+                facilityType: 'refinery', 
                 capacity: '500 tonnes/day',
                 processes: ['neutralization', 'bleaching', 'deodorization']
               },
@@ -301,9 +301,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'port-jakarta-001',
               type: 'facility',
               name: 'Tanjung Priok Export Terminal',
-              data: {
-                level: 4,
-                facilityType: 'port',
+              data: { 
+                level: 4, 
+                facilityType: 'port', 
                 capacity: '10000 tonnes storage',
                 exportDestinations: ['Rotterdam', 'Hamburg', 'Antwerp']
               },
@@ -317,9 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'shipment-exp-001',
               type: 'shipment',
               name: 'Export Shipment EXP-2024-001',
-              data: {
-                level: 5,
-                destination: 'Rotterdam, Netherlands',
+              data: { 
+                level: 5, 
+                destination: 'Rotterdam, Netherlands', 
                 vessel: 'MV Palm Carrier',
                 departureDate: '2024-08-15',
                 estimatedArrival: '2024-09-10'
@@ -332,47 +332,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ],
           edges: [
-            {
-              source: 'plot-riau-001',
-              target: 'collection-riau-001',
-              type: 'delivery',
-              quantity: 50.5,
+            { 
+              source: 'plot-riau-001', 
+              target: 'collection-riau-001', 
+              type: 'delivery', 
+              quantity: 50.5, 
               uom: 'tonnes',
               date: '2024-08-10',
               eventType: 'TRANSFER'
             },
-            {
-              source: 'collection-riau-001',
-              target: 'mill-sumatra-001',
-              type: 'processing',
-              quantity: 48.2,
+            { 
+              source: 'collection-riau-001', 
+              target: 'mill-sumatra-001', 
+              type: 'processing', 
+              quantity: 48.2, 
               uom: 'tonnes',
               date: '2024-08-11',
               eventType: 'TRANSFORM'
             },
-            {
-              source: 'mill-sumatra-001',
-              target: 'refinery-jakarta-001',
-              type: 'transformation',
-              quantity: 22.1,
+            { 
+              source: 'mill-sumatra-001', 
+              target: 'refinery-jakarta-001', 
+              type: 'transformation', 
+              quantity: 22.1, 
               uom: 'tonnes',
               date: '2024-08-12',
               eventType: 'TRANSFER'
             },
-            {
-              source: 'refinery-jakarta-001',
-              target: 'port-jakarta-001',
-              type: 'transfer',
-              quantity: 21.8,
+            { 
+              source: 'refinery-jakarta-001', 
+              target: 'port-jakarta-001', 
+              type: 'transfer', 
+              quantity: 21.8, 
               uom: 'tonnes',
               date: '2024-08-13',
               eventType: 'TRANSFER'
             },
-            {
-              source: 'port-jakarta-001',
-              target: 'shipment-exp-001',
-              type: 'shipment',
-              quantity: 21.8,
+            { 
+              source: 'port-jakarta-001', 
+              target: 'shipment-exp-001', 
+              type: 'shipment', 
+              quantity: 21.8, 
               uom: 'tonnes',
               date: '2024-08-15',
               eventType: 'TRANSFER'
@@ -443,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         };
 
-        const operation = query.includes('traceForward') ? 'traceForward' :
+        const operation = query.includes('traceForward') ? 'traceForward' : 
                          query.includes('traceBackward') ? 'traceBackward' : 'getFullLineage';
         res.json({ data: { [operation]: mockLineageResult } });
       } else if (query.includes('getCustodyChains')) {
@@ -1528,9 +1528,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { geojson } = req.body;
 
       if (!geojson) {
-        return res.status(400).json({
-          valid: false,
-          error: 'No GeoJSON data provided'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'No GeoJSON data provided' 
         });
       }
 
@@ -1538,26 +1538,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
       } catch (parseError) {
-        return res.status(400).json({
-          valid: false,
-          error: 'Invalid JSON format'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Invalid JSON format' 
         });
       }
 
       // Basic GeoJSON structure validation
       if (!parsedGeoJson.type) {
-        return res.status(400).json({
-          valid: false,
-          error: 'Missing type property'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Missing type property' 
         });
       }
 
       // Check for valid geometry types
       const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
       if (!validTypes.includes(parsedGeoJson.type)) {
-        return res.status(400).json({
-          valid: false,
-          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
+        return res.status(400).json({ 
+          valid: false, 
+          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon` 
         });
       }
 
@@ -1613,9 +1613,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!polygonFound) {
-        return res.status(400).json({
-          valid: false,
-          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.'
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.' 
         });
       }
 
@@ -1631,9 +1631,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error validating GeoJSON:', error);
-      res.status(500).json({
-        valid: false,
-        error: 'Server error during validation'
+      res.status(500).json({ 
+        valid: false, 
+        error: 'Server error during validation' 
       });
     }
   });
@@ -1795,22 +1795,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Starting PDF generation...');
 
-      // Generate the PDF using the shared function
-      const pdfBuffer = generateCleanDDSPDF(dummyReport);
-      
-      // Return the generated PDF
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
-      res.send(Buffer.from(pdfBuffer));
-    } catch (error) {
-      console.error('Error generating dummy PDF:', error);
-      res.status(500).json({ error: 'Failed to generate dummy PDF' });
-    }
-  });
-
-  // Main PDF generation function
-  function generateCleanDDSPDF(report: any): ArrayBuffer {
-    try {
       // Generate the PDF using jsPDF
       const doc = new jsPDF();
 
@@ -1834,13 +1818,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('1. Company Internal Ref:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.companyInternalRef || 'N/A', 80, yPos);
+      doc.text(dummyReport.companyInternalRef, 80, yPos);
 
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('2. Activity:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.activity || 'N/A', 50, yPos);
+      doc.text(dummyReport.activity, 50, yPos);
 
       // Section 3 - Operator Information
       yPos += 20;
@@ -1851,13 +1835,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('Name:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.operatorLegalName || 'N/A', 40, yPos);
+      doc.text(dummyReport.operatorLegalName, 40, yPos);
 
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('Address:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      const addressLines = doc.splitTextToSize(report.operatorAddress || 'N/A', 140);
+      const addressLines = doc.splitTextToSize(dummyReport.operatorAddress, 140);
       doc.text(addressLines, 45, yPos);
       yPos += addressLines.length * 5;
 
@@ -1865,13 +1849,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('Country:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.operatorCountry || 'N/A', 45, yPos);
+      doc.text(dummyReport.operatorCountry, 45, yPos);
 
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('ISO Code:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.operatorIsoCode || 'N/A', 45, yPos);
+      doc.text(dummyReport.operatorIsoCode, 45, yPos);
 
       // Commodity Section
       yPos += 20;
@@ -1888,35 +1872,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       yPos += 10;
       doc.setFont('helvetica', 'normal');
-      doc.text(report.productDescription || 'N/A', 10, yPos);
-      doc.text((report.netMassKg || 0).toString(), 70, yPos);
-      doc.text((report.percentageEstimation || 0).toString() + '%', 120, yPos);
-      doc.text(report.supplementaryUnit || 'N/A', 150, yPos);
+      doc.text(dummyReport.productDescription, 10, yPos);
+      doc.text(dummyReport.netMassKg.toString(), 70, yPos);
+      doc.text(dummyReport.percentageEstimation.toString() + '%', 120, yPos);
+      doc.text(dummyReport.supplementaryUnit, 150, yPos);
 
       yPos += 15;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.text('Scientific Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.scientificName || 'N/A', 60, yPos);
+      doc.text(dummyReport.scientificName, 60, yPos);
 
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Common Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.commonName || 'N/A', 60, yPos);
+      doc.text(dummyReport.commonName, 60, yPos);
 
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Producer Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.producerName || 'N/A', 60, yPos);
+      doc.text(dummyReport.producerName, 60, yPos);
 
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Country of Production:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(report.countryOfProduction || 'N/A', 80, yPos);
+      doc.text(dummyReport.countryOfProduction, 80, yPos);
 
       // Summary Plot Information
       yPos += 20;
@@ -1926,14 +1910,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       yPos += 10;
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Total Producers: ${report.totalProducers || 0}`, 10, yPos);
-      doc.text(`Total Plots: ${report.totalPlots || 0}`, 10, yPos + 8);
-      doc.text(`Total Production Area (ha): ${report.totalProductionArea || 0}`, 10, yPos + 16);
-      doc.text(`Country of Harvest: ${report.countryOfHarvest || 'N/A'}`, 10, yPos + 24);
-      doc.text(`Max. Intermediaries: ${report.maxIntermediaries || 0}`, 10, yPos + 32);
-      doc.text(`Traceability Method: ${report.traceabilityMethod || 'N/A'}`, 10, yPos + 40);
-      doc.text(`Expected Harvest Date: ${report.expectedHarvestDate || 'N/A'}`, 10, yPos + 48);
-      doc.text(`Production Date Range: ${report.productionDateRange || 'N/A'}`, 10, yPos + 56);
+      doc.text(`Total Producers: ${dummyReport.totalProducers}`, 10, yPos);
+      doc.text(`Total Plots: ${dummyReport.totalPlots}`, 10, yPos + 8);
+      doc.text(`Total Production Area (ha): ${dummyReport.totalProductionArea}`, 10, yPos + 16);
+      doc.text(`Country of Harvest: ${dummyReport.countryOfHarvest}`, 10, yPos + 24);
+      doc.text(`Max. Intermediaries: ${dummyReport.maxIntermediaries}`, 10, yPos + 32);
+      doc.text(`Traceability Method: ${dummyReport.traceabilityMethod}`, 10, yPos + 40);
+      doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
+      doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
 
       // Page 2 - Methodology with Embedded Images
       doc.addPage();
@@ -1941,17 +1925,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
 
-      // Header for page 2
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.rect(10, 30, 190, 15);
-      doc.text('Page 2 of 4', 15, 38);
-      doc.text('Methodology & Verification Process', 80, 38);
-      doc.text(`Generated: ${currentDate}`, 150, 38);
+      // Load methodology flowchart from filesystem
+//       const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIbGAKdUVERERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
 
-      yPos = 55;
-
-      // Embed the EUDR Compliance Verification flowchart image
       try {
         const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757586584997.png');
         const imgBase64 = fs.readFileSync(imgPath).toString('base64');
@@ -1965,6 +1941,287 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.text('Methodology flowchart showing deforestation risk assessment process', 10, 70);
+      }
+
+      // Page 3 - Risk Assessment Description  
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PAGE 3 - PLOT RISK ASSESSMENT', 105, 20, { align: 'center' });
+
+      // Add text content for plot risk assessment
+      yPos = 40;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('The plot risk assessment is based on the geospatial analysis on deforestation and land approved for', 10, yPos);
+      yPos += 8;
+      doc.text('farming map.', 10, yPos);
+
+      yPos += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const riskText = 'Geospatial analysis involves capturing plot polygons or GPS coordinates using advanced satellite monitoring systems and analyzing them to ensure no deforestation occurred after December 2020 and that the plots are on legally approved land. If deforestation is detected, further verifications are conducted. Plots showing no deforestation proceed to land legality analysis. The map reference for deforestation and land approved for farming is provided in the following information.';
+      const wrappedText = doc.splitTextToSize(riskText, 180);
+      doc.text(wrappedText, 10, yPos);
+      yPos += wrappedText.length * 6 + 15;
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Geospatial analysis reference', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.text('Deforestation map: GFW', 10, yPos);
+      yPos += 8;
+      doc.text('Land approved for farming map: WDPA & Or National Map. Please clarify with Koliva directly which map is being used.', 10, yPos);
+
+      yPos += 15;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Outputs: ', 10, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text('The output includes deforestation, land-approved-for-farming maps, and land legality analysis, as well as providing negligibility status information:', 10, yPos + 8);
+
+      yPos += 25;
+      doc.text('• Low: Assessment indicates that there is high certainty for EUDR negligible risk and proof is available. The low risk is categorized as negligible.', 15, yPos);
+      yPos += 10;
+      doc.text('• Medium: Assessment shows that there is an indication of negligible risk. However, further mitigation actions are encouraged. The medium risk is categorized as negligible.', 15, yPos);
+      yPos += 10;
+      doc.text('• High: Assessment indicates that the farmer/plots are high risk and categorized as non negligible.', 15, yPos);
+
+      yPos += 15;
+      const finalText = 'Non-negligible plots are flagged with warning indicators, and users can view details of negligibility status and reasons for non-negligible through interactive map features. This detailed methodology ensures that operators can systematically assess and verify their negligibility status with the EUDR, promoting sustainable agricultural practices and mitigating deforestation risks.';
+      const finalWrapped = doc.splitTextToSize(finalText, 180);
+      doc.text(finalWrapped, 10, yPos);
+
+      // Page 4 - Land Cover Change Monitoring
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PAGE 4 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
+
+      yPos = 40;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FLOWCHART LAND COVER CHANGE MONITORING', 105, yPos, { align: 'center' });
+
+      yPos += 20;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('This flowchart illustrates the workflow for monitoring and verifying', 10, yPos);
+      yPos += 8;
+      doc.text('deforestation alerts across plantation concession areas. It aims to conduct monitoring every 3 months as', 10, yPos);
+      yPos += 8;
+      doc.text('well as incidental events.', 10, yPos);
+
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Process Flow:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.text('1. GIS → Alert → Verify Coordinates Location → Desktop Analysis', 15, yPos);
+      yPos += 8;
+      doc.text('2. Estate Manager → Controlled by Community → Verify Field Location', 15, yPos);
+      yPos += 8;
+      doc.text('3. System And Monitoring → Verify Land Cover Change Final Report', 15, yPos);
+
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Legal Framework:', 10, yPos);
+      yPos += 10;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('1. UU No. 32 / 2009 on Environmental Protection and Management - Requires forest area clearing without permits', 15, yPos);
+      yPos += 6;
+      doc.text('2. UU No. 32 / 2014 on Marine and Fisheries - Protection and Management - Requires plantation business activities', 15, yPos);
+      yPos += 6;
+      doc.text('3. PERMEN LHK No. P.71/MENLHK.1/2019 - Environmental Information System - Including through monitoring system', 15, yPos);
+      yPos += 6;
+      doc.text('4. EU Deforestation Regulation (EUDR) - Ensures supply chain traceability and proof of deforestation-free since 2020', 15, yPos);
+
+      yPos += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('GeoJSON Data Access:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      const geoJsonLink = 'https://api.kpn-eudr.com/geojson/plots-data.geojson';
+      doc.setTextColor(0, 0, 255); // Blue color for link
+      doc.text('Link: ' + geoJsonLink, 15, yPos);
+      doc.setTextColor(0, 0, 0); // Back to black
+
+      yPos += 12;
+      doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
+      yPos += 6;
+      doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
+
+      // Generate PDF buffer
+      const pdfBuffer = doc.output('arraybuffer');
+
+      console.log('PDF generated successfully');
+
+      // Return the PDF file
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
+      res.send(Buffer.from(pdfBuffer));
+
+    } catch (error) {
+      console.error('Error generating dummy DDS PDF:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
+    }
+  });
+
+  // Enhanced 4-page PDF generation with embedded flowchart images
+  function generateCleanDDSPDF(report: any): ArrayBuffer {
+    try {
+      const doc = new jsPDF();
+
+      // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
+      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+
+      console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
+
+      // PAGE 1 - Main DDS Content with Professional Tables
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('EU Due Diligence Statement', 105, 20, { align: 'center' });
+
+      // Header section with border
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 1 of 4', 15, 38);
+      doc.text('Status: GENERATED', 90, 38);
+      const currentDate = new Date().toLocaleDateString('en-GB');
+      doc.text(`Generated: ${currentDate}`, 150, 38);
+
+      let yPos = 55;
+
+      // Section 1: Reference Information Table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('1. Reference Information', 10, yPos);
+      yPos += 10;
+
+      // Create table for reference info
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 25);
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(80, yPos, 80, yPos + 25);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Company Internal Ref:', 12, yPos + 8);
+      doc.text('Activity:', 12, yPos + 20);
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.companyInternalRef || 'DDS-2024-001', 82, yPos + 8);
+      doc.text(report.activity || 'Import of Palm Oil Products', 82, yPos + 20);
+      yPos += 35;
+
+      // Section 2: Operator Information Table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('2. Operator/Trader Information', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 35);
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(10, yPos + 24, 200, yPos + 24);
+      doc.line(60, yPos, 60, yPos + 35);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Name:', 12, yPos + 8);
+      doc.text('Address:', 12, yPos + 20);
+      doc.text('Country:', 12, yPos + 32);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.operatorLegalName || 'KPN Corporation Berhad', 62, yPos + 8);
+      const address = report.operatorAddress || 'Level 6, Menara KPN, Jalan Sultan Ismail, Kuala Lumpur, Malaysia';
+      const addressLines = doc.splitTextToSize(address, 135);
+      doc.text(addressLines, 62, yPos + 16);
+      doc.text(report.operatorCountry || 'Malaysia', 62, yPos + 32);
+      yPos += 45;
+
+      // Section 3: Commodity Information Table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('3. Commodity Information', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 35);
+
+      // Table headers
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(70, yPos, 70, yPos + 35);
+      doc.line(120, yPos, 120, yPos + 35);
+      doc.line(150, yPos, 150, yPos + 35);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Description', 12, yPos + 8);
+      doc.text('Net Mass (Kg)', 72, yPos + 8);
+      doc.text('% Est.', 122, yPos + 8);
+      doc.text('Units', 152, yPos + 8);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.productDescription || 'Crude Palm Oil (CPO)', 12, yPos + 20);
+      doc.text(report.netMassKg?.toString() || '2150.000', 72, yPos + 20);
+      doc.text(report.percentageEstimation?.toString() + '%' || '5%', 122, yPos + 20);
+      doc.text(report.supplementaryUnit || 'MT', 152, yPos + 20);
+
+      // Scientific details
+      doc.text(`Scientific: ${report.scientificName || 'Elaeis guineensis'}`, 12, yPos + 28);
+      doc.text(`Common: ${report.commonName || 'Oil Palm'}`, 72, yPos + 28);
+      yPos += 45;
+
+      // Section 4: Summary Statistics Table
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('4. Summary Statistics', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.rect(10, yPos, 190, 25);
+      doc.line(10, yPos + 12, 200, yPos + 12);
+      doc.line(95, yPos, 95, yPos + 25);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Total Producers:', 12, yPos + 8);
+      doc.text('Total Plots:', 12, yPos + 20);
+      doc.text('Total Area (ha):', 97, yPos + 8);
+      doc.text('Country of Harvest:', 97, yPos + 20);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(report.totalProducers?.toString() || '15', 55, yPos + 8);
+      doc.text(report.totalPlots?.toString() || '45', 40, yPos + 20);
+      doc.text(report.totalProductionArea?.toString() || '1250.50', 140, yPos + 8);
+      doc.text(report.countryOfHarvest || 'Malaysia', 150, yPos + 20);
+
+      // PAGE 2 - Methodology Section with Embedded Image
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('EUDR Compliance Methodology', 105, 20, { align: 'center' });
+
+      // Header for page 2
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 2 of 4', 15, 38);
+      doc.text('Methodology & Verification Process', 80, 38);
+      doc.text(`Generated: ${currentDate}`, 150, 38);
+
+      yPos = 55;
+
+      // Embed the EUDR Compliance Verification flowchart image
+      try {
+        doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
+        yPos += 110;
+      } catch (error) {
+        console.log('Note: Image embedding not supported, using text description');
+        yPos += 10;
       }
 
       // Methodology Section 1: Overview
@@ -2129,9 +2386,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Table borders
       doc.rect(10, yPos, 190, 60);
-      doc.line(10, yPos + 15, 200, yPos + 15); // Header line
-      doc.line(60, yPos, 60, yPos + 60); // First column divider
-      doc.line(120, yPos, 120, yPos + 60); // Second column divider
+      doc.line(10, yPos + 15, 200, yPos + 15);  // Header line
+      doc.line(60, yPos, 60, yPos + 60);        // First column divider
+      doc.line(120, yPos, 120, yPos + 60);      // Second column divider
 
       // Table headers
       doc.setFont('helvetica', 'bold');
@@ -2319,12 +2576,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(item, 10, yPos + (index * 5));
       });
 
-      // Generate PDF buffer
-      const pdfBuffer = doc.output('arraybuffer');
-
       console.log('✅ Enhanced 4-page PDF generated successfully with professional layout');
       console.log('✅ PDF includes: Page 1 (DDS Data), Page 2 (Methodology), Page 3 (Risk Analysis), Page 4 (LCC Monitoring)');
-      return pdfBuffer;
+      return doc.output('arraybuffer');
     } catch (error) {
       console.error('Error generating enhanced PDF:', error);
       throw error;
@@ -2380,12 +2634,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function generateDDSPDFTemplate(report: any) {
     const currentDate = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
-      month: '2-digit',
+      month: '2-digit', 
       year: 'numeric'
-    }) + ' ' + new Date().toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    }) + ' ' + new Date().toLocaleTimeString('en-GB', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
     });
 
     return {
@@ -2438,7 +2692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             headers: [
               "Commodity(ies) or Product(s) Description",
               "Net Mass (Kg)",
-              "% Est. or Deviation",
+              "% Est. or Deviation", 
               "Supplementary Units"
             ],
             data: {
@@ -2589,10 +2843,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'submitted'
       });
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'DDS report submitted to EU Trace system',
-        euTraceReference: euTraceRef
+        euTraceReference: euTraceRef 
       });
     } catch (error) {
       console.error('Error submitting to EU Trace:', error);
@@ -2627,10 +2881,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         kmlFileName: fileName || 'uploaded-polygons.kml'
       });
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'KML file processed successfully',
-        extractedPlots: mockPolygonCoordinates.length
+        extractedPlots: mockPolygonCoordinates.length 
       });
     } catch (error) {
       console.error('Error processing KML upload:', error);
@@ -2709,8 +2963,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         geojsonFilePaths: JSON.stringify([...filePaths, combinedFilePath])
       });
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'GeoJSON files generated successfully',
         files: [
           ...geoJsonFiles.map((file: { fileName: string; plotId: string }) => ({
@@ -3061,12 +3315,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Query adm_boundary_lv0 table using PostGIS ST_Intersects
       const result = await db.execute(sql`
-        SELECT
+        SELECT 
           NAM_0 as country_name,
           NAM_0 as local_name,
           iso_a2 as iso_code,
           ST_Area(ST_Intersection(geom, ST_GeomFromText(${wkt}, 4326))) as intersection_area
-        FROM adm_boundary_lv0
+        FROM adm_boundary_lv0 
         WHERE ST_Intersects(geom, ST_GeomFromText(${wkt}, 4326))
         ORDER BY intersection_area DESC
         LIMIT 1
@@ -3074,21 +3328,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (result.rows && result.rows.length > 0) {
         const countryData = result.rows[0];
-        const countryName = String(countryData.country_name || countryData.local_name || 'Unknown');
+        const countryName = countryData.country_name || countryData.local_name || 'Unknown';
         const intersectionArea = parseFloat(countryData.intersection_area?.toString() || '0');
-
+        
         console.log(`✅ Country detected from PostGIS intersection: ${countryName} (area: ${intersectionArea})`);
         console.log(`📍 Country details:`, {
           name: countryName,
           localName: countryData.local_name,
           isoCode: countryData.iso_code
         });
-
+        
         return countryName;
       }
 
       console.log(`⚠️  No intersection found with adm_boundary_lv0, using coordinate fallback`);
-
+      
       // Fallback to centroid-based coordinate detection
       const centroid = getCentroidFromGeometry(geometry);
       if (centroid) {
@@ -3099,13 +3353,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('PostGIS country detection error:', error);
-
+      
       // Fallback to centroid-based coordinate detection
       const centroid = getCentroidFromGeometry(geometry);
       if (centroid) {
         return getCountryFromCoordinatesFallback(centroid.lat, centroid.lng);
       }
-
+      
       return 'Unknown';
     }
   }
@@ -3128,13 +3382,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }).join(', ');
         return `MULTIPOLYGON(${polygons})`;
       }
-
+      
       // Fallback: create point from centroid
       const centroid = getCentroidFromGeometry(geometry);
       if (centroid) {
         return `POINT(${centroid.lng} ${centroid.lat})`;
       }
-
+      
       throw new Error(`Unsupported geometry type: ${geometry.type}`);
     } catch (error) {
       console.error('Error converting geometry to WKT:', error);
@@ -3151,7 +3405,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🇮🇩 Detected Indonesia by coordinates`);
       return 'Indonesia';
     }
-    // Malaysia
+    // Malaysia  
     else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
       console.log(`🇲🇾 Detected Malaysia by coordinates`);
       return 'Malaysia';
@@ -3279,47 +3533,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           continue;
         }
 
-        // Try to get country, prioritizing properties, then PostGIS, then fallback
+        // Get country using PostGIS intersection with adm_boundary_lv0
         let detectedCountry = 'Unknown';
 
-        // First try to use original GeoJSON properties
-        if (props.country_name) {
-          detectedCountry = props.country_name;
-          console.log(`🌍 Using original country_name property: ${detectedCountry}`);
-        } else if (props.country) {
-          detectedCountry = props.country;
-          console.log(`🌍 Using original country property: ${detectedCountry}`);
-        } else if (props['.Distict']) {
-          // Indonesian district format: "Bone" -> "Bone, Indonesia"
-          detectedCountry = `${props['.Distict']}, Indonesia`;
-          console.log(`🇮🇩 Using Indonesian district format: ${detectedCountry}`);
-        } else if (props['.Aggregator Location']) {
-          // Indonesian aggregator location
-          const location = props['.Aggregator Location'];
-          detectedCountry = location.includes('Indonesia') ? location : `${location}, Indonesia`;
-          console.log(`🇮🇩 Using Indonesian aggregator location: ${detectedCountry}`);
-        } else if (feature.geometry) {
-          // Try PostGIS as last resort
-          try {
-            console.log(`🌍 Trying PostGIS intersection with adm_boundary_lv0`);
-            detectedCountry = await getCountryFromGeometry(feature.geometry);
-            console.log(`✅ PostGIS country detected: ${detectedCountry}`);
-          } catch (error) {
-            console.log(`⚠️ PostGIS failed, using coordinate fallback`);
-            // Fallback to centroid-based coordinate detection
-            const centroid = getCentroidFromGeometry(feature.geometry);
-            if (centroid) {
-              detectedCountry = getCountryFromCoordinatesFallback(centroid.lat, centroid.lng);
-              console.log(`🗺️ Coordinate-based fallback: ${detectedCountry}`);
-            } else {
-              detectedCountry = 'Indonesia'; // Default for Indonesian data
-              console.log(`🇮🇩 Using default Indonesia fallback`);
-            }
-          }
+        if (feature.geometry) {
+          console.log(`🌍 Detecting country using PostGIS intersection with adm_boundary_lv0`);
+          detectedCountry = await getCountryFromGeometry(feature.geometry);
+          console.log(`✅ Country detected: ${detectedCountry}`);
         } else {
-          // No geometry and no country properties
-          detectedCountry = 'Indonesia'; // Default for Indonesian data
-          console.log(`🇮🇩 Using default Indonesia fallback (no geometry)`);
+          // Fallback to property-based detection
+          detectedCountry = props['.Distict'] || props['.Aggregator Location'] || 
+                           props.country_name || props.country || props.district || 
+                           props.region || props.province || props.kabupaten || 'Indonesia';
+          console.log(`📋 Using property-based country detection: ${detectedCountry}`);
         }
 
         // Update feature properties with detected country
@@ -3328,8 +3554,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (validatedFeatures.length === 0) {
-        return res.status(400).json({
-          error: 'No valid features found. Each feature must have geometry and identifiable properties.'
+        return res.status(400).json({ 
+          error: 'No valid features found. Each feature must have geometry and identifiable properties.' 
         });
       }
 
@@ -3364,9 +3590,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('RapidAPI Error:', response.status, errorText);
-        return res.status(response.status).json({
+        return res.status(response.status).json({ 
           error: 'Failed to analyze GeoJSON file',
-          details: errorText
+          details: errorText 
         });
       }
 
@@ -3415,11 +3641,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const featureIndex = analysisResults.data.features.indexOf(feature);
           console.log(`=== PROCESSING FEATURE ${featureIndex + 1} ===`);
           console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
-
+          
           try {
             // Use the original plot ID from the input GeoJSON based on feature index
             let plotId = originalPlotIds[featureIndex] || `PLOT_${featureIndex + 1}`;
-
+            
             console.log(`✅ Using original Plot ID: ${plotId} (from input GeoJSON feature ${featureIndex + 1})`);
 
             // If API returned a different plot_id, log it for debugging
@@ -3436,7 +3662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // If PostGIS didn't detect country properly, extract from original Indonesian properties
             if (country === 'Unknown' || !country) {
               if (originalFeature?.properties?.['.Distict']) {
-                // Indonesian district format: "Bone" -> "Bone, Indonesia"
+                // Indonesian district format: "Bone" -> "Bone, Indonesia"  
                 const district = originalFeature.properties['.Distict'];
                 country = `${district}, Indonesia`;
                 console.log(`🇮🇩 Using Indonesian district: ${country}`);
@@ -3496,21 +3722,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
               overallRisk,
               complianceStatus,
               gfwLoss: gfwLossArea > 0 ? 'TRUE' : 'FALSE',
-              jrcLoss: jrcLossArea > 0 ? 'TRUE' : 'FALSE',
+              jrcLoss: jrcLossArea > 0 ? 'TRUE' : 'FALSE', 
               sbtnLoss: sbtnLossArea > 0 ? 'TRUE' : 'FALSE',
               peatlandOverlap: 'UNKNOWN', // Default value for peatland analysis
               highRiskDatasets,
               uploadSession: uploadSession,
               geometry: feature.geometry,
               // Enhanced metadata from Indonesian data
-              farmerName: feature.properties?.['.Farmer Name'] ||
-                         feature.properties?.farmer_name ||
+              farmerName: feature.properties?.['.Farmer Name'] || 
+                         feature.properties?.farmer_name || 
                          feature.properties?.grower_name || null,
-              aggregatorName: feature.properties?.['.Aggregator Name'] ||
-                             feature.properties?.aggregator ||
+              aggregatorName: feature.properties?.['.Aggregator Name'] || 
+                             feature.properties?.aggregator || 
                              feature.properties?.cooperative || null,
-              mappingDate: feature.properties?.['.Mapping date'] ||
-                          feature.properties?.mapping_date ||
+              mappingDate: feature.properties?.['.Mapping date'] || 
+                          feature.properties?.mapping_date || 
                           feature.properties?.survey_date || null,
               // Additional Indonesian-specific fields
               aggregatorLocation: feature.properties?.['.Aggregator Location'] || null,
@@ -3537,9 +3763,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('GeoJSON upload error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Internal server error during GeoJSON analysis',
-        details: errorMessage
+        details: errorMessage 
       });
     }
   });
@@ -3583,8 +3809,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Plot not found' });
       }
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: `Updated geometry for ${plotId}`,
         plotId,
         coordinatesCount: coordinates.length
@@ -3781,7 +4007,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Supply Chain Tier Management endpoint
+  // Supply Chain Tier Management endpoint  
   app.post('/api/supply-chain/tiers', isAuthenticated, async (req, res) => {
     try {
       const tierAssignments = req.body;
@@ -3795,8 +4021,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For now, we'll store it in memory or could extend to database storage later
       console.log('✅ Supply chain tier configuration saved successfully');
 
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'Supply chain configuration saved successfully!',
         savedAt: new Date().toISOString(),
         tierCount: Object.keys(tierAssignments).length,
@@ -3817,7 +4043,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch estate data collection
       const estates = await storage.getEstateDataCollection();
 
-      // Fetch mill data collection
+      // Fetch mill data collection  
       const mills = await storage.getMillDataCollection();
 
       // Combine and format supplier data for auto-fill
@@ -3876,7 +4102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
 
-      // Add mill suppliers
+      // Add mill suppliers  
       mills.forEach(mill => {
         suppliers.push({
           id: mill.id,
@@ -3922,8 +4148,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store the data (you may want to add this to your storage interface)
       // For now, we'll just return success
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         message: 'Supplier compliance data saved successfully',
         id: Date.now().toString()
       });
@@ -4007,7 +4233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error analyzing supplier compliance:', error);
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Failed to analyze supplier compliance',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -4062,7 +4288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error in bulk analysis:', error);
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Failed to perform bulk analysis',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -4100,7 +4326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // Use PostGIS ST_Intersection to detect overlap
             const result = await db.execute(sql`
-              SELECT
+              SELECT 
                 ST_Area(ST_Intersection(
                   ST_GeomFromText(${wkt1}, 4326),
                   ST_GeomFromText(${wkt2}, 4326)
@@ -4141,9 +4367,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in PostGIS overlap detection:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({
+      res.status(500).json({ 
         error: 'Failed to detect overlaps using PostGIS',
-        details: errorMessage
+        details: errorMessage 
       });
     }
   });
