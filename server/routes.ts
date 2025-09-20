@@ -3601,51 +3601,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Clear previous analysis results
         await storage.clearAnalysisResults();
 
+        // Create a mapping of original plot IDs from the input GeoJSON
+        const originalFeatures = cleanedGeojson.features;
+        const originalPlotIds = originalFeatures.map((feature: any, index: number) => {
+          const props = feature.properties || {};
+          return props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `PLOT_${index + 1}`;
+        });
+
+        console.log(`📋 Original Plot IDs from input GeoJSON:`, originalPlotIds);
+
         // Store each analysis result in the database
         for (const feature of analysisResults.data.features) {
-          console.log(`=== PROCESSING FEATURE ${analysisResults.data.features.indexOf(feature) + 1} ===`);
+          const featureIndex = analysisResults.data.features.indexOf(feature);
+          console.log(`=== PROCESSING FEATURE ${featureIndex + 1} ===`);
           console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
-          console.log(`🆔 Property values for ID fields:`, {
-            'farmersId': feature.properties?.['.Farmers ID'],
-            'plotId': feature.properties?.plot_id,
-            'id': feature.properties?.id,
-            'Name': feature.properties?.Name,
-            'name': feature.properties?.name
-          });
-          console.log(`🌍 Country-related properties:`, {
-            'detected_country': feature.properties?.detected_country,
-            'district': feature.properties?.['.Distict'],
-            'aggregatorLocation': feature.properties?.['.Aggregator Location'],
-            'country_name': feature.properties?.country_name,
-            'country': feature.properties?.country
-          });
+          
           try {
-            // Enhanced plot ID extraction for Indonesian format with detailed logging
-            let plotId = 'unknown';
+            // Use the original plot ID from the input GeoJSON based on feature index
+            let plotId = originalPlotIds[featureIndex] || `PLOT_${featureIndex + 1}`;
+            
+            console.log(`✅ Using original Plot ID: ${plotId} (from input GeoJSON feature ${featureIndex + 1})`);
 
-            console.log(`🆔 Feature properties for ID extraction:`, Object.keys(feature.properties || {}));
-
-            if (feature.properties?.['.Farmers ID']) {
-              plotId = feature.properties['.Farmers ID'];
-              console.log(`✅ Found Indonesian Farmers ID: ${plotId}`);
-            } else if (feature.properties?.plot_id) {
-              plotId = feature.properties.plot_id;
-              console.log(`✅ Found plot_id: ${plotId}`);
-            } else if (feature.properties?.id) {
-              plotId = feature.properties.id;
-              console.log(`✅ Found id: ${plotId}`);
-            } else if (feature.properties?.Name) {
-              plotId = feature.properties.Name;
-              console.log(`✅ Found Name: ${plotId}`);
-            } else if (feature.properties?.name) {
-              plotId = feature.properties.name;
-              console.log(`✅ Found name: ${plotId}`);
-            } else if (feature.properties?.farmer_id) {
-              plotId = feature.properties.farmer_id;
-              console.log(`✅ Found farmer_id: ${plotId}`);
-            } else {
-              plotId = `PLOT_${analysisResults.data.features.indexOf(feature) + 1}`;
-              console.log(`⚠️  No ID found, using fallback: ${plotId}`);
+            // If API returned a different plot_id, log it for debugging
+            if (feature.properties?.plot_id && feature.properties.plot_id !== plotId) {
+              console.log(`🔄 API returned different plot_id: ${feature.properties.plot_id}, keeping original: ${plotId}`);
             }
 
             // Use detected country from Nominatim API with better fallback handling

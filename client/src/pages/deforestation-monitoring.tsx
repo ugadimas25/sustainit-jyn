@@ -96,7 +96,7 @@ export default function DeforestationMonitoring() {
   const uploadMutation = useMutation({
     mutationFn: async ({ geojsonFile, fileName }: { geojsonFile: string, fileName: string }) => {
       // Parse GeoJSON and remove Z-values
-      let geojsonData: any;
+      let geojsonData;
       try {
         geojsonData = JSON.parse(geojsonFile);
         geojsonData.features = geojsonData.features.map((feature: any) => {
@@ -126,11 +126,21 @@ export default function DeforestationMonitoring() {
 
       // Transform API response to our expected format
       if (response.data?.features) {
-        const transformedResults = response.data.features.map((feature: any) => {
+        // Parse the original GeoJSON to get the original plot IDs
+        const originalGeojson = JSON.parse(uploadedFile?.content || '{}'); // Use uploadedFile.content safely
+        const originalPlotIds = originalGeojson.features.map((feature: any, index: number) => {
+          const props = feature.properties || {};
+          return props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `PLOT_${index + 1}`;
+        });
+
+        console.log('📋 Original Plot IDs preserved from input:', originalPlotIds);
+
+        const transformedResults = response.data.features.map((feature: any, index: number) => {
           const props = feature.properties || {};
 
-          // Robustly get plot ID
-          const plotId = props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `UNKNOWN_${Math.random().toString(36).substring(7)}`;
+          // Use the original plot ID from the input GeoJSON based on feature index
+          const plotId = originalPlotIds[index] || `PLOT_${index + 1}`;
+          console.log(`✅ Preserving original Plot ID: ${plotId} for feature ${index + 1}`);
 
           // Robustly get country
           const country = props['.Distict'] || props['.Aggregator Location'] || props.country || props.district || props.region || 'Unknown';
@@ -584,7 +594,7 @@ export default function DeforestationMonitoring() {
   const handleEdit = (resultId: string) => {
     const result = analysisResults.find(r => r.plotId === resultId);
     if (!result) return;
-    
+
     // Store the selected polygon data for editing
     localStorage.setItem('selectedPolygonForEdit', JSON.stringify(result));
 
@@ -955,7 +965,7 @@ export default function DeforestationMonitoring() {
                       const uniqueKey = result.plotId === 'unknown' 
                         ? `unknown-${index}-${currentPage}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
                         : `${result.plotId}-${index}-${currentPage}`;
-                      
+
                       return (
                       <tr key={uniqueKey} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
