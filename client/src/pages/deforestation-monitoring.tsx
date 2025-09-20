@@ -87,6 +87,7 @@ export default function DeforestationMonitoring() {
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [complianceFilter, setComplianceFilter] = useState<string>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [selectedResults, setSelectedResults] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -107,7 +108,7 @@ export default function DeforestationMonitoring() {
       } catch (e) {
         throw new Error('Failed to parse GeoJSON file.');
       }
-      
+
       // Re-stringify after processing
       const processedGeojsonString = JSON.stringify(geojsonData);
 
@@ -127,10 +128,10 @@ export default function DeforestationMonitoring() {
       if (response.data?.features) {
         const transformedResults = response.data.features.map((feature: any) => {
           const props = feature.properties || {};
-          
+
           // Robustly get plot ID
           const plotId = props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `UNKNOWN_${Math.random().toString(36).substring(7)}`;
-          
+
           // Robustly get country
           const country = props['.Distict'] || props['.Aggregator Location'] || props.country || props.district || props.region || 'Unknown';
 
@@ -310,6 +311,7 @@ export default function DeforestationMonitoring() {
     setRiskFilter('all');
     setComplianceFilter('all');
     setCountryFilter('all');
+    setSelectedResults([]);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -503,7 +505,10 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  const handleRevalidation = async (result: AnalysisResult) => {
+  const handleRevalidation = async (resultId: string) => {
+    const result = analysisResults.find(r => r.plotId === resultId);
+    if (!result) return;
+
     try {
       // Show loading state
       toast({
@@ -558,7 +563,10 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  const handleVerification = (result: AnalysisResult) => {
+  const handleVerification = (resultId: string) => {
+    const result = analysisResults.find(r => r.plotId === resultId);
+    if (!result) return;
+
     // Store the selected polygon data for verification
     localStorage.setItem('selectedPolygonForVerification', JSON.stringify(result));
 
@@ -571,7 +579,10 @@ export default function DeforestationMonitoring() {
     setLocation('/data-verification');
   };
 
-  const handleEdit = (result: AnalysisResult) => {
+  const handleEdit = (resultId: string) => {
+    const result = analysisResults.find(r => r.plotId === resultId);
+    if (!result) return;
+    
     // Store the selected polygon data for editing
     localStorage.setItem('selectedPolygonForEdit', JSON.stringify(result));
 
@@ -583,6 +594,13 @@ export default function DeforestationMonitoring() {
     // Navigate to polygon edit page
     setLocation('/edit-polygon');
   };
+
+  const handleViewInMap = (result: AnalysisResult) => {
+    localStorage.setItem('selectedPlotForMap', JSON.stringify(result));
+    localStorage.setItem('shouldShowResultsTable', 'false'); // Hide table when navigating to map
+    setLocation('/map-viewer');
+  };
+
 
   return (
     <div className="p-6">
@@ -789,8 +807,22 @@ export default function DeforestationMonitoring() {
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
+                  <thead>
                     <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        <input
+                          type="checkbox"
+                          checked={selectedResults.length === filteredResults.length && filteredResults.length > 0}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedResults(filteredResults.map(r => r.plotId));
+                            } else {
+                              setSelectedResults([]);
+                            }
+                          }}
+                          className="rounded"
+                        />
+                      </th>
                       <th 
                         className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         onClick={() => handleSort('plotId')}
@@ -872,6 +904,20 @@ export default function DeforestationMonitoring() {
                     {currentPageData.map((result) => (
                       <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                          <input
+                            type="checkbox"
+                            checked={selectedResults.includes(result.plotId)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedResults([...selectedResults, result.plotId]);
+                              } else {
+                                setSelectedResults(selectedResults.filter(id => id !== result.plotId));
+                              }
+                            }}
+                            className="rounded"
+                          />
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
                           {result.plotId}
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
@@ -901,7 +947,7 @@ export default function DeforestationMonitoring() {
                               size="sm"
                               variant="outline"
                               className="text-xs px-2 py-1 h-7"
-                              onClick={() => handleRevalidation(result)}
+                              onClick={() => handleRevalidation(result.plotId)}
                               title="Revalidate analysis"
                             >
                               <RefreshCw className="h-3 w-3 mr-1" />
@@ -911,7 +957,7 @@ export default function DeforestationMonitoring() {
                               size="sm"
                               variant="outline"
                               className="text-xs px-2 py-1 h-7"
-                              onClick={() => handleVerification(result)}
+                              onClick={() => handleVerification(result.plotId)}
                               title="Verify data"
                             >
                               <CheckSquare className="h-3 w-3 mr-1" />
@@ -921,7 +967,7 @@ export default function DeforestationMonitoring() {
                               size="sm"
                               variant="outline"
                               className="text-xs px-2 py-1 h-7"
-                              onClick={() => handleEdit(result)}
+                              onClick={() => handleEdit(result.plotId)}
                               title="Edit polygon"
                             >
                               <Edit className="h-3 w-3 mr-1" />
