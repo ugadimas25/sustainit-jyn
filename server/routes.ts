@@ -4386,22 +4386,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return `POLYGON((${wktCoords}))`;
   }
 
-  // Helper function to calculate area from geometry
-  function calculateAreaFromGeometry(geometry: any): number {
-    if (!geometry || !geometry.coordinates) return 0;
-
-    try {
-      if (geometry.type === 'Polygon') {
-        return calculatePolygonArea(geometry.coordinates[0]);
-      } else if (geometry.type === 'MultiPolygon') {
-        return calculatePolygonArea(geometry.coordinates[0][0]);
-      }
-      return 0;
-    } catch (error) {
-      console.warn('Error calculating area from geometry:', error);
-      return 0;
-    }
-  }
 
   // Helper functions for GeoJSON processing
   function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
@@ -4454,19 +4438,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return Math.round(hectares * 100) / 100; // Round to 2 decimal places
   }
 
-  // Helper function to remove z-values from GeoJSON coordinates
-  function removeZValues(coordinates: any): any {
-    if (Array.isArray(coordinates)) {
-      if (typeof coordinates[0] === 'number' && coordinates.length === 3) {
-        // This is a coordinate array like [x, y, z]
-        return coordinates.slice(0, 2);
-      } else {
-        // Recursively process nested arrays
-        return coordinates.map(removeZValues);
-      }
-    }
-    return coordinates; // Return as is if not an array
-  }
 
   return httpServer;
 }
