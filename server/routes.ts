@@ -1795,6 +1795,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Starting PDF generation...');
 
+      // Generate the PDF using the shared function
+      const pdfBuffer = generateCleanDDSPDF(dummyReport);
+      
+      // Return the generated PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
+      res.send(Buffer.from(pdfBuffer));
+    } catch (error) {
+      console.error('Error generating dummy PDF:', error);
+      res.status(500).json({ error: 'Failed to generate dummy PDF' });
+    }
+  });
+
+  // Main PDF generation function
+  function generateCleanDDSPDF(report: any): ArrayBuffer {
+    try {
       // Generate the PDF using jsPDF
       const doc = new jsPDF();
 
@@ -1818,13 +1834,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('1. Company Internal Ref:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.companyInternalRef, 80, yPos);
+      doc.text(report.companyInternalRef || 'N/A', 80, yPos);
 
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('2. Activity:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.activity, 50, yPos);
+      doc.text(report.activity || 'N/A', 50, yPos);
 
       // Section 3 - Operator Information
       yPos += 20;
@@ -1835,13 +1851,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('Name:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.operatorLegalName, 40, yPos);
+      doc.text(report.operatorLegalName || 'N/A', 40, yPos);
 
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('Address:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      const addressLines = doc.splitTextToSize(dummyReport.operatorAddress, 140);
+      const addressLines = doc.splitTextToSize(report.operatorAddress || 'N/A', 140);
       doc.text(addressLines, 45, yPos);
       yPos += addressLines.length * 5;
 
@@ -1849,13 +1865,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('Country:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.operatorCountry, 45, yPos);
+      doc.text(report.operatorCountry || 'N/A', 45, yPos);
 
       yPos += 10;
       doc.setFont('helvetica', 'bold');
       doc.text('ISO Code:', 15, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.operatorIsoCode, 45, yPos);
+      doc.text(report.operatorIsoCode || 'N/A', 45, yPos);
 
       // Commodity Section
       yPos += 20;
@@ -1872,35 +1888,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       yPos += 10;
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.productDescription, 10, yPos);
-      doc.text(dummyReport.netMassKg.toString(), 70, yPos);
-      doc.text(dummyReport.percentageEstimation.toString() + '%', 120, yPos);
-      doc.text(dummyReport.supplementaryUnit, 150, yPos);
+      doc.text(report.productDescription || 'N/A', 10, yPos);
+      doc.text((report.netMassKg || 0).toString(), 70, yPos);
+      doc.text((report.percentageEstimation || 0).toString() + '%', 120, yPos);
+      doc.text(report.supplementaryUnit || 'N/A', 150, yPos);
 
       yPos += 15;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.text('Scientific Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.scientificName, 60, yPos);
+      doc.text(report.scientificName || 'N/A', 60, yPos);
 
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Common Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.commonName, 60, yPos);
+      doc.text(report.commonName || 'N/A', 60, yPos);
 
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Producer Name:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.producerName, 60, yPos);
+      doc.text(report.producerName || 'N/A', 60, yPos);
 
       yPos += 8;
       doc.setFont('helvetica', 'bold');
       doc.text('Country of Production:', 10, yPos);
       doc.setFont('helvetica', 'normal');
-      doc.text(dummyReport.countryOfProduction, 80, yPos);
+      doc.text(report.countryOfProduction || 'N/A', 80, yPos);
 
       // Summary Plot Information
       yPos += 20;
@@ -1910,14 +1926,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       yPos += 10;
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Total Producers: ${dummyReport.totalProducers}`, 10, yPos);
-      doc.text(`Total Plots: ${dummyReport.totalPlots}`, 10, yPos + 8);
-      doc.text(`Total Production Area (ha): ${dummyReport.totalProductionArea}`, 10, yPos + 16);
-      doc.text(`Country of Harvest: ${dummyReport.countryOfHarvest}`, 10, yPos + 24);
-      doc.text(`Max. Intermediaries: ${dummyReport.maxIntermediaries}`, 10, yPos + 32);
-      doc.text(`Traceability Method: ${dummyReport.traceabilityMethod}`, 10, yPos + 40);
-      doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
-      doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
+      doc.text(`Total Producers: ${report.totalProducers || 0}`, 10, yPos);
+      doc.text(`Total Plots: ${report.totalPlots || 0}`, 10, yPos + 8);
+      doc.text(`Total Production Area (ha): ${report.totalProductionArea || 0}`, 10, yPos + 16);
+      doc.text(`Country of Harvest: ${report.countryOfHarvest || 'N/A'}`, 10, yPos + 24);
+      doc.text(`Max. Intermediaries: ${report.maxIntermediaries || 0}`, 10, yPos + 32);
+      doc.text(`Traceability Method: ${report.traceabilityMethod || 'N/A'}`, 10, yPos + 40);
+      doc.text(`Expected Harvest Date: ${report.expectedHarvestDate || 'N/A'}`, 10, yPos + 48);
+      doc.text(`Production Date Range: ${report.productionDateRange || 'N/A'}`, 10, yPos + 56);
 
       // Page 2 - Methodology with Embedded Images
       doc.addPage();
@@ -3058,7 +3074,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (result.rows && result.rows.length > 0) {
         const countryData = result.rows[0];
-        const countryName = countryData.country_name || countryData.local_name || 'Unknown';
+        const countryName = String(countryData.country_name || countryData.local_name || 'Unknown');
         const intersectionArea = parseFloat(countryData.intersection_area?.toString() || '0');
 
         console.log(`✅ Country detected from PostGIS intersection: ${countryName} (area: ${intersectionArea})`);
