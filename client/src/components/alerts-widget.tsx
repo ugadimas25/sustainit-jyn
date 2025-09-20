@@ -67,7 +67,7 @@ export function AlertsWidget() {
     if (filters.businessUnit) params.set('businessUnit', filters.businessUnit);  
     if (filters.dateFrom) params.set('dateFrom', filters.dateFrom.toISOString());
     if (filters.dateTo) params.set('dateTo', filters.dateTo.toISOString());
-
+    
     // Navigate to spatial analysis page with filters
     window.location.href = `/satellite-imagery?${params.toString()}`;
   };
@@ -157,7 +157,7 @@ export function AlertsWidget() {
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span>
                       {alert.supplierName && `${alert.supplierName} • `}
-                      {alert.detectedAt ? new Date(alert.detectedAt).toLocaleDateString() : 'Unknown date'}
+                      {alert.detectedAt.toLocaleDateString()}
                     </span>
                     {alert.coordinates && (
                       <span className="text-blue-600 hover:text-blue-800 cursor-pointer">
@@ -168,7 +168,7 @@ export function AlertsWidget() {
                 </div>
               </div>
             ))}
-
+            
             {alerts.length > 5 && (
               <div className="text-center pt-2">
                 <Button 

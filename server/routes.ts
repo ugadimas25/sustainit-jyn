@@ -66,183 +66,6 @@ async function hashPassword(password: string) {
   return `${buf.toString("hex")}.${salt}`;
 }
 
-// Helper function to remove z-values from GeoJSON coordinates
-function removeZValuesFromGeoJSON(geojson: any): any {
-  if (!geojson) return geojson;
-
-  const removeZFromCoords = (coords: any): any => {
-    if (Array.isArray(coords)) {
-      if (Array.isArray(coords[0])) {
-        return coords.map(removeZFromCoords);
-      } else {
-        // This is a coordinate pair/triple, keep only x,y
-        return coords.length >= 2 ? [coords[0], coords[1]] : coords;
-      }
-    }
-    return coords;
-  };
-
-  const processGeometry = (geometry: any): any => {
-    if (!geometry || !geometry.coordinates) return geometry;
-    
-    return {
-      ...geometry,
-      coordinates: removeZFromCoords(geometry.coordinates)
-    };
-  };
-
-  if (geojson.type === 'FeatureCollection') {
-    return {
-      ...geojson,
-      features: geojson.features.map((feature: any) => ({
-        ...feature,
-        geometry: processGeometry(feature.geometry)
-      }))
-    };
-  } else if (geojson.type === 'Feature') {
-    return {
-      ...geojson,
-      geometry: processGeometry(geojson.geometry)
-    };
-  } else if (geojson.type === 'Polygon' || geojson.type === 'MultiPolygon') {
-    return processGeometry(geojson);
-  }
-
-  return geojson;
-}
-
-// Helper function to validate spatial data requirements
-function validateSpatialData(geojson: any, plotId?: string, country?: string, area?: string): { valid: boolean; error?: string } {
-  // Check if country is provided and valid
-  if (country) {
-    const validCountries = ['Indonesia', 'Malaysia', 'Thailand', 'Philippines', 'Ghana', 'Ivory Coast', 'Nigeria', 'Brazil'];
-    if (!validCountries.includes(country)) {
-      return { valid: false, error: `Country '${country}' is not supported for analysis` };
-    }
-  }
-
-  // Check if area is reasonable
-  if (area) {
-    const areaNum = parseFloat(area);
-    if (isNaN(areaNum) || areaNum <= 0 || areaNum > 100000) {
-      return { valid: false, error: 'Area must be a positive number and reasonable for agricultural plots' };
-    }
-  }
-
-  // Check if plotId follows expected format
-  if (plotId && plotId.length < 3) {
-    return { valid: false, error: 'Plot ID must be at least 3 characters long' };
-  }
-
-  // Validate GeoJSON has required properties
-  if (geojson.type === 'FeatureCollection') {
-    for (const feature of geojson.features) {
-      if (!feature.properties) {
-        return { valid: false, error: 'All features must have properties object' };
-      }
-    }
-  } else if (geojson.type === 'Feature') {
-    if (!geojson.properties) {
-      return { valid: false, error: 'Feature must have properties object' };
-    }
-  }
-
-  return { valid: true };
-}
-
-// Helper function to process individual plots
-async function processSinglePlot(feature: any, country: string, plotId?: string, area?: string): Promise<any> {
-  const properties = feature.properties || {};
-  const currentPlotId = plotId || properties.plot_id || properties.id || properties.ID || properties.Name || `PLOT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const farmerName = properties.farmer_name || properties.NAME || properties['.Farmer Name'] || properties.farm_name || 'Unknown';
-  const currentArea = area || properties.area || properties.area_ha || properties['.Plot size'] || properties.POLYGON_HA || '0';
-  
-  // Extract area number from string like "0.50 Ha"
-  let areaNum = 0;
-  if (typeof currentArea === 'string') {
-    const match = currentArea.match(/[\d.]+/);
-    areaNum = match ? parseFloat(match[0]) : 0;
-  } else {
-    areaNum = parseFloat(currentArea) || 0;
-  }
-
-  // If area is still 0, try to calculate from geometry
-  if (areaNum === 0 && feature.geometry) {
-    areaNum = calculatePolygonArea(feature.geometry) || 1.0; // Default to 1 hectare if can't calculate
-  }
-
-  // Create analysis result with default values
-  const analysisResult = {
-    id: `analysis-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    plotId: currentPlotId,
-    country: country,
-    area: areaNum,
-    overallRisk: 'LOW',
-    complianceStatus: 'COMPLIANT',
-    gfwLoss: 'FALSE',
-    jrcLoss: 'FALSE',
-    sbtnLoss: 'FALSE',
-    gfwLossArea: '0',
-    jrcLossArea: '0',
-    sbtnLossArea: '0',
-    highRiskDatasets: [],
-    peatlandOverlap: 'No overlap',
-    peatlandArea: '0',
-    geometry: feature.geometry,
-    uploadSession: `session-${Date.now()}`,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
-
-  // Store in database
-  try {
-    await storage.createAnalysisResult(analysisResult);
-    console.log(`✓ Processed plot ${currentPlotId} - ${farmerName} (${areaNum} ha) in ${country}`);
-  } catch (error) {
-    console.error(`Error storing analysis for plot ${currentPlotId}:`, error);
-  }
-
-  return {
-    plotId: currentPlotId,
-    farmerName,
-    area: areaNum,
-    country,
-    status: 'processed'
-  };
-}
-
-// Helper function to calculate polygon area (simplified)
-function calculatePolygonArea(geometry: any): number {
-  if (!geometry || !geometry.coordinates) return 0;
-  
-  try {
-    let coords: number[][];
-    
-    if (geometry.type === 'Polygon') {
-      coords = geometry.coordinates[0];
-    } else if (geometry.type === 'MultiPolygon') {
-      coords = geometry.coordinates[0][0];
-    } else {
-      return 0;
-    }
-    
-    if (!coords || coords.length < 3) return 0;
-    
-    // Simple area calculation using shoelace formula (rough approximation)
-    let area = 0;
-    for (let i = 0; i < coords.length - 1; i++) {
-      area += (coords[i][0] * coords[i + 1][1]) - (coords[i + 1][0] * coords[i][1]);
-    }
-    area = Math.abs(area) / 2;
-    
-    // Convert to hectares (very rough approximation)
-    return area * 10000; // Convert to square meters then to hectares
-  } catch (error) {
-    console.error('Error calculating polygon area:', error);
-    return 1.0; // Default fallback
-  }
-}
-
 async function initializeDefaultUser() {
   // Only create default user in development environment
   if (process.env.NODE_ENV !== 'development') {
@@ -1691,78 +1514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced spatial analysis endpoint with z-value handling and comprehensive validation
-  app.post('/api/spatial-analysis/process', isAuthenticated, async (req, res) => {
-    try {
-      let { geojson, plotId, country, area, fileType } = req.body;
-
-      if (!geojson) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'No GeoJSON data provided' 
-        });
-      }
-
-      // Parse and validate input
-      let parsedGeoJson;
-      try {
-        parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
-      } catch (parseError) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Invalid JSON format' 
-        });
-      }
-
-      // Normalize GeoJSON and remove z-values for external API compatibility
-      const normalizedGeoJson = removeZValuesFromGeoJSON(parsedGeoJson);
-      
-      // Set default country if not provided
-      if (!country) {
-        country = 'Indonesia';
-      }
-
-      // Process each feature
-      const analysisResults = [];
-      
-      if (normalizedGeoJson.type === 'FeatureCollection') {
-        for (const feature of normalizedGeoJson.features) {
-          // Extract plot information from feature properties
-          const properties = feature.properties || {};
-          const currentPlotId = properties.plot_id || properties.id || properties.ID || properties.Name || `PLOT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          const currentCountry = properties.country_name || properties.country || country;
-          const currentArea = properties.area_ha || properties.area || properties['.Plot size'] || area || '0';
-          
-          const result = await processSinglePlot(feature, currentCountry, currentPlotId, currentArea);
-          analysisResults.push(result);
-        }
-      } else if (normalizedGeoJson.type === 'Feature') {
-        const properties = normalizedGeoJson.properties || {};
-        const currentPlotId = properties.plot_id || properties.id || properties.ID || properties.Name || plotId || `PLOT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const currentCountry = properties.country_name || properties.country || country;
-        const currentArea = properties.area_ha || properties.area || properties['.Plot size'] || area || '0';
-        
-        const result = await processSinglePlot(normalizedGeoJson, currentCountry, currentPlotId, currentArea);
-        analysisResults.push(result);
-      }
-
-      res.json({
-        success: true,
-        results: analysisResults,
-        totalProcessed: analysisResults.length,
-        message: `Successfully processed ${analysisResults.length} plots`
-      });
-
-    } catch (error) {
-      console.error('Error processing spatial analysis:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Server error during spatial analysis' 
-      });
-    }
-  });
-
-  // Validate GeoJSON data endpoint (enhanced)
+  // Validate GeoJSON data endpoint
   app.post('/api/dds/validate-geojson', isAuthenticated, async (req, res) => {
     try {
       const { geojson } = req.body;
@@ -1784,11 +1536,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Remove z-values for external API compatibility
-      const normalizedGeoJson = removeZValuesFromGeoJSON(parsedGeoJson);
-
       // Basic GeoJSON structure validation
-      if (!normalizedGeoJson.type) {
+      if (!parsedGeoJson.type) {
         return res.status(400).json({ 
           valid: false, 
           error: 'Missing type property' 
@@ -1797,10 +1546,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check for valid geometry types
       const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
-      if (!validTypes.includes(normalizedGeoJson.type)) {
+      if (!validTypes.includes(parsedGeoJson.type)) {
         return res.status(400).json({ 
           valid: false, 
-          error: `Invalid GeoJSON type: ${normalizedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon` 
+          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon` 
         });
       }
 
@@ -1808,29 +1557,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let boundingBox = null;
       let area = 0;
       let centroid = null;
-      let validatedFeatures = 0;
 
       // Extract polygon geometry and calculate metadata
-      if (normalizedGeoJson.type === 'Polygon') {
+      if (parsedGeoJson.type === 'Polygon') {
         polygonFound = true;
-        const coords = normalizedGeoJson.coordinates;
+        const coords = parsedGeoJson.coordinates;
         if (coords && coords[0] && coords[0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0]);
           centroid = calculateCentroid(coords[0]);
           area = calculatePolygonArea(coords[0]);
-          validatedFeatures = 1;
         }
-      } else if (normalizedGeoJson.type === 'MultiPolygon') {
+      } else if (parsedGeoJson.type === 'MultiPolygon') {
         polygonFound = true;
-        const coords = normalizedGeoJson.coordinates;
+        const coords = parsedGeoJson.coordinates;
         if (coords && coords[0] && coords[0][0] && coords[0][0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0][0]);
           centroid = calculateCentroid(coords[0][0]);
           area = calculatePolygonArea(coords[0][0]);
-          validatedFeatures = 1;
         }
-      } else if (normalizedGeoJson.type === 'Feature') {
-        const geometry = normalizedGeoJson.geometry;
+      } else if (parsedGeoJson.type === 'Feature') {
+        const geometry = parsedGeoJson.geometry;
         if (geometry && (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon')) {
           polygonFound = true;
           const coords = geometry.type === 'Polygon' ? geometry.coordinates : geometry.coordinates[0];
@@ -1838,23 +1584,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             boundingBox = calculateBoundingBox(coords[0]);
             centroid = calculateCentroid(coords[0]);
             area = calculatePolygonArea(coords[0]);
-            validatedFeatures = 1;
           }
         }
-      } else if (normalizedGeoJson.type === 'FeatureCollection') {
-        const features = normalizedGeoJson.features;
+      } else if (parsedGeoJson.type === 'FeatureCollection') {
+        const features = parsedGeoJson.features;
         if (features && features.length > 0) {
           for (const feature of features) {
             if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
               polygonFound = true;
-              validatedFeatures++;
               const coords = feature.geometry.type === 'Polygon' ? feature.geometry.coordinates : feature.geometry.coordinates[0];
               if (coords && coords[0] && coords[0].length >= 4) {
-                if (!boundingBox) {
-                  boundingBox = calculateBoundingBox(coords[0]);
-                  centroid = calculateCentroid(coords[0]);
-                  area = calculatePolygonArea(coords[0]);
-                }
+                boundingBox = calculateBoundingBox(coords[0]);
+                centroid = calculateCentroid(coords[0]);
+                area = calculatePolygonArea(coords[0]);
+                break; // Use first valid polygon
               }
             }
           }
@@ -1874,9 +1617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           area: area,
           boundingBox: boundingBox,
           centroid: centroid,
-          geometryType: normalizedGeoJson.type,
-          totalFeatures: validatedFeatures,
-          hasZValues: JSON.stringify(parsedGeoJson).includes(',0.0') || JSON.stringify(parsedGeoJson).includes(', 0.0')
+          geometryType: parsedGeoJson.type
         }
       });
 
@@ -1888,117 +1629,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
-  // KML to GeoJSON conversion and processing endpoint
-  app.post('/api/spatial-analysis/process-kml', isAuthenticated, async (req, res) => {
-    try {
-      const { kmlData, country } = req.body;
-
-      if (!kmlData) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'No KML data provided' 
-        });
-      }
-
-      // Convert KML to GeoJSON format
-      const geojsonFeatures = parseKMLToGeoJSON(kmlData);
-      
-      if (!geojsonFeatures || geojsonFeatures.length === 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'No valid features found in KML data'
-        });
-      }
-
-      // Process each feature
-      const analysisResults = [];
-      for (const feature of geojsonFeatures) {
-        const result = await processSinglePlot(feature, country || 'Indonesia');
-        analysisResults.push(result);
-      }
-
-      res.json({
-        success: true,
-        results: analysisResults,
-        totalProcessed: analysisResults.length,
-        message: `Successfully processed ${analysisResults.length} plots from KML data`
-      });
-
-    } catch (error) {
-      console.error('Error processing KML data:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Server error during KML processing' 
-      });
-    }
-  });
-
-  // Helper function to parse KML to GeoJSON
-  function parseKMLToGeoJSON(kmlData: string): any[] {
-    const features: any[] = [];
-    
-    try {
-      // Extract Placemark elements from KML
-      const placemarkRegex = /<Placemark>(.*?)<\/Placemark>/gs;
-      const matches = kmlData.matchAll(placemarkRegex);
-
-      for (const match of matches) {
-        const placemarkContent = match[1];
-        
-        // Extract name
-        const nameMatch = placemarkContent.match(/<name>(.*?)<\/name>/);
-        const name = nameMatch ? nameMatch[1] : 'Unknown';
-
-        // Extract SimpleData properties
-        const properties: any = { plot_id: name };
-        const simpleDataRegex = /<SimpleData name="([^"]+)">(.*?)<\/SimpleData>/g;
-        let simpleDataMatch;
-        
-        while ((simpleDataMatch = simpleDataRegex.exec(placemarkContent)) !== null) {
-          const key = simpleDataMatch[1];
-          const value = simpleDataMatch[2];
-          properties[key] = value;
-        }
-
-        // Extract coordinates
-        const coordsMatch = placemarkContent.match(/<coordinates>\s*(.*?)\s*<\/coordinates>/);
-        if (coordsMatch) {
-          const coordsText = coordsMatch[1].trim();
-          const coordPoints = coordsText.split(/\s+/).filter(p => p.length > 0);
-          
-          const coordinates = coordPoints.map(point => {
-            const [lng, lat, alt] = point.split(',').map(parseFloat);
-            return [lng, lat]; // Remove z-value for external API compatibility
-          });
-
-          // Close polygon if not already closed
-          if (coordinates.length > 3) {
-            const first = coordinates[0];
-            const last = coordinates[coordinates.length - 1];
-            if (first[0] !== last[0] || first[1] !== last[1]) {
-              coordinates.push([first[0], first[1]]);
-            }
-          }
-
-          const feature = {
-            type: 'Feature',
-            properties: properties,
-            geometry: {
-              type: 'Polygon',
-              coordinates: [coordinates]
-            }
-          };
-
-          features.push(feature);
-        }
-      }
-    } catch (error) {
-      console.error('Error parsing KML:', error);
-    }
-
-    return features;
-  }
 
   // Get session-based DDS list (PRD requirement for dashboard)
   app.get('/api/dds/list', isAuthenticated, async (req, res) => {
@@ -4486,7 +4116,7 @@ function calculateCentroid(coordinates: number[][]): { lat: number, lng: number 
   };
 }
 
-function calculatePolygonAreaFromCoords(coordinates: number[][]): number {
+function calculatePolygonArea(coordinates: number[][]): number {
   // Simple polygon area calculation using the shoelace formula
   let area = 0;
   const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first

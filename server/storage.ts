@@ -1086,7 +1086,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const dataToInsert = {
         ...insertAnalysisResult,
-        peatlandOverlap: insertAnalysisResult.peatlandOverlap || 'No overlap',
+        peatlandOverlap: insertAnalysisResult.peatlandOverlap || 'UNKNOWN',
         updatedAt: new Date()
       };
       
