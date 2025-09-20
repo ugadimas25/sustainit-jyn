@@ -3301,114 +3301,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to get country from coordinates using Nominatim API
-  async function getCountryFromCoordinates(lat: number, lng: number): Promise<string> {
+  // Helper function to get country from geometry using PostGIS intersection with adm_boundary_lv0
+  async function getCountryFromGeometry(geometry: any): Promise<string> {
     try {
-      // Use reverse geocoding with proper parameters according to Nominatim API docs
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=3&addressdetails=1&extratags=0&namedetails=0`;
-
-      console.log(`🔍 Nominatim API request: ${url}`);
-
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'KPN-EUDR-Compliance-System/1.0 (support@kpn.com)'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`📍 Nominatim response for (${lat}, ${lng}):`, JSON.stringify(data, null, 2));
-
-        // According to Nominatim docs, country is available in multiple places
-        let country = null;
-
-        if (data.address) {
-          // Try different country field names from Nominatim response
-          country = data.address.country || 
-                   data.address.country_code || 
-                   data.address.country_name;
-        }
-
-        // Also check display_name for country information
-        if (!country && data.display_name) {
-          const displayParts = data.display_name.split(', ');
-          country = displayParts[displayParts.length - 1]; // Last part is usually country
-        }
-
-        if (country) {
-          console.log(`✅ Country detected from Nominatim: ${country}`);
-          return country;
-        }
-
-        console.log(`⚠️  No country found in Nominatim response, using coordinate fallback`);
-      } else {
-        console.log(`⚠️  Nominatim API error: ${response.status} ${response.statusText}`);
+      if (!geometry || !geometry.coordinates) {
+        console.log(`⚠️  No geometry provided for country detection`);
+        return 'Unknown';
       }
 
-      // Enhanced coordinate-based fallback with more precise ranges
-      console.log(`🗺️  Using coordinate-based country detection for (${lat}, ${lng})`);
+      // Convert geometry to WKT format for PostGIS
+      const wkt = geometryToWKT(geometry);
+      console.log(`🗺️  Using PostGIS intersection with adm_boundary_lv0 for country detection`);
 
-      // Indonesia (more precise bounds)
-      if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
-        console.log(`🇮🇩 Detected Indonesia by coordinates`);
-        return 'Indonesia';
-      }
-      // Malaysia  
-      else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
-        console.log(`🇲🇾 Detected Malaysia by coordinates`);
-        return 'Malaysia';
-      }
-      // Nigeria
-      else if (lat >= 4.27 && lat <= 13.89 && lng >= 2.67 && lng <= 14.68) {
-        console.log(`🇳🇬 Detected Nigeria by coordinates`);
-        return 'Nigeria';
-      }
-      // Ghana
-      else if (lat >= 4.74 && lat <= 11.17 && lng >= -3.25 && lng <= 1.19) {
-        console.log(`🇬🇭 Detected Ghana by coordinates`);
-        return 'Ghana';
-      }
-      // Ivory Coast
-      else if (lat >= 4.36 && lat <= 10.74 && lng >= -8.60 && lng <= -2.49) {
-        console.log(`🇨🇮 Detected Ivory Coast by coordinates`);
-        return 'Ivory Coast';
-      }
-      // Brazil
-      else if (lat >= -33.75 && lat <= 5.27 && lng >= -73.99 && lng <= -28.84) {
-        console.log(`🇧🇷 Detected Brazil by coordinates`);
-        return 'Brazil';
-      }
-      // Central African Republic
-      else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
-        console.log(`🇨🇫 Detected Central African Republic by coordinates`);
-        return 'Central African Republic';
+      // Query adm_boundary_lv0 table using PostGIS ST_Intersects
+      const result = await db.execute(sql`
+        SELECT 
+          name_en as country_name,
+          name_local as local_name,
+          iso_a2 as iso_code,
+          ST_Area(ST_Intersection(geom, ST_GeomFromText(${wkt}, 4326))) as intersection_area
+        FROM adm_boundary_lv0 
+        WHERE ST_Intersects(geom, ST_GeomFromText(${wkt}, 4326))
+        ORDER BY intersection_area DESC
+        LIMIT 1
+      `);
+
+      if (result.rows && result.rows.length > 0) {
+        const countryData = result.rows[0];
+        const countryName = countryData.country_name || countryData.local_name || 'Unknown';
+        const intersectionArea = parseFloat(countryData.intersection_area?.toString() || '0');
+        
+        console.log(`✅ Country detected from PostGIS intersection: ${countryName} (area: ${intersectionArea})`);
+        console.log(`📍 Country details:`, {
+          name: countryName,
+          localName: countryData.local_name,
+          isoCode: countryData.iso_code
+        });
+        
+        return countryName;
       }
 
-      console.log(`❓ Could not determine country for coordinates (${lat}, ${lng})`);
+      console.log(`⚠️  No intersection found with adm_boundary_lv0, using coordinate fallback`);
+      
+      // Fallback to centroid-based coordinate detection
+      const centroid = getCentroidFromGeometry(geometry);
+      if (centroid) {
+        return getCountryFromCoordinatesFallback(centroid.lat, centroid.lng);
+      }
+
       return 'Unknown';
 
     } catch (error) {
-      console.error('Nominatim API error:', error);
-
-      // Fallback based on coordinate ranges
-      if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
-        return 'Indonesia';
-      } else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
-        return 'Malaysia';
-      } else if (lat >= 4.27 && lat <= 13.89 && lng >= 2.67 && lng <= 14.68) {
-        return 'Nigeria';
-      } else if (lat >= 4.74 && lat <= 11.17 && lng >= -3.25 && lng <= 1.19) {
-        return 'Ghana';
-      } else if (lat >= 4.36 && lat <= 10.74 && lng >= -8.60 && lng <= -2.49) {
-        return 'Ivory Coast';
-      } else if (lat >= -33.75 && lat <= 5.27 && lng >= -73.99 && lng <= -28.84) {
-        return 'Brazil';
-      } else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
-        return 'Central African Republic';
+      console.error('PostGIS country detection error:', error);
+      
+      // Fallback to centroid-based coordinate detection
+      const centroid = getCentroidFromGeometry(geometry);
+      if (centroid) {
+        return getCountryFromCoordinatesFallback(centroid.lat, centroid.lng);
       }
-
+      
       return 'Unknown';
     }
+  }
+
+  // Helper function to convert geometry to WKT format for PostGIS
+  function geometryToWKT(geometry: any): string {
+    try {
+      if (geometry.type === 'Point') {
+        const [lng, lat] = geometry.coordinates;
+        return `POINT(${lng} ${lat})`;
+      } else if (geometry.type === 'Polygon') {
+        const coords = geometry.coordinates[0];
+        const wktCoords = coords.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
+        return `POLYGON((${wktCoords}))`;
+      } else if (geometry.type === 'MultiPolygon') {
+        const polygons = geometry.coordinates.map((polygon: any) => {
+          const coords = polygon[0];
+          const wktCoords = coords.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
+          return `((${wktCoords}))`;
+        }).join(', ');
+        return `MULTIPOLYGON(${polygons})`;
+      }
+      
+      // Fallback: create point from centroid
+      const centroid = getCentroidFromGeometry(geometry);
+      if (centroid) {
+        return `POINT(${centroid.lng} ${centroid.lat})`;
+      }
+      
+      throw new Error(`Unsupported geometry type: ${geometry.type}`);
+    } catch (error) {
+      console.error('Error converting geometry to WKT:', error);
+      throw error;
+    }
+  }
+
+  // Fallback function for coordinate-based country detection
+  function getCountryFromCoordinatesFallback(lat: number, lng: number): string {
+    console.log(`🗺️  Using coordinate-based country detection fallback for (${lat}, ${lng})`);
+
+    // Indonesia (more precise bounds)
+    if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
+      console.log(`🇮🇩 Detected Indonesia by coordinates`);
+      return 'Indonesia';
+    }
+    // Malaysia  
+    else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
+      console.log(`🇲🇾 Detected Malaysia by coordinates`);
+      return 'Malaysia';
+    }
+    // Nigeria
+    else if (lat >= 4.27 && lat <= 13.89 && lng >= 2.67 && lng <= 14.68) {
+      console.log(`🇳🇬 Detected Nigeria by coordinates`);
+      return 'Nigeria';
+    }
+    // Ghana
+    else if (lat >= 4.74 && lat <= 11.17 && lng >= -3.25 && lng <= 1.19) {
+      console.log(`🇬🇭 Detected Ghana by coordinates`);
+      return 'Ghana';
+    }
+    // Ivory Coast
+    else if (lat >= 4.36 && lat <= 10.74 && lng >= -8.60 && lng <= -2.49) {
+      console.log(`🇨🇮 Detected Ivory Coast by coordinates`);
+      return 'Ivory Coast';
+    }
+    // Brazil
+    else if (lat >= -33.75 && lat <= 5.27 && lng >= -73.99 && lng <= -28.84) {
+      console.log(`🇧🇷 Detected Brazil by coordinates`);
+      return 'Brazil';
+    }
+    // Central African Republic
+    else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
+      console.log(`🇨🇫 Detected Central African Republic by coordinates`);
+      return 'Central African Republic';
+    }
+
+    console.log(`❓ Could not determine country for coordinates (${lat}, ${lng})`);
+    return 'Unknown';
   }
 
   // Helper function to extract centroid coordinates from geometry
@@ -3504,22 +3533,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           continue;
         }
 
-        // Get country using Nominatim API based on geometry centroid
+        // Get country using PostGIS intersection with adm_boundary_lv0
         let detectedCountry = 'Unknown';
-        const centroid = getCentroidFromGeometry(feature.geometry);
 
-        if (centroid) {
-          console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
-          detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
+        if (feature.geometry) {
+          console.log(`🌍 Detecting country using PostGIS intersection with adm_boundary_lv0`);
+          detectedCountry = await getCountryFromGeometry(feature.geometry);
           console.log(`✅ Country detected: ${detectedCountry}`);
-
-          // Add a delay to respect Nominatim rate limits (1 request per second)
-          await new Promise(resolve => setTimeout(resolve, 1100));
         } else {
           // Fallback to property-based detection
           detectedCountry = props['.Distict'] || props['.Aggregator Location'] || 
                            props.country_name || props.country || props.district || 
                            props.region || props.province || props.kabupaten || 'Indonesia';
+          console.log(`📋 Using property-based country detection: ${detectedCountry}`);
         }
 
         // Update feature properties with detected country
@@ -3633,7 +3659,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             console.log(`🌍 Initial country detection from original feature: ${country}`);
 
-            // If Nominatim didn't detect country properly, extract from original Indonesian properties
+            // If PostGIS didn't detect country properly, extract from original Indonesian properties
             if (country === 'Unknown' || !country) {
               if (originalFeature?.properties?.['.Distict']) {
                 // Indonesian district format: "Bone" -> "Bone, Indonesia"  

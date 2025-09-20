@@ -146,7 +146,7 @@ export default function DeforestationMonitoring() {
           const originalFeature = originalGeojson.features[index];
           const originalProps = originalFeature?.properties || {};
 
-          // Use detected country from Nominatim or fallback to original properties
+          // Use detected country from PostGIS intersection or fallback to original properties
           let country = originalProps.detected_country || 'Unknown';
           
           if (country === 'Unknown' || !country) {
