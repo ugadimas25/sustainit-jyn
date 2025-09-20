@@ -849,13 +849,15 @@ export default function DeforestationMonitoring() {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         <Checkbox
-                          checked={selectedResults.length === currentPageData.length && currentPageData.length > 0}
-                          indeterminate={selectedResults.length > 0 && selectedResults.length < currentPageData.length}
+                          checked={currentPageData.length > 0 && currentPageData.every(r => selectedResults.includes(r.plotId))}
+                          {...(currentPageData.some(r => selectedResults.includes(r.plotId)) && !currentPageData.every(r => selectedResults.includes(r.plotId)) ? { 'data-indeterminate': 'true' } : {})}
                           onCheckedChange={(checked) => {
                             if (checked) {
+                              // Select all items on current page
                               const currentPageIds = currentPageData.map(r => r.plotId);
                               setSelectedResults(prev => [...new Set([...prev, ...currentPageIds])]);
                             } else {
+                              // Deselect all items on current page
                               const currentPageIds = currentPageData.map(r => r.plotId);
                               setSelectedResults(prev => prev.filter(id => !currentPageIds.includes(id)));
                             }
@@ -937,8 +939,8 @@ export default function DeforestationMonitoring() {
                       </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                    {currentPageData.map((result) => (
-                      <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {currentPageData.map((result, index) => (
+                      <tr key={`${result.plotId}-${index}-${currentPage}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
                           <Checkbox
                             checked={selectedResults.includes(result.plotId)}
