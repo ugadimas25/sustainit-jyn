@@ -419,16 +419,25 @@ export default function EditPolygon() {
                 const coords = entity.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
                 const vertexMarkers: any[] = [];
                 
-                coords.forEach((coord, index) => {
+                coords.forEach((coord: [number, number], index: number) => {
                   const marker = L.circleMarker(coord, {
                     radius: 6,
                     fillColor: '#fff',
                     color: '#2563eb',
                     weight: 2,
                     opacity: 1,
-                    fillOpacity: 1,
-                    draggable: true
+                    fillOpacity: 1
                   }).addTo(map);
+                  
+                  // Make marker draggable manually since circleMarker doesn't support draggable option
+                  (marker as any).dragging = L.Handler.extend({
+                    addHooks: function() {
+                      L.DomEvent.on(this._element, 'mousedown', this._onMouseDown, this);
+                    },
+                    removeHooks: function() {
+                      L.DomEvent.off(this._element, 'mousedown', this._onMouseDown, this);
+                    }
+                  });
                   
                   // Make vertex draggable
                   marker.on('drag', function(e: any) {

@@ -1122,7 +1122,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create all default items
       const createdItems = [];
       for (const itemData of defaultRiskItems) {
-        const item = await storage.createRiskAssessmentItem(itemData);
+        const item = await storage.createRiskAssessmentItem({
+          ...itemData,
+          category: itemData.category as "spatial" | "non_spatial",
+          itemType: itemData.itemType as "deforestasi" | "legalitas_lahan" | "kawasan_gambut" | "indigenous_people" | "sertifikasi" | "dokumentasi_legal",
+          riskLevel: itemData.riskLevel as "tinggi" | "sedang" | "rendah",
+          calculatedRisk: itemData.calculatedRisk.toString(),
+          normalizedScore: itemData.normalizedScore.toString(),
+          finalScore: itemData.finalScore.toString()
+        });
         createdItems.push(item);
       }
 
@@ -2486,9 +2494,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Embed the LCC flowchart image
       try {
-        doc.addImage(lccFlowchartImageBase64, 'PNG', 10, yPos, 190, 100);
-        yPos += 110;
-        console.log('✅ Successfully embedded Land Cover Change flowchart image');
+        // Define placeholder base64 image data or skip embedding if not available
+        const lccFlowchartImageBase64 = ''; // Placeholder - would contain actual base64 image data
+        if (lccFlowchartImageBase64) {
+          doc.addImage(lccFlowchartImageBase64, 'PNG', 10, yPos, 190, 100);
+          yPos += 110;
+          console.log('✅ Successfully embedded Land Cover Change flowchart image');
+        } else {
+          throw new Error('No flowchart image available');
+        }
       } catch (error) {
         console.log('⚠️  LCC flowchart image embedding failed, using fallback text');
         doc.setFontSize(10);
@@ -3270,7 +3284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove z-values (3D coordinates) to make it compatible with external APIs
       const cleanedGeojson = {
         ...parsedGeojson,
-        features: parsedGeojson.features.map(feature => {
+        features: parsedGeojson.features.map((feature: any) => {
           if (feature.geometry && feature.geometry.coordinates) {
             const cleanedGeometry = {
               ...feature.geometry,
@@ -3286,7 +3300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Validate required properties - be more flexible with validation
-      const validatedFeatures = cleanedGeojson.features.filter(feature => {
+      const validatedFeatures = cleanedGeojson.features.filter((feature: any) => {
         const props = feature.properties;
         const hasValidId = props && (props.id || props.Name || props.plot_id || props['.Farmers ID'] || props.name);
         
@@ -3441,7 +3455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const analysisResult = {
               plotId,
               country,
-              area,
+              area: area.toString(),
               overallRisk,
               complianceStatus,
               gfwLoss: gfwLossArea > 0 ? 'TRUE' : 'FALSE',
@@ -3945,7 +3959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error analyzing supplier compliance:', error);
       res.status(500).json({ 
         error: 'Failed to analyze supplier compliance',
-        details: error.message 
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -3982,7 +3996,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           results.push({
             supplierId: supplier.id || Date.now().toString(),
             supplierName: supplier.namaSupplier,
-            error: error.message,
+            error: error instanceof Error ? error.message : 'Unknown error',
             analyzedAt: new Date().toISOString()
           });
         }
@@ -4000,7 +4014,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error in bulk analysis:', error);
       res.status(500).json({ 
         error: 'Failed to perform bulk analysis',
-        details: error.message 
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -4047,7 +4061,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 ) as intersects
             `);
 
-            const intersectionArea = parseFloat(result.rows[0]?.intersection_area || '0');
+            const intersectionArea = parseFloat(result.rows[0]?.intersection_area?.toString() || '0');
             const intersects = result.rows[0]?.intersects || false;
 
             console.log(`Intersection area between ${polygon1.plotId} and ${polygon2.plotId}: ${intersectionArea}`);

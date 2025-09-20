@@ -157,7 +157,12 @@ export function AlertsWidget() {
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span>
                       {alert.supplierName && `${alert.supplierName} • `}
-                      {new Date(alert.detectedAt).toLocaleDateString()}
+                      {alert.detectedAt ? 
+                        (alert.detectedAt instanceof Date ? 
+                          alert.detectedAt.toLocaleDateString() : 
+                          new Date(alert.detectedAt).toLocaleDateString()) : 
+                        'No date'
+                      }
                     </span>
                     {alert.coordinates && (
                       <span className="text-blue-600 hover:text-blue-800 cursor-pointer">
