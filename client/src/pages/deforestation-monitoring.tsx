@@ -37,6 +37,9 @@ interface AnalysisResult {
   gfwLossArea?: number;
   jrcLossArea?: number;
   sbtnLossArea?: number;
+  // Peatland analysis
+  peatlandOverlap?: string;
+  peatlandArea?: number;
   polygonIssues?: string;
 }
 
@@ -313,11 +316,12 @@ export default function DeforestationMonitoring() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
+    // Validate file type - accept more flexible formats
     const validTypes = ['.geojson', '.json', '.kml'];
-    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    const fileName = file.name.toLowerCase();
+    const isValidType = validTypes.some(type => fileName.endsWith(type));
     
-    if (!validTypes.includes(fileExtension)) {
+    if (!isValidType) {
       toast({
         title: "Invalid file type",
         description: "Please upload a GeoJSON (.json/.geojson) or KML (.kml) file",
@@ -328,17 +332,47 @@ export default function DeforestationMonitoring() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setUploadedFile({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        content: e.target?.result || null
-      });
+      try {
+        const content = e.target?.result as string;
+        
+        // Basic validation for content
+        if (!content || content.trim().length === 0) {
+          toast({
+            title: "Invalid file",
+            description: "The uploaded file appears to be empty",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        setUploadedFile({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          content: content
+        });
+        
+        toast({
+          title: "File uploaded successfully",
+          description: `${file.name} (${(file.size / 1024).toFixed(1)} KB) is ready for analysis`
+        });
+      } catch (error) {
+        toast({
+          title: "Error reading file",
+          description: "Failed to read the uploaded file. Please try again.",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    reader.onerror = () => {
       toast({
-        title: "File uploaded successfully",
-        description: `${file.name} is ready for analysis`
+        title: "File read error",
+        description: "Failed to read the uploaded file. Please try again.",
+        variant: "destructive"
       });
     };
+    
     reader.readAsText(file);
   };
 
@@ -1449,6 +1483,9 @@ export default function DeforestationMonitoring() {
                         </div>
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Peatland
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Spatial Legality
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -1518,6 +1555,15 @@ export default function DeforestationMonitoring() {
                           </td>
                           <td className="px-4 py-4 text-sm">
                             {getLossDisplay(result.sbtnLoss, result.sbtnLossArea)}
+                          </td>
+                          <td className="px-4 py-4 text-sm">
+                            {result.peatlandOverlap === 'No overlap' ? (
+                              <span className="text-sm font-medium text-green-600">No overlap</span>
+                            ) : (
+                              <span className="text-sm font-medium text-red-600">
+                                {result.peatlandArea?.toFixed(2) || '0.00'} ha
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-4 text-sm">
                             {getSpatialLegalityBadge(randomSpatialLegality)}
