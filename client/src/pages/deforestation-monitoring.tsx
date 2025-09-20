@@ -67,7 +67,10 @@ export default function DeforestationMonitoring() {
   // GeoJSON upload mutation
   const uploadMutation = useMutation({
     mutationFn: async ({ geojsonFile, fileName }: { geojsonFile: string, fileName: string }) => {
-      const response = await apiRequest('POST', '/api/geojson/upload', { geojsonFile, fileName });
+      const response = await apiRequest('POST', '/api/geojson/upload', { 
+        geojson: geojsonFile, 
+        filename: fileName 
+      });
       return await response.json();
     },
     onSuccess: (response) => {

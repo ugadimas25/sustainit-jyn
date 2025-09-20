@@ -3245,15 +3245,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GeoJSON upload and analysis endpoint
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
-      const { geojson, filename } = req.body;
+      const { geojson, geojsonFile, filename, fileName } = req.body;
+      
+      // Accept both parameter names for flexibility
+      const geoJsonData = geojson || geojsonFile;
+      const fileNameToUse = filename || fileName;
 
-      if (!geojson) {
+      if (!geoJsonData) {
+        console.log('Request body keys:', Object.keys(req.body));
         return res.status(400).json({ error: 'No GeoJSON data provided' });
       }
 
       let parsedGeojson;
       try {
-        parsedGeojson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
+        parsedGeojson = typeof geoJsonData === 'string' ? JSON.parse(geoJsonData) : geoJsonData;
       } catch (parseError) {
         return res.status(400).json({ error: 'Invalid JSON format' });
       }
@@ -3317,7 +3322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create a proper multipart/form-data request
       const boundary = `----formdata-node-${Date.now()}`;
       const fileContent = JSON.stringify(cleanedGeojson); // Use cleaned GeoJSON
-      const uploadFileName = filename || 'plot_boundaries.json';
+      const uploadFileName = fileNameToUse || 'plot_boundaries.json';
 
       const formBody = [
         `--${boundary}`,
