@@ -1926,13 +1926,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
 
       // Load methodology flowchart from filesystem
-      const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIiIbGAKdUVEREREREREREREREREN';
+      const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIbGAKdUVERERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
 
       try {
         const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757586584997.png');
         const imgBase64 = fs.readFileSync(imgPath).toString('base64');
-        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 10, 30, 180, 120);
-        console.log(`✅ Embedded EUDR Compliance methodology image, base64 length: ${imgBase64.length}`);
+        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 15, yPos, 180, 100);
+        yPos += 110;
       } catch (error) {
         console.log('Failed to add methodology image, using text fallback');
         doc.setFontSize(12);
@@ -2075,7 +2075,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const doc = new jsPDF();
 
       // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
-      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiJS6QKsCSIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
 
       console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
 
@@ -2590,7 +2590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!coordinates || !Array.isArray(coordinates)) {
       return coordinates;
     }
-    
+
     return coordinates.map((coord: any) => {
       if (Array.isArray(coord)) {
         if (typeof coord[0] === 'number' && typeof coord[1] === 'number') {
@@ -2609,7 +2609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function calculateAreaFromGeometry(geometry: any): number {
     // Simplified area calculation - in production would use proper geospatial library
     if (!geometry || !geometry.coordinates) return 0;
-    
+
     try {
       // For polygon, estimate area roughly (this is a simplified calculation)
       if (geometry.type === 'Polygon' && geometry.coordinates[0]) {
@@ -3306,48 +3306,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Use reverse geocoding with proper parameters according to Nominatim API docs
       const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=3&addressdetails=1&extratags=0&namedetails=0`;
-      
+
       console.log(`🔍 Nominatim API request: ${url}`);
-      
+
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'KPN-EUDR-Compliance-System/1.0 (support@kpn.com)'
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log(`📍 Nominatim response for (${lat}, ${lng}):`, JSON.stringify(data, null, 2));
-        
+
         // According to Nominatim docs, country is available in multiple places
         let country = null;
-        
+
         if (data.address) {
           // Try different country field names from Nominatim response
           country = data.address.country || 
                    data.address.country_code || 
                    data.address.country_name;
         }
-        
+
         // Also check display_name for country information
         if (!country && data.display_name) {
           const displayParts = data.display_name.split(', ');
           country = displayParts[displayParts.length - 1]; // Last part is usually country
         }
-        
+
         if (country) {
           console.log(`✅ Country detected from Nominatim: ${country}`);
           return country;
         }
-        
+
         console.log(`⚠️  No country found in Nominatim response, using coordinate fallback`);
       } else {
         console.log(`⚠️  Nominatim API error: ${response.status} ${response.statusText}`);
       }
-      
+
       // Enhanced coordinate-based fallback with more precise ranges
       console.log(`🗺️  Using coordinate-based country detection for (${lat}, ${lng})`);
-      
+
       // Indonesia (more precise bounds)
       if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
         console.log(`🇮🇩 Detected Indonesia by coordinates`);
@@ -3383,13 +3383,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🇨🇫 Detected Central African Republic by coordinates`);
         return 'Central African Republic';
       }
-      
+
       console.log(`❓ Could not determine country for coordinates (${lat}, ${lng})`);
       return 'Unknown';
-      
+
     } catch (error) {
       console.error('Nominatim API error:', error);
-      
+
       // Fallback based on coordinate ranges
       if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
         return 'Indonesia';
@@ -3406,7 +3406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
         return 'Central African Republic';
       }
-      
+
       return 'Unknown';
     }
   }
@@ -3415,7 +3415,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function getCentroidFromGeometry(geometry: any): { lat: number, lng: number } | null {
     try {
       if (!geometry || !geometry.coordinates) return null;
-      
+
       if (geometry.type === 'Point') {
         return { lng: geometry.coordinates[0], lat: geometry.coordinates[1] };
       } else if (geometry.type === 'Polygon') {
@@ -3439,7 +3439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
         }
       }
-      
+
       return null;
     } catch (error) {
       console.warn('Error extracting centroid:', error);
@@ -3451,7 +3451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
       const { geojson, geojsonFile, filename, fileName } = req.body;
-      
+
       // Accept both parameter names for flexibility
       const geoJsonData = geojson || geojsonFile;
       const fileNameToUse = filename || fileName;
@@ -3492,29 +3492,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Enhanced validation for different GeoJSON formats
       const validatedFeatures = [];
-      
+
       for (const feature of cleanedGeojson.features) {
         const props = feature.properties || {};
-        
-        // More comprehensive ID extraction
-        const hasValidId = props['.Farmers ID'] || props.id || props.Name || 
-                          props.name || props.plot_id || props.farmer_id || props.plotId;
-        
-        if (!hasValidId) {
-          console.warn('Feature missing ID, skipping:', Object.keys(props));
+
+        // Robustly get plot ID
+        const plotId = props.id || props.plot_id || props['.Farmers ID'] || props.Name || props.farmer_id || `UNKNOWN_${Math.random().toString(36).substring(7)}`;
+
+        if (!props.id && !props.plot_id && !props['.Farmers ID'] && !props.Name && !props.farmer_id) {
+          console.warn('Feature missing critical ID property, skipping:', Object.keys(props));
           continue;
         }
 
         // Get country using Nominatim API based on geometry centroid
         let detectedCountry = 'Unknown';
         const centroid = getCentroidFromGeometry(feature.geometry);
-        
+
         if (centroid) {
           console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
           detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
           console.log(`✅ Country detected: ${detectedCountry}`);
-          
-          // Add a small delay to respect Nominatim rate limits (1 request per second)
+
+          // Add a delay to respect Nominatim rate limits (1 request per second)
           await new Promise(resolve => setTimeout(resolve, 1100));
         } else {
           // Fallback to property-based detection
@@ -3623,9 +3622,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             // Enhanced plot ID extraction for Indonesian format with detailed logging
             let plotId = 'unknown';
-            
+
             console.log(`🆔 Feature properties for ID extraction:`, Object.keys(feature.properties || {}));
-            
+
             if (feature.properties?.['.Farmers ID']) {
               plotId = feature.properties['.Farmers ID'];
               console.log(`✅ Found Indonesian Farmers ID: ${plotId}`);
@@ -3651,9 +3650,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // Use detected country from Nominatim API with better fallback handling
             let country = feature.properties?.detected_country || 'Unknown';
-            
+
             console.log(`🌍 Initial country detection: ${country}`);
-            
+
             // If Nominatim didn't detect country properly, extract from Indonesian properties
             if (country === 'Unknown' || !country) {
               if (feature.properties?.['.Distict']) {
@@ -3706,7 +3705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const jrcLossArea = parseFloat(feature.properties?.jrc_loss?.jrc_loss_area || '0');
             const sbtnLossArea = parseFloat(feature.properties?.sbtn_loss?.sbtn_loss_area || '0');
             const highRiskDatasets = feature.properties?.overall_compliance?.high_risk_datasets || [];
-            
+
             console.log(`🔍 Plot ${plotId} - GFW: ${gfwLossArea}ha, JRC: ${jrcLossArea}ha, SBTN: ${sbtnLossArea}ha`);
 
             // Create analysis result with comprehensive Indonesian metadata
@@ -4387,87 +4386,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return `POLYGON((${wktCoords}))`;
   }
 
+  // Helper function to calculate area from geometry
+  function calculateAreaFromGeometry(geometry: any): number {
+    if (!geometry || !geometry.coordinates) return 0;
+
+    try {
+      if (geometry.type === 'Polygon') {
+        return calculatePolygonArea(geometry.coordinates[0]);
+      } else if (geometry.type === 'MultiPolygon') {
+        return calculatePolygonArea(geometry.coordinates[0][0]);
+      }
+      return 0;
+    } catch (error) {
+      console.warn('Error calculating area from geometry:', error);
+      return 0;
+    }
+  }
+
+  // Helper functions for GeoJSON processing
+  function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
+    let north = -90, south = 90, east = -180, west = 180;
+
+    for (const coord of coordinates) {
+      const [lng, lat] = coord;
+      north = Math.max(north, lat);
+      south = Math.min(south, lat);
+      east = Math.max(east, lng);
+      west = Math.min(west, lng);
+    }
+
+    return { north, south, east, west };
+  }
+
+  function calculateCentroid(coordinates: number[][]): { lat: number, lng: number } {
+    let totalLat = 0, totalLng = 0;
+    const count = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
+
+    for (let i = 0; i < count; i++) {
+      const [lng, lat] = coordinates[i];
+      totalLat += lat;
+      totalLng += lng;
+    }
+
+    return {
+      lat: totalLat / count,
+      lng: totalLng / count
+    };
+  }
+
+  function calculatePolygonArea(coordinates: number[][]): number {
+    // Simple polygon area calculation using the shoelace formula
+    let area = 0;
+    const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
+
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      area += coordinates[i][0] * coordinates[j][1];
+      area -= coordinates[j][0] * coordinates[i][1];
+    }
+
+    area = Math.abs(area) / 2;
+
+    // Convert from square degrees to hectares (rough approximation)
+    // This is a simplified conversion and should be improved for production use
+    const hectares = area * 11119.49; // Rough conversion factor
+
+    return Math.round(hectares * 100) / 100; // Round to 2 decimal places
+  }
+
+  // Helper function to remove z-values from GeoJSON coordinates
+  function removeZValues(coordinates: any): any {
+    if (Array.isArray(coordinates)) {
+      if (typeof coordinates[0] === 'number' && coordinates.length === 3) {
+        // This is a coordinate array like [x, y, z]
+        return coordinates.slice(0, 2);
+      } else {
+        // Recursively process nested arrays
+        return coordinates.map(removeZValues);
+      }
+    }
+    return coordinates; // Return as is if not an array
+  }
+
   return httpServer;
-}
-
-// Helper function to calculate area from geometry
-function calculateAreaFromGeometry(geometry: any): number {
-  if (!geometry || !geometry.coordinates) return 0;
-  
-  try {
-    if (geometry.type === 'Polygon') {
-      return calculatePolygonArea(geometry.coordinates[0]);
-    } else if (geometry.type === 'MultiPolygon') {
-      return calculatePolygonArea(geometry.coordinates[0][0]);
-    }
-    return 0;
-  } catch (error) {
-    console.warn('Error calculating area from geometry:', error);
-    return 0;
-  }
-}
-
-// Helper functions for GeoJSON processing
-function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
-  let north = -90, south = 90, east = -180, west = 180;
-
-  for (const coord of coordinates) {
-    const [lng, lat] = coord;
-    north = Math.max(north, lat);
-    south = Math.min(south, lat);
-    east = Math.max(east, lng);
-    west = Math.min(west, lng);
-  }
-
-  return { north, south, east, west };
-}
-
-function calculateCentroid(coordinates: number[][]): { lat: number, lng: number } {
-  let totalLat = 0, totalLng = 0;
-  const count = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
-  for (let i = 0; i < count; i++) {
-    const [lng, lat] = coordinates[i];
-    totalLat += lat;
-    totalLng += lng;
-  }
-
-  return {
-    lat: totalLat / count,
-    lng: totalLng / count
-  };
-}
-
-function calculatePolygonArea(coordinates: number[][]): number {
-  // Simple polygon area calculation using the shoelace formula
-  let area = 0;
-  const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n;
-    area += coordinates[i][0] * coordinates[j][1];
-    area -= coordinates[j][0] * coordinates[i][1];
-  }
-
-  area = Math.abs(area) / 2;
-
-  // Convert from square degrees to hectares (rough approximation)
-  // This is a simplified conversion and should be improved for production use
-  const hectares = area * 11119.49; // Rough conversion factor
-
-  return Math.round(hectares * 100) / 100; // Round to 2 decimal places
-}
-
-// Helper function to remove z-values from GeoJSON coordinates
-function removeZValues(coordinates: any): any {
-  if (Array.isArray(coordinates)) {
-    if (typeof coordinates[0] === 'number' && coordinates.length === 3) {
-      // This is a coordinate array like [x, y, z]
-      return coordinates.slice(0, 2);
-    } else {
-      // Recursively process nested arrays
-      return coordinates.map(removeZValues);
-    }
-  }
-  return coordinates; // Return as is if not an array
 }

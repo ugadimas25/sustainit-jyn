@@ -234,8 +234,8 @@ export default function DeforestationMonitoring() {
         const hasValidFeatures = parsedGeoJSON.features.some((feature: any) => {
           const props = feature.properties || {};
 
-          // Check for ID fields (Indonesian or standard format)
-          const hasId = props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id;
+          // Check for ID fields (prioritize 'id' field, then other formats)
+          const hasId = props.id || props.plot_id || props['.Farmers ID'] || props.Name || props.farmer_id;
 
           // Check for area fields (Indonesian or standard format)  
           const hasArea = props['.Plot size'] || props.area_ha || props.area || props.area_hectares;
@@ -263,10 +263,12 @@ export default function DeforestationMonitoring() {
         // Log detected format for debugging
         const sampleFeature = parsedGeoJSON.features[0];
         const props = sampleFeature?.properties || {};
-        if (props['.Farmers ID']) {
+        if (props.id) {
+          console.log('✅ Detected standard GeoJSON format with "id" field');
+        } else if (props['.Farmers ID']) {
           console.log('✅ Detected Indonesian GeoJSON format');
-        } else if (props.plot_id || props.id) {
-          console.log('✅ Detected standard GeoJSON format');
+        } else if (props.plot_id) {
+          console.log('✅ Detected standard GeoJSON format with "plot_id" field');
         } else {
           console.log('ℹ️ Could not definitively detect GeoJSON format, but essential fields seem present.');
         }
