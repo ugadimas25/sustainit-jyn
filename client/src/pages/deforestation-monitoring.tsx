@@ -120,14 +120,39 @@ export default function DeforestationMonitoring() {
     queryKey: ['/api/bulking-data-collection'],
   });
 
-  // Combine all suppliers for dropdown
+  // Combine all suppliers for dropdown with better error handling
   const allSuppliers = [
-    ...estateSuppliers.map((s: any) => ({ id: s.id, name: s.namaSupplier, type: 'Estate' })),
-    ...millSuppliers.map((s: any) => ({ id: s.id, name: s.namaPabrik, type: 'Mill' })),
-    ...traceabilitySuppliers.map((s: any) => ({ id: s.id, name: s.pemegangDO, type: 'Smallholder' })),
-    ...kcpSuppliers.map((s: any) => ({ id: s.id, name: s.namaKCP, type: 'KCP' })),
-    ...bulkingSuppliers.map((s: any) => ({ id: s.id, name: s.namaFasilitasBulking, type: 'Bulking' }))
-  ].filter(s => s.name); // Filter out suppliers without names
+    ...(estateSuppliers || []).map((s: any) => ({ 
+      id: s.id, 
+      name: s.namaSupplier || 'Estate (Unnamed)', 
+      type: 'Estate',
+      location: s.alamatKebun || s.alamatKantor || 'Unknown Location'
+    })),
+    ...(millSuppliers || []).map((s: any) => ({ 
+      id: s.id, 
+      name: s.namaPabrik || 'Mill (Unnamed)', 
+      type: 'Mill',
+      location: s.alamatPabrik || s.alamatKantor || 'Unknown Location'
+    })),
+    ...(traceabilitySuppliers || []).map((s: any) => ({ 
+      id: s.id.toString(), 
+      name: s.pemegangDO || 'Smallholder (Unnamed)', 
+      type: 'Smallholder',
+      location: s.lokasiUsaha || s.alamatPemegangDO || 'Unknown Location'
+    })),
+    ...(kcpSuppliers || []).map((s: any) => ({ 
+      id: s.id.toString(), 
+      name: s.namaKCP || 'KCP (Unnamed)', 
+      type: 'KCP',
+      location: s.alamatKCP || s.alamatKantor || 'Unknown Location'
+    })),
+    ...(bulkingSuppliers || []).map((s: any) => ({ 
+      id: s.id.toString(), 
+      name: s.namaFasilitasBulking || 'Bulking (Unnamed)', 
+      type: 'Bulking',
+      location: s.alamatBulking || s.alamatKantor || 'Unknown Location'
+    }))
+  ].filter(s => s.name && !s.name.includes('Unnamed')); // Filter out suppliers without proper names
 
 
   // GeoJSON upload mutation
@@ -763,12 +788,23 @@ export default function DeforestationMonitoring() {
                       <SelectTrigger data-testid="select-supplier">
                         <SelectValue placeholder="Choose supplier from data collection..." />
                       </SelectTrigger>
-                      <SelectContent>
-                        {allSuppliers.map((supplier) => (
-                          <SelectItem key={supplier.id} value={supplier.id} data-testid={`supplier-option-${supplier.id}`}>
-                            {supplier.name} ({supplier.type})
+                      <SelectContent className="max-h-[300px] overflow-y-auto">
+                        {allSuppliers.length === 0 ? (
+                          <SelectItem value="no-suppliers" disabled>
+                            No suppliers available - Please add suppliers in Data Collection first
                           </SelectItem>
-                        ))}
+                        ) : (
+                          allSuppliers.map((supplier) => (
+                            <SelectItem key={supplier.id} value={supplier.id} data-testid={`supplier-option-${supplier.id}`}>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{supplier.name}</span>
+                                <span className="text-xs text-gray-500">
+                                  {supplier.type} - {supplier.location}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     {allSuppliers.length === 0 && (
