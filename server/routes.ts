@@ -3604,36 +3604,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Store each analysis result in the database
         for (const feature of analysisResults.data.features) {
+          console.log(`=== PROCESSING FEATURE ${analysisResults.data.features.indexOf(feature) + 1} ===`);
+          console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
+          console.log(`🆔 Property values for ID fields:`, {
+            'farmersId': feature.properties?.['.Farmers ID'],
+            'plotId': feature.properties?.plot_id,
+            'id': feature.properties?.id,
+            'Name': feature.properties?.Name,
+            'name': feature.properties?.name
+          });
+          console.log(`🌍 Country-related properties:`, {
+            'detected_country': feature.properties?.detected_country,
+            'district': feature.properties?.['.Distict'],
+            'aggregatorLocation': feature.properties?.['.Aggregator Location'],
+            'country_name': feature.properties?.country_name,
+            'country': feature.properties?.country
+          });
           try {
-            // Enhanced plot ID extraction for Indonesian format
-            const plotId = feature.properties?.['.Farmers ID'] ||     // Indonesian primary
-                          feature.properties?.plot_id || 
-                          feature.properties?.id || 
-                          feature.properties?.Name ||
-                          feature.properties?.name ||
-                          feature.properties?.farmer_id ||
-                          `PLOT_${analysisResults.data.features.indexOf(feature) + 1}`;
+            // Enhanced plot ID extraction for Indonesian format with detailed logging
+            let plotId = 'unknown';
+            
+            console.log(`🆔 Feature properties for ID extraction:`, Object.keys(feature.properties || {}));
+            
+            if (feature.properties?.['.Farmers ID']) {
+              plotId = feature.properties['.Farmers ID'];
+              console.log(`✅ Found Indonesian Farmers ID: ${plotId}`);
+            } else if (feature.properties?.plot_id) {
+              plotId = feature.properties.plot_id;
+              console.log(`✅ Found plot_id: ${plotId}`);
+            } else if (feature.properties?.id) {
+              plotId = feature.properties.id;
+              console.log(`✅ Found id: ${plotId}`);
+            } else if (feature.properties?.Name) {
+              plotId = feature.properties.Name;
+              console.log(`✅ Found Name: ${plotId}`);
+            } else if (feature.properties?.name) {
+              plotId = feature.properties.name;
+              console.log(`✅ Found name: ${plotId}`);
+            } else if (feature.properties?.farmer_id) {
+              plotId = feature.properties.farmer_id;
+              console.log(`✅ Found farmer_id: ${plotId}`);
+            } else {
+              plotId = `PLOT_${analysisResults.data.features.indexOf(feature) + 1}`;
+              console.log(`⚠️  No ID found, using fallback: ${plotId}`);
+            }
 
-            // Use detected country from Nominatim API or fallback to property extraction
+            // Use detected country from Nominatim API with better fallback handling
             let country = feature.properties?.detected_country || 'Unknown';
             
-            // If we still don't have a good country, try property-based extraction
-            if (country === 'Unknown') {
+            console.log(`🌍 Initial country detection: ${country}`);
+            
+            // If Nominatim didn't detect country properly, extract from Indonesian properties
+            if (country === 'Unknown' || !country) {
               if (feature.properties?.['.Distict']) {
-                country = `${feature.properties['.Distict']}, Indonesia`;
+                // Indonesian district format: "Bone" -> "Bone, Indonesia"  
+                const district = feature.properties['.Distict'];
+                country = `${district}, Indonesia`;
+                console.log(`🇮🇩 Using Indonesian district: ${country}`);
               } else if (feature.properties?.['.Aggregator Location']) {
+                // Indonesian aggregator location: "Makassar, South Sulawesi - Indonesia"
                 const location = feature.properties['.Aggregator Location'];
                 country = location.includes('Indonesia') ? location : `${location}, Indonesia`;
+                console.log(`🇮🇩 Using Indonesian aggregator location: ${country}`);
               } else if (feature.properties?.country_name) {
                 country = feature.properties.country_name;
+                console.log(`🌍 Using country_name: ${country}`);
               } else if (feature.properties?.country) {
                 country = feature.properties.country;
-              } else if (feature.properties?.district) {
-                country = `${feature.properties.district}, Indonesia`;
-              } else if (feature.properties?.region) {
-                country = feature.properties.region;
+                console.log(`🌍 Using country: ${country}`);
               } else {
-                country = 'Indonesia'; // Default fallback
+                // Default to Indonesia for Indonesian data format
+                country = 'Indonesia';
+                console.log(`🇮🇩 Using default Indonesia fallback`);
               }
             }
 
