@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useQuery } from "@tanstack/react-query";
 
 interface AnalysisResult {
   plotId: string;
@@ -73,7 +72,6 @@ const removeZValue = (geometry: any) => {
 
 export default function DeforestationMonitoring() {
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
-  const [selectedSupplier, setSelectedSupplier] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
@@ -93,71 +91,9 @@ export default function DeforestationMonitoring() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Query to restore analysis results from storage
-  const { data: storedResults } = useQuery({
-    queryKey: ['/api/analysis-results'],
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Query to fetch suppliers from data collection for dropdown
-  const { data: estateSuppliers = [] } = useQuery({
-    queryKey: ['/api/estate-data-collection'],
-  });
-
-  const { data: millSuppliers = [] } = useQuery({
-    queryKey: ['/api/mill-data-collection'], 
-  });
-
-  const { data: traceabilitySuppliers = [] } = useQuery({
-    queryKey: ['/api/traceability-data-collection'],
-  });
-
-  const { data: kcpSuppliers = [] } = useQuery({
-    queryKey: ['/api/kcp-data-collection'],
-  });
-
-  const { data: bulkingSuppliers = [] } = useQuery({
-    queryKey: ['/api/bulking-data-collection'],
-  });
-
-  // Combine all suppliers for dropdown with better error handling
-  const allSuppliers = [
-    ...(estateSuppliers || []).map((s: any) => ({ 
-      id: s.id, 
-      name: s.namaSupplier || 'Estate (Unnamed)', 
-      type: 'Estate',
-      location: s.alamatKebun || s.alamatKantor || 'Unknown Location'
-    })),
-    ...(millSuppliers || []).map((s: any) => ({ 
-      id: s.id, 
-      name: s.namaPabrik || 'Mill (Unnamed)', 
-      type: 'Mill',
-      location: s.alamatPabrik || s.alamatKantor || 'Unknown Location'
-    })),
-    ...(traceabilitySuppliers || []).map((s: any) => ({ 
-      id: s.id.toString(), 
-      name: s.pemegangDO || 'Smallholder (Unnamed)', 
-      type: 'Smallholder',
-      location: s.lokasiUsaha || s.alamatPemegangDO || 'Unknown Location'
-    })),
-    ...(kcpSuppliers || []).map((s: any) => ({ 
-      id: s.id.toString(), 
-      name: s.namaKCP || 'KCP (Unnamed)', 
-      type: 'KCP',
-      location: s.alamatKCP || s.alamatKantor || 'Unknown Location'
-    })),
-    ...(bulkingSuppliers || []).map((s: any) => ({ 
-      id: s.id.toString(), 
-      name: s.namaFasilitasBulking || 'Bulking (Unnamed)', 
-      type: 'Bulking',
-      location: s.alamatBulking || s.alamatKantor || 'Unknown Location'
-    }))
-  ].filter(s => s.name && !s.name.includes('Unnamed')); // Filter out suppliers without proper names
-
-
   // GeoJSON upload mutation
   const uploadMutation = useMutation({
-    mutationFn: async ({ geojsonFile, fileName, supplierId, supplierName, supplierType }: { geojsonFile: string, fileName: string, supplierId: string, supplierName: string, supplierType: string }) => {
+    mutationFn: async ({ geojsonFile, fileName }: { geojsonFile: string, fileName: string }) => {
       // Parse GeoJSON and remove Z-values
       let geojsonData: any;
       try {
@@ -171,16 +107,13 @@ export default function DeforestationMonitoring() {
       } catch (e) {
         throw new Error('Failed to parse GeoJSON file.');
       }
-
+      
       // Re-stringify after processing
       const processedGeojsonString = JSON.stringify(geojsonData);
 
       const response = await apiRequest('POST', '/api/geojson/upload', { 
         geojson: processedGeojsonString, 
-        filename: fileName,
-        supplierId: supplierId,
-        supplierName: supplierName,
-        supplierType: supplierType
+        filename: fileName 
       });
       return await response.json();
     },
@@ -194,10 +127,10 @@ export default function DeforestationMonitoring() {
       if (response.data?.features) {
         const transformedResults = response.data.features.map((feature: any) => {
           const props = feature.properties || {};
-
+          
           // Robustly get plot ID
           const plotId = props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `UNKNOWN_${Math.random().toString(36).substring(7)}`;
-
+          
           // Robustly get country
           const country = props['.Distict'] || props['.Aggregator Location'] || props.country || props.district || props.region || 'Unknown';
 
@@ -377,7 +310,6 @@ export default function DeforestationMonitoring() {
     setRiskFilter('all');
     setComplianceFilter('all');
     setCountryFilter('all');
-    setSelectedSupplier(''); // Clear selected supplier
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -424,23 +356,7 @@ export default function DeforestationMonitoring() {
   };
 
   const analyzeFile = async () => {
-    if (!uploadedFile || !uploadedFile.content) {
-      toast({
-        title: "File Required",
-        description: "Please upload a GeoJSON file first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedSupplier) {
-      toast({
-        title: "Supplier Required", 
-        description: "Please select a supplier before analyzing the file.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!uploadedFile || !uploadedFile.content) return;
 
     setIsAnalyzing(true);
     setAnalysisProgress(10);
@@ -453,53 +369,12 @@ export default function DeforestationMonitoring() {
         }
         return prev + 15;
       });
-    }, 1000);
+    }, 800);
 
-    try {
-      console.log('Starting GeoJSON analysis...');
-      setAnalysisProgress(50);
-
-      // Get selected supplier details
-      const supplier = allSuppliers.find(s => s.id === selectedSupplier);
-
-      const response = await apiRequest('POST', '/api/geojson/upload', {
-        geojson: uploadedFile.content,
-        filename: uploadedFile.name,
-        supplierId: selectedSupplier,
-        supplierName: supplier?.name,
-        supplierType: supplier?.type
-      });
-
-      clearInterval(progressInterval);
-      setAnalysisProgress(100);
-
-      if (response.error) {
-        throw new Error(response.error);
-      }
-
-      setAnalysisResults(response);
-      //setShowMap(true); // Not directly used in this component, but for context
-
-      toast({
-        title: "Analisis Selesai",
-        description: `File ${uploadedFile.name} untuk supplier ${supplier?.name} telah dianalisis dengan ${response.data?.features?.length || 0} plot.`,
-        variant: "default",
-      });
-
-    } catch (error) {
-      clearInterval(progressInterval);
-      console.error('Analysis error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-      toast({
-        title: "Analisis Gagal",
-        description: `Error: ${errorMessage}`,
-        variant: "destructive",
-      });
-    } finally {
-      setIsAnalyzing(false);
-      setAnalysisProgress(0);
-    }
+    uploadMutation.mutate({
+      geojsonFile: uploadedFile.content,
+      fileName: uploadedFile.name
+    });
   };
 
   // Check for stored results when component mounts (returning from map viewer)
@@ -774,61 +649,20 @@ export default function DeforestationMonitoring() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Supplier Selection */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Select Supplier <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      value={selectedSupplier}
-                      onValueChange={setSelectedSupplier}
-                      disabled={!uploadedFile}
-                    >
-                      <SelectTrigger data-testid="select-supplier">
-                        <SelectValue placeholder="Choose supplier from data collection..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px] overflow-y-auto">
-                        {allSuppliers.length === 0 ? (
-                          <SelectItem value="no-suppliers" disabled>
-                            No suppliers available - Please add suppliers in Data Collection first
-                          </SelectItem>
-                        ) : (
-                          allSuppliers.map((supplier) => (
-                            <SelectItem key={supplier.id} value={supplier.id} data-testid={`supplier-option-${supplier.id}`}>
-                              <div className="flex flex-col">
-                                <span className="font-medium">{supplier.name}</span>
-                                <span className="text-xs text-gray-500">
-                                  {supplier.type} - {supplier.location}
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    {allSuppliers.length === 0 && (
-                      <p className="text-sm text-gray-500">
-                        No suppliers found. Please add suppliers in the Data Collection page first.
-                      </p>
-                    )}
-                  </div>
-
                   <div className="flex gap-2">
                     <Button 
-                      onClick={analyzeFile} 
-                      disabled={!uploadedFile || !selectedSupplier || isAnalyzing}
+                      onClick={analyzeFile}
+                      disabled={isAnalyzing}
                       className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                      data-testid="button-analyze-file"
                     >
                       {isAnalyzing ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                           Analyzing...
                         </>
                       ) : (
                         <>
-                          <Eye className="h-4 w-4 mr-2" />
+                          <Zap className="h-4 w-4" />
                           Analyze File
                         </>
                       )}

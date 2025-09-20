@@ -1,4 +1,4 @@
-import {
+import { 
   users, type User, type InsertUser,
   commodities, type Commodity, type InsertCommodity,
   parties, type Party, type InsertParty,
@@ -29,12 +29,11 @@ import { eq, desc, and, or, sql } from "drizzle-orm";
 import MemoryStore from "memorystore";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
-import crypto from 'crypto'; // Import crypto for UUID generation
 
 // Enhanced IStorage interface for EPCIS-compliant traceability
 export interface IStorage {
   sessionStore: session.Store;
-
+  
   // User management
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -120,12 +119,12 @@ export interface IStorage {
   getDdsReportById(id: string): Promise<DdsReport | undefined>;
   createDdsReport(insertDdsReport: InsertDdsReport): Promise<DdsReport>;
   updateDdsReport(id: string, updates: Partial<DdsReport>): Promise<DdsReport | undefined>;
-
+  
   // Session-based DDS management
   getDdsReportsBySession(sessionId: string): Promise<DdsReport[]>;
   updateDdsReportStatus(id: string, status: string): Promise<DdsReport | undefined>;
   updateDdsReportPdfPath(id: string, pdfPath: string, fileName: string): Promise<DdsReport | undefined>;
-
+  
   // GeoJSON validation and metadata
   validateDdsGeojson(id: string, geojson: any): Promise<{
     valid: boolean;
@@ -136,7 +135,7 @@ export interface IStorage {
       centroid: { lat: number, lng: number };
     };
   }>;
-
+  
   // Available plots for selection
   getAvailablePlots(): Promise<Array<{
     id: string;
@@ -160,17 +159,17 @@ export interface IStorage {
   createMillDataCollection(insertMillData: import("@shared/schema").InsertMillDataCollection): Promise<import("@shared/schema").MillDataCollection>;
   updateMillDataCollection(id: string, updates: Partial<import("@shared/schema").MillDataCollection>): Promise<import("@shared/schema").MillDataCollection | undefined>;
   deleteMillDataCollection(id: string): Promise<boolean>;
-
+  
   // Traceability Data Collection methods
   getTraceabilityDataCollections(): Promise<import("@shared/schema").TraceabilityDataCollection[]>;
   getTraceabilityDataCollectionById(id: string): Promise<import("@shared/schema").TraceabilityDataCollection | undefined>;
   createTraceabilityDataCollection(insertData: import("@shared/schema").InsertTraceabilityDataCollection): Promise<import("@shared/schema").TraceabilityDataCollection>;
-
+  
   // KCP Data Collection methods
   getKcpDataCollections(): Promise<import("@shared/schema").KcpDataCollection[]>;
   getKcpDataCollectionById(id: string): Promise<import("@shared/schema").KcpDataCollection | undefined>;
   createKcpDataCollection(insertData: import("@shared/schema").InsertKcpDataCollection): Promise<import("@shared/schema").KcpDataCollection>;
-
+  
   // Bulking Data Collection methods
   getBulkingDataCollections(): Promise<import("@shared/schema").BulkingDataCollection[]>;
   getBulkingDataCollectionById(id: string): Promise<import("@shared/schema").BulkingDataCollection | undefined>;
@@ -187,32 +186,7 @@ export interface IStorage {
   getAnalysisResults(): Promise<AnalysisResult[]>;
   getAnalysisResult(id: string): Promise<AnalysisResult | undefined>;
   getAnalysisResultsBySession(uploadSession: string): Promise<AnalysisResult[]>;
-  createAnalysisResult(data: {
-    plotId: string;
-    country: string;
-    area: string;
-    overallRisk: string;
-    complianceStatus: string;
-    gfwLoss: string;
-    jrcLoss: string;
-    sbtnLoss: string;
-    peatlandOverlap?: string;
-    highRiskDatasets?: string[];
-    uploadSession?: string;
-    geometry?: any;
-    supplierId?: string;
-    supplierName?: string;
-    supplierType?: string;
-    farmerName?: string | null;
-    aggregatorName?: string | null;
-    mappingDate?: string | null;
-    aggregatorLocation?: string | null;
-    plotName?: string | null;
-    coordinates?: {
-      longitude?: string | null;
-      latitude?: string | null;
-    };
-  }): Promise<AnalysisResult>;
+  createAnalysisResult(insertAnalysisResult: InsertAnalysisResult): Promise<AnalysisResult>;
   updateAnalysisResultGeometry(plotId: string, coordinates: number[][]): Promise<AnalysisResult | undefined>;
   clearAnalysisResults(): Promise<void>;
   calculateDashboardMetrics(): Promise<{
@@ -257,23 +231,23 @@ export interface IStorage {
 
   // Dashboard metrics with optional filters
   getDashboardMetrics(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").DashboardMetrics>;
-
-  // Risk and legality split aggregations
+  
+  // Risk and legality split aggregations 
   getRiskSplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").RiskSplit>;
   getLegalitySplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").LegalitySplit>;
-
+  
   // Supplier compliance table data
   getSupplierCompliance(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").SupplierSummary[]>;
-
+  
   // Alert management for dashboard
   getDashboardAlerts(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").Alert[]>;
-
+  
   // Compliance trend data (12 months)
   getComplianceTrend(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ComplianceTrendPoint[]>;
-
+  
   // Export functionality
   getExportData(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").ExportData>;
-
+  
   // Plot summaries for detailed views and drill-downs
   getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]>;
 }
@@ -632,7 +606,7 @@ export class DatabaseStorage implements IStorage {
     // Calculate tiers based on parent/child relationship
     const parentSupplier = await db.select().from(suppliers).where(eq(suppliers.id, insertLink.parentSupplierId)).limit(1);
     const childSupplier = await db.select().from(suppliers).where(eq(suppliers.id, insertLink.childSupplierId)).limit(1);
-
+    
     const parentTier = parentSupplier[0]?.tier || 1;
     const childTier = childSupplier[0]?.tier || 1;
 
@@ -760,7 +734,7 @@ export class DatabaseStorage implements IStorage {
           if (coords.length < 4) {
             return { valid: false, error: "Polygon must have at least 4 coordinates" };
           }
-
+          
           // Update bounding box
           for (const coord of coords) {
             const [lng, lat] = coord;
@@ -769,7 +743,7 @@ export class DatabaseStorage implements IStorage {
             minLng = Math.min(minLng, lng);
             maxLng = Math.max(maxLng, lng);
           }
-
+          
           // Simple area calculation (not accurate for large polygons)
           totalArea += Math.abs((maxLng - minLng) * (maxLat - minLat)) * 111320 * 111320; // rough m² conversion
         }
@@ -954,7 +928,6 @@ export class DatabaseStorage implements IStorage {
   async getTraceabilityDataCollectionById(id: string): Promise<import("@shared/schema").TraceabilityDataCollection | undefined> {
     try {
       const { traceabilityDataCollection } = await import("@shared/schema");
-      // Assuming ID is an integer for traceabilityDataCollection based on usage
       const [result] = await db.select().from(traceabilityDataCollection).where(eq(traceabilityDataCollection.id, parseInt(id)));
       return result || undefined;
     } catch (error) {
@@ -991,7 +964,6 @@ export class DatabaseStorage implements IStorage {
   async getKcpDataCollectionById(id: string): Promise<import("@shared/schema").KcpDataCollection | undefined> {
     try {
       const { kcpDataCollection } = await import("@shared/schema");
-      // Assuming ID is an integer for kcpDataCollection based on usage
       const [result] = await db.select().from(kcpDataCollection).where(eq(kcpDataCollection.id, parseInt(id)));
       return result || undefined;
     } catch (error) {
@@ -1028,7 +1000,6 @@ export class DatabaseStorage implements IStorage {
   async getBulkingDataCollectionById(id: string): Promise<import("@shared/schema").BulkingDataCollection | undefined> {
     try {
       const { bulkingDataCollection } = await import("@shared/schema");
-      // Assuming ID is an integer for bulkingDataCollection based on usage
       const [result] = await db.select().from(bulkingDataCollection).where(eq(bulkingDataCollection.id, parseInt(id)));
       return result || undefined;
     } catch (error) {
@@ -1111,53 +1082,18 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createAnalysisResult(data: {
-    plotId: string;
-    country: string;
-    area: string;
-    overallRisk: string;
-    complianceStatus: string;
-    gfwLoss: string;
-    jrcLoss: string;
-    sbtnLoss: string;
-    peatlandOverlap?: string;
-    highRiskDatasets?: string[];
-    uploadSession?: string;
-    geometry?: any;
-    supplierId?: string;
-    supplierName?: string;
-    supplierType?: string;
-    farmerName?: string | null;
-    aggregatorName?: string | null;
-    mappingDate?: string | null;
-    aggregatorLocation?: string | null;
-    plotName?: string | null;
-    coordinates?: {
-      longitude?: string | null;
-      latitude?: string | null;
-    };
-  }): Promise<AnalysisResult> {
+  async createAnalysisResult(insertAnalysisResult: InsertAnalysisResult): Promise<AnalysisResult> {
     try {
-      const id = crypto.randomUUID();
-      const now = new Date();
-
-      const [result] = await db.execute(sql`
-      INSERT INTO analysis_results (
-        id, plot_id, country, area, overall_risk, compliance_status,
-        gfw_loss, jrc_loss, sbtn_loss, peatland_overlap, high_risk_datasets,
-        upload_session, geometry, supplier_id, supplier_name, supplier_type,
-        farmer_name, aggregator_name, mapping_date, aggregator_location,
-        plot_name, coordinates, created_at, updated_at
-      ) VALUES (
-        ${id}, ${data.plotId}, ${data.country}, ${data.area}, ${data.overallRisk},
-        ${data.complianceStatus}, ${data.gfwLoss}, ${data.jrcLoss}, ${data.sbtnLoss},
-        ${data.peatlandOverlap}, ${JSON.stringify(data.highRiskDatasets)},
-        ${data.uploadSession}, ${JSON.stringify(data.geometry)}, ${data.supplierId},
-        ${data.supplierName}, ${data.supplierType}, ${data.farmerName},
-        ${data.aggregatorName}, ${data.mappingDate}, ${data.aggregatorLocation},
-        ${data.plotName}, ${JSON.stringify(data.coordinates)}, ${now}, ${now}
-      ) RETURNING *
-    `);
+      const dataToInsert = {
+        ...insertAnalysisResult,
+        peatlandOverlap: insertAnalysisResult.peatlandOverlap || 'UNKNOWN',
+        updatedAt: new Date()
+      };
+      
+      const [result] = await db
+        .insert(analysisResults)
+        .values(dataToInsert)
+        .returning();
       return result;
     } catch (error) {
       console.error("Error creating analysis result:", error);
@@ -1176,7 +1112,7 @@ export class DatabaseStorage implements IStorage {
 
       const [updatedResult] = await db
         .update(analysisResults)
-        .set({
+        .set({ 
           geometry: geometry
         })
         .where(eq(analysisResults.plotId, plotId))
@@ -1209,13 +1145,13 @@ export class DatabaseStorage implements IStorage {
   }> {
     try {
       const results = await this.getAnalysisResults();
-
+      
       const totalPlots = results.length;
       const compliantPlots = results.filter(r => r.complianceStatus === 'COMPLIANT').length;
       const highRiskPlots = results.filter(r => r.overallRisk === 'HIGH').length;
       const mediumRiskPlots = results.filter(r => r.overallRisk === 'MEDIUM').length;
-      const deforestedPlots = results.filter(r =>
-        r.highRiskDatasets?.includes('GFW Forest Loss') ||
+      const deforestedPlots = results.filter(r => 
+        r.highRiskDatasets?.includes('GFW Forest Loss') || 
         r.highRiskDatasets?.includes('JRC Forest Loss')
       ).length;
       const totalArea = results.reduce((sum, r) => sum + Number(r.area), 0).toFixed(2);
@@ -1233,7 +1169,7 @@ export class DatabaseStorage implements IStorage {
       // Return default values if calculation fails
       return {
         totalPlots: "0",
-        compliantPlots: "0",
+        compliantPlots: "0", 
         highRiskPlots: "0",
         mediumRiskPlots: "0",
         deforestedPlots: "0",
@@ -1277,7 +1213,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // First, get or create the progress record
       let progress = await this.getSupplierAssessmentProgressByName(supplierName);
-
+      
       if (!progress) {
         // Create new progress record
         progress = await this.createSupplierAssessmentProgress({
@@ -1333,7 +1269,7 @@ export class DatabaseStorage implements IStorage {
   async checkSupplierStepAccess(supplierName: string, requestedStep: number): Promise<boolean> {
     try {
       const progress = await this.getSupplierAssessmentProgressByName(supplierName);
-
+      
       if (!progress) {
         // No progress record - only allow step 1 (Data Collection)
         return requestedStep === 1;
@@ -1389,7 +1325,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // First delete all related assessment items
       await db.delete(riskAssessmentItems).where(eq(riskAssessmentItems.riskAssessmentId, id));
-
+      
       // Then delete the assessment
       await db.delete(riskAssessments).where(eq(riskAssessments.id, id));
       return true;
@@ -1433,7 +1369,7 @@ export class DatabaseStorage implements IStorage {
   async calculateRiskScore(assessmentId: string): Promise<{ overallScore: number; riskClassification: string; }> {
     try {
       const items = await this.getRiskAssessmentItems(assessmentId);
-
+      
       if (items.length === 0) {
         return { overallScore: 0, riskClassification: "high" };
       }
@@ -1498,7 +1434,7 @@ export class DatabaseStorage implements IStorage {
 
   private generateRecommendations(items: RiskAssessmentItem[], overallRisk: string): string[] {
     const recommendations: string[] = [];
-
+    
     // High-risk items require immediate action
     const highRiskItems = items.filter(item => item.riskLevel === "tinggi");
     if (highRiskItems.length > 0) {
@@ -1532,7 +1468,7 @@ export class DatabaseStorage implements IStorage {
     try {
       // Get all analysis results (this is our main plot data source)
       const results = await db.select().from(analysisResults);
-
+      
       // Apply filters if provided
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1548,7 +1484,7 @@ export class DatabaseStorage implements IStorage {
       const compliantPlots = filteredResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
       const highRiskPlots = filteredResults.filter(r => r.overallRisk === 'HIGH').length;
       const mediumRiskPlots = filteredResults.filter(r => r.overallRisk === 'MEDIUM').length;
-      const deforestedPlots = filteredResults.filter(r =>
+      const deforestedPlots = filteredResults.filter(r => 
         r.gfwLoss === 'TRUE' || r.jrcLoss === 'TRUE' || r.sbtnLoss === 'TRUE'
       ).length;
       const totalAreaHa = filteredResults.reduce((sum, r) => sum + parseFloat(r.area.toString()), 0);
@@ -1575,7 +1511,7 @@ export class DatabaseStorage implements IStorage {
         overallRisk: analysisResults.overallRisk,
         createdAt: analysisResults.createdAt
       }).from(analysisResults);
-
+      
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
         filteredResults = results.filter(r => {
@@ -1606,7 +1542,7 @@ export class DatabaseStorage implements IStorage {
         complianceStatus: analysisResults.complianceStatus,
         createdAt: analysisResults.createdAt
       }).from(analysisResults);
-
+      
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
         filteredResults = results.filter(r => {
@@ -1624,10 +1560,10 @@ export class DatabaseStorage implements IStorage {
       const nonCompliant = filteredResults.filter(r => r.complianceStatus === 'NON-COMPLIANT').length;
       const underReview = total - compliant - nonCompliant; // Remainder as under review
 
-      return {
-        compliant,
-        underReview,
-        nonCompliant
+      return { 
+        compliant, 
+        underReview, 
+        nonCompliant 
       };
     } catch (error) {
       console.error("Error getting legality split:", error);
@@ -1643,10 +1579,10 @@ export class DatabaseStorage implements IStorage {
         overallRisk: analysisResults.overallRisk,
         area: analysisResults.area,
         createdAt: analysisResults.createdAt,
-        updatedAt: analysisResults.updatedAt,
-        supplierName: analysisResults.supplierName, // Include supplier name
+        updatedAt: analysisResults.updatedAt
       }).from(analysisResults);
-
+      const suppliersData = await db.select().from(suppliers);
+      
       // Apply date filters
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1658,9 +1594,9 @@ export class DatabaseStorage implements IStorage {
         });
       }
 
-      // Group results by supplier name
+      // Group results by country (using as proxy for supplier since we don't have supplier linkage yet)
       const supplierGroups = filteredResults.reduce((groups, result) => {
-        const key = result.supplierName || 'Unknown Supplier'; // Use supplierName
+        const key = result.country || 'Unknown';
         if (!groups[key]) groups[key] = [];
         groups[key].push(result);
         return groups;
@@ -1673,18 +1609,18 @@ export class DatabaseStorage implements IStorage {
         const compliantPlots = plots.filter(p => p.complianceStatus === 'COMPLIANT').length;
         const totalArea = plots.reduce((sum, p) => sum + parseFloat(p.area.toString()), 0);
         const complianceRate = totalPlots > 0 ? (compliantPlots / totalPlots) * 100 : 0;
-
+        
         // Determine overall risk and legality status
         const highRiskCount = plots.filter(p => p.overallRisk === 'HIGH').length;
         const mediumRiskCount = plots.filter(p => p.overallRisk === 'MEDIUM').length;
         const riskStatus = highRiskCount > 0 ? 'high' : mediumRiskCount > 0 ? 'medium' : 'low';
-
+        
         const nonCompliantCount = plots.filter(p => p.complianceStatus === 'NON-COMPLIANT').length;
-        const legalityStatus = nonCompliantCount > 0 ? 'non_compliant' :
+        const legalityStatus = nonCompliantCount > 0 ? 'non_compliant' : 
           compliantPlots === totalPlots ? 'compliant' : 'under_review';
 
         supplierSummaries.push({
-          supplierId: supplierName.replace(/\s+/g, '_').toLowerCase(), // Generate a simple ID
+          supplierId: supplierName.replace(/\s+/g, '_').toLowerCase(),
           supplierName,
           totalPlots,
           compliantPlots,
@@ -1692,7 +1628,7 @@ export class DatabaseStorage implements IStorage {
           complianceRate: Math.round(complianceRate * 100) / 100,
           riskStatus: riskStatus as 'low' | 'medium' | 'high',
           legalityStatus: legalityStatus as 'compliant' | 'under_review' | 'non_compliant',
-          region: plots[0]?.country || 'Unknown Region', // Use country from plot data for region
+          region: supplierName, // Using supplier name as region for now
           lastUpdated: new Date(Math.max(...plots.map(p => new Date(p.updatedAt).getTime())))
         });
       });
@@ -1718,7 +1654,7 @@ export class DatabaseStorage implements IStorage {
         createdAt: analysisResults.createdAt,
         updatedAt: analysisResults.updatedAt
       }).from(analysisResults);
-
+      
       // Apply date filters
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1739,7 +1675,7 @@ export class DatabaseStorage implements IStorage {
           if (result.gfwLoss === 'TRUE') datasets.push('GFW');
           if (result.jrcLoss === 'TRUE') datasets.push('JRC');
           if (result.sbtnLoss === 'TRUE') datasets.push('SBTN');
-
+          
           alerts.push({
             id: `defor-${result.plotId}-${Date.now()}`,
             type: 'deforestation',
@@ -1797,19 +1733,19 @@ export class DatabaseStorage implements IStorage {
       // Generate 12 months of mock trend data since we don't have historical data yet
       const trend: import("@shared/schema").ComplianceTrendPoint[] = [];
       const currentDate = new Date();
-
+      
       for (let i = 11; i >= 0; i--) {
         const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
         const period = date.toISOString().substring(0, 7); // YYYY-MM format
-
+        
         // Mock data with slight variation (would be real historical data in production)
         const baseCompliance = 75;
         const variation = Math.sin(i * 0.5) * 10 + Math.random() * 5;
         const complianceRate = Math.max(60, Math.min(95, baseCompliance + variation));
-
+        
         const totalPlots = 100 + Math.floor(Math.random() * 50);
         const compliantPlots = Math.floor((totalPlots * complianceRate) / 100);
-
+        
         trend.push({
           period,
           complianceRate: Math.round(complianceRate * 100) / 100,
@@ -1847,7 +1783,7 @@ export class DatabaseStorage implements IStorage {
   async getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]> {
     try {
       const results = await db.select().from(analysisResults);
-
+      
       // Apply date filters
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1861,11 +1797,11 @@ export class DatabaseStorage implements IStorage {
 
       return filteredResults.map(result => ({
         plotId: result.plotId,
-        supplierName: result.supplierName || result.country || 'Unknown Supplier', // Use supplierName, fallback to country
+        supplierName: result.country || 'Unknown Supplier', // Using country as supplier proxy
         region: result.country,
         area: parseFloat(result.area.toString()),
         riskStatus: result.overallRisk.toLowerCase() as 'low' | 'medium' | 'high',
-        legalityStatus: result.complianceStatus === 'COMPLIANT' ? 'compliant' :
+        legalityStatus: result.complianceStatus === 'COMPLIANT' ? 'compliant' : 
           result.complianceStatus === 'NON-COMPLIANT' ? 'non_compliant' : 'under_review',
         lastUpdated: new Date(result.updatedAt)
       }));
@@ -1877,287 +1813,3 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
-
-// Seed sample data if database is empty
-async function seedSampleData() {
-  try {
-    // Create sample commodity
-    const commodities = await storage.getCommodities();
-    if (commodities.length === 0) {
-      await storage.createCommodity({
-        code: "CPO",
-        name: "Crude Palm Oil",
-        uomBase: "kg",
-        category: "palm_oil"
-      });
-
-      await storage.createCommodity({
-        code: "FFB",
-        name: "Fresh Fruit Bunches",
-        uomBase: "kg",
-        category: "palm_oil"
-      });
-    }
-
-    // Create dummy supplier data for Indonesia palm oil industry
-    const estateDataCollections = await storage.getEstateDataCollection();
-    if (estateDataCollections.length === 0) {
-      const estateSuppliers = [
-        {
-          namaSupplier: "PT Perkebunan Nusantara IV (PTPN IV)",
-          namaGroupParentCompany: "PT Perkebunan Nusantara (Persero)",
-          aktaPendirianPerusahaan: "AHU-0012345.AH.01.01.TAHUN 2019",
-          izinBerusaha: "OSS-1234567890123",
-          tipeSertifikat: "RSPO",
-          nomorSertifikat: "RSPO-SCC-1234567",
-          lembagaSertifikasi: "Control Union Indonesia",
-          alamatKantor: "Jl. Diponegoro No.1, Medan, Sumatera Utara",
-          alamatKebun: "Kabupaten Simalungun, Sumatera Utara",
-          koordinatKantor: "3.5952,98.6722",
-          koordinatKebun: "2.9619,99.0648",
-          jenisSupplier: "Estate",
-          totalProduksiTBS: "125000",
-          namaPenanggungJawab: "Ir. Bambang Sutrisno",
-          jabatanPenanggungJawab: "General Manager",
-          emailPenanggungJawab: "bambang.sutrisno@ptpn4.co.id"
-        },
-        {
-          namaSupplier: "PT Astra Agro Lestari Tbk",
-          namaGroupParentCompany: "PT Astra International Tbk",
-          aktaPendirianPerusahaan: "AHU-0023456.AH.01.01.TAHUN 2018",
-          izinBerusaha: "OSS-2345678901234",
-          tipeSertifikat: "RSPO",
-          nomorSertifikat: "RSPO-SCC-2345678",
-          lembagaSertifikasi: "SGS Indonesia",
-          alamatKantor: "Menara Astra Lt.5, Jakarta Pusat",
-          alamatKebun: "Kabupaten Musi Rawas, Sumatera Selatan",
-          koordinatKantor: "-6.2088,106.8456",
-          koordinatKebun: "-2.5333,103.6833",
-          jenisSupplier: "Estate",
-          totalProduksiTBS: "98500",
-          namaPenanggungJawab: "Dr. Sari Dewi Lestari",
-          jabatanPenanggungJawab: "Plantation Director",
-          emailPenanggungJawab: "sari.lestari@astra-agro.co.id"
-        },
-        {
-          namaSupplier: "PT Sampoerna Agro Tbk",
-          namaGroupParentCompany: "PT HM Sampoerna Tbk",
-          aktaPendirianPerusahaan: "AHU-0034567.AH.01.01.TAHUN 2017",
-          izinBerusaha: "OSS-3456789012345",
-          tipeSertifikat: "ISPO",
-          nomorSertifikat: "ISPO-SCC-3456789",
-          lembagaSertifikasi: "MUTU Certification International",
-          alamatKantor: "Sampoerna Strategic Square, Jakarta Selatan",
-          alamatKebun: "Kabupaten Kotawaringin Timur, Kalimantan Tengah",
-          koordinatKantor: "-6.2615,106.7809",
-          koordinatKebun: "-1.7833,112.8667",
-          jenisSupplier: "Estate",
-          totalProduksiTBS: "76200",
-          namaPenanggungJawab: "Ir. Ahmad Fauzi, M.Sc",
-          jabatanPenanggungJawab: "Head of Plantation",
-          emailPenanggungJawab: "ahmad.fauzi@sampoerna-agro.co.id"
-        }
-      ];
-
-      for (const supplier of estateSuppliers) {
-        await storage.createEstateDataCollection(supplier);
-      }
-    }
-
-    const millDataCollections = await storage.getMillDataCollection();
-    if (millDataCollections.length === 0) {
-      const millSuppliers = [
-        {
-          umlId: "UML-001-2024",
-          namaPabrik: "PKS Riau Andalan",
-          namaGroupParentCompany: "PT Royal Golden Eagle (RGE)",
-          aktaPendirianPerusahaan: "AHU-0045678.AH.01.01.TAHUN 2016",
-          izinBerusaha: "OSS-4567890123456",
-          tipeSertifikat: "RSPO",
-          nomorSertifikat: "RSPO-SCC-4567890",
-          lembagaSertifikasi: "Bureau Veritas Indonesia",
-          alamatKantor: "Plaza BII Menara 2 Lt.15, Jakarta Pusat",
-          alamatPabrik: "Kabupaten Pelalawan, Riau",
-          koordinatPabrik: "0.2933,102.1167",
-          jenisSupplier: "Mill",
-          kuantitasCPOPK: "45000",
-          namaPenanggungJawab: "Ir. Gunawan Wijaya",
-          jabatanPenanggungJawab: "Mill Manager",
-          emailPenanggungJawab: "gunawan.wijaya@riau-andalan.co.id"
-        },
-        {
-          umlId: "UML-002-2024",
-          namaPabrik: "PKS Minanga Ogan",
-          namaGroupParentCompany: "PT Sinar Mas Agro Resources and Technology Tbk",
-          aktaPendirianPerusahaan: "AHU-0056789.AH.01.01.TAHUN 2015",
-          izinBerusaha: "OSS-5678901234567",
-          tipeSertifikat: "ISPO",
-          nomorSertifikat: "ISPO-SCC-5678901",
-          lembagaSertifikasi: "Sucofindo International Certification Services",
-          alamatKantor: "Sinar Mas Land Plaza Lt.5, Jakarta Selatan",
-          alamatPabrik: "Kabupaten Ogan Komering Ilir, Sumatera Selatan",
-          koordinatPabrik: "-3.2167,104.7333",
-          jenisSupplier: "Mill",
-          kuantitasCPOPK: "62000",
-          namaPenanggungJawab: "Ir. Hendra Kusuma, MT",
-          jabatanPenanggungJawab: "Operations Manager",
-          emailPenanggungJawab: "hendra.kusuma@sinarmas-agro.co.id"
-        },
-        {
-          umlId: "UML-003-2024",
-          namaPabrik: "PKS Pasir Mas Jaya",
-          namaGroupParentCompany: "PT Wilmar International Limited",
-          aktaPendirianPerusahaan: "AHU-0067890.AH.01.01.TAHUN 2014",
-          izinBerusaha: "OSS-6789012345678",
-          tipeSertifikat: "RSPO",
-          nomorSertifikat: "RSPO-SCC-6789012",
-          lembagaSertifikasi: "TÜV Rheinland Indonesia",
-          alamatKantor: "Wisma 76 Lt.12, Jakarta Pusat",
-          alamatPabrik: "Kabupaten Tanjung Jabung Timur, Jambi",
-          koordinatPabrik: "-1.0833,104.1667",
-          jenisSupplier: "Mill",
-          kuantitasCPOPK: "38500",
-          namaPenanggungJawab: "Ir. Melinda Sari, M.Eng",
-          jabatanPenanggungJawab: "Technical Manager",
-          emailPenanggungJawab: "melinda.sari@wilmar-intl.co.id"
-        }
-      ];
-
-      for (const supplier of millSuppliers) {
-        await storage.createMillDataCollection(supplier);
-      }
-    }
-
-    const traceabilityCollections = await storage.getTraceabilityDataCollections();
-    if (traceabilityCollections.length === 0) {
-      const traceabilitySuppliers = [
-        {
-          nomorDO: "DO-001-2024-RIAU",
-          pemegangDO: "Koperasi Tani Sejahtera Riau",
-          alamatPemegangDO: "Jl. Sudirman No.15, Pekanbaru, Riau",
-          lokasiUsaha: "Kabupaten Kampar, Riau",
-          aktaPendirianUsaha: "AHU-KOPERASI-001.2020",
-          nib: "1234567890123",
-          npwp: "12.345.678.9-012.000"
-        },
-        {
-          nomorDO: "DO-002-2024-SUMSEL",
-          pemegangDO: "Gapoktan Maju Bersama",
-          alamatPemegangDO: "Jl. Jenderal Sudirman No.28, Palembang, Sumatera Selatan",
-          lokasiUsaha: "Kabupaten Musi Banyuasin, Sumatera Selatan",
-          aktaPendirianUsaha: "AHU-GAPOKTAN-002.2019",
-          nib: "2345678901234",
-          npwp: "23.456.789.0-123.000"
-        },
-        {
-          nomorDO: "DO-003-2024-KALBAR",
-          pemegangDO: "Asosiasi Petani Sawit Borneo",
-          alamatPemegangDO: "Jl. Ahmad Yani No.45, Pontianak, Kalimantan Barat",
-          lokasiUsaha: "Kabupaten Ketapang, Kalimantan Barat",
-          aktaPendirianUsaha: "AHU-ASOSIASI-003.2021",
-          nib: "3456789012345",
-          npwp: "34.567.890.1-234.000"
-        }
-      ];
-
-      for (const supplier of traceabilitySuppliers) {
-        await storage.createTraceabilityDataCollection(supplier);
-      }
-    }
-
-    const kcpCollections = await storage.getKcpDataCollections();
-    if (kcpCollections.length === 0) {
-      const kcpSuppliers = [
-        {
-          ublFacilityId: "UBL-KCP-001-2024",
-          namaKCP: "KCP Dumai Terminal",
-          namaGroup: "PT Wilmar Nabati Indonesia",
-          izinBerusaha: "OSS-KCP-001-2024",
-          tipeSertifikat: "RSPO",
-          nomorSertifikat: "RSPO-KCP-001",
-          lembagaSertifikasi: "Control Union Indonesia",
-          alamatKantor: "Jl. Datuk Laksamana No.1, Dumai, Riau",
-          alamatKCP: "Pelabuhan Dumai, Riau",
-          koordinatKCP: "1.6667,101.4500",
-          modelChainOfCustody: "Identity Preserved",
-          kapasitasOlahMTHari: 2500.00,
-          sistemPencatatan: "FIFO",
-          namaPenanggungJawab: "Ir. Budi Santoso",
-          jabatanPenanggungJawab: "Terminal Manager",
-          emailPenanggungJawab: "budi.santoso@wilmar.co.id"
-        },
-        {
-          ublFacilityId: "UBL-KCP-002-2024",
-          namaKCP: "KCP Belawan Port",
-          namaGroup: "PT Musim Mas",
-          izinBerusaha: "OSS-KCP-002-2024",
-          tipeSertifikat: "ISPO",
-          nomorSertifikat: "ISPO-KCP-002",
-          lembagaSertifikasi: "SGS Indonesia",
-          alamatKantor: "Jl. Gajah Mada No.25, Medan, Sumatera Utara",
-          alamatKCP: "Pelabuhan Belawan, Medan, Sumatera Utara",
-          koordinatKCP: "3.7833,98.6833",
-          modelChainOfCustody: "Mass Balance",
-          kapasitasOlahMTHari: 1800.00,
-          sistemPencatatan: "LIFO",
-          namaPenanggungJawab: "Ir. Siti Nurhaliza, MT",
-          jabatanPenanggungJawab: "Port Operations Manager",
-          emailPenanggungJawab: "siti.nurhaliza@musimmas.co.id"
-        }
-      ];
-
-      for (const supplier of kcpSuppliers) {
-        await storage.createKcpDataCollection(supplier);
-      }
-    }
-
-    const bulkingCollections = await storage.getBulkingDataCollections();
-    if (bulkingCollections.length === 0) {
-      const bulkingSuppliers = [
-        {
-          ublFacilityId: "UBL-BLK-001-2024",
-          namaFasilitasBulking: "Bulking Station Jambi Central",
-          namaGroup: "PT Golden Agri-Resources Tbk",
-          izinBerusaha: "OSS-BLK-001-2024",
-          tipeSertifikat: "RSPO",
-          nomorSertifikat: "RSPO-BLK-001",
-          lembagaSertifikasi: "Bureau Veritas Indonesia",
-          alamatKantor: "Jl. Sultan Thaha No.15, Jambi",
-          alamatBulking: "Kawasan Industri Jambi, Kabupaten Muaro Jambi",
-          modelChainOfCustody: "Segregated",
-          kapasitasTotal: 5000.00,
-          sistemPencatatan: "FIFO",
-          namaPenanggungJawab: "Ir. Andi Wijaya, M.Sc",
-          jabatanPenanggungJawab: "Bulking Manager",
-          emailPenanggungJawab: "andi.wijaya@goldenagri.co.id"
-        },
-        {
-          ublFacilityId: "UBL-BLK-002-2024",
-          namaFasilitasBulking: "Bulking Facility Palembang",
-          namaGroup: "PT Salim Ivomas Pratama Tbk",
-          izinBerusaha: "OSS-BLK-002-2024",
-          tipeSertifikat: "ISPO",
-          nomorSertifikat: "ISPO-BLK-002",
-          lembagaSertifikasi: "Sucofindo International Certification",
-          alamatKantor: "Jl. Veteran No.12, Palembang, Sumatera Selatan",
-          alamatBulking: "Kawasan Industri Palembang, Sumatera Selatan",
-          modelChainOfCustody: "Mass Balance",
-          kapasitasTotal: 3500.00,
-          sistemPencatatan: "Weighted Average",
-          namaPenanggungJawab: "Ir. Rina Kartika, MT",
-          jabatanPenanggungJawab: "Operations Manager",
-          emailPenanggungJawab: "rina.kartika@salimivomas.co.id"
-        }
-      ];
-
-      for (const supplier of bulkingSuppliers) {
-        await storage.createBulkingDataCollection(supplier);
-      }
-    }
-  } catch (error) {
-    console.error("Error seeding sample data:", error);
-  }
-}
-
-// Call the seed function when the storage is initialized
-seedSampleData();

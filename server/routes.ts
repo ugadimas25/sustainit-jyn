@@ -3450,7 +3450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GeoJSON upload and analysis endpoint
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
-      const { geojson, geojsonFile, filename, fileName, supplierId, supplierName, supplierType } = req.body;
+      const { geojson, geojsonFile, filename, fileName } = req.body;
       
       // Accept both parameter names for flexibility
       const geoJsonData = geojson || geojsonFile;
@@ -3709,7 +3709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             console.log(`🔍 Plot ${plotId} - GFW: ${gfwLossArea}ha, JRC: ${jrcLossArea}ha, SBTN: ${sbtnLossArea}ha`);
 
-            // Create analysis result with comprehensive Indonesian metadata and supplier info
+            // Create analysis result with comprehensive Indonesian metadata
             const analysisResult = {
               plotId,
               country,
@@ -3723,10 +3723,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               highRiskDatasets,
               uploadSession: uploadSession,
               geometry: feature.geometry,
-              // Supplier information
-              supplierId: supplierId || 'unknown',
-              supplierName: supplierName || 'unknown',
-              supplierType: supplierType || 'unknown',
               // Enhanced metadata from Indonesian data
               farmerName: feature.properties?.['.Farmer Name'] || 
                          feature.properties?.farmer_name || 
