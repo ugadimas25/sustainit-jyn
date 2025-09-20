@@ -142,12 +142,35 @@ export default function DeforestationMonitoring() {
           const plotId = originalPlotIds[index] || `PLOT_${index + 1}`;
           console.log(`✅ Preserving original Plot ID: ${plotId} for feature ${index + 1}`);
 
-          // Robustly get country
-          const country = props['.Distict'] || props['.Aggregator Location'] || props.country || props.district || props.region || 'Unknown';
+          // Get the original feature for better country detection
+          const originalFeature = originalGeojson.features[index];
+          const originalProps = originalFeature?.properties || {};
 
-          // Robustly get area, parsing "0.50 Ha" format
+          // Use detected country from Nominatim or fallback to original properties
+          let country = originalProps.detected_country || 'Unknown';
+          
+          if (country === 'Unknown' || !country) {
+            // Try Indonesian format first
+            if (originalProps['.Distict']) {
+              country = `${originalProps['.Distict']}, Indonesia`;
+            } else if (originalProps['.Aggregator Location']) {
+              const location = originalProps['.Aggregator Location'];
+              country = location.includes('Indonesia') ? location : `${location}, Indonesia`;
+            } else if (originalProps.country_name) {
+              country = originalProps.country_name;
+            } else if (originalProps.country) {
+              country = originalProps.country;
+            } else {
+              // Default fallback for Indonesian data
+              country = 'Indonesia';
+            }
+          }
+
+          console.log(`🌍 Final country for ${plotId}: ${country}`);
+
+          // Robustly get area, parsing "0.50 Ha" format from original data
           let area = 0;
-          const areaValue = props['.Plot size'] || props.area_ha || props.area || props.area_hectares;
+          const areaValue = originalProps['.Plot size'] || originalProps.area_ha || originalProps.area || originalProps.area_hectares;
           if (areaValue) {
             if (typeof areaValue === 'string' && areaValue.includes('Ha')) {
               area = parseFloat(areaValue.replace(' Ha', '').trim()) || 0;

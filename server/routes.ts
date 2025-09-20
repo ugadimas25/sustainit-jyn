@@ -3627,29 +3627,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`🔄 API returned different plot_id: ${feature.properties.plot_id}, keeping original: ${plotId}`);
             }
 
-            // Use detected country from Nominatim API with better fallback handling
-            let country = feature.properties?.detected_country || 'Unknown';
+            // Get the corresponding original feature to access detected country
+            const originalFeature = originalFeatures[featureIndex];
+            let country = originalFeature?.properties?.detected_country || 'Unknown';
 
-            console.log(`🌍 Initial country detection: ${country}`);
+            console.log(`🌍 Initial country detection from original feature: ${country}`);
 
-            // If Nominatim didn't detect country properly, extract from Indonesian properties
+            // If Nominatim didn't detect country properly, extract from original Indonesian properties
             if (country === 'Unknown' || !country) {
-              if (feature.properties?.['.Distict']) {
+              if (originalFeature?.properties?.['.Distict']) {
                 // Indonesian district format: "Bone" -> "Bone, Indonesia"  
-                const district = feature.properties['.Distict'];
+                const district = originalFeature.properties['.Distict'];
                 country = `${district}, Indonesia`;
                 console.log(`🇮🇩 Using Indonesian district: ${country}`);
-              } else if (feature.properties?.['.Aggregator Location']) {
+              } else if (originalFeature?.properties?.['.Aggregator Location']) {
                 // Indonesian aggregator location: "Makassar, South Sulawesi - Indonesia"
-                const location = feature.properties['.Aggregator Location'];
+                const location = originalFeature.properties['.Aggregator Location'];
                 country = location.includes('Indonesia') ? location : `${location}, Indonesia`;
                 console.log(`🇮🇩 Using Indonesian aggregator location: ${country}`);
-              } else if (feature.properties?.country_name) {
-                country = feature.properties.country_name;
-                console.log(`🌍 Using country_name: ${country}`);
-              } else if (feature.properties?.country) {
-                country = feature.properties.country;
-                console.log(`🌍 Using country: ${country}`);
+              } else if (originalFeature?.properties?.country_name) {
+                country = originalFeature.properties.country_name;
+                console.log(`🌍 Using original country_name: ${country}`);
+              } else if (originalFeature?.properties?.country) {
+                country = originalFeature.properties.country;
+                console.log(`🌍 Using original country: ${country}`);
               } else {
                 // Default to Indonesia for Indonesian data format
                 country = 'Indonesia';
