@@ -3316,8 +3316,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Query adm_boundary_lv0 table using PostGIS ST_Intersects
       const result = await db.execute(sql`
         SELECT 
-          name_en as country_name,
-          name_local as local_name,
+          NAM_0 as country_name,
+          NAM_0 as local_name,
           iso_a2 as iso_code,
           ST_Area(ST_Intersection(geom, ST_GeomFromText(${wkt}, 4326))) as intersection_area
         FROM adm_boundary_lv0 
