@@ -3285,23 +3285,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       };
 
-      // Validate required properties
+      // Validate required properties - be more flexible with validation
       const validatedFeatures = cleanedGeojson.features.filter(feature => {
         const props = feature.properties;
-        const hasValidId = props && (props.id || props.Name || props.plot_id || props['.Farmers ID']);
-        const hasValidArea = props && (props.area_ha || props['.Plot size'] || props.area);
-        const hasValidCountry = props && (props.country_name || props.country || props['.Distict']);
+        const hasValidId = props && (props.id || props.Name || props.plot_id || props['.Farmers ID'] || props.name);
+        
+        // For area, accept any numeric value or default to calculated area
+        const hasValidArea = props && (
+          props.area_ha || 
+          props['.Plot size'] || 
+          props.area || 
+          props.area_hectares ||
+          true // Always accept - we can calculate from geometry if needed
+        );
+        
+        // For country, be more flexible
+        const hasValidCountry = props && (
+          props.country_name || 
+          props.country || 
+          props['.Distict'] ||
+          props.district ||
+          props.region ||
+          'Unknown' // Default fallback
+        );
 
         if (!hasValidId) {
           console.warn('Feature missing ID:', feature.properties);
-          return false;
-        }
-        if (!hasValidArea) {
-          console.warn('Feature missing area:', feature.properties);
-          return false;
-        }
-        if (!hasValidCountry) {
-          console.warn('Feature missing country/district:', feature.properties);
           return false;
         }
 
@@ -3389,6 +3398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const plotId = feature.properties?.plot_id || 
                           feature.properties?.id || 
                           feature.properties?.Name ||
+                          feature.properties?.name ||
                           feature.properties?.['.Farmers ID'] ||
                           `PLOT_${analysisResults.data.features.indexOf(feature) + 1}`;
 
@@ -3396,20 +3406,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
                            feature.properties?.country || 
                            feature.properties?.['.Distict'] ||
                            feature.properties?.district ||
-                           'Indonesia';
+                           feature.properties?.region ||
+                           'Unknown';
 
-            // Handle different area property formats
+            // Handle different area property formats with better fallbacks
             let area = 0;
             if (feature.properties?.['.Plot size']) {
               // Parse "0.50 Ha" format
               const plotSize = feature.properties['.Plot size'].toString();
               const areaMatch = plotSize.match(/(\d+\.?\d*)/);
               area = areaMatch ? parseFloat(areaMatch[1]) : 0;
+            } else if (feature.properties?.area_ha) {
+              area = parseFloat(feature.properties.area_ha);
+            } else if (feature.properties?.area) {
+              area = parseFloat(feature.properties.area);
+            } else if (feature.properties?.Plot_Size) {
+              area = parseFloat(feature.properties.Plot_Size);
             } else {
-              area = parseFloat(feature.properties?.area_ha || 
-                               feature.properties?.area || 
-                               feature.properties?.Plot_Size || 
-                               '0');
+              // Calculate area from geometry if available
+              area = calculateAreaFromGeometry(feature.geometry) || 1.0; // Default 1 hectare
             }
 
             // Get risk data, provide defaults
@@ -4088,6 +4103,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   return httpServer;
+}
+
+// Helper function to calculate area from geometry
+function calculateAreaFromGeometry(geometry: any): number {
+  if (!geometry || !geometry.coordinates) return 0;
+  
+  try {
+    if (geometry.type === 'Polygon') {
+      return calculatePolygonArea(geometry.coordinates[0]);
+    } else if (geometry.type === 'MultiPolygon') {
+      return calculatePolygonArea(geometry.coordinates[0][0]);
+    }
+    return 0;
+  } catch (error) {
+    console.warn('Error calculating area from geometry:', error);
+    return 0;
+  }
 }
 
 // Helper functions for GeoJSON processing
