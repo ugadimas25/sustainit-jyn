@@ -4486,7 +4486,7 @@ function calculateCentroid(coordinates: number[][]): { lat: number, lng: number 
   };
 }
 
-function calculatePolygonArea(coordinates: number[][]): number {
+function calculatePolygonAreaFromCoords(coordinates: number[][]): number {
   // Simple polygon area calculation using the shoelace formula
   let area = 0;
   const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
