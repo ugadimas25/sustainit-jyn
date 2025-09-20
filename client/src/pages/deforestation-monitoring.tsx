@@ -810,17 +810,15 @@ export default function DeforestationMonitoring() {
                   <thead>
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={selectedResults.length === filteredResults.length && filteredResults.length > 0}
-                          onChange={(e) => {
-                            if (e.target.checked) {
+                          onCheckedChange={(checked) => {
+                            if (checked) {
                               setSelectedResults(filteredResults.map(r => r.plotId));
                             } else {
                               setSelectedResults([]);
                             }
                           }}
-                          className="rounded"
                         />
                       </th>
                       <th 
@@ -904,17 +902,15 @@ export default function DeforestationMonitoring() {
                     {currentPageData.map((result) => (
                       <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={selectedResults.includes(result.plotId)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
+                            onCheckedChange={(checked) => {
+                              if (checked) {
                                 setSelectedResults([...selectedResults, result.plotId]);
                               } else {
                                 setSelectedResults(selectedResults.filter(id => id !== result.plotId));
                               }
                             }}
-                            className="rounded"
                           />
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-900 dark:text-white">
@@ -947,32 +943,39 @@ export default function DeforestationMonitoring() {
                               size="sm"
                               variant="outline"
                               className="text-xs px-2 py-1 h-7"
-                              onClick={() => handleRevalidation(result.plotId)}
-                              title="Revalidate analysis"
+                              onClick={() => handleViewInMap(result)}
+                              title="View in map"
                             >
-                              <RefreshCw className="h-3 w-3 mr-1" />
-                              Revalidate
+                              <Map className="h-3 w-3 mr-1" />
+                              View in Map
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs px-2 py-1 h-7"
-                              onClick={() => handleVerification(result.plotId)}
-                              title="Verify data"
-                            >
-                              <CheckSquare className="h-3 w-3 mr-1" />
-                              Verify
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs px-2 py-1 h-7"
-                              onClick={() => handleEdit(result.plotId)}
-                              title="Edit polygon"
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Edit
-                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs px-2 py-1 h-7"
+                                  title="Actions"
+                                >
+                                  <MoreHorizontal className="h-3 w-3 mr-1" />
+                                  Actions
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleRevalidation(result.plotId)}>
+                                  <RefreshCw className="h-3 w-3 mr-2" />
+                                  Revalidate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleVerification(result.plotId)}>
+                                  <CheckSquare className="h-3 w-3 mr-2" />
+                                  Verify
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEdit(result.plotId)}>
+                                  <Edit className="h-3 w-3 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </td>
                       </tr>
