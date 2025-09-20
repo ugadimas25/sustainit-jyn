@@ -79,7 +79,7 @@ export default function DataVerification() {
           description: "Failed to load polygon data. Redirecting to spatial analysis.",
           variant: "destructive",
         });
-        setLocation('/deforestation-monitoring');
+        setLocation('/spatial-analysis');
       }
     } else {
       // No data found, redirect back
@@ -88,7 +88,7 @@ export default function DataVerification() {
         description: "Please select a polygon from the spatial analysis page first.",
         variant: "destructive",
       });
-      setLocation('/deforestation-monitoring');
+      setLocation('/spatial-analysis');
     }
   }, [setLocation, toast]);
 
@@ -256,7 +256,7 @@ export default function DataVerification() {
 
   const handleCancel = () => {
     localStorage.removeItem('selectedPolygonForVerification');
-    setLocation('/deforestation-monitoring');
+    setLocation('/spatial-analysis');
   };
 
   const generateVerificationPDF = async () => {
@@ -334,7 +334,7 @@ export default function DataVerification() {
 
       // Clear storage and redirect
       localStorage.removeItem('selectedPolygonForVerification');
-      setLocation('/deforestation-monitoring');
+      setLocation('/spatial-analysis');
 
     } catch (error) {
       console.error('Error confirming verification:', error);

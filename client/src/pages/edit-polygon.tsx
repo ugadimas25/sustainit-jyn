@@ -222,7 +222,7 @@ export default function EditPolygon() {
     
     if (selectedPolygons.length === 0) {
       // No selected polygons, redirect back or show message
-      setLocation('/deforestation-monitoring');
+      setLocation('/spatial-analysis');
       return;
     }
 
@@ -623,7 +623,7 @@ export default function EditPolygon() {
             onClick={() => {
               // Set flag to refresh table data when returning
               localStorage.setItem('refreshTableAfterEdit', 'true');
-              setLocation('/deforestation-monitoring');
+              setLocation('/spatial-analysis');
             }}
             className="bg-white dark:bg-gray-800 shadow-lg"
             data-testid="back-to-monitoring"
