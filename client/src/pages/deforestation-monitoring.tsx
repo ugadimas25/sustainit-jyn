@@ -849,12 +849,15 @@ export default function DeforestationMonitoring() {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         <Checkbox
-                          checked={selectedResults.length === filteredResults.length && filteredResults.length > 0}
+                          checked={selectedResults.length === currentPageData.length && currentPageData.length > 0}
+                          indeterminate={selectedResults.length > 0 && selectedResults.length < currentPageData.length}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              setSelectedResults(filteredResults.map(r => r.plotId));
+                              const currentPageIds = currentPageData.map(r => r.plotId);
+                              setSelectedResults(prev => [...new Set([...prev, ...currentPageIds])]);
                             } else {
-                              setSelectedResults([]);
+                              const currentPageIds = currentPageData.map(r => r.plotId);
+                              setSelectedResults(prev => prev.filter(id => !currentPageIds.includes(id)));
                             }
                           }}
                         />
@@ -941,9 +944,9 @@ export default function DeforestationMonitoring() {
                             checked={selectedResults.includes(result.plotId)}
                             onCheckedChange={(checked) => {
                               if (checked) {
-                                setSelectedResults([...selectedResults, result.plotId]);
+                                setSelectedResults(prev => [...prev, result.plotId]);
                               } else {
-                                setSelectedResults(selectedResults.filter(id => id !== result.plotId));
+                                setSelectedResults(prev => prev.filter(id => id !== result.plotId));
                               }
                             }}
                           />
