@@ -436,11 +436,11 @@ export const massBalanceRecordsRelations = relations(massBalanceRecords, ({ one 
 export const ddsReports = pgTable("dds_reports", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
   shipmentId: text("shipment_id").references(() => shipments.id),
-  
+
   // Company and Activity details
   companyInternalRef: text("company_internal_ref"),
   activity: text("activity"),
-  
+
   // Operator/Trader details (PRD Section 1)
   operatorLegalName: text("operator_legal_name").notNull(),
   operatorAddress: text("operator_address").notNull(),
@@ -448,7 +448,7 @@ export const ddsReports = pgTable("dds_reports", {
   operatorCountry: text("operator_country"),
   operatorIsoCode: text("operator_iso_code"),
   eoriNumber: text("eori_number"),
-  
+
   // Product details (PRD Section 2)
   hsCode: text("hs_code").notNull(), // Harmonized System code from dropdown
   productDescription: text("product_description").notNull(),
@@ -461,7 +461,7 @@ export const ddsReports = pgTable("dds_reports", {
   percentageEstimation: decimal("percentage_estimation", { precision: 5, scale: 2 }),
   supplementaryUnit: text("supplementary_unit"),
   supplementaryQuantity: decimal("supplementary_quantity", { precision: 10, scale: 3 }),
-  
+
   // Production Plot Information (PRD Section 3)
   plotSelectionMethod: text("plot_selection_method"), // "existing_list" or "upload_geojson"
   selectedPlotId: text("selected_plot_id"), // Reference to pre-existing plot
@@ -474,7 +474,7 @@ export const ddsReports = pgTable("dds_reports", {
   traceabilityMethod: text("traceability_method"),
   expectedHarvestDate: date("expected_harvest_date"),
   productionDateRange: text("production_date_range"),
-  
+
   // GeoJSON and geolocation (Enhanced for PRD requirements)
   countryOfProduction: text("country_of_production").notNull(),
   geolocationType: text("geolocation_type"), // "plot", "coordinates", "polygon"
@@ -486,15 +486,15 @@ export const ddsReports = pgTable("dds_reports", {
   establishmentGeolocations: text("establishment_geolocations").array(),
   kmlFileName: text("kml_file_name"),
   geojsonFilePaths: text("geojson_file_paths"),
-  
+
   // Map preview and validation metadata
   plotBoundingBox: jsonb("plot_bounding_box"), // For map centering {north, south, east, west}
   plotCentroid: jsonb("plot_centroid"), // {lat, lng} for map preview
   plotArea: decimal("plot_area", { precision: 12, scale: 4 }), // Calculated area in hectares
-  
+
   // Reference to prior DDS
   priorDdsReference: text("prior_dds_reference"),
-  
+
   // Declaration and signature (PRD page 1 content)
   operatorDeclaration: text("operator_declaration").notNull(),
   signedBy: text("signed_by").notNull(),
@@ -504,25 +504,25 @@ export const ddsReports = pgTable("dds_reports", {
   signatureType: text("signature_type"), // "upload" or "canvas"
   signatureImagePath: text("signature_image_path"), // File path for uploaded signature images
   signatureData: text("signature_data"), // Base64 data for canvas signatures
-  
+
   // Status and processing
   status: text("status").notNull().default("draft"), // draft, generated, downloaded, submitted
   submissionDate: timestamp("submission_date"),
   euTraceReference: text("eu_trace_reference"),
   pdfDocumentPath: text("pdf_document_path"),
   pdfFileName: text("pdf_file_name"), // Auto-generated filename
-  
+
   // Session management for PRD dashboard
   sessionId: text("session_id"), // For session-based storage
   downloadCount: integer("download_count").default(0),
   lastDownloaded: timestamp("last_downloaded"),
-  
+
   // Cross-module integration
   deforestationRiskLevel: text("deforestation_risk_level"),
   legalityStatus: text("legality_status"),
   complianceScore: decimal("compliance_score", { precision: 5, scale: 2 }),
   traceability: jsonb("traceability"), // Supply chain linkage configuration
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
@@ -530,7 +530,7 @@ export const ddsReports = pgTable("dds_reports", {
 // Estate Data Collection Forms
 export const estateDataCollection = pgTable("estate_data_collection", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Bagian 1: Informasi Umum
   namaSupplier: text("nama_supplier").notNull(),
   namaGroupParentCompany: text("nama_group_parent_company"),
@@ -545,30 +545,30 @@ export const estateDataCollection = pgTable("estate_data_collection", {
   ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
   masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
   linkDokumen: text("link_dokumen"),
-  
+
   // Alamat & Koordinat
   alamatKantor: text("alamat_kantor"),
   alamatKebun: text("alamat_kebun"),
   koordinatKantor: text("koordinat_kantor"),
   koordinatKebun: text("koordinat_kebun"),
-  
+
   // Jenis Supplier & Info Lainnya
   jenisSupplier: text("jenis_supplier"),
   totalProduksiTBS: text("total_produksi_tbs"),
   tanggalPengisianKuisioner: text("tanggal_pengisian_kuisioner"),
-  
+
   // Penanggung Jawab
   namaPenanggungJawab: text("nama_penanggung_jawab"),
   jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
   emailPenanggungJawab: text("email_penanggung_jawab"),
   nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
-  
+
   // Tim Internal
   namaTimInternal: text("nama_tim_internal"),
   jabatanTimInternal: text("jabatan_tim_internal"),
   emailTimInternal: text("email_tim_internal"),
   nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
-  
+
   // Bagian 2: Sumber TBS (JSON array)
   sumberTBS: jsonb("sumber_tbs").$type<Array<{
     no: number;
@@ -581,40 +581,40 @@ export const estateDataCollection = pgTable("estate_data_collection", {
     jenisBibit: string;
     produksiTBS: number;
   }>>().default([]),
-  
+
   // Bagian 3: Perlindungan Hutan dan Gambut
   memilikiKebijakanPerlindunganHutan: boolean("memiliki_kebijakan_perlindungan_hutan"),
   keteranganKebijakanHutan: text("keterangan_kebijakan_hutan"),
   dokumenKebijakanHutan: text("dokumen_kebijakan_hutan"), // document URL
-  
+
   mengikutiWorkshopNDPE: boolean("mengikuti_workshop_ndpe"),
   keteranganWorkshopNDPE: text("keterangan_workshop_ndpe"),
-  
+
   memilikiSOPKonservasi: boolean("memiliki_sop_konservasi"),
   memilikiSOPPembukaanLahan: boolean("memiliki_sop_pembukaan_lahan"),
   keteranganSOP: text("keterangan_sop"),
-  
+
   melakukanPenilaianNKT: boolean("melakukan_penilaian_nkt"),
   menyampaikanLaporanNKT: boolean("menyampaikan_laporan_nkt"),
   melakukanPenilaianSKT: boolean("melakukan_penilaian_skt"),
   keteranganPenilaian: text("keterangan_penilaian"),
-  
+
   penanamanDiAreaGambut: boolean("penanaman_di_area_gambut"),
   keteranganAreaGambut: text("keterangan_area_gambut"),
   luasAreaGambut: decimal("luas_area_gambut", { precision: 10, scale: 2 }),
   tahunPembukaanGambut: integer("tahun_pembukaan_gambut"),
-  
+
   memilikiSKTitikPenaatan: boolean("memiliki_sk_titik_penaatan"),
   keteranganSKTitikPenaatan: text("keterangan_sk_titik_penaatan"),
   dokumenSKTitikPenaatan: text("dokumen_sk_titik_penaatan"), // document URL
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Mill Data Collection Forms
 export const millDataCollection = pgTable("mill_data_collection", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Bagian 1: Informasi Umum
   umlId: text("uml_id"),
   namaPabrik: text("nama_pabrik").notNull(),
@@ -629,30 +629,30 @@ export const millDataCollection = pgTable("mill_data_collection", {
   lembagaSertifikasi: text("lembaga_sertifikasi"),
   ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
   masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
-  
+
   // Alamat & Koordinat
   alamatKantor: text("alamat_kantor"),
   alamatPabrik: text("alamat_pabrik"),
   koordinatPabrik: text("koordinat_pabrik"),
   koordinatKantor: text("koordinat_kantor"),
-  
+
   // Jenis Supplier & Info Lainnya
   jenisSupplier: text("jenis_supplier"),
   kuantitasCPOPK: text("kuantitas_cpo_pk"),
   tanggalPengisianKuisioner: text("tanggal_pengisian_kuisioner"),
-  
+
   // Penanggung Jawab
   namaPenanggungJawab: text("nama_penanggung_jawab"),
   jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
   emailPenanggungJawab: text("email_penanggung_jawab"),
   nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
-  
+
   // Tim Internal
   namaTimInternal: text("nama_tim_internal"),
   jabatanTimInternal: text("jabatan_tim_internal"),
   emailTimInternal: text("email_tim_internal"),
   nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
-  
+
   // Bagian 2: Daftar Sumber TBS & Plot Produksi (JSON arrays for each category)
   kebunInti: jsonb("kebun_inti").$type<Array<{
     no: number;
@@ -667,7 +667,7 @@ export const millDataCollection = pgTable("mill_data_collection", {
     dokumenLegalitasLahan: string; // document URL
     tahunTanam: string;
   }>>().default([]),
-  
+
   kebunSepupu: jsonb("kebun_sepupu").$type<Array<{
     no: number;
     namaSupplier: string;
@@ -681,7 +681,7 @@ export const millDataCollection = pgTable("mill_data_collection", {
     dokumenLegalitasLahan: string; // document URL
     tahunTanam: string;
   }>>().default([]),
-  
+
   thirdPartied: jsonb("third_partied").$type<Array<{
     no: number;
     namaSupplier: string;
@@ -695,7 +695,7 @@ export const millDataCollection = pgTable("mill_data_collection", {
     dokumenLegalitasLahan: string; // document URL
     tahunTanam: string;
   }>>().default([]),
-  
+
   smallHolder: jsonb("small_holder").$type<Array<{
     no: number;
     namaSupplier: string;
@@ -709,34 +709,34 @@ export const millDataCollection = pgTable("mill_data_collection", {
     dokumenLegalitasLahan: string; // document URL
     tahunTanam: string;
   }>>().default([]),
-  
+
   // Bagian 3: Perlindungan Hutan dan Gambut
   memilikiKebijakanPerlindunganHutan: boolean("memiliki_kebijakan_perlindungan_hutan"),
   memilikiKebijakanPerlindunganGambut: boolean("memiliki_kebijakan_perlindungan_gambut"),
   keteranganKebijakanHutan: text("keterangan_kebijakan_hutan"),
   dokumenKebijakanHutan: text("dokumen_kebijakan_hutan"), // document URL
-  
+
   mengikutiWorkshopNDPE: boolean("mengikuti_workshop_ndpe"),
   keteranganWorkshopNDPE: text("keterangan_workshop_ndpe"),
-  
+
   memilikiSOPKonservasi: boolean("memiliki_sop_konservasi"),
   memilikiSOPPembukaanLahan: boolean("memiliki_sop_pembukaan_lahan"),
   keteranganSOP: text("keterangan_sop"),
-  
+
   melakukanPenilaianNKT: boolean("melakukan_penilaian_nkt"),
   menyampaikanLaporanNKT: boolean("menyampaikan_laporan_nkt"),
   melakukanPenilaianSKT: boolean("melakukan_penilaian_skt"),
   keteranganPenilaian: text("keterangan_penilaian"),
-  
+
   penanamanDiAreaGambut: boolean("penanaman_di_area_gambut"),
   keteranganAreaGambut: text("keterangan_area_gambut"),
   luasAreaGambut: decimal("luas_area_gambut", { precision: 10, scale: 2 }),
   tahunPembukaanGambut: integer("tahun_pembukaan_gambut"),
-  
+
   memilikiSKTitikPenaatan: boolean("memiliki_sk_titik_penaatan"),
   keteranganSKTitikPenaatan: text("keterangan_sk_titik_penaatan"),
   dokumenSKTitikPenaatan: text("dokumen_sk_titik_penaatan"), // document URL
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -750,7 +750,7 @@ export const ddsReportsRelations = relations(ddsReports, ({ one }) => ({
 // Legacy Estate Data Collection for EUDR compliance (renamed to avoid conflicts)
 export const legacyEstateDataCollection = pgTable("legacy_estate_data_collection", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Section 1: General Information
   supplierName: text("supplier_name").notNull(),
   groupParentCompanyName: text("group_parent_company_name"),
@@ -763,32 +763,32 @@ export const legacyEstateDataCollection = pgTable("legacy_estate_data_collection
   certificationScope: text("certification_scope"),
   certificateValidity: date("certificate_validity"),
   documentLink: text("document_link"),
-  
+
   // Addresses
   officeAddress: text("office_address"),
   estateAddress: text("estate_address"),
-  
+
   // Coordinates
   estateCoordinates: text("estate_coordinates"),
   officeCoordinates: text("office_coordinates"),
-  
+
   // Supplier type (enum-like)
   supplierType: text("supplier_type"), // KKPA, sister company, third party
   totalAnnualProduction: decimal("total_annual_production", { precision: 12, scale: 3 }),
   formFillingDate: date("form_filling_date"),
-  
+
   // Responsible person
   responsiblePersonName: text("responsible_person_name"),
   responsiblePersonPosition: text("responsible_person_position"),
   responsiblePersonEmail: text("responsible_person_email"),
   responsiblePersonPhone: text("responsible_person_phone"),
-  
+
   // Internal sustainability team
   internalTeamName: text("internal_team_name"),
   internalTeamPosition: text("internal_team_position"),
   internalTeamEmail: text("internal_team_email"),
   internalTeamPhone: text("internal_team_phone"),
-  
+
   // Section 2: FFB Sources (stored as JSONB array)
   ffbSources: jsonb("ffb_sources").$type<Array<{
     no: number;
@@ -801,34 +801,34 @@ export const legacyEstateDataCollection = pgTable("legacy_estate_data_collection
     seedType: string;
     annualProduction: number; // in tons
   }>>().default([]),
-  
+
   // Section 3: Forest and Peat Protection
   hasForestPeatPolicy: boolean("has_forest_peat_policy"),
   forestPeatPolicyNotes: text("forest_peat_policy_notes"),
   forestPeatDocumentLink: text("forest_peat_document_link"),
-  
+
   attendedNdpeWorkshop: boolean("attended_ndpe_workshop"),
   ndpeWorkshopNotes: text("ndpe_workshop_notes"),
-  
+
   hasForestProtectionProcedure: boolean("has_forest_protection_procedure"),
   hasConservationAreaSop: boolean("has_conservation_area_sop"),
   hasLandOpeningSop: boolean("has_land_opening_sop"),
   forestProtectionNotes: text("forest_protection_notes"),
-  
+
   conductedHcvAssessment: boolean("conducted_hcv_assessment"),
   submittedHcvReport: boolean("submitted_hcv_report"),
   conductedHcsAssessment: boolean("conducted_hcs_assessment"),
   hcsAssessmentNotes: text("hcs_assessment_notes"),
-  
+
   plantingOnPeatland: boolean("planting_on_peatland"),
   peatlandArea: decimal("peatland_area", { precision: 8, scale: 2 }),
   peatlandOpeningYear: integer("peatland_opening_year"),
   peatlandNotes: text("peatland_notes"),
-  
+
   hasHydrologicalRestorationPermit: boolean("has_hydrological_restoration_permit"),
   hydrologicalPermitNotes: text("hydrological_permit_notes"),
   hydrologicalDocumentLink: text("hydrological_document_link"),
-  
+
   // Status and metadata
   status: text("status").default("draft"), // draft, submitted, reviewed, approved
   completionPercentage: integer("completion_percentage").default(0),
@@ -840,19 +840,19 @@ export const legacyEstateDataCollection = pgTable("legacy_estate_data_collection
 // Traceability (TBS Luar) Data Collection Schema
 export const traceabilityDataCollection = pgTable("traceability_data_collection", {
   id: serial("id").primaryKey(),
-  
+
   // Basic DO Information
   nomorDO: text("nomor_do").notNull(),
   pemegangDO: text("pemegang_do").notNull(),
   alamatPemegangDO: text("alamat_pemegang_do"),
   lokasiUsaha: text("lokasi_usaha"),
-  
+
   // Legalitas Pemegang DO
   aktaPendirianUsaha: text("akta_pendirian_usaha"), // document URL
   nib: text("nib"),
   npwp: text("npwp"),
   ktp: text("ktp"), // document URL
-  
+
   // Pemasok TBS Array - structured as JSON for dynamic farmer entries
   pemasokTBS: jsonb("pemasok_tbs").$type<Array<{
     no: number;
@@ -868,7 +868,7 @@ export const traceabilityDataCollection = pgTable("traceability_data_collection"
     longitude: string;
     latitude: string;
   }>>().default([]),
-  
+
   // Status and metadata
   status: text("status").default("draft"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -878,7 +878,7 @@ export const traceabilityDataCollection = pgTable("traceability_data_collection"
 // KCP Data Collection Schema
 export const kcpDataCollection = pgTable("kcp_data_collection", {
   id: serial("id").primaryKey(),
-  
+
   // Bagian 1 - Informasi Umum
   ublFacilityId: text("ubl_facility_id"),
   namaKCP: text("nama_kcp").notNull(),
@@ -889,31 +889,31 @@ export const kcpDataCollection = pgTable("kcp_data_collection", {
   lembagaSertifikasi: text("lembaga_sertifikasi"),
   ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
   masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
-  
+
   // Alamat
   alamatKantor: text("alamat_kantor"),
   alamatKCP: text("alamat_kcp"),
   koordinatKantor: text("koordinat_kantor"),
   koordinatKCP: text("koordinat_kcp"),
-  
+
   // Operational Info
   modelChainOfCustody: text("model_chain_of_custody"),
   kapasitasOlahMTHari: decimal("kapasitas_olah_mt_hari", { precision: 10, scale: 2 }),
   sistemPencatatan: text("sistem_pencatatan"), // LIFO/FIFO/Weighted
   tanggalPengisianKuisioner: date("tanggal_pengisian_kuisioner"),
-  
+
   // Penanggung Jawab
   namaPenanggungJawab: text("nama_penanggung_jawab"),
   jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
   emailPenanggungJawab: text("email_penanggung_jawab"),
   nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
-  
+
   // Tim Internal
   namaTimInternal: text("nama_tim_internal"),
   jabatanTimInternal: text("jabatan_tim_internal"),
   emailTimInternal: text("email_tim_internal"),
   nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
-  
+
   // Bagian 2 - Daftar Tangki/Silo Array
   daftarTangkiSilo: jsonb("daftar_tangki_silo").$type<Array<{
     idTangkiSilo: string;
@@ -925,7 +925,7 @@ export const kcpDataCollection = pgTable("kcp_data_collection", {
     kapasitas: number;
     tanggalCleaningTerakhir: string;
   }>>().default([]),
-  
+
   // Bagian 3 - Sumber Produk Array
   sumberProduk: jsonb("sumber_produk").$type<Array<{
     millId: string;
@@ -937,7 +937,7 @@ export const kcpDataCollection = pgTable("kcp_data_collection", {
     volume: number;
     sertifikasi: string; // ISPO/RSPO/ISCC
   }>>().default([]),
-  
+
   // Status and metadata
   status: text("status").default("draft"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -947,7 +947,7 @@ export const kcpDataCollection = pgTable("kcp_data_collection", {
 // Bulking Data Collection Schema
 export const bulkingDataCollection = pgTable("bulking_data_collection", {
   id: serial("id").primaryKey(),
-  
+
   // Bagian 1 - Informasi Umum
   ublFacilityId: text("ubl_facility_id"),
   namaFasilitasBulking: text("nama_fasilitas_bulking").notNull(),
@@ -958,29 +958,29 @@ export const bulkingDataCollection = pgTable("bulking_data_collection", {
   lembagaSertifikasi: text("lembaga_sertifikasi"),
   ruangLingkupSertifikasi: text("ruang_lingkup_sertifikasi"),
   masaBerlakuSertifikat: text("masa_berlaku_sertifikat"),
-  
+
   // Alamat
   alamatKantor: text("alamat_kantor"),
   alamatBulking: text("alamat_bulking"),
-  
+
   // Operational Info
   modelChainOfCustody: text("model_chain_of_custody"),
   kapasitasTotal: decimal("kapasitas_total", { precision: 10, scale: 2 }),
   sistemPencatatan: text("sistem_pencatatan"), // LIFO/FIFO
   tanggalPengisianKuisioner: date("tanggal_pengisian_kuisioner"),
-  
+
   // Penanggung Jawab
   namaPenanggungJawab: text("nama_penanggung_jawab"),
   jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
   emailPenanggungJawab: text("email_penanggung_jawab"),
   nomorTelefonPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
-  
+
   // Tim Internal
   namaTimInternal: text("nama_tim_internal"),
   jabatanTimInternal: text("jabatan_tim_internal"),
   emailTimInternal: text("email_tim_internal"),
   nomorTeleponTimInternal: text("nomor_telepon_tim_internal"),
-  
+
   // Bagian 2 - Daftar Tangki Array
   daftarTangki: jsonb("daftar_tangki").$type<Array<{
     tankId: string;
@@ -992,7 +992,7 @@ export const bulkingDataCollection = pgTable("bulking_data_collection", {
     dedicatedShared: string; // Dedicated/Shared
     tanggalCleaningTerakhir: string;
   }>>().default([]),
-  
+
   // Bagian 3 - Sumber Produk Array
   sumberProduk: jsonb("sumber_produk").$type<Array<{
     millId: string;
@@ -1004,7 +1004,7 @@ export const bulkingDataCollection = pgTable("bulking_data_collection", {
     volume: number;
     sertifikasi: string; // ISPO/RSPO/ISCC
   }>>().default([]),
-  
+
   // Status and metadata
   status: text("status").default("draft"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -1104,24 +1104,24 @@ export interface SignatureData {
 // EUDR Legality Assessment Schema - Comprehensive 8-indicator compliance audit
 export const eudrAssessments = pgTable("eudr_assessments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Supplier/Business Details
   supplierType: supplierTypeEnum("supplier_type").notNull(),
   supplierName: text("supplier_name").notNull(),
   supplierID: text("supplier_id").notNull(),
   location: text("location").notNull(),
   ownership: text("ownership"),
-  
+
   // Contact Details
   contactName: text("contact_name"),
   contactPosition: text("contact_position"),
   contactEmail: text("contact_email"),
   contactPhone: text("contact_phone"),
-  
+
   // Assessment metadata
   status: assessmentStatusEnum("status").default("Draft"),
   assignedAuditor: text("assigned_auditor"),
-  
+
   // 1. Land Tenure
   landTitleNumber: text("land_title_number"),
   titleIssuanceDate: date("title_issuance_date"),
@@ -1137,7 +1137,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // 2. Environmental Laws
   permitType: permitTypeEnum("permit_type").notNull(),
   permitNumber: text("permit_number"),
@@ -1152,7 +1152,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // 3. Forest-Related Regulations
   forestLicenseNumber: text("forest_license_number"),
   forestStatus: forestStatusEnum("forest_status").notNull(),
@@ -1166,7 +1166,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // 4. Third-Party Rights (including FPIC)
   fpicStatus: boolean("fpic_status").default(false),
   fpicDate: date("fpic_date"),
@@ -1182,7 +1182,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // 5. Labour
   employeeCount: integer("employee_count").default(0),
   permanentEmployees: integer("permanent_employees").default(0),
@@ -1199,7 +1199,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // 6. Human Rights
   policyAdherence: boolean("policy_adherence").default(false),
   grievanceRecords: boolean("grievance_records").default(false),
@@ -1214,7 +1214,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // 7. Tax/Anti-Corruption
   npwpNumber: text("npwp_number"), // 15 digits
   lastTaxReturnYear: integer("last_tax_return_year"),
@@ -1230,7 +1230,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // 8. Other National Laws
   tradeLicenses: jsonb("trade_licenses").$type<string[]>().default([]),
   corporateRegistration: text("corporate_registration"),
@@ -1245,7 +1245,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
     description?: string;
     url: string;
   }>>().default([]),
-  
+
   // Timestamps
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -1256,31 +1256,31 @@ export const supplierAssessmentProgress = pgTable("supplier_assessment_progress"
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   supplierName: text("supplier_name").notNull(), // Primary identifier for supplier across modules
   supplierType: text("supplier_type").notNull(), // "Estate", "Mill", "Bulking Station", etc.
-  
+
   // Data Collection Step (Step 1) - based on existing data collection forms
   dataCollectionCompleted: boolean("data_collection_completed").default(false),
   dataCollectionCompletedAt: timestamp("data_collection_completed_at"),
   dataCollectionId: varchar("data_collection_id"), // References the specific data collection record
-  
+
   // Legality Compliance Step (Step 2) - based on existing supplier compliance system
   legalityComplianceCompleted: boolean("legality_compliance_completed").default(false),
   legalityComplianceCompletedAt: timestamp("legality_compliance_completed_at"),
   legalityComplianceId: varchar("legality_compliance_id"), // References supplier compliance record
-  
+
   // Risk Assessment Step (Step 3) - new module to be implemented
   riskAssessmentCompleted: boolean("risk_assessment_completed").default(false),
   riskAssessmentCompletedAt: timestamp("risk_assessment_completed_at"),
   riskAssessmentId: varchar("risk_assessment_id"), // Will reference future risk assessment record
-  
+
   // Overall workflow status
   currentStep: integer("current_step").default(1), // 1=Data Collection, 2=Legality Compliance, 3=Risk Assessment
   workflowCompleted: boolean("workflow_completed").default(false),
   workflowCompletedAt: timestamp("workflow_completed_at"),
-  
+
   // Additional metadata
   lastUpdatedBy: varchar("last_updated_by"),
   notes: text("notes"),
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -1299,30 +1299,30 @@ export const mitigationStatusEnum = pgEnum("mitigation_status", ["pending", "in_
 // Comprehensive Risk Assessment table based on Excel methodology
 export const riskAssessments = pgTable("risk_assessments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   // Reference to supplier/party being assessed
   supplierId: varchar("supplier_id").references(() => suppliers.id),
   supplierName: text("supplier_name").notNull(),
   assessorId: varchar("assessor_id").references(() => users.id),
   assessorName: text("assessor_name"),
-  
+
   // Assessment metadata
   assessmentDate: timestamp("assessment_date").defaultNow().notNull(),
   assessmentPeriod: text("assessment_period"), // e.g., "2024-Q1"
   status: assessmentStatusEnum("status").default("Draft").notNull(),
-  
+
   // Overall scoring and classification based on Excel methodology
   overallScore: decimal("overall_score", { precision: 5, scale: 2 }), // 0-100
   riskClassification: riskLevelEnum("risk_classification"), // low, medium, high based on score thresholds
-  
+
   // Spatial Risk Analysis Section (Section I from Excel)
   spatialRiskScore: decimal("spatial_risk_score", { precision: 5, scale: 2 }),
   spatialRiskLevel: riskLevelEnum("spatial_risk_level"),
-  
+
   // Non-Spatial Risk Analysis Section 
   nonSpatialRiskScore: decimal("non_spatial_risk_score", { precision: 5, scale: 2 }),
   nonSpatialRiskLevel: riskLevelEnum("non_spatial_risk_level"),
-  
+
   // Individual risk item scores (JSON structure for flexibility)
   riskItemScores: jsonb("risk_item_scores").$type<{
     deforestasi: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
@@ -1332,7 +1332,7 @@ export const riskAssessments = pgTable("risk_assessments", {
     sertifikasi?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
     dokumentasi_legal?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
   }>(),
-  
+
   // Mitigation actions and status tracking
   mitigationActions: jsonb("mitigation_actions").$type<{
     riskItem: string;
@@ -1342,25 +1342,25 @@ export const riskAssessments = pgTable("risk_assessments", {
     assignedTo: string;
     progress: number;
   }[]>().default([]),
-  
+
   // Assessment evidence and supporting documents
   evidenceDocuments: jsonb("evidence_documents").$type<string[]>().default([]),
   supportingData: jsonb("supporting_data"), // Store references to analysis results, maps, etc.
-  
+
   // Assessment review and approval workflow
   reviewedBy: varchar("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
   approvedBy: varchar("approved_by").references(() => users.id),
   approvedAt: timestamp("approved_at"),
-  
+
   // Recommendations and next steps
   recommendations: text("recommendations"),
   nextReviewDate: timestamp("next_review_date"),
-  
+
   // Metadata
   notes: text("notes"),
   version: integer("version").default(1), // For versioning assessments
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -1368,12 +1368,12 @@ export const riskAssessments = pgTable("risk_assessments", {
 // Risk Assessment Items - detailed breakdown of each risk factor
 export const riskAssessmentItems = pgTable("risk_assessment_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+
   riskAssessmentId: varchar("risk_assessment_id").references(() => riskAssessments.id).notNull(),
   category: riskCategoryEnum("category").notNull(), // spatial or non_spatial
   itemType: riskItemTypeEnum("item_type").notNull(),
   itemName: text("item_name").notNull(), // e.g., "Deforestasi", "Legalitas Lahan"
-  
+
   // Risk parameter details from Excel structure
   riskLevel: riskParameterLevelEnum("risk_level").notNull(), // tinggi, sedang, rendah
   parameter: text("parameter").notNull(), // Descriptive parameter from Excel
@@ -1382,21 +1382,21 @@ export const riskAssessmentItems = pgTable("risk_assessment_items", {
   calculatedRisk: decimal("calculated_risk", { precision: 5, scale: 2 }).notNull(), // Risk (B) = weight * riskValue
   normalizedScore: decimal("normalized_score", { precision: 5, scale: 4 }).notNull(), // Ni from Excel
   finalScore: decimal("final_score", { precision: 5, scale: 4 }).notNull(), // Final calculated score
-  
+
   // Mitigation information
   mitigationRequired: boolean("mitigation_required").default(false),
   mitigationDescription: text("mitigation_description"), // From Excel "Mitigasi" column
   mitigationStatus: mitigationStatusEnum("mitigation_status").default("pending"),
-  
+
   // Evidence and data sources
   dataSources: jsonb("data_sources").$type<string[]>().default([]), // e.g., "Hansen Alert", "WDPA"
   sourceLinks: jsonb("source_links").$type<string[]>().default([]), // URLs to data sources
   evidenceFiles: jsonb("evidence_files").$type<string[]>().default([]),
-  
+
   // Assessment details
   assessedBy: varchar("assessed_by").references(() => users.id),
   assessedAt: timestamp("assessed_at").defaultNow(),
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -1599,4 +1599,3 @@ export const exportDataSchema = z.object({
   metrics: dashboardMetricsSchema,
   generatedAt: z.date(),
 });
-

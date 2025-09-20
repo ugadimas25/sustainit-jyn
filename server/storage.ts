@@ -1084,12 +1084,15 @@ export class DatabaseStorage implements IStorage {
 
   async createAnalysisResult(insertAnalysisResult: InsertAnalysisResult): Promise<AnalysisResult> {
     try {
+      const dataToInsert = {
+        ...insertAnalysisResult,
+        peatlandOverlap: insertAnalysisResult.peatlandOverlap || 'UNKNOWN',
+        updatedAt: new Date()
+      };
+      
       const [result] = await db
         .insert(analysisResults)
-        .values({
-          ...insertAnalysisResult,
-          updatedAt: new Date()
-        })
+        .values(dataToInsert)
         .returning();
       return result;
     } catch (error) {
@@ -1504,7 +1507,10 @@ export class DatabaseStorage implements IStorage {
 
   async getRiskSplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").RiskSplit> {
     try {
-      const results = await db.select().from(analysisResults);
+      const results = await db.select({
+        overallRisk: analysisResults.overallRisk,
+        createdAt: analysisResults.createdAt
+      }).from(analysisResults);
       
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1526,13 +1532,16 @@ export class DatabaseStorage implements IStorage {
       return { low, medium, high };
     } catch (error) {
       console.error("Error getting risk split:", error);
-      throw error;
+      return { low: 0, medium: 0, high: 0 };
     }
   }
 
   async getLegalitySplit(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").LegalitySplit> {
     try {
-      const results = await db.select().from(analysisResults);
+      const results = await db.select({
+        complianceStatus: analysisResults.complianceStatus,
+        createdAt: analysisResults.createdAt
+      }).from(analysisResults);
       
       let filteredResults = results;
       if (filters?.dateFrom || filters?.dateTo) {
@@ -1564,7 +1573,14 @@ export class DatabaseStorage implements IStorage {
 
   async getSupplierCompliance(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").SupplierSummary[]> {
     try {
-      const results = await db.select().from(analysisResults);
+      const results = await db.select({
+        country: analysisResults.country,
+        complianceStatus: analysisResults.complianceStatus,
+        overallRisk: analysisResults.overallRisk,
+        area: analysisResults.area,
+        createdAt: analysisResults.createdAt,
+        updatedAt: analysisResults.updatedAt
+      }).from(analysisResults);
       const suppliersData = await db.select().from(suppliers);
       
       // Apply date filters
@@ -1627,7 +1643,17 @@ export class DatabaseStorage implements IStorage {
 
   async getDashboardAlerts(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").Alert[]> {
     try {
-      const results = await db.select().from(analysisResults);
+      const results = await db.select({
+        plotId: analysisResults.plotId,
+        country: analysisResults.country,
+        gfwLoss: analysisResults.gfwLoss,
+        jrcLoss: analysisResults.jrcLoss,
+        sbtnLoss: analysisResults.sbtnLoss,
+        complianceStatus: analysisResults.complianceStatus,
+        overallRisk: analysisResults.overallRisk,
+        createdAt: analysisResults.createdAt,
+        updatedAt: analysisResults.updatedAt
+      }).from(analysisResults);
       
       // Apply date filters
       let filteredResults = results;
