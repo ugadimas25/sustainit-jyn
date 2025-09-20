@@ -114,9 +114,13 @@ export default function DataVerification() {
           });
         }
 
-        // Clear existing map instance and container
+        // Clear existing map instance and container safely
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.remove();
+          try {
+            mapInstanceRef.current.remove();
+          } catch (e) {
+            console.warn('Map cleanup warning:', e);
+          }
           mapInstanceRef.current = null;
         }
         if (mapRef.current) {
@@ -217,7 +221,11 @@ export default function DataVerification() {
 
     return () => {
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.remove();
+        } catch (e) {
+          console.warn('Map cleanup warning:', e);
+        }
         mapInstanceRef.current = null;
       }
     };

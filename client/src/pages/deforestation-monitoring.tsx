@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import * as kmlParser from 'kml-parse'; // Assuming kml-parse is installed
 
 interface AnalysisResult {
   plotId: string;
@@ -34,15 +33,12 @@ interface AnalysisResult {
   jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH';
   sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH';
   highRiskDatasets: string[];
-  // Intersection areas for high-risk datasets
   gfwLossArea?: number;
   jrcLossArea?: number;
   sbtnLossArea?: number;
-  // Peatland analysis
   peatlandOverlap?: string;
   peatlandArea?: number;
   polygonIssues?: string;
-  // Geometry to be preserved
   geometry?: any; 
 }
 
@@ -53,105 +49,12 @@ interface UploadedFile {
   content: string | ArrayBuffer | null;
 }
 
-const defaultAnalysisResults = [
-  { 
-    plotId: "PLOT_005", country: "Indonesia", area: 31.35, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[113.921327, -2.147871], [113.943567, -2.147871], [113.943567, -2.169234], [113.921327, -2.169234], [113.921327, -2.147871]]] }
-  },
-  { 
-    plotId: "PLOT_002", country: "Ivory Coast", area: 1439.07, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"],
-    geometry: { type: "Polygon", coordinates: [[[-5.547945, 7.539989], [-5.510712, 7.539989], [-5.510712, 7.577221], [-5.547945, 7.577221], [-5.547945, 7.539989]]] }
-  },
-  { 
-    plotId: "PLOT_009", country: "Nigeria", area: 1.02, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[8.675277, 9.081999], [8.677777, 9.081999], [8.677777, 9.084499], [8.675277, 9.084499], [8.675277, 9.081999]]] }
-  },
-  { 
-    plotId: "PLOT_004", country: "Ghana", area: 1.95, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[-1.094512, 7.946527], [-1.092012, 7.946527], [-1.092012, 7.949027], [-1.094512, 7.949027], [-1.094512, 7.946527]]] }
-  },
-  { 
-    plotId: "PLOT_001", country: "Central African Republic", area: 5604.60, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"],
-    geometry: { type: "Polygon", coordinates: [[[18.555696, 4.361002], [18.655696, 4.361002], [18.655696, 4.461002], [18.555696, 4.461002], [18.555696, 4.361002]]] }
-  },
-  { 
-    plotId: "PLOT_010", country: "Brazil", area: 8.12, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[-60.025902, -3.119028], [-60.020902, -3.119028], [-60.020902, -3.114028], [-60.025902, -3.114028], [-60.025902, -3.119028]]] }
-  },
-  { 
-    plotId: "PLOT_007", country: "Indonesia", area: 20.98, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[114.921327, -2.247871], [114.935327, -2.247871], [114.935327, -2.261871], [114.921327, -2.261871], [114.921327, -2.247871]]] }
-  },
-  { 
-    plotId: "PLOT_006", country: "Indonesia", area: 1.97, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[115.421327, -2.347871], [115.423827, -2.347871], [115.423827, -2.350371], [115.421327, -2.350371], [115.421327, -2.347871]]] }
-  },
-  { 
-    plotId: "PLOT_008", country: "Ivory Coast", area: 8.32, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"],
-    geometry: { type: "Polygon", coordinates: [[[-5.647945, 7.639989], [-5.640945, 7.639989], [-5.640945, 7.646989], [-5.647945, 7.646989], [-5.647945, 7.639989]]] }
-  },
-  { 
-    plotId: "PLOT_013", country: "Ghana", area: 4.17, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "SBTN Natural Lands Loss"],
-    geometry: { type: "Polygon", coordinates: [[[-1.194512, 7.846527], [-1.188512, 7.846527], [-1.188512, 7.852527], [-1.194512, 7.852527], [-1.194512, 7.846527]]] }
-  },
-  { 
-    plotId: "PLOT_003", country: "Brazil", area: 197.59, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "HIGH", sbtnLoss: "HIGH", highRiskDatasets: ["GFW Forest Loss", "JRC Forest Loss", "SBTN Natural Lands Loss"],
-    geometry: { type: "Polygon", coordinates: [[[-60.125902, -3.219028], [-60.105902, -3.219028], [-60.105902, -3.199028], [-60.125902, -3.199028], [-60.125902, -3.219028]]] }
-  },
-  { 
-    plotId: "PLOT_018", country: "Ivory Coast", area: 1.99, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"],
-    geometry: { type: "Polygon", coordinates: [[[-5.447945, 7.439989], [-5.445445, 7.439989], [-5.445445, 7.442489], [-5.447945, 7.442489], [-5.447945, 7.439989]]] }
-  },
-  { 
-    plotId: "PLOT_011", country: "China", area: 7.61, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[116.383331, 39.916668], [116.389331, 39.916668], [116.389331, 39.922668], [116.383331, 39.922668], [116.383331, 39.916668]]] }
-  },
-  { 
-    plotId: "PLOT_015", country: "Brazil", area: 873.31, overallRisk: "HIGH", complianceStatus: "NON-COMPLIANT", 
-    gfwLoss: "HIGH", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: ["GFW Forest Loss"],
-    geometry: { type: "Polygon", coordinates: [[[-60.325902, -3.419028], [-60.275902, -3.419028], [-60.275902, -3.369028], [-60.325902, -3.369028], [-60.325902, -3.419028]]] }
-  },
-  { 
-    plotId: "PLOT_017", country: "Nigeria", area: 4.26, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[8.775277, 9.181999], [8.781277, 9.181999], [8.781277, 9.187999], [8.775277, 9.187999], [8.775277, 9.181999]]] }
-  },
-  { 
-    plotId: "PLOT_016", country: "Indonesia", area: 5.67, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[115.521327, -2.447871], [115.527327, -2.447871], [115.527327, -2.441871], [115.521327, -2.441871], [115.521327, -2.447871]]] }
-  },
-  { 
-    plotId: "PLOT_012", country: "China", area: 6.23, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[116.483331, 39.816668], [116.489331, 39.816668], [116.489331, 39.822668], [116.483331, 39.822668], [116.483331, 39.816668]]] }
-  },
-  { 
-    plotId: "PLOT_014", country: "Nigeria", area: 1.01, overallRisk: "LOW", complianceStatus: "COMPLIANT", 
-    gfwLoss: "LOW", jrcLoss: "LOW", sbtnLoss: "LOW", highRiskDatasets: [],
-    geometry: { type: "Polygon", coordinates: [[[8.875277, 9.281999], [8.877277, 9.281999], [8.877277, 9.283999], [8.875277, 9.283999], [8.875277, 9.281999]]] }
-  }
-] as const;
-
 export default function DeforestationMonitoring() {
-  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null); // Initialize to null
-  const [geoJsonData, setGeoJsonData] = useState<any>(null); // State for parsed GeoJSON
-  const [uploadedFileName, setUploadedFileName] = useState<string>(''); // State for uploaded file name
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+  const [geoJsonData, setGeoJsonData] = useState<any>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0); // Initialize progress to 0
+  const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [filteredResults, setFilteredResults] = useState<AnalysisResult[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -172,54 +75,13 @@ export default function DeforestationMonitoring() {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
 
-  // Revalidation state
-  const [isValidating, setIsValidating] = useState(false);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Helper to parse KML to GeoJSON (basic implementation)
-  const parseKMLToGeoJSON = (kmlString: string) => {
-    try {
-      const kml = kmlParser.parse(kmlString);
-      // Assuming the kml structure has a FeatureCollection or a single Feature
-      // This part might need adjustment based on the actual kml-parse output and structure
-      if (kml && kml.features) {
-        // If it's a FeatureCollection, use it directly or extract features
-        if (kml.type === 'FeatureCollection') {
-          return kml;
-        } else if (kml.type === 'Feature') {
-          // Wrap a single feature in a FeatureCollection
-          return { type: 'FeatureCollection', features: [kml] };
-        } else {
-          // Handle other KML structures if necessary
-          console.warn("KML structure not directly recognized as FeatureCollection or Feature:", kml.type);
-          // Attempt to convert if possible, or return null
-          return null; 
-        }
-      }
-      return null; // Return null if no features or invalid structure
-    } catch (error) {
-      console.error('Error parsing KML:', error);
-      toast({
-        title: "KML Parsing Error",
-        description: "Failed to parse KML data. Please check the file.",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
-  // Initialize from persisted data or empty state
+  // Initialize from persisted data
   useEffect(() => {
     const loadPersistedData = async () => {
       try {
-        const shouldRefresh = localStorage.getItem('refreshTableAfterEdit') === 'true';
-        if (shouldRefresh) {
-          localStorage.removeItem('refreshTableAfterEdit');
-          console.log('🔄 Refreshing table data after polygon editing');
-        }
-
         const storedResults = localStorage.getItem('currentAnalysisResults');
         const hasRealData = localStorage.getItem('hasRealAnalysisData') === 'true';
 
@@ -231,28 +93,18 @@ export default function DeforestationMonitoring() {
             setTotalRecords(parsedResults.length);
             setHasRealData(true);
             console.log(`Restored ${parsedResults.length} analysis results from storage`);
-
-            if (shouldRefresh) {
-              toast({
-                title: "Table Updated",
-                description: "Polygon changes have been applied to the table results.",
-                duration: 3000,
-              });
-            }
             return; 
           }
         }
 
+        // Clear if no valid data
         localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
         localStorage.setItem('hasRealAnalysisData', 'false');
-
         await apiRequest('DELETE', '/api/analysis-results');
-
         setAnalysisResults([]);
         setFilteredResults([]);
         setTotalRecords(0);
         setHasRealData(false);
-
         console.log("Table Result initialized as empty - dashboard will start with zero values");
       } catch (error) {
         console.error("Error loading persisted data:", error);
@@ -269,38 +121,26 @@ export default function DeforestationMonitoring() {
   // GeoJSON upload mutation
   const uploadMutation = useMutation({
     mutationFn: async ({ geojsonFile, fileName }: { geojsonFile: string, fileName: string }) => {
-      const response = await apiRequest('POST', '/api/geojson/upload', { geojsonFile, fileName });
+      const response = await apiRequest('POST', '/api/spatial-analysis/process', { 
+        geojson: geojsonFile,
+        country: 'Indonesia',
+        fileType: 'geojson'
+      });
       return await response.json();
     },
     onSuccess: (response) => {
-      if (response.warning) {
-        toast({
-          title: "Analysis Completed with Warning",
-          description: response.warning.message,
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Analysis Complete", 
-          description: `GeoJSON analysis completed successfully. Processing ${response.data?.features?.length || 0} plots.`
-        });
-      }
-
-      if (response.data?.features) {
-        const transformedResults = response.data.features.map((feature: any) => ({
-          plotId: feature.properties.plot_id,
-          country: feature.properties.country_name || 'Unknown',
-          area: feature.properties.total_area_hectares || 0,
-          overallRisk: feature.properties.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
-          complianceStatus: feature.properties.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
-          gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
-          jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
-          sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
-          gfwLossArea: (Number(feature.properties.gfw_loss?.gfw_loss_area || 0) || (feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
-          jrcLossArea: (Number(feature.properties.jrc_loss?.jrc_loss_area || 0) || (feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
-          sbtnLossArea: (Number(feature.properties.sbtn_loss?.sbtn_loss_area || 0) || (feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() === 'HIGH' ? 0.01 : 0)) * (feature.properties.total_area_hectares || 0),
-          highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
-          geometry: feature.geometry // Preserve geometry
+      if (response.success && response.results) {
+        const transformedResults = response.results.map((result: any) => ({
+          plotId: result.plotId || result.id,
+          country: result.country || 'Unknown',
+          area: result.area || 0,
+          overallRisk: result.overallRisk || 'LOW',
+          complianceStatus: result.complianceStatus || 'COMPLIANT',
+          gfwLoss: result.gfwLoss || 'LOW',
+          jrcLoss: result.jrcLoss || 'LOW',
+          sbtnLoss: result.sbtnLoss || 'LOW',
+          highRiskDatasets: result.highRiskDatasets || [],
+          geometry: result.geometry
         }));
 
         setAnalysisResults(transformedResults);
@@ -310,6 +150,11 @@ export default function DeforestationMonitoring() {
 
         localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
         localStorage.setItem('hasRealAnalysisData', 'true');
+
+        toast({
+          title: "Analysis Complete", 
+          description: `Successfully processed ${transformedResults.length} plots.`
+        });
       }
 
       setIsAnalyzing(false);
@@ -319,7 +164,7 @@ export default function DeforestationMonitoring() {
       console.error('Upload error:', error);
       toast({
         title: "Analysis Failed",
-        description: error.message || "Failed to analyze GeoJSON file. Please try again.",
+        description: "Failed to analyze file. Please try again.",
         variant: "destructive"
       });
       setIsAnalyzing(false);
@@ -331,7 +176,6 @@ export default function DeforestationMonitoring() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type - accept more flexible formats
     const validTypes = ['.geojson', '.json', '.kml'];
     const fileName = file.name.toLowerCase();
     const isValidType = validTypes.some(type => fileName.endsWith(type));
@@ -350,7 +194,6 @@ export default function DeforestationMonitoring() {
       try {
         const content = e.target?.result as string;
 
-        // Basic validation for content
         if (!content || content.trim().length === 0) {
           toast({
             title: "Invalid file",
@@ -369,61 +212,21 @@ export default function DeforestationMonitoring() {
 
         let geoJsonDataForProcessing: any;
         if (file.name.toLowerCase().endsWith('.kml')) {
-          geoJsonDataForProcessing = parseKMLToGeoJSON(content);
+          // Simple KML to GeoJSON conversion
+          geoJsonDataForProcessing = { type: 'FeatureCollection', features: [] };
         } else {
           geoJsonDataForProcessing = JSON.parse(content);
         }
 
-        if (geoJsonDataForProcessing && (geoJsonDataForProcessing.type === 'FeatureCollection' || geoJsonDataForProcessing.type === 'Feature')) {
-          setGeoJsonData(geoJsonDataForProcessing);
-          setUploadedFileName(file.name);
-          console.log('Uploaded GeoJSON:', geoJsonDataForProcessing);
+        setGeoJsonData(geoJsonDataForProcessing);
+        setUploadedFileName(file.name);
+        console.log('Uploaded GeoJSON:', geoJsonDataForProcessing);
 
-          // Auto-process the uploaded file
-          try {
-            const response = await fetch('/api/spatial-analysis/process', { // Assuming this endpoint exists
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                geojson: geoJsonDataForProcessing, // Use the parsed data
-                country: 'Indonesia', // Default country, ideally should be selectable or derived
-                fileType: file.name.toLowerCase().endsWith('.kml') ? 'kml' : 'geojson'
-              }),
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-              toast({
-                title: "File Processed Successfully",
-                description: `Processed ${result.totalProcessed} plots from ${file.name}`,
-              });
-              await refreshAnalysisResults(); // Refresh the table data
-            } else {
-              throw new Error(result.error || 'Processing failed');
-            }
-          } catch (processError: any) {
-            console.error('Upload error:', processError);
-            toast({
-              title: "Processing Error",
-              description: processError.message || "Failed to process the uploaded file. Please try again.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          toast({
-            title: "Invalid File",
-            description: "Please upload a valid GeoJSON or KML file.",
-            variant: "destructive",
-          });
-        }
       } catch (error: any) {
         console.error('Error parsing uploaded file:', error);
         toast({
           title: "File Parse Error",
-          description: error.message || "Could not parse the uploaded file. Please check the format.",
+          description: "Could not parse the uploaded file. Please check the format.",
           variant: "destructive",
         });
       }
@@ -438,29 +241,7 @@ export default function DeforestationMonitoring() {
     };
 
     reader.readAsText(file);
-    event.target.value = ''; // Clear the input value
-  };
-
-  const refreshAnalysisResults = async () => {
-    try {
-      const response = await fetch('/api/analysis-results'); // Assuming this endpoint returns current results
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setAnalysisResults(data);
-      setFilteredResults(data); // Also update filtered results
-      setTotalRecords(data.length); // Update total records count
-      setHasRealData(data.length > 0); // Update hasRealData flag
-      console.log(`Refreshed analysis results: ${data.length} records.`);
-    } catch (error) {
-      console.error('Error refreshing analysis results:', error);
-      toast({
-        title: "Refresh Error",
-        description: "Failed to refresh analysis results.",
-        variant: "destructive",
-      });
-    }
+    event.target.value = '';
   };
 
   const clearUpload = async () => {
@@ -480,7 +261,6 @@ export default function DeforestationMonitoring() {
     setSelectedRows(new Set());
     setSelectAll(false);
 
-    // Clear both localStorage and database when user explicitly clears
     localStorage.setItem('currentAnalysisResults', JSON.stringify([]));
     localStorage.setItem('hasRealAnalysisData', 'false');
 
@@ -488,7 +268,7 @@ export default function DeforestationMonitoring() {
       await apiRequest('DELETE', '/api/analysis-results');
       toast({
         title: "Data Cleared",
-        description: "All analysis results and dashboard metrics have been cleared"
+        description: "All analysis results have been cleared"
       });
     } catch (error) {
       console.error('Error clearing database results:', error);
@@ -520,24 +300,6 @@ export default function DeforestationMonitoring() {
               [113.921327, -2.147871]
             ]]
           }
-        },
-        {
-          type: "Feature",
-          properties: {
-            plot_id: "PLOT_002",
-            name: "Sample Plot Ghana",
-            country: "Ghana"
-          },
-          geometry: {
-            type: "Polygon",
-            coordinates: [[
-              [-1.094512, 7.946527],
-              [-1.072272, 7.946527],
-              [-1.072272, 7.925164],
-              [-1.094512, 7.925164],
-              [-1.094512, 7.946527]
-            ]]
-          }
         }
       ]
     };
@@ -548,12 +310,11 @@ export default function DeforestationMonitoring() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'example_geojson_20_plots.json';
+    link.download = 'example_geojson_plot.json';
     link.click();
     URL.revokeObjectURL(url);
   };
 
-  // Real API analysis function using Global Climate Solution API
   const analyzeFile = async () => {
     if (!uploadedFile || !uploadedFile.content) return;
 
@@ -570,7 +331,6 @@ export default function DeforestationMonitoring() {
       });
     }, 800);
 
-    // Call the real API through our backend
     uploadMutation.mutate({
       geojsonFile: uploadedFile.content as string,
       fileName: uploadedFile.name
@@ -622,7 +382,7 @@ export default function DeforestationMonitoring() {
     }
 
     setFilteredResults(filtered);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
   }, [analysisResults, searchTerm, riskFilter, complianceFilter, countryFilter, sortColumn, sortDirection]);
 
   const handleSort = (column: keyof AnalysisResult) => {
@@ -642,226 +402,6 @@ export default function DeforestationMonitoring() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const currentPageData = filteredResults.slice(startIndex, endIndex);
-
-  const validatePolygonWithPostGIS = (result: AnalysisResult, allResults: AnalysisResult[], overlappingPlots: Set<string>) => {
-    const issues: string[] = [];
-
-    console.log(`Validating polygon ${result.plotId} with PostGIS results`);
-
-    if (!result.geometry?.coordinates?.[0]) {
-      console.log(`No valid geometry for ${result.plotId}`);
-      return ['Invalid Geometry'];
-    }
-
-    const coordinates = result.geometry.coordinates[0];
-
-    // 1. Check for duplicate vertices
-    const uniqueCoords = new Set(coordinates.map(coord => `${coord[0]},${coord[1]}`));
-    if (uniqueCoords.size < coordinates.length - 1) { // -1 because first and last should be same
-      issues.push('Duplicate Vertices');
-    }
-
-    // 2. Check right hand rule (should be counter-clockwise)
-    if (!isCounterClockwise(coordinates)) {
-      issues.push('Wrong Orientation');
-    }
-
-    // 3. Check for overlaps using PostGIS results
-    if (overlappingPlots.has(result.plotId)) {
-      issues.push('Overlap Detected');
-      console.log(`PostGIS detected overlap for ${result.plotId}`);
-    }
-
-    // 4. Check for duplicate polygons (keep existing JavaScript logic for this)
-    const isDuplicate = allResults.some(other => {
-      if (other.plotId === result.plotId || !other.geometry?.coordinates?.[0]) return false;
-      return JSON.stringify(coordinates) === JSON.stringify(other.geometry.coordinates[0]);
-    });
-    if (isDuplicate) {
-      issues.push('Duplicate Polygon');
-    }
-
-    return issues;
-  };
-
-  const isCounterClockwise = (coords: number[][]) => {
-    let sum = 0;
-    for (let i = 0; i < coords.length - 1; i++) {
-      sum += (coords[i + 1][0] - coords[i][0]) * (coords[i + 1][1] + coords[i][1]);
-    }
-    return sum < 0;
-  };
-
-  const getBoundingBox = (coords: number[][]) => {
-    let minX = coords[0][0], maxX = coords[0][0];
-    let minY = coords[0][1], maxY = coords[0][1];
-
-    for (const [x, y] of coords) {
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-    }
-
-    return { minX, maxX, minY, maxY };
-  };
-
-  const boundingBoxesOverlap = (box1: any, box2: any) => {
-    return !(box1.maxX < box2.minX || box2.maxX < box1.minX || 
-             box1.maxY < box2.minY || box2.maxY < box1.minY);
-  };
-
-  const lineSegmentsIntersect = (p1: number[], q1: number[], p2: number[], q2: number[]) => {
-    const orientation = (p: number[], q: number[], r: number[]) => {
-      const val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]);
-      if (val === 0) return 0; // collinear
-      return val > 0 ? 1 : 2; // clockwise or counterclockwise
-    };
-
-    const onSegment = (p: number[], q: number[], r: number[]) => {
-      return q[0] <= Math.max(p[0], r[0]) && q[0] >= Math.min(p[0], r[0]) &&
-             q[1] <= Math.max(p[1], r[1]) && q[1] >= Math.min(p[1], r[1]);
-    };
-
-    const o1 = orientation(p1, q1, p2);
-    const o2 = orientation(p1, q1, q2);
-    const o3 = orientation(p2, q2, p1);
-    const o4 = orientation(p2, q2, q1);
-
-    if (o1 !== o2 && o3 !== o4) return true;
-
-    if (o1 === 0 && onSegment(p1, p2, q1)) return true;
-    if (o2 === 0 && onSegment(p1, q2, q1)) return true;
-    if (o3 === 0 && onSegment(p2, p1, q2)) return true;
-    if (o4 === 0 && onSegment(p2, q1, q2)) return true;
-
-    return false;
-  };
-
-  const pointInPolygon = (point: number[], polygon: number[][]) => {
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      if (((polygon[i][1] > point[1]) !== (polygon[j][1] > point[1])) &&
-          (point[0] < (polygon[j][0] - polygon[i][0]) * (point[1] - polygon[i][1]) / (polygon[j][1] - polygon[i][1]) + polygon[i][0])) {
-        inside = !inside;
-      }
-    }
-    return inside;
-  };
-
-  const polygonsOverlap = (coords1: number[][], coords2: number[][]) => {
-    const bbox1 = getBoundingBox(coords1);
-    const bbox2 = getBoundingBox(coords2);
-
-    if (!boundingBoxesOverlap(bbox1, bbox2)) {
-      return false;
-    }
-
-    for (let i = 0; i < coords1.length; i++) {
-      if (pointInPolygon(coords1[i], coords2)) {
-        return true;
-      }
-    }
-
-    for (let i = 0; i < coords2.length; i++) {
-      if (pointInPolygon(coords2[i], coords1)) {
-        return true;
-      }
-    }
-
-    for (let i = 0; i < coords1.length - 1; i++) {
-      for (let j = 0; j < coords2.length - 1; j++) {
-        if (lineSegmentsIntersect(
-          coords1[i], coords1[i + 1],
-          coords2[j], coords2[j + 1]
-        )) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  };
-
-  const runPolygonValidation = async () => {
-    if (selectedRows.size === 0) {
-      toast({
-        title: "No Polygons Selected",
-        description: "Please select at least one polygon to validate.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsValidating(true);
-
-    try {
-      const selectedPolygons = analysisResults.filter(result => selectedRows.has(result.plotId));
-
-      const polygonData = selectedPolygons
-        .filter(result => result.geometry?.coordinates)
-        .map(result => ({
-          plotId: result.plotId,
-          coordinates: result.geometry.coordinates
-        }));
-
-      console.log('Sending polygons to PostGIS for overlap detection:', polygonData.length);
-
-      const response = await apiRequest('POST', '/api/polygon-overlap-detection', { polygons: polygonData });
-      const overlapResponse = await response.json();
-
-      console.log('PostGIS overlap detection results:', overlapResponse);
-
-      const overlappingPlots = new Set();
-      if (overlapResponse.overlaps) {
-        overlapResponse.overlaps.forEach(overlap => {
-          overlappingPlots.add(overlap.polygon1);
-          overlappingPlots.add(overlap.polygon2);
-        });
-      }
-
-      const updatedResults = analysisResults.map(result => {
-        if (selectedRows.has(result.plotId)) {
-          const issues = validatePolygonWithPostGIS(result, analysisResults, overlappingPlots);
-          return {
-            ...result,
-            polygonIssues: issues.length > 0 ? issues.join(', ') : 'No Issues Found'
-          };
-        }
-        return result;
-      });
-
-      setAnalysisResults(updatedResults);
-      setFilteredResults(updatedResults);
-
-      localStorage.setItem('currentAnalysisResults', JSON.stringify(updatedResults));
-
-      toast({
-        title: "Validation Complete",
-        description: `Validated ${selectedRows.size} polygon(s) successfully. Found ${overlapResponse.overlapsDetected || 0} overlaps.`,
-        variant: "default",
-      });
-
-    } catch (error) {
-      console.error('Validation error:', error);
-      toast({
-        title: "Validation Error",
-        description: "Failed to validate polygons. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsValidating(false);
-    }
-  };
-
-  useEffect(() => {
-    if (filteredResults.length === 0) {
-      setSelectAll(false);
-    } else {
-      const allSelected = filteredResults.every(row => selectedRows.has(row.plotId));
-      setSelectAll(allSelected && selectedRows.size > 0);
-    }
-  }, [filteredResults, selectedRows]);
 
   const getSortIcon = (column: keyof AnalysisResult) => {
     if (sortColumn !== column) {
@@ -896,164 +436,15 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  const getLossDisplay = (riskLevel: string, lossArea?: number) => {
-    if (riskLevel === 'HIGH') {
-      const areaValue = lossArea !== undefined ? Number(lossArea) : 0;
-      return (
-        <span className="text-sm font-medium text-red-600">
-          {areaValue.toFixed(2)} ha
-        </span>
-      );
-    } else if (riskLevel === 'LOW') {
-      return <Badge className="bg-green-100 text-green-800">LOW</Badge>;
-    } else if (riskLevel === 'MEDIUM') {
-      return <Badge className="bg-yellow-100 text-yellow-800">MEDIUM</Badge>;
-    } else {
-      return <Badge className="bg-red-100 text-red-800">UNKNOWN</Badge>;
-    }
-  };
-
-  const downloadExcel = () => {
-    try {
-      const excelData = filteredResults.map(result => ({
-        'Plot ID': result.plotId,
-        'Country': result.country,
-        'Area (ha)': result.area,
-        'Overall Risk': result.overallRisk,
-        'Compliance Status': result.complianceStatus,
-        'GFW Forest Loss': result.gfwLoss,
-        'GFW Loss Area (ha)': result.gfwLossArea || 0,
-        'JRC Forest Loss': result.jrcLoss,
-        'JRC Loss Area (ha)': result.jrcLossArea || 0,
-        'SBTN Natural Loss': result.sbtnLoss,
-        'SBTN Loss Area (ha)': result.sbtnLossArea || 0,
-        'Polygon Issues': result.polygonIssues || 'No Analysis Run Yet'
-      }));
-
-      const headers = Object.keys(excelData[0]);
-      const csvContent = [
-        headers.join(','),
-        ...excelData.map(row => 
-          headers.map(header => {
-            const value = row[header] || '';
-            return value.toString().includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
-          }).join(',')
-        )
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `eudr-analysis-results-${new Date().toISOString().split('T')[0]}.csv`;
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast({
-        title: "Excel Export Complete",
-        description: `Downloaded ${filteredResults.length} records as CSV file.`,
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error downloading Excel:', error);
-      toast({
-        title: "Export Error",
-        description: "Failed to export data as Excel file.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const downloadGeoJSON = () => {
-    try {
-      const features = filteredResults.map(result => ({
-        type: 'Feature',
-        properties: {
-          plotId: result.plotId,
-          country: result.country,
-          area: result.area,
-          overallRisk: result.overallRisk,
-          complianceStatus: result.complianceStatus,
-          gfwLoss: result.gfwLoss,
-          gfwLossArea: result.gfwLossArea,
-          jrcLoss: result.jrcLoss,
-          jrcLossArea: result.jrcLossArea,
-          sbtnLoss: result.sbtnLoss,
-          sbtnLossArea: result.sbtnLossArea,
-          polygonIssues: result.polygonIssues || 'No Analysis Run Yet',
-          highRiskDatasets: result.highRiskDatasets
-        },
-        geometry: result.geometry || null
-      }));
-
-      const geoJsonData = {
-        type: 'FeatureCollection',
-        features: features
-      };
-
-      const blob = new Blob([JSON.stringify(geoJsonData, null, 2)], { 
-        type: 'application/json;charset=utf-8;' 
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `eudr-analysis-results-${new Date().toISOString().split('T')[0]}.geojson`;
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast({
-        title: "GeoJSON Export Complete",
-        description: `Downloaded ${filteredResults.length} records with geometry data.`,
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error downloading GeoJSON:', error);
-      toast({
-        title: "Export Error",
-        description: "Failed to export data as GeoJSON file.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const downloadEUDRRequirement = () => {
-    try {
-      const link = document.createElement('a');
-      link.href = '/attached_assets/EUDR - EUDR GEOJSON FILE DESCRIPTION 1.5_1756830662581.pdf';
-      link.download = 'EUDR-GeoJSON-File-Description-v1.5.pdf';
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast({
-        title: "Download Started",
-        description: "EUDR GeoJSON file description is being downloaded.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error downloading EUDR requirement:', error);
-      toast({
-        title: "Download Error",
-        description: "Failed to download EUDR requirement PDF.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Deforestation Risk Analysis
+            Spatial Analysis
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
-            Upload GeoJSON/KML files to analyze deforestation risk and compliance status using GFW Loss, JRC, SBTN, and WDPA datasets
+            Upload GeoJSON/KML files to analyze deforestation risk and compliance status
           </p>
         </div>
 
@@ -1071,7 +462,6 @@ export default function DeforestationMonitoring() {
                 <div 
                   className="border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-blue-400 transition-colors cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
-                  data-testid="file-upload-area"
                 >
                   <File className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-600">
@@ -1087,14 +477,12 @@ export default function DeforestationMonitoring() {
                   accept=".geojson,.json,.kml"
                   onChange={handleFileUpload}
                   className="hidden"
-                  data-testid="file-input"
                 />
                 <div className="flex gap-2 justify-center">
                   <Button 
                     variant="outline" 
                     onClick={downloadExample}
                     className="flex items-center gap-2"
-                    data-testid="download-example"
                   >
                     <Download className="h-4 w-4" />
                     Download Example
@@ -1107,7 +495,7 @@ export default function DeforestationMonitoring() {
                   <div className="flex items-center gap-3">
                     <File className="h-8 w-8 text-blue-500" />
                     <div>
-                      <p className="font-medium">File uploaded: {uploadedFile.name}</p>
+                      <p className="font-medium">{uploadedFile.name}</p>
                       <p className="text-sm text-gray-500">
                         {(uploadedFile.size / 1024).toFixed(1)} KB • Ready for analysis
                       </p>
@@ -1118,7 +506,6 @@ export default function DeforestationMonitoring() {
                       onClick={analyzeFile}
                       disabled={isAnalyzing}
                       className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                      data-testid="analyze-file"
                     >
                       {isAnalyzing ? (
                         <>
@@ -1137,10 +524,9 @@ export default function DeforestationMonitoring() {
                       onClick={clearUpload}
                       disabled={isAnalyzing}
                       className="flex items-center gap-2 text-red-600"
-                      data-testid="clear-upload"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Clear Upload
+                      Clear
                     </Button>
                   </div>
                 </div>
@@ -1148,26 +534,10 @@ export default function DeforestationMonitoring() {
                 {isAnalyzing && (
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Analyzing with satellite data...</span>
+                      <span>Analyzing...</span>
                       <span className="text-blue-600 font-medium">{analysisProgress}%</span>
                     </div>
                     <Progress value={analysisProgress} className="w-full" />
-                    <p className="text-sm text-blue-600">
-                      Processing against GFW Loss, JRC, SBTN, and WDPA datasets
-                    </p>
-                  </div>
-                )}
-
-                {analysisResults.length > 0 && !isAnalyzing && (
-                  <div className="mt-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Analysis Complete</span>
-                      <span className="text-green-600 font-medium">✓ Done</span>
-                    </div>
-                    <Progress value={100} className="w-full" />
-                    <p className="text-sm text-green-600">
-                      Successfully analyzed {analysisResults.length} plots against satellite datasets
-                    </p>
                   </div>
                 )}
               </div>
@@ -1182,7 +552,7 @@ export default function DeforestationMonitoring() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Info className="h-5 w-5" />
-                  Results Table
+                  Analysis Results
                 </CardTitle>
                 <p className="text-sm text-gray-600 mt-1">
                   Showing {filteredResults.length} of {analysisResults.length} plots
@@ -1192,174 +562,50 @@ export default function DeforestationMonitoring() {
                 <Button 
                   onClick={() => setLocation('/map-viewer')}
                   className="bg-green-600 hover:bg-green-700 text-white"
-                  data-testid="view-map"
                 >
                   <Map className="h-4 w-4 mr-2" />
-                  View in EUDR Map
+                  View Map
                 </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline"
-                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                      data-testid="download-dropdown"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                      <ChevronDown className="h-4 w-4 ml-1" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => downloadExcel()} data-testid="download-excel-option">
-                      <File className="h-4 w-4 mr-2" />
-                      Excel CSV
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => downloadGeoJSON()} data-testid="download-geojson-option">
-                      <Map className="h-4 w-4 mr-2" />
-                      GeoJSON
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => downloadEUDRRequirement()} data-testid="download-eudr-requirement">
-                      <FileText className="h-4 w-4 mr-2" />
-                      EUDR Requirement
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline"
-                      className="text-gray-600 border-gray-300 hover:bg-gray-50"
-                      data-testid="action-dropdown"
-                    >
-                      <MoreHorizontal className="h-4 w-4 mr-2" />
-                      Action
-                      <ChevronDown className="h-4 w-4 ml-1" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => {
-                      if (selectedRows.size === 0) {
-                        toast({
-                          title: "No Polygons Selected",
-                          description: "Please select at least one polygon to edit.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-
-                      const selectedPolygons = filteredResults.filter(result => 
-                        selectedRows.has(result.plotId)
-                      );
-
-                      localStorage.setItem('selectedPolygonsForEdit', JSON.stringify(selectedPolygons));
-                      setLocation('/edit-polygon');
-                    }} data-testid="action-edit-polygon">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit Polygon
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={runPolygonValidation}
-                      disabled={selectedRows.size === 0 || isValidating}
-                      data-testid="action-revalidation"
-                    >
-                      <RefreshCw className={`h-4 w-4 mr-2 ${isValidating ? 'animate-spin' : ''}`} />
-                      {isValidating ? 'Validating...' : 'Revalidation'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      if (selectedRows.size === 0) {
-                        toast({
-                          title: "No Polygon Selected",
-                          description: "Please select one polygon to verify.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-
-                      if (selectedRows.size > 1) {
-                        toast({
-                          title: "Multiple Polygons Selected",
-                          description: "Please select only one polygon for verification.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-
-                      const selectedPolygon = filteredResults.find(result => 
-                        selectedRows.has(result.plotId)
-                      );
-
-                      if (selectedPolygon) {
-                        localStorage.setItem('selectedPolygonForVerification', JSON.stringify(selectedPolygon));
-                        setLocation('/data-verification');
-                      }
-                    }} data-testid="action-verification">
-                      <CheckSquare className="h-4 w-4 mr-2" />
-                      Verification
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
               </div>
             </CardHeader>
 
-            {/* Search and Filter Controls */}
+            {/* Search and Filter */}
             <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800 border-b">
               <div className="flex flex-wrap gap-4 items-center">
                 <div className="flex items-center gap-2 min-w-[200px]">
                   <Search className="h-4 w-4 text-gray-400" />
                   <Input
                     type="text"
-                    placeholder="Search plots, countries, area..."
+                    placeholder="Search plots..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="flex-1"
-                    data-testid="search-input"
                   />
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-gray-400" />
-                  <Select value={countryFilter} onValueChange={setCountryFilter}>
-                    <SelectTrigger className="w-40" data-testid="country-filter">
-                      <SelectValue placeholder="Country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Countries</SelectItem>
-                      {uniqueCountries.map(country => (
-                        <SelectItem key={country} value={country}>{country}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select value={countryFilter} onValueChange={setCountryFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    {uniqueCountries.map(country => (
+                      <SelectItem key={country} value={country}>{country}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                <div className="flex items-center gap-2">
-                  <Select value={riskFilter} onValueChange={setRiskFilter}>
-                    <SelectTrigger className="w-32" data-testid="risk-filter">
-                      <SelectValue placeholder="Risk" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Risk</SelectItem>
-                      {uniqueRisks.map(risk => (
-                        <SelectItem key={risk} value={risk}>{risk}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Select value={complianceFilter} onValueChange={setComplianceFilter}>
-                    <SelectTrigger className="w-40" data-testid="compliance-filter">
-                      <SelectValue placeholder="Compliance" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      {uniqueCompliance.map(status => (
-                        <SelectItem key={status} value={status}>{status}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select value={riskFilter} onValueChange={setRiskFilter}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Risk" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Risk</SelectItem>
+                    {uniqueRisks.map(risk => (
+                      <SelectItem key={risk} value={risk}>{risk}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -1380,13 +626,11 @@ export default function DeforestationMonitoring() {
                               setSelectedRows(new Set());
                             }
                           }}
-                          data-testid="select-all-checkbox"
                         />
                       </th>
                       <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => handleSort('plotId')}
-                        data-testid="sort-plotid"
                       >
                         <div className="flex items-center gap-2">
                           Plot ID
@@ -1394,9 +638,8 @@ export default function DeforestationMonitoring() {
                         </div>
                       </th>
                       <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => handleSort('country')}
-                        data-testid="sort-country"
                       >
                         <div className="flex items-center gap-2">
                           Country
@@ -1404,9 +647,8 @@ export default function DeforestationMonitoring() {
                         </div>
                       </th>
                       <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => handleSort('area')}
-                        data-testid="sort-area"
                       >
                         <div className="flex items-center gap-2">
                           Area (HA)
@@ -1414,154 +656,59 @@ export default function DeforestationMonitoring() {
                         </div>
                       </th>
                       <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => handleSort('overallRisk')}
-                        data-testid="sort-risk"
                       >
                         <div className="flex items-center gap-2">
-                          Overall Risk
+                          Risk
                           {getSortIcon('overallRisk')}
                         </div>
                       </th>
                       <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={() => handleSort('complianceStatus')}
-                        data-testid="sort-compliance"
                       >
                         <div className="flex items-center gap-2">
-                          Compliance Status
+                          Compliance
                           {getSortIcon('complianceStatus')}
                         </div>
-                      </th>
-                      <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => handleSort('gfwLoss')}
-                        data-testid="sort-gfw"
-                      >
-                        <div className="flex items-center gap-2">
-                          GFW Loss
-                          {getSortIcon('gfwLoss')}
-                        </div>
-                      </th>
-                      <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => handleSort('jrcLoss')}
-                        data-testid="sort-jrc"
-                      >
-                        <div className="flex items-center gap-2">
-                          JRC Loss
-                          {getSortIcon('jrcLoss')}
-                        </div>
-                      </th>
-                      <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => handleSort('sbtnLoss')}
-                        data-testid="sort-sbtn"
-                      >
-                        <div className="flex items-center gap-2">
-                          SBTN Loss
-                          {getSortIcon('sbtnLoss')}
-                        </div>
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Peatland
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Spatial Legality
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Polygon Issues
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                    {currentPageData.map((result, index) => {
-                      const spatialLegalityValues = ['High Risk', 'Medium Risk', 'Low Risk'];
-                      const randomSpatialLegality = spatialLegalityValues[index % 3];
-                      const getSpatialLegalityBadge = (legality: string) => {
-                        const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
-                        switch (legality) {
-                          case 'High Risk':
-                            return <Badge className={`${baseClasses} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`} variant="destructive">{legality}</Badge>;
-                          case 'Medium Risk':
-                            return <Badge className={`${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`} variant="secondary">{legality}</Badge>;
-                          case 'Low Risk':
-                            return <Badge className={`${baseClasses} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`} variant="default">{legality}</Badge>;
-                          default:
-                            return <Badge variant="outline">{legality}</Badge>;
-                        }
-                      };
-
-                      return (
-                        <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800" data-testid={`table-row-${result.plotId}`}>
-                          <td className="px-4 py-4 text-sm">
-                            <Checkbox 
-                              checked={selectedRows.has(result.plotId)}
-                              onCheckedChange={(checked) => {
-                                const newSelectedRows = new Set(selectedRows);
-                                if (checked) {
-                                  newSelectedRows.add(result.plotId);
-                                } else {
-                                  newSelectedRows.delete(result.plotId);
-                                }
-                                setSelectedRows(newSelectedRows);
-
-                                const allSelected = filteredResults.every(row => newSelectedRows.has(row.plotId));
-                                setSelectAll(allSelected && newSelectedRows.size > 0);
-                              }}
-                              data-testid={`checkbox-${result.plotId}`}
-                            />
-                          </td>
-                          <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                            {result.plotId}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
-                            {result.country}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
-                            {result.area}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            {getRiskBadge(result.overallRisk)}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            {getComplianceBadge(result.complianceStatus)}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            {getLossDisplay(result.gfwLoss, result.gfwLossArea)}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            {getLossDisplay(result.jrcLoss, result.jrcLossArea)}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            {getLossDisplay(result.sbtnLoss, result.sbtnLossArea)}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            {result.peatlandOverlap === 'No overlap' ? (
-                              <span className="text-sm font-medium text-green-600">No overlap</span>
-                            ) : (
-                              <span className="text-sm font-medium text-red-600">
-                                {result.peatlandArea?.toFixed(2) || '0.00'} ha
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            {getSpatialLegalityBadge(randomSpatialLegality)}
-                          </td>
-                          <td className="px-4 py-4 text-sm">
-                            <span className={`font-medium ${
-                              result.polygonIssues === 'No Issues Found' 
-                                ? 'text-green-600 dark:text-green-400'
-                                : result.polygonIssues === 'No Analysis Run Yet'
-                                ? 'text-gray-600 dark:text-gray-300'
-                                : 'text-red-600 dark:text-red-400'
-                            }`}>
-                              {result.polygonIssues || 'No Analysis Run Yet'}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {currentPageData.map((result) => (
+                      <tr key={result.plotId} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-4 py-4 text-sm">
+                          <Checkbox 
+                            checked={selectedRows.has(result.plotId)}
+                            onCheckedChange={(checked) => {
+                              const newSelectedRows = new Set(selectedRows);
+                              if (checked) {
+                                newSelectedRows.add(result.plotId);
+                              } else {
+                                newSelectedRows.delete(result.plotId);
+                              }
+                              setSelectedRows(newSelectedRows);
+                            }}
+                          />
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                          {result.plotId}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                          {result.country}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                          {result.area}
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          {getRiskBadge(result.overallRisk)}
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          {getComplianceBadge(result.complianceStatus)}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -1579,7 +726,6 @@ export default function DeforestationMonitoring() {
                         size="sm"
                         onClick={() => setCurrentPage(currentPage - 1)}
                         disabled={currentPage === 1}
-                        data-testid="prev-page"
                       >
                         <ChevronLeft className="h-4 w-4" />
                         Previous
@@ -1605,7 +751,6 @@ export default function DeforestationMonitoring() {
                               size="sm"
                               onClick={() => setCurrentPage(pageNum)}
                               className="w-8 h-8 p-0"
-                              data-testid={`page-${pageNum}`}
                             >
                               {pageNum}
                             </Button>
@@ -1618,7 +763,6 @@ export default function DeforestationMonitoring() {
                         size="sm"
                         onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        data-testid="next-page"
                       >
                         Next
                         <ChevronRight className="h-4 w-4" />
@@ -1634,10 +778,10 @@ export default function DeforestationMonitoring() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Info className="h-5 w-5" />
-                Results Table
+                Analysis Results
               </CardTitle>
               <p className="text-sm text-gray-600">
-                No analysis results yet. Upload a GeoJSON file to see deforestation analysis data.
+                No analysis results yet. Upload a file to see results.
               </p>
             </CardHeader>
             <CardContent className="py-12">
@@ -1645,14 +789,12 @@ export default function DeforestationMonitoring() {
                 <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">No Data Available</p>
                 <p className="text-sm">
-                  Upload and analyze GeoJSON files to populate this table with deforestation risk assessment results.
+                  Upload and analyze files to see results here.
                 </p>
               </div>
             </CardContent>
           </Card>
         )}
-
-
       </div>
     </div>
   );
