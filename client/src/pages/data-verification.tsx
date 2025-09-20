@@ -116,7 +116,11 @@ export default function DataVerification() {
 
         // Clear existing map
         if (mapInstanceRef.current) {
-          mapInstanceRef.current.remove();
+          try {
+            mapInstanceRef.current.remove();
+          } catch (error) {
+            console.log('Map cleanup warning:', error);
+          }
           mapInstanceRef.current = null;
         }
 
