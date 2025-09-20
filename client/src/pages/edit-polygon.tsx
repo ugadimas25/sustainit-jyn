@@ -765,3 +765,334 @@ export default function EditPolygon() {
     </div>
   );
 }
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Save, ArrowLeft, RotateCcw, MapPin } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import L from "leaflet";
+
+interface AnalysisResult {
+  plotId: string;
+  country: string;
+  area: string;
+  overallRisk: string;
+  complianceStatus: string;
+  geometry?: {
+    type: string;
+    coordinates: number[][][];
+  };
+}
+
+export default function EditPolygon() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const polygonRef = useRef<any>(null);
+  
+  const [selectedPolygon, setSelectedPolygon] = useState<AnalysisResult | null>(null);
+  const [originalCoordinates, setOriginalCoordinates] = useState<number[][][]>([]);
+  const [editedCoordinates, setEditedCoordinates] = useState<number[][][]>([]);
+  const [editNotes, setEditNotes] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    // Load polygon data from localStorage
+    const storedData = localStorage.getItem('selectedPolygonForEdit');
+    if (storedData) {
+      try {
+        const polygonData = JSON.parse(storedData);
+        console.log('Loaded polygon data for editing:', polygonData);
+        setSelectedPolygon(polygonData);
+        
+        if (polygonData.geometry && polygonData.geometry.coordinates) {
+          setOriginalCoordinates(polygonData.geometry.coordinates);
+          setEditedCoordinates(polygonData.geometry.coordinates);
+        }
+      } catch (error) {
+        console.error('Error parsing stored polygon data:', error);
+        toast({
+          title: "Data Loading Error",
+          description: "Failed to load polygon data. Redirecting to spatial analysis.",
+          variant: "destructive",
+        });
+        setLocation('/deforestation-monitoring');
+      }
+    } else {
+      toast({
+        title: "No Data Selected",
+        description: "Please select a polygon from the spatial analysis page first.",
+        variant: "destructive",
+      });
+      setLocation('/deforestation-monitoring');
+    }
+  }, [setLocation, toast]);
+
+  useEffect(() => {
+    if (!selectedPolygon || !mapRef.current) return;
+
+    // Initialize Leaflet map
+    const initializeMap = () => {
+      try {
+        // Remove existing map if it exists
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+        }
+
+        // Create new map
+        const map = L.map(mapRef.current, {
+          center: [0, 0],
+          zoom: 15,
+          zoomControl: true
+        });
+
+        // Add satellite tile layer
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        }).addTo(map);
+
+        mapInstanceRef.current = map;
+
+        // Add editable polygon if geometry exists
+        if (selectedPolygon.geometry && selectedPolygon.geometry.coordinates) {
+          const coordinates = selectedPolygon.geometry.coordinates[0];
+          const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
+
+          // Create editable polygon
+          const polygon = L.polygon(latLngs, {
+            color: '#ff7800',
+            weight: 3,
+            opacity: 0.8,
+            fillOpacity: 0.3,
+            fillColor: '#ff7800'
+          }).addTo(map);
+
+          // Enable editing
+          polygon.editing?.enable();
+          polygonRef.current = polygon;
+
+          // Add event listener for coordinate changes
+          polygon.on('edit', () => {
+            const newLatLngs = polygon.getLatLngs()[0] as L.LatLng[];
+            const newCoordinates = newLatLngs.map(latlng => [latlng.lng, latlng.lat]);
+            newCoordinates.push(newCoordinates[0]); // Close the polygon
+            setEditedCoordinates([[newCoordinates]]);
+          });
+
+          // Fit map to polygon bounds
+          map.fitBounds(polygon.getBounds(), { padding: [50, 50] });
+        }
+
+      } catch (error) {
+        console.error('Error initializing edit map:', error);
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+      }
+    };
+  }, [selectedPolygon]);
+
+  const handleSave = async () => {
+    if (!selectedPolygon || !editedCoordinates.length) return;
+
+    setIsSaving(true);
+    try {
+      // Update polygon geometry via API
+      const response = await apiRequest('PATCH', `/api/analysis-results/${selectedPolygon.plotId}/geometry`, {
+        coordinates: editedCoordinates[0][0] // Send the coordinate array
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Polygon Updated",
+          description: `Polygon geometry for ${selectedPolygon.plotId} has been updated successfully.`,
+        });
+
+        // Clear storage and redirect
+        localStorage.removeItem('selectedPolygonForEdit');
+        setLocation('/deforestation-monitoring');
+      } else {
+        throw new Error('Failed to update polygon');
+      }
+    } catch (error) {
+      console.error('Error saving polygon:', error);
+      toast({
+        title: "Save Failed",
+        description: "Failed to save polygon changes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    if (polygonRef.current && originalCoordinates.length) {
+      const coordinates = originalCoordinates[0][0];
+      const latLngs = coordinates.map(coord => [coord[1], coord[0]]);
+      polygonRef.current.setLatLngs(latLngs);
+      setEditedCoordinates(originalCoordinates);
+      setEditNotes('');
+      
+      toast({
+        title: "Reset Complete",
+        description: "Polygon has been reset to original coordinates.",
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    localStorage.removeItem('selectedPolygonForEdit');
+    setLocation('/deforestation-monitoring');
+  };
+
+  if (!selectedPolygon) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <p className="text-gray-600">Loading polygon data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 border-b p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+              Edit Polygon - {selectedPolygon.plotId}
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Modify the polygon boundaries and save your changes.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={selectedPolygon.complianceStatus === 'COMPLIANT' ? 'default' : 'destructive'}>
+              {selectedPolygon.complianceStatus}
+            </Badge>
+            <Badge variant="outline">
+              {selectedPolygon.overallRisk} Risk
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex">
+        {/* Map Container */}
+        <div className="flex-1 relative">
+          <div ref={mapRef} className="w-full h-full" />
+          
+          {/* Map Instructions */}
+          <div className="absolute top-4 left-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 max-w-sm">
+            <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Editing Instructions
+            </h3>
+            <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+              <li>• Click and drag polygon vertices to move them</li>
+              <li>• Click on polygon edges to add new vertices</li>
+              <li>• Changes are saved automatically as you edit</li>
+              <li>• Use the reset button to restore original shape</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Side Panel */}
+        <div className="w-80 bg-white dark:bg-gray-800 border-l p-6 overflow-y-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Edit Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Plot Information */}
+              <div>
+                <Label className="text-sm font-medium">Plot Information</Label>
+                <div className="mt-2 text-sm space-y-1">
+                  <div><strong>Plot ID:</strong> {selectedPolygon.plotId}</div>
+                  <div><strong>Country:</strong> {selectedPolygon.country}</div>
+                  <div><strong>Area:</strong> {selectedPolygon.area} ha</div>
+                </div>
+              </div>
+
+              {/* Edit Notes */}
+              <div>
+                <Label htmlFor="edit-notes">Edit Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  placeholder="Describe the changes made to this polygon..."
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  className="mt-1"
+                  rows={4}
+                />
+              </div>
+
+              {/* Coordinate Summary */}
+              <div>
+                <Label className="text-sm font-medium">Coordinates</Label>
+                <div className="mt-2 text-xs bg-gray-50 dark:bg-gray-700 p-2 rounded">
+                  {editedCoordinates.length > 0 ? (
+                    <div>
+                      <div><strong>Vertices:</strong> {editedCoordinates[0]?.[0]?.length - 1 || 0}</div>
+                      <div><strong>Modified:</strong> {
+                        JSON.stringify(originalCoordinates) !== JSON.stringify(editedCoordinates) ? 'Yes' : 'No'
+                      }</div>
+                    </div>
+                  ) : (
+                    <div>No coordinates available</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2 pt-4">
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving || JSON.stringify(originalCoordinates) === JSON.stringify(editedCoordinates)}
+                  className="w-full"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={JSON.stringify(originalCoordinates) === JSON.stringify(editedCoordinates)}
+                  className="w-full"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset to Original
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  onClick={handleCancel}
+                  className="w-full"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Cancel & Return
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

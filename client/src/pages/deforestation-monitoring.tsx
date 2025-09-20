@@ -340,6 +340,86 @@ export default function DeforestationMonitoring() {
     }
   };
 
+  const handleRevalidation = async (result: AnalysisResult) => {
+    try {
+      // Show loading state
+      toast({
+        title: "Revalidating Analysis",
+        description: `Revalidating analysis for plot ${result.plotId}...`,
+      });
+
+      // Create a minimal GeoJSON for revalidation
+      const revalidationData = {
+        type: "FeatureCollection",
+        features: [{
+          type: "Feature",
+          properties: {
+            plot_id: result.plotId,
+            name: `Revalidation - ${result.plotId}`,
+            country: result.country
+          },
+          geometry: result.geometry || {
+            type: "Point",
+            coordinates: [0, 0] // Fallback coordinates
+          }
+        }]
+      };
+
+      // Call the analysis API again
+      const response = await apiRequest('POST', '/api/geojson/upload', {
+        geojson: JSON.stringify(revalidationData),
+        filename: `revalidation-${result.plotId}.json`
+      });
+
+      if (response.ok) {
+        const newResults = await response.json();
+        
+        toast({
+          title: "Revalidation Complete",
+          description: `Plot ${result.plotId} has been revalidated successfully.`,
+        });
+
+        // Refresh the analysis results
+        window.location.reload();
+      } else {
+        throw new Error('Revalidation failed');
+      }
+    } catch (error) {
+      console.error('Revalidation error:', error);
+      toast({
+        title: "Revalidation Failed",
+        description: `Failed to revalidate plot ${result.plotId}. Please try again.`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleVerification = (result: AnalysisResult) => {
+    // Store the selected polygon data for verification
+    localStorage.setItem('selectedPolygonForVerification', JSON.stringify(result));
+    
+    toast({
+      title: "Starting Verification",
+      description: `Redirecting to verification page for plot ${result.plotId}`,
+    });
+
+    // Navigate to data verification page
+    setLocation('/data-verification');
+  };
+
+  const handleEdit = (result: AnalysisResult) => {
+    // Store the selected polygon data for editing
+    localStorage.setItem('selectedPolygonForEdit', JSON.stringify(result));
+    
+    toast({
+      title: "Starting Edit Mode",
+      description: `Opening polygon editor for plot ${result.plotId}`,
+    });
+
+    // Navigate to polygon edit page
+    setLocation('/edit-polygon');
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -612,6 +692,9 @@ export default function DeforestationMonitoring() {
                           {getSortIcon('sbtnLoss')}
                         </div>
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -640,6 +723,40 @@ export default function DeforestationMonitoring() {
                         </td>
                         <td className="px-4 py-4 text-sm">
                           {getRiskBadge(result.sbtnLoss)}
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs px-2 py-1 h-7"
+                              onClick={() => handleRevalidation(result)}
+                              title="Revalidate analysis"
+                            >
+                              <RefreshCw className="h-3 w-3 mr-1" />
+                              Revalidate
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs px-2 py-1 h-7"
+                              onClick={() => handleVerification(result)}
+                              title="Verify data"
+                            >
+                              <CheckSquare className="h-3 w-3 mr-1" />
+                              Verify
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs px-2 py-1 h-7"
+                              onClick={() => handleEdit(result)}
+                              title="Edit polygon"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}

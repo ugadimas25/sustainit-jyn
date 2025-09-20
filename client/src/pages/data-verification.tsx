@@ -33,7 +33,7 @@ export default function DataVerification() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const verificationContentRef = useRef<HTMLDivElement>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     updatedDate: '',
@@ -42,12 +42,12 @@ export default function DataVerification() {
     assessedBy: '',
     skipConfirmation: false
   });
-  
+
   // Selected polygon data
   const [selectedPolygon, setSelectedPolygon] = useState<AnalysisResult | null>(null);
   const [detailPanelExpanded, setDetailPanelExpanded] = useState(true);
   const [mapType, setMapType] = useState<'Terrain' | 'Satellite' | 'Silver' | 'UAV'>('Satellite');
-  
+
   // TIFF files state
   const [availableTiffFiles, setAvailableTiffFiles] = useState<any[]>([]);
   const [selectedTiffFile, setSelectedTiffFile] = useState<string | null>(null);
@@ -55,16 +55,42 @@ export default function DataVerification() {
 
   // Load selected polygon from localStorage
   useEffect(() => {
-    const storedPolygon = localStorage.getItem('selectedPolygonForVerification');
-    if (storedPolygon) {
-      const polygon = JSON.parse(storedPolygon);
-      setSelectedPolygon(polygon);
+    // Load polygon data from localStorage
+    const storedData = localStorage.getItem('selectedPolygonForVerification');
+    if (storedData) {
+      try {
+        const polygonData = JSON.parse(storedData);
+        console.log('Loaded polygon data for verification:', polygonData);
+        setSelectedPolygon(polygonData);
+
+        // Set current date and time as defaults
+        const now = new Date();
+        setFormData(prev => ({
+          ...prev,
+          updatedDate: now.toISOString().split('T')[0],
+          updatedTime: now.toTimeString().slice(0, 5),
+          assessedBy: 'Current User', // Default assessor
+          assessment: `Initial verification assessment for plot ${polygonData.plotId}`
+        }));
+      } catch (error) {
+        console.error('Error parsing stored polygon data:', error);
+        toast({
+          title: "Data Loading Error",
+          description: "Failed to load polygon data. Redirecting to spatial analysis.",
+          variant: "destructive",
+        });
+        setLocation('/deforestation-monitoring');
+      }
     } else {
-      // No polygon selected, redirect back
+      // No data found, redirect back
+      toast({
+        title: "No Data Selected",
+        description: "Please select a polygon from the spatial analysis page first.",
+        variant: "destructive",
+      });
       setLocation('/deforestation-monitoring');
-      return;
     }
-  }, [setLocation]);
+  }, [setLocation, toast]);
 
   // Load TIFF files when UAV is selected
   useEffect(() => {
@@ -163,7 +189,7 @@ export default function DataVerification() {
             });
             break;
         }
-        
+
         tileLayer.addTo(map);
 
         // Add TIFF overlay for UAV mode
@@ -180,7 +206,7 @@ export default function DataVerification() {
               opacity: 0.8
             }
           );
-          
+
           tiffOverlay.addTo(map);
           tiffOverlay.bindTooltip('UAV TIFF Data Overlay', { permanent: false });
         }
@@ -189,7 +215,7 @@ export default function DataVerification() {
         if (selectedPolygon.geometry?.coordinates) {
           const coordinates = selectedPolygon.geometry.coordinates[0];
           const leafletCoords = coordinates.map((coord: number[]) => [coord[1], coord[0]]); // Convert to [lat, lng]
-          
+
           // Create polygon
           const polygon = L.polygon(leafletCoords, {
             fillColor: '#FFD700',
@@ -278,11 +304,11 @@ export default function DataVerification() {
       return true;
     } catch (error) {
       console.error('Error generating PDF:', error);
-      
+
       // Show UI elements again on error
       const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
       elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
-      
+
       return false;
     }
   };
@@ -291,7 +317,7 @@ export default function DataVerification() {
     try {
       // Generate PDF first
       const pdfGenerated = await generateVerificationPDF();
-      
+
       if (pdfGenerated) {
         toast({
           title: "Verification Confirmed",
@@ -309,7 +335,7 @@ export default function DataVerification() {
       // Clear storage and redirect
       localStorage.removeItem('selectedPolygonForVerification');
       setLocation('/deforestation-monitoring');
-      
+
     } catch (error) {
       console.error('Error confirming verification:', error);
       toast({
@@ -430,7 +456,7 @@ export default function DataVerification() {
                   }
                 </div>
               </CardHeader>
-              
+
               {detailPanelExpanded && (
                 <CardContent className="pt-0 space-y-3">
                   <div className="flex justify-between">
@@ -455,7 +481,7 @@ export default function DataVerification() {
                       {selectedPolygon.overallRisk}
                     </span>
                   </div>
-                  
+
                   {/* Show UAV TIFF status when UAV mode is active */}
                   {mapType === 'UAV' && (
                     <div className="pt-2 border-t">
@@ -489,7 +515,7 @@ export default function DataVerification() {
       {/* Data Collection Form */}
       <div className="bg-white dark:bg-gray-800 border-t p-6">
         <h2 className="text-lg font-semibold mb-4">Data Collection</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="space-y-2">
             <Label htmlFor="updated-date" className="text-sm font-medium">
@@ -504,7 +530,7 @@ export default function DataVerification() {
               data-testid="input-updated-date"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="assessment" className="text-sm font-medium">
               Assessment
@@ -517,7 +543,7 @@ export default function DataVerification() {
               data-testid="input-assessment"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="assessed-by" className="text-sm font-medium">
               Asses by
