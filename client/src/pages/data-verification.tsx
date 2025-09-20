@@ -31,9 +31,9 @@ export default function DataVerification() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
+  const mapInstanceRef = useRef<any>(null); // Changed to hold the Leaflet map instance
   const verificationContentRef = useRef<HTMLDivElement>(null);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     updatedDate: '',
@@ -42,12 +42,12 @@ export default function DataVerification() {
     assessedBy: '',
     skipConfirmation: false
   });
-  
+
   // Selected polygon data
   const [selectedPolygon, setSelectedPolygon] = useState<AnalysisResult | null>(null);
   const [detailPanelExpanded, setDetailPanelExpanded] = useState(true);
   const [mapType, setMapType] = useState<'Terrain' | 'Satellite' | 'Silver' | 'UAV'>('Satellite');
-  
+
   // TIFF files state
   const [availableTiffFiles, setAvailableTiffFiles] = useState<any[]>([]);
   const [selectedTiffFile, setSelectedTiffFile] = useState<string | null>(null);
@@ -114,13 +114,11 @@ export default function DataVerification() {
           });
         }
 
-        // Clear existing map
+        // Clear existing map instance and container
         if (mapInstanceRef.current) {
           mapInstanceRef.current.remove();
           mapInstanceRef.current = null;
         }
-
-        // Clear map container
         if (mapRef.current) {
           mapRef.current.innerHTML = '';
         }
@@ -159,7 +157,7 @@ export default function DataVerification() {
             });
             break;
         }
-        
+
         tileLayer.addTo(map);
 
         // Add TIFF overlay for UAV mode
@@ -176,7 +174,7 @@ export default function DataVerification() {
               opacity: 0.8
             }
           );
-          
+
           tiffOverlay.addTo(map);
           tiffOverlay.bindTooltip('UAV TIFF Data Overlay', { permanent: false });
         }
@@ -185,7 +183,7 @@ export default function DataVerification() {
         if (selectedPolygon.geometry?.coordinates) {
           const coordinates = selectedPolygon.geometry.coordinates[0];
           const leafletCoords = coordinates.map((coord: number[]) => [coord[1], coord[0]]); // Convert to [lat, lng]
-          
+
           // Create polygon
           const polygon = L.polygon(leafletCoords, {
             fillColor: '#FFD700',
@@ -220,6 +218,7 @@ export default function DataVerification() {
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
     };
   }, [selectedPolygon, mapType, selectedTiffFile]);
@@ -274,11 +273,11 @@ export default function DataVerification() {
       return true;
     } catch (error) {
       console.error('Error generating PDF:', error);
-      
+
       // Show UI elements again on error
       const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
       elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
-      
+
       return false;
     }
   };
@@ -287,7 +286,7 @@ export default function DataVerification() {
     try {
       // Generate PDF first
       const pdfGenerated = await generateVerificationPDF();
-      
+
       if (pdfGenerated) {
         toast({
           title: "Verification Confirmed",
@@ -305,7 +304,7 @@ export default function DataVerification() {
       // Clear storage and redirect
       localStorage.removeItem('selectedPolygonForVerification');
       setLocation('/deforestation-monitoring');
-      
+
     } catch (error) {
       console.error('Error confirming verification:', error);
       toast({
@@ -412,7 +411,7 @@ export default function DataVerification() {
           {/* Detail Information Panel */}
           <div className="absolute top-4 right-4 z-[1000] w-80">
             <Card className="bg-white dark:bg-gray-800 shadow-lg">
-              <CardHeader 
+              <CardHeader
                 className="pb-3 cursor-pointer"
                 onClick={() => setDetailPanelExpanded(!detailPanelExpanded)}
               >
@@ -420,13 +419,13 @@ export default function DataVerification() {
                   <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Detail information
                   </CardTitle>
-                  {detailPanelExpanded ? 
-                    <ChevronUp className="h-4 w-4" /> : 
+                  {detailPanelExpanded ?
+                    <ChevronUp className="h-4 w-4" /> :
                     <ChevronDown className="h-4 w-4" />
                   }
                 </div>
               </CardHeader>
-              
+
               {detailPanelExpanded && (
                 <CardContent className="pt-0 space-y-3">
                   <div className="flex justify-between">
@@ -451,7 +450,7 @@ export default function DataVerification() {
                       {selectedPolygon.overallRisk}
                     </span>
                   </div>
-                  
+
                   {/* Show UAV TIFF status when UAV mode is active */}
                   {mapType === 'UAV' && (
                     <div className="pt-2 border-t">
@@ -485,7 +484,7 @@ export default function DataVerification() {
       {/* Data Collection Form */}
       <div className="bg-white dark:bg-gray-800 border-t p-6">
         <h2 className="text-lg font-semibold mb-4">Data Collection</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="space-y-2">
             <Label htmlFor="updated-date" className="text-sm font-medium">
@@ -500,7 +499,7 @@ export default function DataVerification() {
               data-testid="input-updated-date"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="assessment" className="text-sm font-medium">
               Assessment
@@ -513,7 +512,7 @@ export default function DataVerification() {
               data-testid="input-assessment"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="assessed-by" className="text-sm font-medium">
               Asses by
@@ -536,8 +535,8 @@ export default function DataVerification() {
             onCheckedChange={(checked) => handleFormChange('skipConfirmation', checked as boolean)}
             data-testid="checkbox-skip-confirmation"
           />
-          <Label 
-            htmlFor="skip-confirmation" 
+          <Label
+            htmlFor="skip-confirmation"
             className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
           >
             Skip this confirmation next time
@@ -546,14 +545,14 @@ export default function DataVerification() {
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3" data-hide-in-pdf>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleCancel}
             data-testid="button-cancel-verification"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleConfirm}
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-confirm-verification"

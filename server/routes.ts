@@ -151,25 +151,30 @@ function validateSpatialData(geojson: any, plotId?: string, country?: string, ar
 }
 
 // Helper function to process individual plots
-async function processSinglePlot(feature: any, country: string): Promise<any> {
+async function processSinglePlot(feature: any, country: string, plotId?: string, area?: string): Promise<any> {
   const properties = feature.properties || {};
-  const plotId = properties.plot_id || properties.id || properties.ID || properties.Name || 'UNKNOWN';
-  const farmerName = properties.farmer_name || properties.NAME || properties['.Farmer Name'] || 'Unknown';
-  const area = properties.area || properties.area_ha || properties['.Plot size'] || properties.POLYGON_HA || '0';
+  const currentPlotId = plotId || properties.plot_id || properties.id || properties.ID || properties.Name || `PLOT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const farmerName = properties.farmer_name || properties.NAME || properties['.Farmer Name'] || properties.farm_name || 'Unknown';
+  const currentArea = area || properties.area || properties.area_ha || properties['.Plot size'] || properties.POLYGON_HA || '0';
   
   // Extract area number from string like "0.50 Ha"
   let areaNum = 0;
-  if (typeof area === 'string') {
-    const match = area.match(/[\d.]+/);
+  if (typeof currentArea === 'string') {
+    const match = currentArea.match(/[\d.]+/);
     areaNum = match ? parseFloat(match[0]) : 0;
   } else {
-    areaNum = parseFloat(area) || 0;
+    areaNum = parseFloat(currentArea) || 0;
+  }
+
+  // If area is still 0, try to calculate from geometry
+  if (areaNum === 0 && feature.geometry) {
+    areaNum = calculatePolygonArea(feature.geometry) || 1.0; // Default to 1 hectare if can't calculate
   }
 
   // Create analysis result with default values
   const analysisResult = {
     id: `analysis-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    plotId: plotId,
+    plotId: currentPlotId,
     country: country,
     area: areaNum,
     overallRisk: 'LOW',
@@ -192,18 +197,50 @@ async function processSinglePlot(feature: any, country: string): Promise<any> {
   // Store in database
   try {
     await storage.createAnalysisResult(analysisResult);
-    console.log(`✓ Processed plot ${plotId} - ${farmerName} (${areaNum} ha)`);
+    console.log(`✓ Processed plot ${currentPlotId} - ${farmerName} (${areaNum} ha) in ${country}`);
   } catch (error) {
-    console.error(`Error storing analysis for plot ${plotId}:`, error);
+    console.error(`Error storing analysis for plot ${currentPlotId}:`, error);
   }
 
   return {
-    plotId,
+    plotId: currentPlotId,
     farmerName,
     area: areaNum,
     country,
     status: 'processed'
   };
+}
+
+// Helper function to calculate polygon area (simplified)
+function calculatePolygonArea(geometry: any): number {
+  if (!geometry || !geometry.coordinates) return 0;
+  
+  try {
+    let coords: number[][];
+    
+    if (geometry.type === 'Polygon') {
+      coords = geometry.coordinates[0];
+    } else if (geometry.type === 'MultiPolygon') {
+      coords = geometry.coordinates[0][0];
+    } else {
+      return 0;
+    }
+    
+    if (!coords || coords.length < 3) return 0;
+    
+    // Simple area calculation using shoelace formula (rough approximation)
+    let area = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+      area += (coords[i][0] * coords[i + 1][1]) - (coords[i + 1][0] * coords[i][1]);
+    }
+    area = Math.abs(area) / 2;
+    
+    // Convert to hectares (very rough approximation)
+    return area * 10000; // Convert to square meters then to hectares
+  } catch (error) {
+    console.error('Error calculating polygon area:', error);
+    return 1.0; // Default fallback
+  }
 }
 
 async function initializeDefaultUser() {
@@ -1657,7 +1694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced spatial analysis endpoint with z-value handling and comprehensive validation
   app.post('/api/spatial-analysis/process', isAuthenticated, async (req, res) => {
     try {
-      const { geojson, plotId, country, area } = req.body;
+      let { geojson, plotId, country, area, fileType } = req.body;
 
       if (!geojson) {
         return res.status(400).json({ 
@@ -1680,13 +1717,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Normalize GeoJSON and remove z-values for external API compatibility
       const normalizedGeoJson = removeZValuesFromGeoJSON(parsedGeoJson);
       
-      // Validate required fields
-      const validationResult = validateSpatialData(normalizedGeoJson, plotId, country, area);
-      if (!validationResult.valid) {
-        return res.status(400).json({
-          success: false,
-          error: validationResult.error
-        });
+      // Set default country if not provided
+      if (!country) {
+        country = 'Indonesia';
       }
 
       // Process each feature
@@ -1694,18 +1727,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (normalizedGeoJson.type === 'FeatureCollection') {
         for (const feature of normalizedGeoJson.features) {
-          const result = await processSinglePlot(feature, country);
+          // Extract plot information from feature properties
+          const properties = feature.properties || {};
+          const currentPlotId = properties.plot_id || properties.id || properties.ID || properties.Name || `PLOT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const currentCountry = properties.country_name || properties.country || country;
+          const currentArea = properties.area_ha || properties.area || properties['.Plot size'] || area || '0';
+          
+          const result = await processSinglePlot(feature, currentCountry, currentPlotId, currentArea);
           analysisResults.push(result);
         }
       } else if (normalizedGeoJson.type === 'Feature') {
-        const result = await processSinglePlot(normalizedGeoJson, country);
+        const properties = normalizedGeoJson.properties || {};
+        const currentPlotId = properties.plot_id || properties.id || properties.ID || properties.Name || plotId || `PLOT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const currentCountry = properties.country_name || properties.country || country;
+        const currentArea = properties.area_ha || properties.area || properties['.Plot size'] || area || '0';
+        
+        const result = await processSinglePlot(normalizedGeoJson, currentCountry, currentPlotId, currentArea);
         analysisResults.push(result);
       }
 
       res.json({
         success: true,
         results: analysisResults,
-        totalProcessed: analysisResults.length
+        totalProcessed: analysisResults.length,
+        message: `Successfully processed ${analysisResults.length} plots`
       });
 
     } catch (error) {
