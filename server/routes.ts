@@ -3304,50 +3304,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Helper function to get country from coordinates using Nominatim API
   async function getCountryFromCoordinates(lat: number, lng: number): Promise<string> {
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=3&addressdetails=1`,
-        {
-          headers: {
-            'User-Agent': 'KPN-EUDR-Compliance-System/1.0 (support@kpn.com)'
-          }
+      // Use reverse geocoding with proper parameters according to Nominatim API docs
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=3&addressdetails=1&extratags=0&namedetails=0`;
+      
+      console.log(`🔍 Nominatim API request: ${url}`);
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'KPN-EUDR-Compliance-System/1.0 (support@kpn.com)'
         }
-      );
+      });
       
       if (response.ok) {
         const data = await response.json();
-        if (data.address && data.address.country) {
-          return data.address.country;
+        console.log(`📍 Nominatim response for (${lat}, ${lng}):`, JSON.stringify(data, null, 2));
+        
+        // According to Nominatim docs, country is available in multiple places
+        let country = null;
+        
+        if (data.address) {
+          // Try different country field names from Nominatim response
+          country = data.address.country || 
+                   data.address.country_code || 
+                   data.address.country_name;
         }
+        
+        // Also check display_name for country information
+        if (!country && data.display_name) {
+          const displayParts = data.display_name.split(', ');
+          country = displayParts[displayParts.length - 1]; // Last part is usually country
+        }
+        
+        if (country) {
+          console.log(`✅ Country detected from Nominatim: ${country}`);
+          return country;
+        }
+        
+        console.log(`⚠️  No country found in Nominatim response, using coordinate fallback`);
+      } else {
+        console.log(`⚠️  Nominatim API error: ${response.status} ${response.statusText}`);
       }
       
-      // Fallback based on coordinate ranges
+      // Enhanced coordinate-based fallback with more precise ranges
+      console.log(`🗺️  Using coordinate-based country detection for (${lat}, ${lng})`);
+      
+      // Indonesia (more precise bounds)
       if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
+        console.log(`🇮🇩 Detected Indonesia by coordinates`);
         return 'Indonesia';
-      } else if (lat >= 4 && lat <= 15 && lng >= -8 && lng <= 16) {
+      }
+      // Malaysia  
+      else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
+        console.log(`🇲🇾 Detected Malaysia by coordinates`);
+        return 'Malaysia';
+      }
+      // Nigeria
+      else if (lat >= 4.27 && lat <= 13.89 && lng >= 2.67 && lng <= 14.68) {
+        console.log(`🇳🇬 Detected Nigeria by coordinates`);
         return 'Nigeria';
-      } else if (lat >= 4 && lat <= 12 && lng >= -8 && lng <= 3) {
+      }
+      // Ghana
+      else if (lat >= 4.74 && lat <= 11.17 && lng >= -3.25 && lng <= 1.19) {
+        console.log(`🇬🇭 Detected Ghana by coordinates`);
         return 'Ghana';
-      } else if (lat >= 4 && lat <= 11 && lng >= -9 && lng <= -2) {
+      }
+      // Ivory Coast
+      else if (lat >= 4.36 && lat <= 10.74 && lng >= -8.60 && lng <= -2.49) {
+        console.log(`🇨🇮 Detected Ivory Coast by coordinates`);
         return 'Ivory Coast';
-      } else if (lat >= -25 && lat <= 5 && lng >= -74 && lng <= -32) {
+      }
+      // Brazil
+      else if (lat >= -33.75 && lat <= 5.27 && lng >= -73.99 && lng <= -28.84) {
+        console.log(`🇧🇷 Detected Brazil by coordinates`);
         return 'Brazil';
       }
+      // Central African Republic
+      else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
+        console.log(`🇨🇫 Detected Central African Republic by coordinates`);
+        return 'Central African Republic';
+      }
       
+      console.log(`❓ Could not determine country for coordinates (${lat}, ${lng})`);
       return 'Unknown';
+      
     } catch (error) {
-      console.warn('Nominatim API error, using coordinate fallback:', error);
+      console.error('Nominatim API error:', error);
       
       // Fallback based on coordinate ranges
       if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
         return 'Indonesia';
-      } else if (lat >= 4 && lat <= 15 && lng >= -8 && lng <= 16) {
+      } else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
+        return 'Malaysia';
+      } else if (lat >= 4.27 && lat <= 13.89 && lng >= 2.67 && lng <= 14.68) {
         return 'Nigeria';
-      } else if (lat >= 4 && lat <= 12 && lng >= -8 && lng <= 3) {
+      } else if (lat >= 4.74 && lat <= 11.17 && lng >= -3.25 && lng <= 1.19) {
         return 'Ghana';
-      } else if (lat >= 4 && lat <= 11 && lng >= -9 && lng <= -2) {
+      } else if (lat >= 4.36 && lat <= 10.74 && lng >= -8.60 && lng <= -2.49) {
         return 'Ivory Coast';
-      } else if (lat >= -25 && lat <= 5 && lng >= -74 && lng <= -32) {
+      } else if (lat >= -33.75 && lat <= 5.27 && lng >= -73.99 && lng <= -28.84) {
         return 'Brazil';
+      } else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
+        return 'Central African Republic';
       }
       
       return 'Unknown';
