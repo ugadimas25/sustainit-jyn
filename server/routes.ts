@@ -2585,6 +2585,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Helper function to remove z-values from coordinates (API external tidak bisa terima z-values)
+  function removeZValues(coordinates: any): any {
+    if (!coordinates || !Array.isArray(coordinates)) {
+      return coordinates;
+    }
+    
+    return coordinates.map((coord: any) => {
+      if (Array.isArray(coord)) {
+        if (typeof coord[0] === 'number' && typeof coord[1] === 'number') {
+          // This is a coordinate pair [lng, lat, z] - remove z
+          return [coord[0], coord[1]];
+        } else {
+          // This is a nested array - recurse
+          return removeZValues(coord);
+        }
+      }
+      return coord;
+    });
+  }
+
+  // Helper function to calculate area from geometry if not provided
+  function calculateAreaFromGeometry(geometry: any): number {
+    // Simplified area calculation - in production would use proper geospatial library
+    if (!geometry || !geometry.coordinates) return 0;
+    
+    try {
+      // For polygon, estimate area roughly (this is a simplified calculation)
+      if (geometry.type === 'Polygon' && geometry.coordinates[0]) {
+        const coords = geometry.coordinates[0];
+        if (coords.length > 3) {
+          // Very rough area estimation based on bounding box
+          const lngs = coords.map((c: number[]) => c[0]);
+          const lats = coords.map((c: number[]) => c[1]);
+          const width = Math.max(...lngs) - Math.min(...lngs);
+          const height = Math.max(...lats) - Math.min(...lats);
+          // Convert degrees to approximate hectares (very rough)
+          return Math.abs(width * height * 111 * 111 / 10000);
+        }
+      }
+      return 1.0; // Default fallback
+    } catch (error) {
+      return 1.0; // Default fallback
+    }
+  }
+
   // Helper function to generate PDF template matching the exact structure
   function generateDDSPDFTemplate(report: any) {
     const currentDate = new Date().toLocaleDateString('en-GB', {
@@ -3299,32 +3344,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       };
 
-      // Validate required properties - be more flexible with validation
+      // Enhanced validation for Indonesian GeoJSON format
       const validatedFeatures = cleanedGeojson.features.filter((feature: any) => {
         const props = feature.properties;
-        const hasValidId = props && (props.id || props.Name || props.plot_id || props['.Farmers ID'] || props.name);
         
-        // For area, accept any numeric value or default to calculated area
+        // More comprehensive ID extraction
+        const hasValidId = props && (
+          props['.Farmers ID'] ||     // Indonesian format
+          props.id || 
+          props.Name || 
+          props.name ||
+          props.plot_id || 
+          props.farmer_id ||
+          props.plotId
+        );
+        
+        // Enhanced area extraction - handle Indonesian "Ha" format
         const hasValidArea = props && (
+          props['.Plot size'] ||      // Indonesian format: "0.50 Ha"
           props.area_ha || 
-          props['.Plot size'] || 
           props.area || 
           props.area_hectares ||
+          props.Plot_Size ||
           true // Always accept - we can calculate from geometry if needed
         );
         
-        // For country, be more flexible
-        const hasValidCountry = props && (
+        // Enhanced location/country extraction
+        const hasValidLocation = props && (
+          props['.Distict'] ||        // Indonesian format: "Bone"
+          props['.Aggregator Location'] || // Indonesian format
           props.country_name || 
           props.country || 
-          props['.Distict'] ||
           props.district ||
           props.region ||
-          'Unknown' // Default fallback
+          props.province ||
+          props.kabupaten ||
+          true // Default fallback to "Indonesia" for Indonesian data
         );
 
         if (!hasValidId) {
-          console.warn('Feature missing ID:', feature.properties);
+          console.warn('Feature missing ID:', {
+            availableProps: Object.keys(props),
+            farmersId: props['.Farmers ID'],
+            id: props.id,
+            name: props.Name
+          });
           return false;
         }
 
@@ -3408,28 +3472,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store each analysis result in the database
         for (const feature of analysisResults.data.features) {
           try {
-            // Extract plot information with better property mapping for Indonesian data
-            const plotId = feature.properties?.plot_id || 
+            // Enhanced plot ID extraction for Indonesian format
+            const plotId = feature.properties?.['.Farmers ID'] ||     // Indonesian primary
+                          feature.properties?.plot_id || 
                           feature.properties?.id || 
                           feature.properties?.Name ||
                           feature.properties?.name ||
-                          feature.properties?.['.Farmers ID'] ||
+                          feature.properties?.farmer_id ||
                           `PLOT_${analysisResults.data.features.indexOf(feature) + 1}`;
 
-            const country = feature.properties?.country_name || 
-                           feature.properties?.country || 
-                           feature.properties?.['.Distict'] ||
-                           feature.properties?.district ||
-                           feature.properties?.region ||
-                           'Unknown';
+            // Enhanced country/location extraction for Indonesian format
+            let country = 'Indonesia'; // Default for Indonesian data
+            if (feature.properties?.['.Distict']) {
+              country = `${feature.properties['.Distict']}, Indonesia`;
+            } else if (feature.properties?.['.Aggregator Location']) {
+              // Extract location from "Makassar, South Sulawesi - Indonesia"
+              const location = feature.properties['.Aggregator Location'];
+              if (location.includes('Indonesia')) {
+                country = location;
+              } else {
+                country = `${location}, Indonesia`;
+              }
+            } else if (feature.properties?.country_name) {
+              country = feature.properties.country_name;
+            } else if (feature.properties?.country) {
+              country = feature.properties.country;
+            } else if (feature.properties?.district) {
+              country = `${feature.properties.district}, Indonesia`;
+            } else if (feature.properties?.region) {
+              country = feature.properties.region;
+            }
 
-            // Handle different area property formats with better fallbacks
+            // Enhanced area parsing for Indonesian format
             let area = 0;
             if (feature.properties?.['.Plot size']) {
-              // Parse "0.50 Ha" format
+              // Parse Indonesian format: "0.50 Ha", "24.00 Ha", etc.
               const plotSize = feature.properties['.Plot size'].toString();
               const areaMatch = plotSize.match(/(\d+\.?\d*)/);
               area = areaMatch ? parseFloat(areaMatch[1]) : 0;
+              console.log(`📏 Plot ${plotId}: Parsed area ${area}ha from "${plotSize}"`);
             } else if (feature.properties?.area_ha) {
               area = parseFloat(feature.properties.area_ha);
             } else if (feature.properties?.area) {
@@ -3439,6 +3520,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else {
               // Calculate area from geometry if available
               area = calculateAreaFromGeometry(feature.geometry) || 1.0; // Default 1 hectare
+              console.log(`📏 Plot ${plotId}: Calculated area ${area}ha from geometry`);
             }
 
             // Get risk data, provide defaults
@@ -3451,7 +3533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             console.log(`🔍 Plot ${plotId} - GFW: ${gfwLossArea}ha, JRC: ${jrcLossArea}ha, SBTN: ${sbtnLossArea}ha`);
 
-            // Create analysis result with proper mapping
+            // Create analysis result with comprehensive Indonesian metadata
             const analysisResult = {
               plotId,
               country,
@@ -3465,10 +3547,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
               highRiskDatasets,
               uploadSession: uploadSession,
               geometry: feature.geometry,
-              // Additional metadata from Indonesian data
-              farmerName: feature.properties?.['.Farmer Name'] || null,
-              aggregatorName: feature.properties?.['.Aggregator Name'] || null,
-              mappingDate: feature.properties?.['.Mapping date'] || null
+              // Enhanced metadata from Indonesian data
+              farmerName: feature.properties?.['.Farmer Name'] || 
+                         feature.properties?.farmer_name || 
+                         feature.properties?.grower_name || null,
+              aggregatorName: feature.properties?.['.Aggregator Name'] || 
+                             feature.properties?.aggregator || 
+                             feature.properties?.cooperative || null,
+              mappingDate: feature.properties?.['.Mapping date'] || 
+                          feature.properties?.mapping_date || 
+                          feature.properties?.survey_date || null,
+              // Additional Indonesian-specific fields
+              aggregatorLocation: feature.properties?.['.Aggregator Location'] || null,
+              plotName: feature.properties?.Name || feature.properties?.name || null,
+              coordinates: {
+                longitude: feature.properties?.['.Long'] || null,
+                latitude: feature.properties?.['.Lat'] || null
+              }
             };
 
             await storage.createAnalysisResult(analysisResult);

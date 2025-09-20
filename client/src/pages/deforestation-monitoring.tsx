@@ -27,11 +27,11 @@ interface AnalysisResult {
   plotId: string;
   country: string;
   area: number;
-  overallRisk: 'LOW' | 'MEDIUM' | 'HIGH';
-  complianceStatus: 'COMPLIANT' | 'NON-COMPLIANT';
-  gfwLoss: 'LOW' | 'MEDIUM' | 'HIGH';
-  jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH';
-  sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH';
+  overallRisk: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
+  complianceStatus: 'COMPLIANT' | 'NON-COMPLIANT' | 'UNKNOWN';
+  gfwLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
+  jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
+  sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
   highRiskDatasets: string[];
   geometry?: any;
 }
@@ -42,6 +42,33 @@ interface UploadedFile {
   type: string;
   content: string | ArrayBuffer | null;
 }
+
+// Helper function to remove Z-coordinate from GeoJSON geometry
+const removeZValue = (geometry: any) => {
+  if (!geometry) return geometry;
+
+  if (geometry.type.includes('Polygon')) {
+    geometry.coordinates = geometry.coordinates.map((coords: any[]) => {
+      return coords.map((ring: any[]) => 
+        ring.map((coord: number[]) => coord.slice(0, 2)) // Keep only [x, y]
+      );
+    });
+  } else if (geometry.type.includes('LineString')) {
+    geometry.coordinates = geometry.coordinates.map((coord: number[]) => coord.slice(0, 2));
+  } else if (geometry.type.includes('Point')) {
+    geometry.coordinates = geometry.coordinates.slice(0, 2);
+  } else if (geometry.type.includes('Multi')) {
+    // Recursively apply to MultiPolygon, MultiLineString, MultiPoint
+    const multiType = geometry.type.replace('Multi', '');
+    geometry.coordinates = geometry.coordinates.map((geomArray: any[]) => 
+      removeZValue({ type: multiType, coordinates: geomArray })
+    );
+  } else if (geometry.type === 'GeometryCollection') {
+    geometry.geometries = geometry.geometries.map(removeZValue);
+  }
+  return geometry;
+};
+
 
 export default function DeforestationMonitoring() {
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -67,8 +94,25 @@ export default function DeforestationMonitoring() {
   // GeoJSON upload mutation
   const uploadMutation = useMutation({
     mutationFn: async ({ geojsonFile, fileName }: { geojsonFile: string, fileName: string }) => {
+      // Parse GeoJSON and remove Z-values
+      let geojsonData: any;
+      try {
+        geojsonData = JSON.parse(geojsonFile);
+        geojsonData.features = geojsonData.features.map((feature: any) => {
+          if (feature.geometry) {
+            feature.geometry = removeZValue(feature.geometry);
+          }
+          return feature;
+        });
+      } catch (e) {
+        throw new Error('Failed to parse GeoJSON file.');
+      }
+      
+      // Re-stringify after processing
+      const processedGeojsonString = JSON.stringify(geojsonData);
+
       const response = await apiRequest('POST', '/api/geojson/upload', { 
-        geojson: geojsonFile, 
+        geojson: processedGeojsonString, 
         filename: fileName 
       });
       return await response.json();
@@ -81,22 +125,43 @@ export default function DeforestationMonitoring() {
 
       // Transform API response to our expected format
       if (response.data?.features) {
-        const transformedResults = response.data.features.map((feature: any) => ({
-          plotId: feature.properties.plot_id,
-          country: feature.properties.country_name || 'Unknown',
-          area: feature.properties.total_area_hectares || 0,
-          overallRisk: feature.properties.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
-          complianceStatus: feature.properties.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
-          gfwLoss: feature.properties.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN',
-          jrcLoss: feature.properties.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN',
-          sbtnLoss: feature.properties.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN',
-          highRiskDatasets: feature.properties.overall_compliance?.high_risk_datasets || [],
-          geometry: feature.geometry
-        }));
+        const transformedResults = response.data.features.map((feature: any) => {
+          const props = feature.properties || {};
+          
+          // Robustly get plot ID
+          const plotId = props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `UNKNOWN_${Math.random().toString(36).substring(7)}`;
+          
+          // Robustly get country
+          const country = props['.Distict'] || props['.Aggregator Location'] || props.country || props.district || props.region || 'Unknown';
+
+          // Robustly get area, parsing "0.50 Ha" format
+          let area = 0;
+          const areaValue = props['.Plot size'] || props.area_ha || props.area || props.area_hectares;
+          if (areaValue) {
+            if (typeof areaValue === 'string' && areaValue.includes('Ha')) {
+              area = parseFloat(areaValue.replace(' Ha', '').trim()) || 0;
+            } else if (typeof areaValue === 'number') {
+              area = areaValue;
+            }
+          }
+
+          return {
+            plotId: String(plotId),
+            country: String(country),
+            area: Number(area),
+            overallRisk: (props.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN') as AnalysisResult['overallRisk'],
+            complianceStatus: props.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : (props.overall_compliance?.compliance_status === 'COMPLIANT' ? 'COMPLIANT' : 'UNKNOWN'),
+            gfwLoss: (props.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['gfwLoss'],
+            jrcLoss: (props.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['jrcLoss'],
+            sbtnLoss: (props.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['sbtnLoss'],
+            highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
+            geometry: feature.geometry
+          };
+        });
 
         setAnalysisResults(transformedResults);
         setFilteredResults(transformedResults);
-        
+
         // Store results for potential map viewer usage
         localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
       }
@@ -136,9 +201,9 @@ export default function DeforestationMonitoring() {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const content = e.target?.result as string;
+        const content = e.target?.result;
 
-        if (!content || content.trim().length === 0) {
+        if (!content || content.toString().trim().length === 0) {
           toast({
             title: "Invalid file",
             description: "The uploaded file appears to be empty",
@@ -147,23 +212,88 @@ export default function DeforestationMonitoring() {
           return;
         }
 
+        // Parse and validate GeoJSON structure early
+        let parsedGeoJSON;
+        try {
+          parsedGeoJSON = JSON.parse(content.toString());
+        } catch (error) {
+          throw new Error('Failed to parse GeoJSON file. Please ensure it is valid JSON.');
+        }
+
+        // Enhanced validation for multiple GeoJSON formats
+        if (parsedGeoJSON.type !== 'FeatureCollection' || !parsedGeoJSON.features || !Array.isArray(parsedGeoJSON.features)) {
+          throw new Error('Invalid GeoJSON format. Must be a FeatureCollection with features array.');
+        }
+
+        if (parsedGeoJSON.features.length === 0) {
+          throw new Error('GeoJSON file contains no features.');
+        }
+
+        // Flexible validation for different property naming conventions
+        const hasValidFeatures = parsedGeoJSON.features.some((feature: any) => {
+          const props = feature.properties || {};
+
+          // Check for ID fields (Indonesian or standard format)
+          const hasId = props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id;
+
+          // Check for area fields (Indonesian or standard format)  
+          const hasArea = props['.Plot size'] || props.area_ha || props.area || props.area_hectares;
+
+          // Check for location fields (Indonesian or standard format)
+          const hasLocation = props['.Distict'] || props['.Aggregator Location'] || 
+                            props.country || props.district || props.region;
+
+          return hasId && (hasArea || hasLocation);
+        });
+
+        if (!hasValidFeatures) {
+          console.warn('Some features may be missing required properties. Supported formats include:');
+          console.warn('- Indonesian format: .Farmers ID, .Plot size, .Distict');
+          console.warn('- Standard format: id/plot_id, area_ha/area, country');
+          toast({
+            title: "Potential Data Issues",
+            description: "Some features might be missing expected properties. Please check the console for details.",
+            variant: "warning"
+          });
+        } else {
+          console.log('✅ GeoJSON format appears valid and contains necessary fields.');
+        }
+
+        // Log detected format for debugging
+        const sampleFeature = parsedGeoJSON.features[0];
+        const props = sampleFeature?.properties || {};
+        if (props['.Farmers ID']) {
+          console.log('✅ Detected Indonesian GeoJSON format');
+        } else if (props.plot_id || props.id) {
+          console.log('✅ Detected standard GeoJSON format');
+        } else {
+          console.log('ℹ️ Could not definitively detect GeoJSON format, but essential fields seem present.');
+        }
+
+
         setUploadedFile({
           name: file.name,
           size: file.size,
           type: file.type,
-          content: content
+          content: content.toString() // Store as string for parsing later
         });
 
         toast({
           title: "File uploaded successfully",
           description: `${file.name} (${(file.size / 1024).toFixed(1)} KB) is ready for analysis`
         });
-      } catch (error) {
+      } catch (error: any) {
+        console.error("File upload error:", error);
         toast({
-          title: "Error reading file",
-          description: "Failed to read the uploaded file. Please try again.",
-          variant: "destructive"
+          title: "Error processing file",
+          description: error.message || "Failed to process the uploaded file. Please check the file format and try again.",
+          variant: "destructive",
         });
+        // Clear the file input if there's an error
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        setUploadedFile(null);
       }
     };
 
@@ -195,16 +325,19 @@ export default function DeforestationMonitoring() {
           properties: {
             plot_id: "PLOT_001",
             name: "Sample Plot Indonesia",
-            country: "Indonesia"
+            country: "Indonesia",
+            ".Farmers ID": "FMR001",
+            ".Plot size": "0.50 Ha",
+            ".Distict": "Central Java"
           },
           geometry: {
             type: "Polygon",
             coordinates: [[
-              [113.921327, -2.147871],
-              [113.943567, -2.147871],
-              [113.943567, -2.169234],
-              [113.921327, -2.169234],
-              [113.921327, -2.147871]
+              [113.921327, -2.147871, 10], // Example with Z value
+              [113.943567, -2.147871, 10],
+              [113.943567, -2.169234, 10],
+              [113.921327, -2.169234, 10],
+              [113.921327, -2.147871, 10]
             ]]
           }
         }
@@ -239,7 +372,7 @@ export default function DeforestationMonitoring() {
     }, 800);
 
     uploadMutation.mutate({
-      geojsonFile: uploadedFile.content as string,
+      geojsonFile: uploadedFile.content,
       fileName: uploadedFile.name
     });
   };
@@ -248,17 +381,17 @@ export default function DeforestationMonitoring() {
   useEffect(() => {
     const shouldShowResults = localStorage.getItem('shouldShowResultsTable');
     const storedResults = localStorage.getItem('currentAnalysisResults');
-    
+
     if (shouldShowResults === 'true' && storedResults && analysisResults.length === 0) {
       try {
         const parsedResults = JSON.parse(storedResults);
         console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
         setAnalysisResults(parsedResults);
         setFilteredResults(parsedResults);
-        
+
         // Clear the flag after restoring
         localStorage.removeItem('shouldShowResultsTable');
-        
+
         toast({
           title: "Results Restored",
           description: `Showing ${parsedResults.length} previously analyzed plots`,
@@ -329,8 +462,8 @@ export default function DeforestationMonitoring() {
   };
 
   const uniqueCountries = [...new Set(analysisResults.map(r => r.country))];
-  const uniqueRisks = [...new Set(analysisResults.map(r => r.overallRisk))];
-  const uniqueCompliance = [...new Set(analysisResults.map(r => r.complianceStatus))];
+  const uniqueRisks = [...new Set(analysisResults.map(r => r.overallRisk))].filter(r => r !== 'UNKNOWN');
+  const uniqueCompliance = [...new Set(analysisResults.map(r => r.complianceStatus))].filter(r => r !== 'UNKNOWN');
 
   const totalPages = Math.ceil(filteredResults.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -378,7 +511,7 @@ export default function DeforestationMonitoring() {
         description: `Revalidating analysis for plot ${result.plotId}...`,
       });
 
-      // Create a minimal GeoJSON for revalidation
+      // Create a minimal GeoJSON for revalidation, ensuring no Z value
       const revalidationData = {
         type: "FeatureCollection",
         features: [{
@@ -388,7 +521,7 @@ export default function DeforestationMonitoring() {
             name: `Revalidation - ${result.plotId}`,
             country: result.country
           },
-          geometry: result.geometry || {
+          geometry: result.geometry ? removeZValue({...result.geometry}) : { // Ensure geometry is copied and Z removed
             type: "Point",
             coordinates: [0, 0] // Fallback coordinates
           }
@@ -403,13 +536,14 @@ export default function DeforestationMonitoring() {
 
       if (response.ok) {
         const newResults = await response.json();
-        
+
         toast({
           title: "Revalidation Complete",
           description: `Plot ${result.plotId} has been revalidated successfully.`,
         });
 
-        // Refresh the analysis results
+        // Refresh the analysis results by refetching or reloading
+        // For simplicity, we reload. A more sophisticated approach would update the state directly.
         window.location.reload();
       } else {
         throw new Error('Revalidation failed');
@@ -427,7 +561,7 @@ export default function DeforestationMonitoring() {
   const handleVerification = (result: AnalysisResult) => {
     // Store the selected polygon data for verification
     localStorage.setItem('selectedPolygonForVerification', JSON.stringify(result));
-    
+
     toast({
       title: "Starting Verification",
       description: `Redirecting to verification page for plot ${result.plotId}`,
@@ -440,7 +574,7 @@ export default function DeforestationMonitoring() {
   const handleEdit = (result: AnalysisResult) => {
     // Store the selected polygon data for editing
     localStorage.setItem('selectedPolygonForEdit', JSON.stringify(result));
-    
+
     toast({
       title: "Starting Edit Mode",
       description: `Opening polygon editor for plot ${result.plotId}`,
