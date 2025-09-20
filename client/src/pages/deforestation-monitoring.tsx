@@ -96,6 +96,9 @@ export default function DeforestationMonitoring() {
 
         setAnalysisResults(transformedResults);
         setFilteredResults(transformedResults);
+        
+        // Store results for potential map viewer usage
+        localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
       }
 
       setIsAnalyzing(false);
@@ -240,6 +243,33 @@ export default function DeforestationMonitoring() {
       fileName: uploadedFile.name
     });
   };
+
+  // Check for stored results when component mounts (returning from map viewer)
+  useEffect(() => {
+    const shouldShowResults = localStorage.getItem('shouldShowResultsTable');
+    const storedResults = localStorage.getItem('currentAnalysisResults');
+    
+    if (shouldShowResults === 'true' && storedResults && analysisResults.length === 0) {
+      try {
+        const parsedResults = JSON.parse(storedResults);
+        console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
+        setAnalysisResults(parsedResults);
+        setFilteredResults(parsedResults);
+        
+        // Clear the flag after restoring
+        localStorage.removeItem('shouldShowResultsTable');
+        
+        toast({
+          title: "Results Restored",
+          description: `Showing ${parsedResults.length} previously analyzed plots`,
+        });
+      } catch (error) {
+        console.error('Error restoring analysis results:', error);
+        localStorage.removeItem('currentAnalysisResults');
+        localStorage.removeItem('shouldShowResultsTable');
+      }
+    }
+  }, []); // Run only on mount
 
   // Filter and sort functionality
   useEffect(() => {

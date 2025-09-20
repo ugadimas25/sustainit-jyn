@@ -42,6 +42,15 @@ export default function MapViewer() {
     geometry: result.geometry // This contains the actual polygon coordinates
   }));
 
+  // Store results in localStorage for spatial analysis page
+  useEffect(() => {
+    if (analysisResults.length > 0) {
+      localStorage.setItem('currentAnalysisResults', JSON.stringify(analysisResults));
+      localStorage.setItem('shouldShowResultsTable', 'true');
+      console.log(`✅ Stored ${analysisResults.length} analysis results for spatial analysis page`);
+    }
+  }, [analysisResults]);
+
   // Redirect if no analysis data available
   useEffect(() => {
     if (!isLoading && !isError && analysisResults.length === 0) {
