@@ -87,7 +87,7 @@ export default function DeforestationMonitoring() {
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [complianceFilter, setComplianceFilter] = useState<string>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
-  const [selectedResults, setSelectedResults] = useState<string[]>([]);
+  const [selectedResults, setSelectedResults] = useState<number[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -756,7 +756,10 @@ export default function DeforestationMonitoring() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem 
                       onClick={() => {
-                        selectedResults.forEach(plotId => handleRevalidation(plotId));
+                        selectedResults.forEach(rowIndex => {
+                          const result = filteredResults[rowIndex];
+                          if (result) handleRevalidation(result.plotId);
+                        });
                       }}
                     >
                       <RefreshCw className="h-3 w-3 mr-2" />
@@ -764,7 +767,10 @@ export default function DeforestationMonitoring() {
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => {
-                        selectedResults.forEach(plotId => handleVerification(plotId));
+                        selectedResults.forEach(rowIndex => {
+                          const result = filteredResults[rowIndex];
+                          if (result) handleVerification(result.plotId);
+                        });
                       }}
                     >
                       <CheckSquare className="h-3 w-3 mr-2" />
@@ -772,7 +778,10 @@ export default function DeforestationMonitoring() {
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => {
-                        selectedResults.forEach(plotId => handleEdit(plotId));
+                        selectedResults.forEach(rowIndex => {
+                          const result = filteredResults[rowIndex];
+                          if (result) handleEdit(result.plotId);
+                        });
                       }}
                     >
                       <Edit className="h-3 w-3 mr-2" />
@@ -849,17 +858,17 @@ export default function DeforestationMonitoring() {
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         <Checkbox
-                          checked={currentPageData.length > 0 && currentPageData.every(r => selectedResults.includes(r.plotId))}
-                          {...(currentPageData.some(r => selectedResults.includes(r.plotId)) && !currentPageData.every(r => selectedResults.includes(r.plotId)) ? { 'data-indeterminate': 'true' } : {})}
+                          checked={currentPageData.length > 0 && currentPageData.every((_, idx) => selectedResults.includes(startIndex + idx))}
+                          {...(currentPageData.some((_, idx) => selectedResults.includes(startIndex + idx)) && !currentPageData.every((_, idx) => selectedResults.includes(startIndex + idx)) ? { 'data-indeterminate': 'true' } : {})}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              // Select all items on current page
-                              const currentPageIds = currentPageData.map(r => r.plotId);
-                              setSelectedResults(prev => [...new Set([...prev, ...currentPageIds])]);
+                              // Select all items on current page using their indices
+                              const currentPageIndices = currentPageData.map((_, idx) => startIndex + idx);
+                              setSelectedResults(prev => [...new Set([...prev, ...currentPageIndices])]);
                             } else {
-                              // Deselect all items on current page
-                              const currentPageIds = currentPageData.map(r => r.plotId);
-                              setSelectedResults(prev => prev.filter(id => !currentPageIds.includes(id)));
+                              // Deselect all items on current page using their indices
+                              const currentPageIndices = currentPageData.map((_, idx) => startIndex + idx);
+                              setSelectedResults(prev => prev.filter(idx => !currentPageIndices.includes(idx)));
                             }
                           }}
                         />
@@ -939,16 +948,23 @@ export default function DeforestationMonitoring() {
                       </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                    {currentPageData.map((result, index) => (
-                      <tr key={`${result.plotId}-${index}-${currentPage}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {currentPageData.map((result, index) => {
+                      // Create a unique key that handles duplicate plotIds
+                      const uniqueKey = result.plotId === 'unknown' 
+                        ? `unknown-${index}-${currentPage}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+                        : `${result.plotId}-${index}-${currentPage}`;
+                      
+                      return (
+                      <tr key={uniqueKey} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td className="px-4 py-4 text-sm font-medium text-gray-900 dark:text-white">
                           <Checkbox
-                            checked={selectedResults.includes(result.plotId)}
+                            checked={selectedResults.includes(startIndex + index)}
                             onCheckedChange={(checked) => {
+                              const rowIndex = startIndex + index;
                               if (checked) {
-                                setSelectedResults(prev => [...prev, result.plotId]);
+                                setSelectedResults(prev => [...prev, rowIndex]);
                               } else {
-                                setSelectedResults(prev => prev.filter(id => id !== result.plotId));
+                                setSelectedResults(prev => prev.filter(idx => idx !== rowIndex));
                               }
                             }}
                           />
@@ -978,7 +994,8 @@ export default function DeforestationMonitoring() {
                           {getRiskBadge(result.sbtnLoss)}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
