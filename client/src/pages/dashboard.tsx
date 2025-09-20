@@ -372,7 +372,7 @@ function DashboardContent() {
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-2">Total polygon area (Ha)</p>
-                <p className="text-3xl font-bold text-gray-900" data-testid="text-total-area">{displayMetrics.totalAreaHa || 0} ha</p>
+                <p className="text-3xl font-bold text-gray-900" data-testid="text-total-area">{(displayMetrics.totalAreaHa || 0).toFixed(2)} ha</p>
               </CardContent>
             </Card>
 
