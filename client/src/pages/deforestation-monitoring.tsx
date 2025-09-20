@@ -742,6 +742,44 @@ export default function DeforestationMonitoring() {
                   <Map className="h-4 w-4 mr-2" />
                   View in Map
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      disabled={selectedResults.length === 0}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                      Actions ({selectedResults.length})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        selectedResults.forEach(plotId => handleRevalidation(plotId));
+                      }}
+                    >
+                      <RefreshCw className="h-3 w-3 mr-2" />
+                      Revalidate Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        selectedResults.forEach(plotId => handleVerification(plotId));
+                      }}
+                    >
+                      <CheckSquare className="h-3 w-3 mr-2" />
+                      Verify Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        selectedResults.forEach(plotId => handleEdit(plotId));
+                      }}
+                    >
+                      <Edit className="h-3 w-3 mr-2" />
+                      Edit Selected
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </CardHeader>
 
@@ -893,10 +931,7 @@ export default function DeforestationMonitoring() {
                           {getSortIcon('sbtnLoss')}
                         </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Actions
-                      </th>
-                    </tr>
+                      </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                     {currentPageData.map((result) => (
@@ -936,47 +971,6 @@ export default function DeforestationMonitoring() {
                         </td>
                         <td className="px-4 py-4 text-sm">
                           {getRiskBadge(result.sbtnLoss)}
-                        </td>
-                        <td className="px-4 py-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs px-2 py-1 h-7"
-                              onClick={() => handleViewInMap(result)}
-                              title="View in map"
-                            >
-                              <Map className="h-3 w-3 mr-1" />
-                              View in Map
-                            </Button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs px-2 py-1 h-7"
-                                  title="Actions"
-                                >
-                                  <MoreHorizontal className="h-3 w-3 mr-1" />
-                                  Actions
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleRevalidation(result.plotId)}>
-                                  <RefreshCw className="h-3 w-3 mr-2" />
-                                  Revalidate
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleVerification(result.plotId)}>
-                                  <CheckSquare className="h-3 w-3 mr-2" />
-                                  Verify
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEdit(result.plotId)}>
-                                  <Edit className="h-3 w-3 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
                         </td>
                       </tr>
                     ))}
