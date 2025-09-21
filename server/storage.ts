@@ -1792,6 +1792,29 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async saveAnalysisResultsWithSupplier(plotIds: string[], supplierId: string): Promise<void> {
+    try {
+      const supplier = await this.getSupplier(supplierId);
+      if (!supplier) {
+        throw new Error('Supplier not found');
+      }
+
+      // Update all matching analysis results with supplier information
+      await db.update(analysisResults)
+        .set({ 
+          supplierId: supplierId,
+          supplierName: supplier.companyName || supplier.name,
+          updatedAt: new Date()
+        })
+        .where(inArray(analysisResults.plotId, plotIds));
+
+      console.log(`✅ Updated ${plotIds.length} analysis results with supplier ${supplier.companyName || supplier.name}`);
+    } catch (error) {
+      console.error("Error saving analysis results with supplier:", error);
+      throw error;
+    }
+  }
+
   async updateAnalysisResult(id: string, updates: any): Promise<any> {
     try {
       const [updated] = await db.update(analysisResults)

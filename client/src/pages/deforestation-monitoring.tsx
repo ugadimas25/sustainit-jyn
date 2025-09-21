@@ -424,18 +424,24 @@ export default function DeforestationMonitoring() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Plots Saved Successfully",
-        description: "Associated plots with the selected supplier and updated database.",
+        description: `Associated ${data.associatedPlots} plots with supplier. Step 3 (Legality Compliance) is now available!`,
       });
-      // Trigger step 3 availability (e.g., by navigating or updating state elsewhere)
-      // For now, we'll just show a success message. Actual step 3 enabling might depend on a broader state management.
+      
+      // Show additional success message about workflow progression
+      setTimeout(() => {
+        toast({
+          title: "Workflow Updated",
+          description: "You can now proceed to Legality Compliance assessment for this supplier.",
+          variant: "default",
+        });
+      }, 2000);
+      
       setShowSaveModal(false);
       setIsSaving(false);
-      // Optionally refresh the table or clear selections
       setSelectedResults([]);
-      // Reset supplier selection
       setSelectedSupplierId(null);
     },
     onError: (error: any) => {

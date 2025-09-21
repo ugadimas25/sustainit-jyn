@@ -27,23 +27,23 @@ export function WorkflowGuard({ step, children }: WorkflowGuardProps) {
         setLocation("/data-collection");
         return;
       }
-      
+
       // Handle access denied cases
       if (!accessData.hasAccess) {
         let requiredStep = "";
-        
+
         if (step === 2) {
           requiredStep = "Data Collection";
         } else if (step === 3) {
           requiredStep = "Data Collection and Legality Compliance";
         }
-        
+
         toast({
           title: "Access Denied",
           description: `Please complete ${requiredStep} first before accessing this step.`,
           variant: "destructive"
         });
-        
+
         setLocation("/data-collection");
       }
     }

@@ -1396,11 +1396,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/plots/save-association", isAuthenticated, async (req, res) => {
     try {
       const { plotIds, supplierId } = req.body;
-      
+
       if (!plotIds || !Array.isArray(plotIds) || plotIds.length === 0) {
         return res.status(400).json({ error: "plotIds array is required" });
       }
-      
+
       if (!supplierId) {
         return res.status(400).json({ error: "supplierId is required" });
       }
@@ -1413,7 +1413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get analysis results for the selected plots
       const analysisResultsToUpdate = await storage.getAnalysisResultsByPlotIds(plotIds);
-      
+
       if (analysisResultsToUpdate.length === 0) {
         return res.status(404).json({ error: "No analysis results found for the specified plot IDs" });
       }
@@ -1715,7 +1715,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let parsedGeoJson;
       try {
-        parsedGeojson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
+        parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
       } catch (parseError) {
         return res.status(400).json({
           valid: false,
@@ -1724,7 +1724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Basic GeoJSON structure validation
-      if (!parsedGeojson.type) {
+      if (!parsedGeoJson.type) {
         return res.status(400).json({
           valid: false,
           error: 'Missing type property'
@@ -1733,10 +1733,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check for valid geometry types
       const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
-      if (!validTypes.includes(parsedGeojson.type)) {
+      if (!validTypes.includes(parsedGeoJson.type)) {
         return res.status(400).json({
           valid: false,
-          error: `Invalid GeoJSON type: ${parsedGeojson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
+          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
         });
       }
 
@@ -1746,24 +1746,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let centroid = null;
 
       // Extract polygon geometry and calculate metadata
-      if (parsedGeojson.type === 'Polygon') {
+      if (parsedGeoJson.type === 'Polygon') {
         polygonFound = true;
-        const coords = parsedGeojson.coordinates;
+        const coords = parsedGeoJson.coordinates;
         if (coords && coords[0] && coords[0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0]);
           centroid = calculateCentroid(coords[0]);
           area = calculatePolygonArea(coords[0]);
         }
-      } else if (parsedGeojson.type === 'MultiPolygon') {
+      } else if (parsedGeoJson.type === 'MultiPolygon') {
         polygonFound = true;
-        const coords = parsedGeojson.coordinates;
+        const coords = parsedGeoJson.coordinates;
         if (coords && coords[0] && coords[0][0] && coords[0][0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0][0]);
           centroid = calculateCentroid(coords[0][0]);
           area = calculatePolygonArea(coords[0][0]);
         }
-      } else if (parsedGeojson.type === 'Feature') {
-        const geometry = parsedGeojson.geometry;
+      } else if (parsedGeoJson.type === 'Feature') {
+        const geometry = parsedGeoJson.geometry;
         if (geometry && (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon')) {
           polygonFound = true;
           const coords = geometry.type === 'Polygon' ? geometry.coordinates : geometry.coordinates[0];
@@ -1773,8 +1773,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             area = calculatePolygonArea(coords[0]);
           }
         }
-      } else if (parsedGeojson.type === 'FeatureCollection') {
-        const features = parsedGeojson.features;
+      } else if (parsedGeoJson.type === 'FeatureCollection') {
+        const features = parsedGeoJson.features;
         if (features && features.length > 0) {
           for (const feature of features) {
             if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
@@ -1804,7 +1804,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           area: area,
           boundingBox: boundingBox,
           centroid: centroid,
-          geometryType: parsedGeojson.type
+          geometryType: parsedGeoJson.type
         }
       });
 
@@ -2655,7 +2655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const combinedFilePath = `/geojson/${report.id}/combined-verified-polygons.geojson`;
 
       // Update report with generated GeoJSON paths
-      await storage.updateDdsReport(req.params.id, {
+      await storage.updateDdsReport(report.id, {
         geojsonFilePaths: JSON.stringify([...filePaths, combinedFilePath])
       });
 
@@ -3171,7 +3171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Convert geometry to WKT format for PostGIS calculation
       let wkt = '';
-      
+
       if (geometry.type === 'Polygon') {
         const coords = geometry.coordinates[0];
         if (coords && coords.length >= 4) {
@@ -3196,11 +3196,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `);
 
       const areaHectares = parseFloat(result.rows[0]?.area_hectares?.toString() || '1.0');
-      
+
       // Ensure minimum area and reasonable maximum
       if (areaHectares < 0.1) return 0.1;
       if (areaHectares > 1000) return 1000;
-      
+
       console.log(`📏 Calculated area: ${areaHectares.toFixed(2)} hectares using PostGIS`);
       return Math.round(areaHectares * 100) / 100; // Round to 2 decimal places
 
@@ -3236,11 +3236,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           throw new Error('Invalid GeoJSON data format');
         }
-        
+
         console.log('✅ Successfully parsed GeoJSON data');
         console.log('📋 GeoJSON type:', parsedGeojson.type);
         console.log('📋 Features count:', parsedGeojson.features?.length || 0);
-        
+
       } catch (parseError) {
         console.error('❌ JSON parsing error:', parseError);
         return res.status(400).json({ 
@@ -3296,7 +3296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (let i = 0; i < cleanedGeojson.features.length; i++) {
         const feature = cleanedGeojson.features[i];
-        
+
         try {
           // Validate feature structure
           if (!feature || typeof feature !== 'object') {
@@ -3359,7 +3359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update feature properties with detected country
           feature.properties.detected_country = detectedCountry;
           validatedFeatures.push(feature);
-          
+
         } catch (featureError) {
           console.error(`❌ Error processing feature ${i + 1}:`, featureError);
           // Continue with next feature instead of failing completely
@@ -3398,11 +3398,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Call EUDR Multilayer API with enhanced error handling
       let response;
       let analysisResults;
-      
+
       try {
         console.log('🚀 Sending request to EUDR Multilayer API...');
         console.log(`📤 Request size: ${formBody.length} bytes`);
-        
+
         response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
           method: 'POST',
           headers: {
@@ -3425,7 +3425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         analysisResults = await response.json();
         console.log('✅ Successfully received analysis results from API');
-        
+
       } catch (fetchError) {
         console.error('❌ Network/API Error:', fetchError);
         return res.status(500).json({
@@ -3545,18 +3545,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Get risk data and calculate actual loss areas
             const overallRisk = feature.properties?.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN';
             const complianceStatus = feature.properties?.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT';
-            
+
             // Get loss percentages from API and convert to actual hectares
             const totalAreaHa = parseFloat(feature.properties?.total_area_hectares || area.toString() || '1');
             const gfwLossPercent = parseFloat(feature.properties?.gfw_loss?.gfw_loss_area || '0');
             const jrcLossPercent = parseFloat(feature.properties?.jrc_loss?.jrc_loss_area || '0');
             const sbtnLossPercent = parseFloat(feature.properties?.sbtn_loss?.sbtn_loss_area || '0');
-            
+
             // Calculate actual loss areas in hectares
             const gfwLossArea = gfwLossPercent * totalAreaHa;
             const jrcLossArea = jrcLossPercent * totalAreaHa;
             const sbtnLossArea = sbtnLossPercent * totalAreaHa;
-            
+
             const highRiskDatasets = feature.properties?.overall_compliance?.high_risk_datasets || [];
 
             console.log(`🔍 Plot ${plotId} calculation:`, {
@@ -3976,7 +3976,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           amendmentAct: mill.aktaPerubahan || undefined,
           certificationType: mill.tipeSertifikat || undefined,
           certificateNumber: mill.nomorSertifikat || undefined,
-          supplierType: mill.jenisSupplier || undefined,
+          supplierType: mill|| undefined,
           responsiblePersonName: mill.namaPenanggungJawab || undefined,
           responsiblePersonPosition: mill.jabatanPenanggungJawab || undefined,
           responsiblePersonEmail: mill.emailPenanggungJawab || undefined,
@@ -4236,7 +4236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/peatland-data', isAuthenticated, async (req, res) => {
     try {
       const { bounds } = req.body;
-      
+
       if (!bounds || !bounds.west || !bounds.south || !bounds.east || !bounds.north) {
         return res.status(400).json({ error: 'Invalid bounds provided' });
       }
@@ -4283,7 +4283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let geometry;
           try {
             geometry = JSON.parse(row.geometry);
-            
+
             // Validate geometry
             if (!geometry || !geometry.coordinates) {
               console.warn(`⚠️ Feature ${index + 1}: Invalid geometry, skipping`);
@@ -4313,7 +4313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       } catch (dbError) {
         console.warn('⚠️ Database query failed, using comprehensive mock peatland data with global coverage:', dbError);
-        
+
         // Always provide comprehensive mock data for immediate visibility
         const mockPeatlandAreas = [
           // Riau Province - Central Sumatra - Larger coverage
@@ -4435,13 +4435,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!feature.geometry || !feature.geometry.coordinates || !feature.geometry.coordinates[0]) {
             return false;
           }
-          
+
           const coords = feature.geometry.coordinates[0];
           const minLng = Math.min(...coords.map(c => c[0]));
           const maxLng = Math.max(...coords.map(c => c[0]));
           const minLat = Math.min(...coords.map(c => c[1]));
           const maxLat = Math.max(...coords.map(c => c[1]));
-          
+
           // Check if polygon intersects with bounds
           return !(maxLng < bounds.west || minLng > bounds.east || maxLat < bounds.south || minLat > bounds.north);
         });
@@ -4465,7 +4465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('❌ Error in peatland data endpoint:', error);
-      
+
       // Always return valid GeoJSON even if everything fails
       const fallbackFeatures = [
         {
