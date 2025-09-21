@@ -1546,106 +1546,113 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             });
 
             // WDPA layer control with improved implementation
-            document.getElementById('wdpaLayer').addEventListener('change', function(e) {
-              if (e.target.checked) {
-                console.log('WDPA layer checkbox checked - loading layer...');
-                
-                if (!wdpaLayer && !wdpaTileLayer) {
-                  console.log('Creating new WDPA layer...');
+            const wdpaCheckbox = document.getElementById('wdpaLayer');
+            if (wdpaCheckbox) {
+              wdpaCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  console.log('WDPA layer checkbox checked - loading layer...');
                   
-                  // Show loading indicator
-                  console.log('🔄 Loading WDPA GeoJSON layer for detailed categories...');
-                  
-                  createWDPAGeoJSONLayer().then(geoLayer => {
-                    if (geoLayer && geoLayer.getLayers().length > 0) {
-                      wdpaLayer = geoLayer;
-                      geoLayer.addTo(map);
-                      console.log(\`✅ WDPA GeoJSON layer loaded successfully with \${geoLayer.getLayers().length} features\`);
-                      
-                      // Force map refresh and fit bounds if features exist
-                      map.invalidateSize();
-                      
-                      // Optionally fit bounds to show WDPA features
-                      try {
-                        const bounds = geoLayer.getBounds();
-                        if (bounds.isValid()) {
-                          console.log('📍 Fitting map to WDPA features bounds');
-                          map.fitBounds(bounds, { padding: [20, 20] });
+                  if (!wdpaLayer && !wdpaTileLayer) {
+                    console.log('Creating new WDPA layer...');
+                    
+                    // Show loading indicator
+                    console.log('🔄 Loading WDPA GeoJSON layer for detailed categories...');
+                    
+                    createWDPAGeoJSONLayer().then(geoLayer => {
+                      if (geoLayer && geoLayer.getLayers && geoLayer.getLayers().length > 0) {
+                        wdpaLayer = geoLayer;
+                        geoLayer.addTo(map);
+                        console.log(\`✅ WDPA GeoJSON layer loaded successfully with \${geoLayer.getLayers().length} features\`);
+                        
+                        // Force map refresh and fit bounds if features exist
+                        map.invalidateSize();
+                        
+                        // Optionally fit bounds to show WDPA features
+                        try {
+                          const bounds = geoLayer.getBounds();
+                          if (bounds.isValid()) {
+                            console.log('📍 Fitting map to WDPA features bounds');
+                            map.fitBounds(bounds, { padding: [20, 20] });
+                          }
+                        } catch (e) {
+                          console.log('Could not fit bounds to WDPA features:', e.message);
                         }
-                      } catch (e) {
-                        console.log('Could not fit bounds to WDPA features:', e.message);
+                        
+                      } else {
+                        console.log('🔄 GeoJSON returned no features, trying tile layer as fallback...');
+                        
+                        // Fallback to tile layer
+                        createWDPALayer().then(layer => {
+                          if (layer) {
+                            wdpaTileLayer = layer;
+                            layer.addTo(map);
+                            console.log('✅ WDPA tile layer added as fallback');
+                            
+                            // Add enhanced error handling for tiles
+                            layer.on('tileerror', function(e) {
+                              console.error('❌ WDPA tile error:', e.error?.message || e);
+                            });
+                            
+                            layer.on('tileload', function(e) {
+                              console.log('✅ WDPA tile loaded successfully:', e.coords);
+                            });
+                            
+                            layer.on('loading', function() {
+                              console.log('🔄 WDPA tiles loading...');
+                            });
+                            
+                            layer.on('load', function() {
+                              console.log('✅ All WDPA tiles loaded');
+                            });
+                            
+                          } else {
+                            console.error('❌ Both WDPA layer methods failed');
+                            alert('Unable to load WDPA Protected Areas layer. The service may be temporarily unavailable.');
+                          }
+                        });
                       }
+                    }).catch(error => {
+                      console.error('❌ Error in WDPA layer creation:', error);
+                      console.log('🔄 Trying tile layer due to GeoJSON error...');
                       
-                    } else {
-                      console.log('🔄 GeoJSON returned no features, trying tile layer as fallback...');
-                      
-                      // Fallback to tile layer
+                      // Try tile layer as backup when GeoJSON fails
                       createWDPALayer().then(layer => {
                         if (layer) {
                           wdpaTileLayer = layer;
                           layer.addTo(map);
-                          console.log('✅ WDPA tile layer added as fallback');
-                          
-                          // Add enhanced error handling for tiles
-                          layer.on('tileerror', function(e) {
-                            console.error('❌ WDPA tile error:', e.error?.message || e);
-                          });
-                          
-                          layer.on('tileload', function(e) {
-                            console.log('✅ WDPA tile loaded successfully:', e.coords);
-                          });
-                          
-                          layer.on('loading', function() {
-                            console.log('🔄 WDPA tiles loading...');
-                          });
-                          
-                          layer.on('load', function() {
-                            console.log('✅ All WDPA tiles loaded');
-                          });
-                          
+                          console.log('✅ WDPA tile layer added after GeoJSON failure');
                         } else {
-                          console.error('❌ Both WDPA layer methods failed');
-                          alert('Unable to load WDPA Protected Areas layer. The service may be temporarily unavailable.');
+                          alert('Error loading WDPA layer: ' + error.message);
                         }
                       });
-                    }
-                  }).catch(error => {
-                    console.error('❌ Error in WDPA layer creation:', error);
-                    console.log('🔄 Trying tile layer due to GeoJSON error...');
-                    
-                    // Try tile layer as backup when GeoJSON fails
-                    createWDPALayer().then(layer => {
-                      if (layer) {
-                        wdpaTileLayer = layer;
-                        layer.addTo(map);
-                        console.log('✅ WDPA tile layer added after GeoJSON failure');
-                      } else {
-                        alert('Error loading WDPA layer: ' + error.message);
-                      }
                     });
-                  });
+                  } else {
+                    // Layer already exists, just add to map
+                    const existingLayer = wdpaLayer || wdpaTileLayer;
+                    if (existingLayer) {
+                      if (!map.hasLayer(existingLayer)) {
+                        existingLayer.addTo(map);
+                        console.log('✅ Existing WDPA layer restored to map');
+                      }
+                    }
+                  }
                 } else {
-                  // Layer already exists, just add to map
-                  const existingLayer = wdpaLayer || wdpaTileLayer;
-                  if (existingLayer) {
-                    existingLayer.addTo(map);
-                    console.log('✅ Existing WDPA layer restored to map');
+                  console.log('WDPA layer checkbox unchecked - removing layer...');
+                  
+                  // Remove both possible layer types
+                  if (wdpaLayer && map.hasLayer(wdpaLayer)) {
+                    map.removeLayer(wdpaLayer);
+                    console.log('✅ WDPA GeoJSON layer removed from map');
+                  }
+                  if (wdpaTileLayer && map.hasLayer(wdpaTileLayer)) {
+                    map.removeLayer(wdpaTileLayer);
+                    console.log('✅ WDPA tile layer removed from map');
                   }
                 }
-              } else {
-                console.log('WDPA layer checkbox unchecked - removing layer...');
-                
-                // Remove both possible layer types
-                if (wdpaLayer && map.hasLayer(wdpaLayer)) {
-                  map.removeLayer(wdpaLayer);
-                  console.log('✅ WDPA GeoJSON layer removed from map');
-                }
-                if (wdpaTileLayer && map.hasLayer(wdpaTileLayer)) {
-                  map.removeLayer(wdpaTileLayer);
-                  console.log('✅ WDPA tile layer removed from map');
-                }
-              }
-            });
+              });
+            } else {
+              console.error('❌ WDPA layer checkbox not found in DOM!');
+            }
 
             // Peatland layer control - ensure it's properly initialized with better error handling
             const peatlandCheckbox = document.getElementById('peatlandLayer');
@@ -1764,77 +1771,113 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             }
 
             // Deforestation layer controls
-            document.getElementById('gfwLayer').addEventListener('change', function(e) {
-              if (e.target.checked) {
-                try {
-                  deforestationLayers.gfw.addTo(map);
-                  console.log('GFW tree cover loss layer added to map');
-                  console.log('GFW layer URL template:', deforestationLayers.gfw._url);
+            const gfwCheckbox = document.getElementById('gfwLayer');
+            if (gfwCheckbox) {
+              gfwCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  try {
+                    if (!map.hasLayer(deforestationLayers.gfw)) {
+                      deforestationLayers.gfw.addTo(map);
+                      console.log('GFW tree cover loss layer added to map');
+                      console.log('GFW layer URL template:', deforestationLayers.gfw._url);
 
-                  // Force map refresh to show the layer
-                  map.invalidateSize();
+                      // Force map refresh to show the layer
+                      map.invalidateSize();
 
-                  // Test if tiles are loading
-                  deforestationLayers.gfw.on('tileload', function(e) {
-                    console.log('GFW tile loaded successfully at:', e.coords);
-                  });
+                      // Test if tiles are loading
+                      deforestationLayers.gfw.on('tileload', function(e) {
+                        console.log('GFW tile loaded successfully at:', e.coords);
+                      });
 
-                  deforestationLayers.gfw.on('tileerror', function(e) {
-                    console.error('GFW tile load error:', e.error, 'at coords:', e.coords);
-                  });
+                      deforestationLayers.gfw.on('tileerror', function(e) {
+                        console.error('GFW tile load error:', e.error, 'at coords:', e.coords);
+                      });
 
-                  deforestationLayers.gfw.on('loading', function() {
-                    console.log('GFW layer started loading tiles');
-                  });
+                      deforestationLayers.gfw.on('loading', function() {
+                        console.log('GFW layer started loading tiles');
+                      });
 
-                  deforestationLayers.gfw.on('load', function() {
-                    console.log('GFW layer finished loading tiles');
-                  });
+                      deforestationLayers.gfw.on('load', function() {
+                        console.log('GFW layer finished loading tiles');
+                      });
 
-                  // Force tile loading by triggering a map pan
-                  setTimeout(() => {
-                    map.panBy([1, 1]);
-                    map.panBy([-1, -1]);
-                  }, 100);
-
-                } catch (error) {
-                  console.error('Error adding GFW layer:', error);
+                      // Force tile loading by triggering a map pan
+                      setTimeout(() => {
+                        map.panBy([1, 1]);
+                        map.panBy([-1, -1]);
+                      }, 100);
+                    }
+                  } catch (error) {
+                    console.error('Error adding GFW layer:', error);
+                  }
+                } else {
+                  try {
+                    if (map.hasLayer(deforestationLayers.gfw)) {
+                      map.removeLayer(deforestationLayers.gfw);
+                      console.log('GFW tree cover loss layer removed from map');
+                    }
+                  } catch (error) {
+                    console.error('Error removing GFW layer:', error);
+                  }
                 }
-              } else {
-                try {
-                  map.removeLayer(deforestationLayers.gfw);
-                  console.log('GFW tree cover loss layer removed from map');
-                } catch (error) {
-                  console.error('Error removing GFW layer:', error);
-                }
-              }
-            });
+              });
+            } else {
+              console.error('❌ GFW layer checkbox not found in DOM!');
+            }
 
-            document.getElementById('jrcLayer').addEventListener('change', function(e) {
-              if (e.target.checked) {
-                try {
-                  deforestationLayers.jrc.addTo(map);
-                  console.log('JRC WMS layer added to map');
-                } catch (error) {
-                  console.error('Error adding JRC WMS layer:', error);
+            const jrcCheckbox = document.getElementById('jrcLayer');
+            if (jrcCheckbox) {
+              jrcCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  try {
+                    if (!map.hasLayer(deforestationLayers.jrc)) {
+                      deforestationLayers.jrc.addTo(map);
+                      console.log('JRC WMS layer added to map');
+                    }
+                  } catch (error) {
+                    console.error('Error adding JRC WMS layer:', error);
+                  }
+                } else {
+                  try {
+                    if (map.hasLayer(deforestationLayers.jrc)) {
+                      map.removeLayer(deforestationLayers.jrc);
+                      console.log('JRC WMS layer removed from map');
+                    }
+                  } catch (error) {
+                    console.error('Error removing JRC WMS layer:', error);
+                  }
                 }
-              } else {
-                try {
-                  map.removeLayer(deforestationLayers.jrc);
-                  console.log('JRC WMS layer removed from map');
-                } catch (error) {
-                  console.error('Error removing JRC WMS layer:', error);
-                }
-              }
-            });
+              });
+            } else {
+              console.error('❌ JRC layer checkbox not found in DOM!');
+            }
 
-            document.getElementById('sbtnLayer').addEventListener('change', function(e) {
-              if (e.target.checked) {
-                deforestationLayers.sbtn.addTo(map);
-              } else {
-                map.removeLayer(deforestationLayers.sbtn);
-              }
-            });
+            const sbtnCheckbox = document.getElementById('sbtnLayer');
+            if (sbtnCheckbox) {
+              sbtnCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  try {
+                    if (!map.hasLayer(deforestationLayers.sbtn)) {
+                      deforestationLayers.sbtn.addTo(map);
+                      console.log('SBTN layer added to map');
+                    }
+                  } catch (error) {
+                    console.error('Error adding SBTN layer:', error);
+                  }
+                } else {
+                  try {
+                    if (map.hasLayer(deforestationLayers.sbtn)) {
+                      map.removeLayer(deforestationLayers.sbtn);
+                      console.log('SBTN layer removed from map');
+                    }
+                  } catch (error) {
+                    console.error('Error removing SBTN layer:', error);
+                  }
+                }
+              });
+            } else {
+              console.error('❌ SBTN layer checkbox not found in DOM!');
+            }
 
             console.log('EUDR Map loaded with', analysisResults.length, 'plots');
             console.log('Polygons rendered:', polygons.length);
