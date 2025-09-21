@@ -684,8 +684,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               
               wdpaTileLayer = L.tileLayer(wdpaUrls[0], {
                 attribution: '© WDPA - World Database on Protected Areas',
-                opacity: 0.6,
+                opacity: 0.7,
                 maxZoom: 18,
+                className: 'wdpa-tile-layer',
                 errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
               });
 
@@ -768,31 +769,18 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   
                   const layer = L.geoJSON(data, {
                     style: function(feature) {
-                      const iucnCategory = (feature.properties.iucn_cat || 'Not Assigned').toString().trim();
-                      let color = wdpaColors[iucnCategory];
+                      // Force all WDPA features to use light brown color
+                      const lightBrown = '#d2b48c';
                       
-                      // Handle various category formats and fallbacks
-                      if (!color) {
-                        // Try exact matches for common variations
-                        if (iucnCategory.includes('Ia')) color = wdpaColors['Ia'];
-                        else if (iucnCategory.includes('Ib')) color = wdpaColors['Ib'];
-                        else if (iucnCategory.includes('II')) color = wdpaColors['II'];
-                        else if (iucnCategory.includes('III')) color = wdpaColors['III'];
-                        else if (iucnCategory.includes('IV')) color = wdpaColors['IV'];
-                        else if (iucnCategory.includes('V')) color = wdpaColors['V'];
-                        else if (iucnCategory.includes('VI')) color = wdpaColors['VI'];
-                        else color = wdpaColors['Not Assigned'] || '#cccccc';
-                      }
-                      
-                      console.log(\`Styling feature \${feature.properties.NAME || 'Unknown'} with category "\${iucnCategory}" and color \${color}\`);
+                      console.log(\`Styling WDPA feature \${feature.properties.name || feature.properties.NAME || 'Unknown'} with light brown color\`);
                       
                       return {
-                        color: color,
-                        fillColor: color,
-                        weight: 1.5,
-                        opacity: 0.9,
-                        fillOpacity: 0.5,
-                        className: \`wdpa-\${iucnCategory?.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'unknown'}\`
+                        color: lightBrown,
+                        fillColor: lightBrown,
+                        weight: 2,
+                        opacity: 0.8,
+                        fillOpacity: 0.6,
+                        className: 'wdpa-protected-area'
                       };
                     },
                     onEachFeature: function(feature, layer) {
@@ -813,7 +801,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                             <div style="margin-bottom: 5px;"><strong>WDPA ID:</strong> \${wdpaId}</div>
                             <div style="margin-bottom: 5px;"><strong>Designation:</strong> \${designation}</div>
                             <div style="margin-bottom: 5px;"><strong>IUCN Category:</strong> 
-                              <span style="background: \${wdpaColors[iucnCategory] || wdpaColors['Not Assigned']}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${iucnCategory}</span>
+                              <span style="background: #d2b48c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${iucnCategory}</span>
                             </div>
                             <div style="margin-bottom: 5px;"><strong>Status:</strong> \${status}</div>
                             <div style="margin-bottom: 5px;"><strong>Governance:</strong> \${govType}</div>
@@ -1367,7 +1355,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 console.error('❌ WDPA service test failed:', error);
               });
             
-            // Add CSS for WDPA popup styling
+            // Add CSS for WDPA styling - force light brown color
             const style = document.createElement('style');
             style.textContent = \`
               .wdpa-popup .leaflet-popup-content-wrapper {
@@ -1376,6 +1364,21 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               }
               .wdpa-popup .leaflet-popup-content {
                 margin: 12px;
+              }
+              
+              /* Force WDPA tile layer to appear in light brown */
+              .wdpa-tile-layer {
+                filter: hue-rotate(20deg) saturate(1.2) brightness(1.1);
+                mix-blend-mode: multiply;
+              }
+              
+              /* Style for WDPA GeoJSON features */
+              .wdpa-protected-area {
+                stroke: #d2b48c !important;
+                fill: #d2b48c !important;
+                stroke-width: 2 !important;
+                stroke-opacity: 0.8 !important;
+                fill-opacity: 0.6 !important;
               }
             \`;
             document.head.appendChild(style);
