@@ -411,43 +411,43 @@ export default function SupplyChainAnalysis() {
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   1
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Data Collection</p>
-                  <p className="text-sm text-gray-600">Complete supplier data collection and documentation</p>
+                  <p className="font-medium text-green-900">Data Collection</p>
+                  <p className="text-sm text-green-700">Complete supplier data collection and documentation</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   2
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Spatial Analysis</p>
-                  <p className="text-sm text-gray-600">Geospatial risk assessment and deforestation monitoring</p>
+                  <p className="font-medium text-purple-900">Spatial Analysis</p>
+                  <p className="text-sm text-purple-700">Geospatial risk assessment and deforestation monitoring</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
+              <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   3
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">Legality Compliance</p>
-                  <p className="text-sm text-gray-600">Verify legal compliance and regulatory requirements</p>
+                  <p className="font-medium text-orange-900">Legality Compliance</p>
+                  <p className="text-sm text-orange-700">Verify legal compliance and regulatory requirements</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
+              <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   4
                 </div>
                 <div>
-                  <p className="font-medium text-blue-900">Risk Assessment</p>
-                  <p className="text-sm text-blue-700">Comprehensive risk evaluation and scoring</p>
+                  <p className="font-medium text-red-900">Risk Assessment</p>
+                  <p className="text-sm text-red-700">Comprehensive risk evaluation and scoring</p>
                 </div>
               </div>
             </div>
