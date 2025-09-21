@@ -4087,13 +4087,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log('🔍 Using PostGIS query with bounding box:', bbox.substring(0, 100) + '...');
 
-        // Query peatland data from PostGIS database with better column handling
+        // Query peatland data from PostGIS database using correct column names from DDL
         const result = await db.execute(sql`
           SELECT 
-            COALESCE("Kubah_GBT", kubah_gbt, 'Unknown') as kubah_classification,
-            COALESCE("Ekosistem", ekosistem, 'Unknown') as ecosystem,
-            COALESCE("Province", province, 'Unknown') as province_name,
-            COALESCE("Area_Ha", area_ha, 0) as area_hectares,
+            COALESCE(kubah__gbt, 'Unknown') as kubah_classification,
+            COALESCE(provinsi, 'Unknown') as province_name,
+            COALESCE(kabupaten, 'Unknown') as kabupaten_name,
+            COALESCE(kecamatan, 'Unknown') as kecamatan_name,
+            COALESCE(nama_khg, 'Unknown') as nama_khg,
+            COALESCE(status_khg, 'Unknown') as status_khg,
+            COALESCE(luas__ha, 0) as area_hectares,
             ST_AsGeoJSON(ST_Simplify(geom, 0.001)) as geometry
           FROM peatland_idn 
           WHERE geom IS NOT NULL
@@ -4102,7 +4105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             geom, 
             ST_GeomFromText(${bbox}, 4326)
           )
-          ORDER BY COALESCE("Area_Ha", area_ha, 0) DESC
+          ORDER BY COALESCE(luas__ha, 0) DESC
           LIMIT 500
         `);
 
@@ -4127,8 +4130,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             type: 'Feature',
             properties: {
               Kubah_GBT: row.kubah_classification || 'Unknown',
-              Ekosistem: row.ecosystem || 'Unknown',
-              Province: row.province_name || 'Unknown', 
+              Ekosistem: row.nama_khg || 'Unknown',
+              Province: row.province_name || 'Unknown',
+              Kabupaten: row.kabupaten_name || 'Unknown',
+              Kecamatan: row.kecamatan_name || 'Unknown',
+              Status_KHG: row.status_khg || 'Unknown',
               Area_Ha: parseFloat(row.area_hectares?.toString() || '0')
             },
             geometry: geometry

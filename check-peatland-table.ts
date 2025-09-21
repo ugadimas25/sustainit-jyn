@@ -1,11 +1,10 @@
-
 import { db } from "./server/db";
 import { sql } from "drizzle-orm";
 
 async function checkPeatlandTable() {
   try {
     console.log("🔍 Checking database connection...");
-    
+
     // Test basic connection
     const testQuery = await db.execute(sql`SELECT 1 as test`);
     console.log("✅ Database connection successful");
@@ -50,10 +49,11 @@ async function checkPeatlandTable() {
         console.log("\n📋 Sample data (first 3 records):");
         const sample = await db.execute(sql`
           SELECT 
-            COALESCE("Kubah_GBT", kubah_gbt, 'Unknown') as kubah_classification,
-            COALESCE("Ekosistem", ekosistem, 'Unknown') as ecosystem,
-            COALESCE("Province", province, 'Unknown') as province_name,
-            COALESCE("Area_Ha", area_ha, 0) as area_hectares
+            kubah__gbt as kubah_classification,
+            nama_khg as ecosystem_name,
+            provinsi as province_name,
+            kabupaten as kabupaten_name,
+            luas__ha as area_hectares
           FROM peatland_idn 
           LIMIT 3;
         `);
@@ -90,7 +90,7 @@ async function checkPeatlandTable() {
 
     } else {
       console.log("❌ Table 'peatland_idn' does not exist");
-      
+
       // List all tables
       console.log("\n📋 Available tables in database:");
       const allTables = await db.execute(sql`
