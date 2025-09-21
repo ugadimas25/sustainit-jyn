@@ -18,10 +18,11 @@ import {
   Upload, File, Download, Trash2, Play, Map, AlertTriangle, 
   CheckCircle2, XCircle, Clock, Eye, Info, Zap, ChevronUp, ChevronDown,
   Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal, Edit, 
-  RefreshCw, CheckSquare, FileText
+  RefreshCw, CheckSquare, FileText, BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import EudrMapViewer from './EudrMapViewer'; // Assuming EudrMapViewer is in the same directory or correctly aliased
 
 interface AnalysisResult {
   plotId: string;
@@ -29,9 +30,9 @@ interface AnalysisResult {
   area: number;
   overallRisk: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
   complianceStatus: 'COMPLIANT' | 'NON-COMPLIANT' | 'UNKNOWN';
-  gfwLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
-  jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
-  sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
+  gfwLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN' | 'TRUE' | 'FALSE'; // Added TRUE/FALSE for getLossBadge
+  jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN' | 'TRUE' | 'FALSE'; // Added TRUE/FALSE for getLossBadge
+  sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN' | 'TRUE' | 'FALSE'; // Added TRUE/FALSE for getLossBadge
   highRiskDatasets: string[];
   gfwLossArea?: number;
   jrcLossArea?: number;
@@ -82,6 +83,7 @@ export default function DeforestationMonitoring() {
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [filteredResults, setFilteredResults] = useState<AnalysisResult[]>([]);
   const [, setLocation] = useLocation();
+  const [showMapViewer, setShowMapViewer] = useState(false); // State for map viewer modal
 
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
@@ -670,6 +672,7 @@ export default function DeforestationMonitoring() {
     setComplianceFilter('all');
     setCountryFilter('all');
     setSelectedResults([]);
+    setShowMapViewer(false); // Hide map viewer if cleared
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -1309,8 +1312,8 @@ export default function DeforestationMonitoring() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Info className="h-5 w-5" />
-                  Results Table
+                  <BarChart3 className="h-5 w-5" />
+                  Analysis Results - Ready for Preview
                 </CardTitle>
                 <p className="text-sm text-gray-600 mt-1">
                   Showing {filteredResults.length} of {analysisResults.length} plots
@@ -1318,59 +1321,29 @@ export default function DeforestationMonitoring() {
               </div>
               <div className="flex gap-2">
                 <Button 
-                  onClick={() => handleViewInMap({} as AnalysisResult)} // Pass empty object as placeholder
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  onClick={() => {
+                    console.log('🗺️ Navigating to full map viewer');
+                    setLocation('/map-viewer');
+                  }}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                  data-testid="view-map-button"
                 >
-                  <Map className="h-4 w-4 mr-2" />
-                  View in Map
+                  <Map className="h-4 w-4" />
+                  View Full Map
                 </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      disabled={selectedResults.length === 0}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                      Actions ({selectedResults.length})
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        selectedResults.forEach(rowIndex => {
-                          const result = filteredResults[rowIndex];
-                          if (result) handleRevalidation(result.plotId);
-                        });
-                      }}
-                    >
-                      <RefreshCw className="h-3 w-3 mr-2" />
-                      Revalidate Selected
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        selectedResults.forEach(rowIndex => {
-                          const result = filteredResults[rowIndex];
-                          if (result) handleVerification(result.plotId);
-                        });
-                      }}
-                    >
-                      <CheckSquare className="h-3 w-3 mr-2" />
-                      Verify Selected
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        selectedResults.forEach(rowIndex => {
-                          const result = filteredResults[rowIndex];
-                          if (result) handleEdit(result.plotId);
-                        });
-                      }}
-                    >
-                      <Edit className="h-3 w-3 mr-2" />
-                      Edit Selected
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+
+                <Button 
+                  onClick={() => {
+                    console.log('👁️ Opening map preview modal');
+                    setShowMapViewer(true);
+                  }}
+                  variant="outline"
+                  className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+                  data-testid="preview-map-button"
+                >
+                  <Eye className="h-4 w-4" />
+                  Quick Preview
+                </Button>
               </div>
             </CardHeader>
 
@@ -1693,6 +1666,21 @@ export default function DeforestationMonitoring() {
           </Card>
         )}
       </div>
+
+      {/* Map Viewer Modal */}
+      {showMapViewer && analysisResults.length > 0 && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-[95vw] h-[95vh] bg-white rounded-lg shadow-xl">
+            <EudrMapViewer 
+              analysisResults={analysisResults}
+              onClose={() => {
+                console.log('❌ Closing map preview');
+                setShowMapViewer(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
