@@ -124,192 +124,61 @@ export default function DeforestationMonitoring() {
         description: `GeoJSON analysis completed successfully. Processing ${response.data?.features?.length || 0} plots.`
       });
 
-      // Transform API response to our expected format with enhanced error handling
+      // Transform API response to our expected format
       if (response.data?.features) {
-        try {
-          // Parse the original GeoJSON to get the original plot IDs
-          const originalGeojson = JSON.parse(uploadedFile?.content || '{}');
+        // Parse the original GeoJSON to get the original plot IDs
+        const originalGeojson = JSON.parse(uploadedFile?.content || '{}'); // Use uploadedFile.content safely
+        const originalPlotIds = originalGeojson.features.map((feature: any, index: number) => {
+          const props = feature.properties || {};
+          return props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `PLOT_${index + 1}`;
+        });
 
-          if (!originalGeojson.features || !Array.isArray(originalGeojson.features)) {
-            throw new Error('Invalid original GeoJSON structure');
-          }
+        console.log('📋 Original Plot IDs preserved from input:', originalPlotIds);
 
-          const originalPlotIds = originalGeojson.features.map((feature: any, index: number) => {
-            const props = feature.properties || {};
-            return props.plot_id || props.id || props['.Farmers ID'] || props.Name || 
-                   props.farmer_id || props.PLOT_ID || props.plotId || `PLOT_${index + 1}`;
-          });
+        const transformedResults = response.data.features.map((feature: any, index: number) => {
+          const props = feature.properties || {};
 
-          console.log('📋 Original Plot IDs preserved from input:', originalPlotIds);
+          // Use the original plot ID from the input GeoJSON based on feature index
+          const plotId = originalPlotIds[index] || `PLOT_${index + 1}`;
+          console.log(`✅ Preserving original Plot ID: ${plotId} for feature ${index + 1}`);
 
-          const transformedResults: AnalysisResult[] = [];
-          const processingErrors: string[] = [];
+          // Robustly get country
+          const country = props['.Distict'] || props['.Aggregator Location'] || props.country || props.district || props.region || 'Unknown';
 
-          response.data.features.forEach((feature: any, index: number) => {
-            try {
-              const props = feature.properties || {};
-
-              // Use the original plot ID from the input GeoJSON based on feature index
-              const plotId = originalPlotIds[index] || `PLOT_${index + 1}`;
-              console.log(`✅ Preserving original Plot ID: ${plotId} for feature ${index + 1}`);
-
-              // Get the original feature for better country detection
-              const originalFeature = originalGeojson.features[index];
-              const originalProps = originalFeature?.properties || {};
-
-              // Enhanced country detection with multiple fallbacks
-              let country = 'Unknown';
-
-              // Priority order for country detection
-              const countryFields = [
-                originalProps.country,
-                originalProps.Country, 
-                originalProps.COUNTRY,
-                originalProps.country_name,
-                originalProps.countryName,
-                props.country_name,
-                originalProps['.Distict'] ? 'Indonesia' : null,
-                originalProps['.Aggregator Location'] ? 'Indonesia' : null
-              ];
-
-              for (const field of countryFields) {
-                if (field && field !== 'Unknown') {
-                  country = String(field);
-                  // Clean up country name
-                  if (country.includes(',')) {
-                    country = country.split(',')[0].trim();
-                  }
-                  break;
-                }
-              }
-
-              // Special handling for Indonesian format
-              if (country === 'Unknown' && originalProps['.Distict']) {
-                country = `${originalProps['.Distict']}, Indonesia`;
-              }
-
-              console.log(`🌍 Final country for ${plotId}: ${country}`);
-
-              // Enhanced area calculation with multiple sources
-              let area = 0;
-              const areaSources = [
-                originalProps['.Plot size'],
-                originalProps.area_ha,
-                originalProps.area,
-                originalProps.area_hectares,
-                originalProps.Area,
-                originalProps.AREA,
-                props.total_area_hectares
-              ];
-
-              for (const areaValue of areaSources) {
-                if (areaValue !== undefined && areaValue !== null) {
-                  if (typeof areaValue === 'string') {
-                    // Handle formats like "0.50 Ha", "1.2 hectares", etc.
-                    const numericValue = areaValue.replace(/[^\d.]/g, '');
-                    const parsed = parseFloat(numericValue);
-                    if (!isNaN(parsed) && parsed > 0) {
-                      area = parsed;
-                      break;
-                    }
-                  } else if (typeof areaValue === 'number' && areaValue > 0) {
-                    area = areaValue;
-                    break;
-                  }
-                }
-              }
-
-              // If no area found, calculate from geometry if possible
-              if (area === 0 && feature.geometry) {
-                try {
-                  // Simple area estimation for small polygons (approximate)
-                  if (feature.geometry.type === 'Polygon' && feature.geometry.coordinates?.[0]?.length >= 4) {
-                    area = 1; // Default 1 hectare for valid polygons without area data
-                  }
-                } catch (geomError) {
-                  console.warn(`Could not estimate area for ${plotId}:`, geomError);
-                }
-              }
-
-              // Enhanced risk assessment parsing with fallbacks
-              const overallRisk = props.overall_compliance?.overall_risk?.toUpperCase() || 
-                                props.risk_level?.toUpperCase() || 
-                                props.overallRisk?.toUpperCase() || 
-                                'UNKNOWN';
-
-              const complianceStatus = props.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 
-                                     (props.overall_compliance?.compliance_status === 'COMPLIANT' ? 'COMPLIANT' : 
-                                      props.compliance_status?.toUpperCase() === 'COMPLIANT' ? 'COMPLIANT' :
-                                      props.compliance_status?.toUpperCase() === 'NON-COMPLIANT' ? 'NON-COMPLIANT' : 'UNKNOWN');
-
-              const gfwLoss = props.gfw_loss?.gfw_loss_stat?.toUpperCase() || 
-                             props.gfw_loss?.toUpperCase() || 
-                             'UNKNOWN';
-
-              const jrcLoss = props.jrc_loss?.jrc_loss_stat?.toUpperCase() || 
-                             props.jrc_loss?.toUpperCase() || 
-                             'UNKNOWN';
-
-              const sbtnLoss = props.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 
-                              props.sbtn_loss?.toUpperCase() || 
-                              'UNKNOWN';
-
-              const result: AnalysisResult = {
-                plotId: String(plotId),
-                country: String(country),
-                area: Number(area) || 0,
-                overallRisk: overallRisk as AnalysisResult['overallRisk'],
-                complianceStatus: complianceStatus as AnalysisResult['complianceStatus'],
-                gfwLoss: gfwLoss as AnalysisResult['gfwLoss'],
-                jrcLoss: jrcLoss as AnalysisResult['jrcLoss'],
-                sbtnLoss: sbtnLoss as AnalysisResult['sbtnLoss'],
-                highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-                geometry: feature.geometry
-              };
-
-              transformedResults.push(result);
-
-            } catch (featureError) {
-              const errorMsg = `Failed to process feature ${index + 1}: ${featureError}`;
-              console.error(errorMsg);
-              processingErrors.push(errorMsg);
+          // Robustly get area, parsing "0.50 Ha" format
+          let area = 0;
+          const areaValue = props['.Plot size'] || props.area_ha || props.area || props.area_hectares;
+          if (areaValue) {
+            if (typeof areaValue === 'string' && areaValue.includes('Ha')) {
+              area = parseFloat(areaValue.replace(' Ha', '').trim()) || 0;
+            } else if (typeof areaValue === 'number') {
+              area = areaValue;
             }
-          });
-
-          // Report processing results
-          console.log(`📊 Processing Summary: ${transformedResults.length}/${response.data.features.length} features processed successfully`);
-
-          if (processingErrors.length > 0) {
-            console.warn('Processing errors:', processingErrors);
-            toast({
-              title: "Processing Warnings",
-              description: `${processingErrors.length} features had processing issues. Check console for details.`,
-              variant: "warning"
-            });
           }
 
-          if (transformedResults.length === 0) {
-            throw new Error('No features could be processed successfully');
-          }
+          return {
+            plotId: String(plotId),
+            country: String(country),
+            area: Number(area),
+            overallRisk: (props.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN') as AnalysisResult['overallRisk'],
+            complianceStatus: props.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : (props.overall_compliance?.compliance_status === 'COMPLIANT' ? 'COMPLIANT' : 'UNKNOWN'),
+            gfwLoss: (props.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['gfwLoss'],
+            jrcLoss: (props.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['jrcLoss'],
+            sbtnLoss: (props.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['sbtnLoss'],
+            highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
+            geometry: feature.geometry
+          };
+        });
 
-          setAnalysisResults(transformedResults);
-          setFilteredResults(transformedResults);
+        setAnalysisResults(transformedResults);
+        setFilteredResults(transformedResults);
 
-          // Store results for potential map viewer usage
-          localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
-
-        } catch (transformError) {
-          console.error('Result transformation error:', transformError);
-          toast({
-            title: "Analysis Processing Error",
-            description: `Failed to process analysis results: ${transformError}`,
-            variant: "destructive"
-          });
-          setIsAnalyzing(false);
-          setAnalysisProgress(0);
-          return;
-        }
+        // Store results for potential map viewer usage
+        localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
       }
+
+      setIsAnalyzing(false);
+      setAnalysisProgress(100);
     },
     onError: (error: any) => {
       console.error('Upload error:', error);
