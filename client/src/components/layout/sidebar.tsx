@@ -49,8 +49,9 @@ const navigation: NavigationItem[] = [
     testId: 'nav-supply-chain-analysis',
     subModules: [
       { name: '1. Data Collection', href: '/data-collection', icon: Shield, step: 1, testId: 'nav-supply-chain-analysis-step-1' },
-      { name: '2. Legality Compliance', href: '/legality-compliance', icon: Scale, step: 2, testId: 'nav-supply-chain-analysis-step-2' },
-      { name: '3. Risk Assessment', href: '/risk-assessment', icon: AlertTriangle, step: 3, testId: 'nav-supply-chain-analysis-step-3' },
+      { name: '2. Spatial Analysis', href: '/deforestation-monitoring', icon: Satellite, step: 2, testId: 'nav-supply-chain-analysis-step-2' },
+      { name: '3. Legality Compliance', href: '/legality-compliance', icon: Scale, step: 3, testId: 'nav-supply-chain-analysis-step-3' },
+      { name: '4. Risk Assessment', href: '/risk-assessment', icon: AlertTriangle, step: 4, testId: 'nav-supply-chain-analysis-step-4' },
     ]
   },
   { name: 'Supply Chain Linkage', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
@@ -244,7 +245,8 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
     if (!hasAccess) {
       let requiredStep = "";
       if (subModule.step === 2) requiredStep = "Data Collection";
-      if (subModule.step === 3) requiredStep = "Data Collection and Legality Compliance";
+      if (subModule.step === 3) requiredStep = "Data Collection and Spatial Analysis";
+      if (subModule.step === 4) requiredStep = "Data Collection, Spatial Analysis, and Legality Compliance";
       
       toast({
         title: "Step Locked",
