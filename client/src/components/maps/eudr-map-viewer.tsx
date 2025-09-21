@@ -704,10 +704,13 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
             // Function to create WDPA layer using GFW vector tiles
             function createWDPALayer() {
-              // Use GFW vector tiles for WDPA protected areas - more reliable and consistent
-              const gfwWdpaUrl = 'https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/{z}/{x}/{y}.png';
+              // Use GFW vector tiles for WDPA protected areas with correct URL format
+              const gfwWdpaUrl = 'https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/default/{z}/{x}/{y}.pbf';
               
-              wdpaTileLayer = L.tileLayer(gfwWdpaUrl, {
+              // For vector tiles, we need a different approach - use raster tiles for now
+              const gfwWdpaRasterUrl = 'https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/{z}/{x}/{y}.png';
+              
+              wdpaTileLayer = L.tileLayer(gfwWdpaRasterUrl, {
                 attribution: '© WDPA - World Database on Protected Areas via Global Forest Watch',
                 opacity: 0.7,
                 maxZoom: 18,
@@ -2155,9 +2158,9 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             // Test WDPA GFW service availability
             console.log('🔍 Testing WDPA GFW vector tiles service availability...');
             
-            // Test a sample WDPA tile from GFW
+            // Test a sample WDPA tile from GFW using correct vector tile format
             const testCoords = { z: 6, x: 32, y: 21 };
-            const wdpaTestUrl = `https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/${testCoords.z}/${testCoords.x}/${testCoords.y}.png`;
+            const wdpaTestUrl = `https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/default/${testCoords.z}/${testCoords.x}/${testCoords.y}.pbf`;
             
             fetch(wdpaTestUrl)
               .then(response => {

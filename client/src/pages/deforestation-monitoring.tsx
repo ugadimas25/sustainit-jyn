@@ -1379,7 +1379,7 @@ export default function DeforestationMonitoring() {
                 
                 if (e.target.checked) {
                   if (!wdpaLayer) {
-                    // Use GFW vector tiles for better reliability and consistency
+                    // Use GFW raster tiles for WDPA protected areas (vector tiles require special handling)
                     wdpaLayer = L.tileLayer('https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/{z}/{x}/{y}.png', {
                       attribution: '© WDPA via Global Forest Watch',
                       opacity: 0.7,
