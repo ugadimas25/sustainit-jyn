@@ -884,7 +884,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               
               // Get current map bounds to limit query
               const bounds = map.getBounds();
-              const bbox = \`\${bounds.getWest()},\${bounds.getSouth()},\${bounds.getEast()},\${bounds.getNorth()}\`;
               
               // Fetch peatland data from server endpoint
               return fetch('/api/peatland-data', {
@@ -902,37 +901,48 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 })
               })
               .then(response => {
-                console.log('Peatland response status:', response.status);
+                console.log('🏞️ Peatland response status:', response.status);
                 if (!response.ok) {
                   throw new Error(\`HTTP error! status: \${response.status}\`);
                 }
                 return response.json();
               })
               .then(data => {
-                console.log('Peatland data received:', data);
+                console.log('🏞️ Peatland data received:', data);
                 
                 if (!data.features || data.features.length === 0) {
-                  console.warn('No peatland features found in current map bounds');
+                  console.warn('⚠️ No peatland features found in current map bounds');
                   return null;
                 }
 
-                console.log(\`Found \${data.features.length} peatland features\`);
+                console.log(\`✅ Found \${data.features.length} peatland features\`);
+                
+                // Group features by classification for logging
+                const classifications = data.features.reduce((acc, feature) => {
+                  const kubahGbt = feature.properties.Kubah_GBT || 'Unknown';
+                  acc[kubahGbt] = (acc[kubahGbt] || 0) + 1;
+                  return acc;
+                }, {});
+                console.log('🏞️ Peatland classifications found:', classifications);
                 
                 const layer = L.geoJSON(data, {
                   style: function(feature) {
                     const kubahGbt = feature.properties.Kubah_GBT || feature.properties.kubah_gbt || '';
                     
-                    // Style based on Kubah_GBT classification
+                    // Style based on Kubah_GBT classification with proper colors
                     let fillColor, color;
                     if (kubahGbt === 'Kubah Gambut') {
-                      fillColor = '#8b4513'; // Brown
+                      fillColor = '#8b4513'; // Brown for Kubah Gambut
                       color = '#654321';
-                    } else {
-                      fillColor = '#ffa500'; // Orange for "Non Kubah Gambut" or other values
+                    } else if (kubahGbt === 'Non Kubah Gambut') {
+                      fillColor = '#ffa500'; // Orange for Non Kubah Gambut
                       color = '#ff8c00';
+                    } else {
+                      fillColor = '#d2b48c'; // Light brown for other/unknown
+                      color = '#bc9a6a';
                     }
                     
-                    console.log(\`Styling peatland feature with Kubah_GBT: "\${kubahGbt}" as \${fillColor}\`);
+                    console.log(\`🎨 Styling peatland feature with Kubah_GBT: "\${kubahGbt}" as \${fillColor}\`);
                     
                     return {
                       color: color,
@@ -947,19 +957,19 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     const props = feature.properties;
                     const kubahGbt = props.Kubah_GBT || props.kubah_gbt || 'Not specified';
                     const ecosystemType = props.Ekosistem || props.ekosistem || 'Unknown';
-                    const area = props.area_ha || props.Area_Ha || 'Unknown';
+                    const area = props.Area_Ha || props.area_ha || 'Unknown';
                     const region = props.Province || props.province || props.Region || 'Unknown';
                     
                     const popupContent = \`
                       <div style="min-width: 280px; font-family: Arial, sans-serif;">
-                        <h4 style="margin: 0 0 10px 0; color: #8b4513; font-size: 16px; font-weight: bold; border-bottom: 2px solid #8b4513; padding-bottom: 5px;">Indonesian Peatland Area</h4>
+                        <h4 style="margin: 0 0 10px 0; color: #8b4513; font-size: 16px; font-weight: bold; border-bottom: 2px solid #8b4513; padding-bottom: 5px;">🏞️ Indonesian Peatland Area</h4>
                         <div style="font-size: 13px; line-height: 1.4;">
                           <div style="margin-bottom: 5px;"><strong>Classification:</strong> 
                             <span style="background: \${kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500'}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${kubahGbt}</span>
                           </div>
-                          <div style="margin-bottom: 5px;"><strong>Ecosystem Type:</strong> \${ecosystemType}</div>
-                          <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} ha</div>
-                          <div style="margin-bottom: 5px;"><strong>Region:</strong> \${region}</div>
+                          <div style="margin-bottom: 5px;"><strong>Ecosystem:</strong> \${ecosystemType}</div>
+                          <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} hectares</div>
+                          <div style="margin-bottom: 5px;"><strong>Province:</strong> \${region}</div>
                           <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #8b4513; font-size: 11px;">
                             <strong>Protection Status:</strong> \${getPeatlandProtectionStatus(kubahGbt)}
                           </div>
@@ -977,7 +987,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 return layer;
               })
               .catch(error => {
-                console.error('Error loading Peatland layer:', error);
+                console.error('❌ Error loading Peatland layer:', error);
                 return null;
               });
             }
@@ -1407,39 +1417,65 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Peatland layer control
             document.getElementById('peatlandLayer').addEventListener('change', function(e) {
               if (e.target.checked) {
-                console.log('Peatland layer checkbox checked - loading layer...');
+                console.log('🏞️ Peatland layer checkbox checked - loading layer...');
                 
                 if (!peatlandLayer) {
-                  console.log('Creating new Peatland layer...');
+                  console.log('🔄 Creating new Indonesian Peatland layer...');
+                  
+                  // Show loading indicator
+                  const loadingMessage = document.createElement('div');
+                  loadingMessage.id = 'peatland-loading';
+                  loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 10000;';
+                  loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
+                  document.body.appendChild(loadingMessage);
                   
                   createPeatlandLayer().then(layer => {
-                    if (layer) {
+                    // Remove loading indicator
+                    const loader = document.getElementById('peatland-loading');
+                    if (loader) loader.remove();
+                    
+                    if (layer && layer.getLayers().length > 0) {
                       peatlandLayer = layer;
                       layer.addTo(map);
-                      console.log(\`✅ Peatland layer loaded successfully with \${layer.getLayers().length} features\`);
+                      console.log(\`✅ Indonesian Peatland layer loaded successfully with \${layer.getLayers().length} features\`);
                       
-                      // Force map refresh
+                      // Force map refresh and fit bounds if features exist
                       map.invalidateSize();
                       
+                      // Optionally fit bounds to show peatland features
+                      try {
+                        const bounds = layer.getBounds();
+                        if (bounds.isValid()) {
+                          console.log('📍 Fitting map to peatland features bounds');
+                          map.fitBounds(bounds, { padding: [20, 20] });
+                        }
+                      } catch (e) {
+                        console.log('Could not fit bounds to peatland features:', e.message);
+                      }
+                      
                     } else {
-                      console.error('❌ Failed to load Peatland layer');
-                      alert('Unable to load Peatland layer. The service may be temporarily unavailable.');
+                      console.error('❌ Failed to load Indonesian Peatland layer - no features found');
+                      alert('No Indonesian Peatland data found in the current map view. Try zooming to Indonesia region.');
                     }
                   }).catch(error => {
-                    console.error('❌ Error in Peatland layer creation:', error);
-                    alert('Error loading Peatland layer: ' + error.message);
+                    // Remove loading indicator
+                    const loader = document.getElementById('peatland-loading');
+                    if (loader) loader.remove();
+                    
+                    console.error('❌ Error in Indonesian Peatland layer creation:', error);
+                    alert('Error loading Indonesian Peatland layer: ' + error.message);
                   });
                 } else {
                   // Layer already exists, just add to map
                   peatlandLayer.addTo(map);
-                  console.log('✅ Existing Peatland layer restored to map');
+                  console.log('✅ Existing Indonesian Peatland layer restored to map');
                 }
               } else {
-                console.log('Peatland layer checkbox unchecked - removing layer...');
+                console.log('🏞️ Peatland layer checkbox unchecked - removing layer...');
                 
                 if (peatlandLayer && map.hasLayer(peatlandLayer)) {
                   map.removeLayer(peatlandLayer);
-                  console.log('✅ Peatland layer removed from map');
+                  console.log('✅ Indonesian Peatland layer removed from map');
                 }
               }
             });
