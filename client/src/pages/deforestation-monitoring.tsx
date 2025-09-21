@@ -957,7 +957,10 @@ export default function DeforestationMonitoring() {
                     Click to upload or drag and drop your GeoJSON or KML file
                   </p>
                   <p className="text-sm text-gray-500 mt-2">
-                    Supported formats: .geojson, .json, .kml
+                    Supported formats: .geojson, .json, .kml<br/>
+                    <span className="text-xs">
+                      Supports standard GeoJSON, Indonesian format, and extended format with detailed analysis
+                    </span>
                   </p>
                 </div>
                 <input
