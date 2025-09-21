@@ -1539,51 +1539,24 @@ export default function DeforestationMonitoring() {
               });
             }
 
-            // Enhanced SBTN Layer with multiple fallback URLs
+            // Enhanced SBTN Layer with proper tile service
             const sbtnCheckbox = window.parent.document.getElementById('quick-sbtn-layer');
             if (sbtnCheckbox) {
               sbtnCheckbox.addEventListener('change', function(e) {
                 console.log('SBTN checkbox changed:', e.target.checked);
                 if (e.target.checked) {
                   if (!sbtnLayer) {
-                    // Try multiple SBTN tile service URLs for better reliability
-                    const sbtnUrls = [
-                      'https://tiles.globalforestwatch.org/sbtn_natural_lands/latest/dynamic/{z}/{x}/{y}.png',
-                      'https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_natural_lands/{z}/{x}/{y}',
-                      'https://earthengine.googleapis.com/v1alpha/projects/earthengine-legacy/maps/{mapid}/tiles/{z}/{x}/{y}'
-                    ];
-                    
-                    // Use the first URL with additional parameters for SBTN natural lands
-                    sbtnLayer = L.tileLayer(sbtnUrls[0], {
+                    // SBTN Natural Lands tile service
+                    sbtnLayer = L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
                       attribution: '© SBTN - Science Based Targets Network',
-                      opacity: 0.8,
+                      opacity: 0.7,
                       maxZoom: 18,
-                      className: 'sbtn-layer',
                       errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
                     });
 
-                    // Enhanced error handling with fallback
+                    // Add error handling
                     sbtnLayer.on('tileerror', function(e) {
-                      console.warn('SBTN primary tile load error:', e.error);
-                      console.log('Attempting fallback SBTN service...');
-                      
-                      // Try fallback URL
-                      if (map.hasLayer(sbtnLayer)) {
-                        map.removeLayer(sbtnLayer);
-                      }
-                      
-                      sbtnLayer = L.tileLayer(sbtnUrls[1], {
-                        attribution: '© SBTN - Science Based Targets Network (Fallback)',
-                        opacity: 0.8,
-                        maxZoom: 18,
-                        className: 'sbtn-layer-fallback'
-                      });
-                      
-                      sbtnLayer.addTo(map);
-                    });
-
-                    sbtnLayer.on('tileload', function(e) {
-                      console.log('SBTN tile loaded successfully at:', e.coords);
+                      console.warn('SBTN tile load error:', e.error);
                     });
                   }
                   
@@ -1591,13 +1564,9 @@ export default function DeforestationMonitoring() {
                     sbtnLayer.addTo(map);
                     console.log('SBTN layer added to map');
                     
-                    // Force map refresh and zoom adjustment for better visibility
+                    // Force map refresh
                     setTimeout(() => {
                       map.invalidateSize();
-                      // SBTN data is often better visible at certain zoom levels
-                      if (map.getZoom() < 8) {
-                        map.setZoom(Math.max(8, map.getZoom()));
-                      }
                     }, 100);
                   }
                 } else {
