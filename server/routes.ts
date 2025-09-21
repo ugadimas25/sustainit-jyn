@@ -1808,18 +1808,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-      // Header for page 3 with improved styling
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.rect(10, 30, 190, 15);
-      doc.text('Page 3 of 4', 15, 38);
-      doc.text('Risk Assessment Processes', 85, 38);
-      doc.text(`Generated: ${currentDate}`, 150, 38);
-
-      yPos = 55;
-
-      // Section 1: Risk Assessment Process Overview
-      doc.setFont('helvetica', 'bold');
+  // Core entity routes
+  app.get("/api/commodities", isAuthenticated, async (req, res) => {
+    try {
+      const commodities = await storage.getCommodities();
+      res.json(commodities);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch commodities" });
+    }
+  });
       doc.setFontSize(12);
       doc.text('1. Risk Assessment Process Overview', 10, yPos);
       yPos += 10;
@@ -2314,18 +2311,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(line, 10, yPos + (index * 5));
       });
 
-      // Header for page 3 with improved styling
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.rect(10, 30, 190, 15);
-      doc.text('Page 3 of 4', 15, 38);
-      doc.text('Risk Assessment Processes', 85, 38);
-      doc.text(`Generated: ${currentDate}`, 150, 38);
-
-      yPos = 55;
-
-      // Section 1: Risk Assessment Process Overview
-      doc.setFont('helvetica', 'bold');
+  // Core entity routes
+  app.get("/api/commodities", isAuthenticated, async (req, res) => {
+    try {
+      const commodities = await storage.getCommodities();
+      res.json(commodities);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch commodities" });
+    }
+  });
       doc.setFontSize(12);
       doc.text('1. Risk Assessment Process Overview', 10, yPos);
       yPos += 10;
@@ -4199,6 +4193,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const hectares = area * 11119.49; // Rough conversion factor
 
     return Math.round(hectares * 100) / 100; // Round to 2 decimal places
+  }
+    } catch (error) {
+      console.error('generateCleanDDSPDF error:', error);
+      throw error;
+    }
   }
 
 
