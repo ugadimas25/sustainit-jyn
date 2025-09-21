@@ -1545,184 +1545,187 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               });
             });
 
-            // WDPA layer control with improved implementation
-            const wdpaCheckbox = document.getElementById('wdpaLayer');
-            if (wdpaCheckbox) {
-              wdpaCheckbox.addEventListener('change', function(e) {
-                if (e.target.checked) {
-                  console.log('WDPA layer checkbox checked - loading layer...');
+            // WDPA layer control with improved implementation - using event delegation for better reliability
+            function setupWDPALayer() {
+              const wdpaCheckbox = document.getElementById('wdpaLayer');
+              if (!wdpaCheckbox) {
+                console.error('❌ WDPA layer checkbox not found in DOM!');
+                return;
+              }
+
+              // Remove any existing event listeners to prevent duplicates
+              wdpaCheckbox.removeEventListener('change', handleWDPAChange);
+              wdpaCheckbox.addEventListener('change', handleWDPAChange);
+              console.log('✅ WDPA checkbox event listener registered');
+            }
+
+            function handleWDPAChange(e) {
+              const isChecked = e.target.checked;
+              console.log('WDPA checkbox changed:', isChecked);
+
+              if (isChecked) {
+                console.log('WDPA layer checkbox checked - loading layer...');
+                
+                if (!wdpaLayer && !wdpaTileLayer) {
+                  console.log('Creating new WDPA layer...');
                   
-                  if (!wdpaLayer && !wdpaTileLayer) {
-                    console.log('Creating new WDPA layer...');
-                    
-                    // Show loading indicator
-                    console.log('🔄 Loading WDPA GeoJSON layer for detailed categories...');
-                    
-                    createWDPAGeoJSONLayer().then(geoLayer => {
-                      if (geoLayer && geoLayer.getLayers && geoLayer.getLayers().length > 0) {
-                        wdpaLayer = geoLayer;
-                        geoLayer.addTo(map);
-                        console.log(\`✅ WDPA GeoJSON layer loaded successfully with \${geoLayer.getLayers().length} features\`);
-                        
-                        // Force map refresh and fit bounds if features exist
-                        map.invalidateSize();
-                        
-                        // Optionally fit bounds to show WDPA features
-                        try {
-                          const bounds = geoLayer.getBounds();
-                          if (bounds.isValid()) {
-                            console.log('📍 Fitting map to WDPA features bounds');
-                            map.fitBounds(bounds, { padding: [20, 20] });
-                          }
-                        } catch (e) {
-                          console.log('Could not fit bounds to WDPA features:', e.message);
-                        }
-                        
-                      } else {
-                        console.log('🔄 GeoJSON returned no features, trying tile layer as fallback...');
-                        
-                        // Fallback to tile layer
-                        createWDPALayer().then(layer => {
-                          if (layer) {
-                            wdpaTileLayer = layer;
-                            layer.addTo(map);
-                            console.log('✅ WDPA tile layer added as fallback');
-                            
-                            // Add enhanced error handling for tiles
-                            layer.on('tileerror', function(e) {
-                              console.error('❌ WDPA tile error:', e.error?.message || e);
-                            });
-                            
-                            layer.on('tileload', function(e) {
-                              console.log('✅ WDPA tile loaded successfully:', e.coords);
-                            });
-                            
-                            layer.on('loading', function() {
-                              console.log('🔄 WDPA tiles loading...');
-                            });
-                            
-                            layer.on('load', function() {
-                              console.log('✅ All WDPA tiles loaded');
-                            });
-                            
-                          } else {
-                            console.error('❌ Both WDPA layer methods failed');
-                            alert('Unable to load WDPA Protected Areas layer. The service may be temporarily unavailable.');
-                          }
-                        });
-                      }
-                    }).catch(error => {
-                      console.error('❌ Error in WDPA layer creation:', error);
-                      console.log('🔄 Trying tile layer due to GeoJSON error...');
+                  // Show loading indicator
+                  console.log('🔄 Loading WDPA GeoJSON layer for detailed categories...');
+                  
+                  createWDPAGeoJSONLayer().then(geoLayer => {
+                    if (geoLayer && geoLayer.getLayers && geoLayer.getLayers().length > 0) {
+                      wdpaLayer = geoLayer;
+                      geoLayer.addTo(map);
+                      console.log(\`✅ WDPA GeoJSON layer loaded successfully with \${geoLayer.getLayers().length} features\`);
                       
-                      // Try tile layer as backup when GeoJSON fails
+                      // Force map refresh and fit bounds if features exist
+                      map.invalidateSize();
+                      
+                      // Optionally fit bounds to show WDPA features
+                      try {
+                        const bounds = geoLayer.getBounds();
+                        if (bounds.isValid()) {
+                          console.log('📍 Fitting map to WDPA features bounds');
+                          map.fitBounds(bounds, { padding: [20, 20] });
+                        }
+                      } catch (e) {
+                        console.log('Could not fit bounds to WDPA features:', e.message);
+                      }
+                      
+                    } else {
+                      console.log('🔄 GeoJSON returned no features, trying tile layer as fallback...');
+                      
+                      // Fallback to tile layer
                       createWDPALayer().then(layer => {
                         if (layer) {
                           wdpaTileLayer = layer;
                           layer.addTo(map);
-                          console.log('✅ WDPA tile layer added after GeoJSON failure');
+                          console.log('✅ WDPA tile layer added as fallback');
+                          
+                          // Add enhanced error handling for tiles
+                          layer.on('tileerror', function(e) {
+                            console.error('❌ WDPA tile error:', e.error?.message || e);
+                          });
+                          
+                          layer.on('tileload', function(e) {
+                            console.log('✅ WDPA tile loaded successfully:', e.coords);
+                          });
+                          
+                          layer.on('loading', function() {
+                            console.log('🔄 WDPA tiles loading...');
+                          });
+                          
+                          layer.on('load', function() {
+                            console.log('✅ All WDPA tiles loaded');
+                          });
+                          
                         } else {
-                          alert('Error loading WDPA layer: ' + error.message);
+                          console.error('❌ Both WDPA layer methods failed');
+                          alert('Unable to load WDPA Protected Areas layer. The service may be temporarily unavailable.');
                         }
                       });
-                    });
-                  } else {
-                    // Layer already exists, just add to map
-                    const existingLayer = wdpaLayer || wdpaTileLayer;
-                    if (existingLayer) {
-                      if (!map.hasLayer(existingLayer)) {
-                        existingLayer.addTo(map);
-                        console.log('✅ Existing WDPA layer restored to map');
+                    }
+                  }).catch(error => {
+                    console.error('❌ Error in WDPA layer creation:', error);
+                    console.log('🔄 Trying tile layer due to GeoJSON error...');
+                    
+                    // Try tile layer as backup when GeoJSON fails
+                    createWDPALayer().then(layer => {
+                      if (layer) {
+                        wdpaTileLayer = layer;
+                        layer.addTo(map);
+                        console.log('✅ WDPA tile layer added after GeoJSON failure');
+                      } else {
+                        alert('Error loading WDPA layer: ' + error.message);
                       }
+                    });
+                  });
+                } else {
+                  // Layer already exists, just add to map
+                  const existingLayer = wdpaLayer || wdpaTileLayer;
+                  if (existingLayer) {
+                    if (!map.hasLayer(existingLayer)) {
+                      existingLayer.addTo(map);
+                      console.log('✅ Existing WDPA layer restored to map');
                     }
                   }
-                } else {
-                  console.log('WDPA layer checkbox unchecked - removing layer...');
-                  
-                  // Remove both possible layer types
-                  if (wdpaLayer && map.hasLayer(wdpaLayer)) {
-                    map.removeLayer(wdpaLayer);
-                    console.log('✅ WDPA GeoJSON layer removed from map');
-                  }
-                  if (wdpaTileLayer && map.hasLayer(wdpaTileLayer)) {
-                    map.removeLayer(wdpaTileLayer);
-                    console.log('✅ WDPA tile layer removed from map');
-                  }
                 }
-              });
-            } else {
-              console.error('❌ WDPA layer checkbox not found in DOM!');
+              } else {
+                console.log('WDPA layer checkbox unchecked - removing layer...');
+                
+                // Remove both possible layer types
+                if (wdpaLayer && map.hasLayer(wdpaLayer)) {
+                  map.removeLayer(wdpaLayer);
+                  console.log('✅ WDPA GeoJSON layer removed from map');
+                }
+                if (wdpaTileLayer && map.hasLayer(wdpaTileLayer)) {
+                  map.removeLayer(wdpaTileLayer);
+                  console.log('✅ WDPA tile layer removed from map');
+                }
+              }
             }
 
-            // Peatland layer control - ensure it's properly initialized with better error handling
-            const peatlandCheckbox = document.getElementById('peatlandLayer');
-            if (peatlandCheckbox) {
+            // Setup WDPA layer control
+            setupWDPALayer();
+
+            // Peatland layer control - using function-based approach for better reliability
+            function setupPeatlandLayer() {
+              const peatlandCheckbox = document.getElementById('peatlandLayer');
+              if (!peatlandCheckbox) {
+                console.error('❌ Peatland layer checkbox not found in DOM!');
+                console.log('🔍 Available element IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+                return;
+              }
+
               console.log('✅ Indonesian Peatland layer checkbox found and initializing...');
               
-              peatlandCheckbox.addEventListener('change', function(e) {
-                if (e.target.checked) {
-                  console.log('🏞️ Peatland layer checkbox checked - loading layer...');
+              // Remove any existing event listeners to prevent duplicates
+              peatlandCheckbox.removeEventListener('change', handlePeatlandChange);
+              peatlandCheckbox.addEventListener('change', handlePeatlandChange);
+              console.log('✅ Peatland checkbox event listener registered');
+            }
+
+            function handlePeatlandChange(e) {
+              const isChecked = e.target.checked;
+              console.log('Peatland checkbox changed:', isChecked);
+
+              if (isChecked) {
+                console.log('🏞️ Peatland layer checkbox checked - loading layer...');
+                
+                if (!peatlandLayer) {
+                  console.log('🔄 Creating new Indonesian Peatland layer...');
                   
-                  if (!peatlandLayer) {
-                    console.log('🔄 Creating new Indonesian Peatland layer...');
+                  // Show loading indicator
+                  const loadingMessage = document.createElement('div');
+                  loadingMessage.id = 'peatland-loading';
+                  loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                  loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
+                  document.body.appendChild(loadingMessage);
+                  
+                  // Try API first, then fallback to mock data
+                  createPeatlandLayer().then(apiLayer => {
+                    // Remove loading indicator
+                    const loader = document.getElementById('peatland-loading');
+                    if (loader) loader.remove();
                     
-                    // Show loading indicator
-                    const loadingMessage = document.createElement('div');
-                    loadingMessage.id = 'peatland-loading';
-                    loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                    loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
-                    document.body.appendChild(loadingMessage);
-                    
-                    // Try API first, then fallback to mock data
-                    createPeatlandLayer().then(apiLayer => {
-                      // Remove loading indicator
-                      const loader = document.getElementById('peatland-loading');
-                      if (loader) loader.remove();
+                    if (apiLayer && apiLayer.getLayers && apiLayer.getLayers().length > 0) {
+                      peatlandLayer = apiLayer;
+                      apiLayer.addTo(map);
+                      console.log(\`✅ Indonesian Peatland layer loaded from API with \${apiLayer.getLayers().length} features\`);
                       
-                      if (apiLayer && apiLayer.getLayers && apiLayer.getLayers().length > 0) {
-                        peatlandLayer = apiLayer;
-                        apiLayer.addTo(map);
-                        console.log(\`✅ Indonesian Peatland layer loaded from API with \${apiLayer.getLayers().length} features\`);
-                        
-                        // Show success message
-                        const successMsg = document.createElement('div');
-                        successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                        successMsg.innerHTML = \`✅ Indonesian Peatland layer loaded (\${apiLayer.getLayers().length} features)\`;
-                        document.body.appendChild(successMsg);
-                        setTimeout(() => successMsg.remove(), 3000);
-                        
-                        // Force map refresh
-                        map.invalidateSize();
-                      } else {
-                        console.log('🏞️ API returned no features, using comprehensive mock data...');
-                        
-                        // Fallback to mock data
-                        const mockLayer = createMockPeatlandLayer();
-                        if (mockLayer) {
-                          peatlandLayer = mockLayer;
-                          mockLayer.addTo(map);
-                          
-                          console.log('✅ Indonesian Peatland layer loaded with comprehensive mock data');
-                          
-                          // Show success message
-                          const successMsg = document.createElement('div');
-                          successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                          successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (comprehensive coverage)';
-                          document.body.appendChild(successMsg);
-                          setTimeout(() => successMsg.remove(), 3000);
-                          
-                          // Force map refresh
-                          map.invalidateSize();
-                        }
-                      }
-                    }).catch(error => {
-                      // Remove loading indicator
-                      const loader = document.getElementById('peatland-loading');
-                      if (loader) loader.remove();
+                      // Show success message
+                      const successMsg = document.createElement('div');
+                      successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                      successMsg.innerHTML = \`✅ Indonesian Peatland layer loaded (\${apiLayer.getLayers().length} features)\`;
+                      document.body.appendChild(successMsg);
+                      setTimeout(() => successMsg.remove(), 3000);
                       
-                      console.log('⚠️ API failed, using comprehensive mock data:', error.message);
+                      // Force map refresh
+                      map.invalidateSize();
+                    } else {
+                      console.log('🏞️ API returned no features, using comprehensive mock data...');
                       
-                      // Always provide fallback mock data
+                      // Fallback to mock data
                       const mockLayer = createMockPeatlandLayer();
                       if (mockLayer) {
                         peatlandLayer = mockLayer;
@@ -1733,151 +1736,205 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                         // Show success message
                         const successMsg = document.createElement('div');
                         successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                        successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (demo data)';
+                        successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (comprehensive coverage)';
                         document.body.appendChild(successMsg);
                         setTimeout(() => successMsg.remove(), 3000);
                         
                         // Force map refresh
                         map.invalidateSize();
-                      } else {
-                        console.error('❌ Both API and mock data failed');
-                        const errorMsg = document.createElement('div');
-                        errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(220, 38, 38, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                        errorMsg.innerHTML = '❌ Failed to load Indonesian Peatland layer';
-                        document.body.appendChild(errorMsg);
-                        setTimeout(() => errorMsg.remove(), 5000);
                       }
-                    });
-                  } else {
-                    // Layer already exists, just add to map
-                    peatlandLayer.addTo(map);
-                    console.log('✅ Existing Indonesian Peatland layer restored to map');
+                    }
+                  }).catch(error => {
+                    // Remove loading indicator
+                    const loader = document.getElementById('peatland-loading');
+                    if (loader) loader.remove();
                     
-                    // Force map refresh
-                    map.invalidateSize();
-                  }
-                } else {
-                  console.log('🏞️ Peatland layer checkbox unchecked - removing layer...');
-                  
-                  if (peatlandLayer && map.hasLayer(peatlandLayer)) {
-                    map.removeLayer(peatlandLayer);
-                    console.log('✅ Indonesian Peatland layer removed from map');
-                  }
-                }
-              });
-            } else {
-              console.error('❌ Peatland layer checkbox not found in DOM!');
-              console.log('🔍 Available element IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
-            }
-
-            // Deforestation layer controls
-            const gfwCheckbox = document.getElementById('gfwLayer');
-            if (gfwCheckbox) {
-              gfwCheckbox.addEventListener('change', function(e) {
-                if (e.target.checked) {
-                  try {
-                    if (!map.hasLayer(deforestationLayers.gfw)) {
-                      deforestationLayers.gfw.addTo(map);
-                      console.log('GFW tree cover loss layer added to map');
-                      console.log('GFW layer URL template:', deforestationLayers.gfw._url);
-
-                      // Force map refresh to show the layer
+                    console.log('⚠️ API failed, using comprehensive mock data:', error.message);
+                    
+                    // Always provide fallback mock data
+                    const mockLayer = createMockPeatlandLayer();
+                    if (mockLayer) {
+                      peatlandLayer = mockLayer;
+                      mockLayer.addTo(map);
+                      
+                      console.log('✅ Indonesian Peatland layer loaded with comprehensive mock data');
+                      
+                      // Show success message
+                      const successMsg = document.createElement('div');
+                      successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                      successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (demo data)';
+                      document.body.appendChild(successMsg);
+                      setTimeout(() => successMsg.remove(), 3000);
+                      
+                      // Force map refresh
                       map.invalidateSize();
-
-                      // Test if tiles are loading
-                      deforestationLayers.gfw.on('tileload', function(e) {
-                        console.log('GFW tile loaded successfully at:', e.coords);
-                      });
-
-                      deforestationLayers.gfw.on('tileerror', function(e) {
-                        console.error('GFW tile load error:', e.error, 'at coords:', e.coords);
-                      });
-
-                      deforestationLayers.gfw.on('loading', function() {
-                        console.log('GFW layer started loading tiles');
-                      });
-
-                      deforestationLayers.gfw.on('load', function() {
-                        console.log('GFW layer finished loading tiles');
-                      });
-
-                      // Force tile loading by triggering a map pan
-                      setTimeout(() => {
-                        map.panBy([1, 1]);
-                        map.panBy([-1, -1]);
-                      }, 100);
+                    } else {
+                      console.error('❌ Both API and mock data failed');
+                      const errorMsg = document.createElement('div');
+                      errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(220, 38, 38, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                      errorMsg.innerHTML = '❌ Failed to load Indonesian Peatland layer';
+                      document.body.appendChild(errorMsg);
+                      setTimeout(() => errorMsg.remove(), 5000);
                     }
-                  } catch (error) {
-                    console.error('Error adding GFW layer:', error);
-                  }
+                  });
                 } else {
-                  try {
-                    if (map.hasLayer(deforestationLayers.gfw)) {
-                      map.removeLayer(deforestationLayers.gfw);
-                      console.log('GFW tree cover loss layer removed from map');
-                    }
-                  } catch (error) {
-                    console.error('Error removing GFW layer:', error);
-                  }
+                  // Layer already exists, just add to map
+                  peatlandLayer.addTo(map);
+                  console.log('✅ Existing Indonesian Peatland layer restored to map');
+                  
+                  // Force map refresh
+                  map.invalidateSize();
                 }
-              });
-            } else {
-              console.error('❌ GFW layer checkbox not found in DOM!');
+              } else {
+                console.log('🏞️ Peatland layer checkbox unchecked - removing layer...');
+                
+                if (peatlandLayer && map.hasLayer(peatlandLayer)) {
+                  map.removeLayer(peatlandLayer);
+                  console.log('✅ Indonesian Peatland layer removed from map');
+                }
+              }
             }
 
-            const jrcCheckbox = document.getElementById('jrcLayer');
-            if (jrcCheckbox) {
-              jrcCheckbox.addEventListener('change', function(e) {
-                if (e.target.checked) {
-                  try {
-                    if (!map.hasLayer(deforestationLayers.jrc)) {
-                      deforestationLayers.jrc.addTo(map);
-                      console.log('JRC WMS layer added to map');
-                    }
-                  } catch (error) {
-                    console.error('Error adding JRC WMS layer:', error);
-                  }
-                } else {
-                  try {
-                    if (map.hasLayer(deforestationLayers.jrc)) {
-                      map.removeLayer(deforestationLayers.jrc);
-                      console.log('JRC WMS layer removed from map');
-                    }
-                  } catch (error) {
-                    console.error('Error removing JRC WMS layer:', error);
-                  }
-                }
-              });
-            } else {
-              console.error('❌ JRC layer checkbox not found in DOM!');
+            // Setup Peatland layer control
+            setupPeatlandLayer();
+
+            // Deforestation layer controls - using function-based approach
+            function setupDeforestationLayers() {
+              // GFW Layer
+              const gfwCheckbox = document.getElementById('gfwLayer');
+              if (gfwCheckbox) {
+                gfwCheckbox.removeEventListener('change', handleGFWChange);
+                gfwCheckbox.addEventListener('change', handleGFWChange);
+                console.log('✅ GFW checkbox event listener registered');
+              } else {
+                console.error('❌ GFW layer checkbox not found in DOM!');
+              }
+
+              // JRC Layer
+              const jrcCheckbox = document.getElementById('jrcLayer');
+              if (jrcCheckbox) {
+                jrcCheckbox.removeEventListener('change', handleJRCChange);
+                jrcCheckbox.addEventListener('change', handleJRCChange);
+                console.log('✅ JRC checkbox event listener registered');
+              } else {
+                console.error('❌ JRC layer checkbox not found in DOM!');
+              }
+
+              // SBTN Layer
+              const sbtnCheckbox = document.getElementById('sbtnLayer');
+              if (sbtnCheckbox) {
+                sbtnCheckbox.removeEventListener('change', handleSBTNChange);
+                sbtnCheckbox.addEventListener('change', handleSBTNChange);
+                console.log('✅ SBTN checkbox event listener registered');
+              } else {
+                console.error('❌ SBTN layer checkbox not found in DOM!');
+              }
             }
 
-            const sbtnCheckbox = document.getElementById('sbtnLayer');
-            if (sbtnCheckbox) {
-              sbtnCheckbox.addEventListener('change', function(e) {
-                if (e.target.checked) {
-                  try {
-                    if (!map.hasLayer(deforestationLayers.sbtn)) {
-                      deforestationLayers.sbtn.addTo(map);
-                      console.log('SBTN layer added to map');
-                    }
-                  } catch (error) {
-                    console.error('Error adding SBTN layer:', error);
+            function handleGFWChange(e) {
+              const isChecked = e.target.checked;
+              console.log('GFW checkbox changed:', isChecked);
+
+              if (isChecked) {
+                try {
+                  if (!map.hasLayer(deforestationLayers.gfw)) {
+                    deforestationLayers.gfw.addTo(map);
+                    console.log('GFW tree cover loss layer added to map');
+                    console.log('GFW layer URL template:', deforestationLayers.gfw._url);
+
+                    // Force map refresh to show the layer
+                    map.invalidateSize();
+
+                    // Test if tiles are loading
+                    deforestationLayers.gfw.on('tileload', function(e) {
+                      console.log('GFW tile loaded successfully at:', e.coords);
+                    });
+
+                    deforestationLayers.gfw.on('tileerror', function(e) {
+                      console.error('GFW tile load error:', e.error, 'at coords:', e.coords);
+                    });
+
+                    deforestationLayers.gfw.on('loading', function() {
+                      console.log('GFW layer started loading tiles');
+                    });
+
+                    deforestationLayers.gfw.on('load', function() {
+                      console.log('GFW layer finished loading tiles');
+                    });
+
+                    // Force tile loading by triggering a map pan
+                    setTimeout(() => {
+                      map.panBy([1, 1]);
+                      map.panBy([-1, -1]);
+                    }, 100);
                   }
-                } else {
-                  try {
-                    if (map.hasLayer(deforestationLayers.sbtn)) {
-                      map.removeLayer(deforestationLayers.sbtn);
-                      console.log('SBTN layer removed from map');
-                    }
-                  } catch (error) {
-                    console.error('Error removing SBTN layer:', error);
-                  }
+                } catch (error) {
+                  console.error('Error adding GFW layer:', error);
                 }
-              });
-            } else {
-              console.error('❌ SBTN layer checkbox not found in DOM!');
+              } else {
+                try {
+                  if (map.hasLayer(deforestationLayers.gfw)) {
+                    map.removeLayer(deforestationLayers.gfw);
+                    console.log('GFW tree cover loss layer removed from map');
+                  }
+                } catch (error) {
+                  console.error('Error removing GFW layer:', error);
+                }
+              }
             }
+
+            function handleJRCChange(e) {
+              const isChecked = e.target.checked;
+              console.log('JRC checkbox changed:', isChecked);
+
+              if (isChecked) {
+                try {
+                  if (!map.hasLayer(deforestationLayers.jrc)) {
+                    deforestationLayers.jrc.addTo(map);
+                    console.log('JRC WMS layer added to map');
+                  }
+                } catch (error) {
+                  console.error('Error adding JRC WMS layer:', error);
+                }
+              } else {
+                try {
+                  if (map.hasLayer(deforestationLayers.jrc)) {
+                    map.removeLayer(deforestationLayers.jrc);
+                    console.log('JRC WMS layer removed from map');
+                  }
+                } catch (error) {
+                  console.error('Error removing JRC WMS layer:', error);
+                }
+              }
+            }
+
+            function handleSBTNChange(e) {
+              const isChecked = e.target.checked;
+              console.log('SBTN checkbox changed:', isChecked);
+
+              if (isChecked) {
+                try {
+                  if (!map.hasLayer(deforestationLayers.sbtn)) {
+                    deforestationLayers.sbtn.addTo(map);
+                    console.log('SBTN layer added to map');
+                  }
+                } catch (error) {
+                  console.error('Error adding SBTN layer:', error);
+                }
+              } else {
+                try {
+                  if (map.hasLayer(deforestationLayers.sbtn)) {
+                    map.removeLayer(deforestationLayers.sbtn);
+                    console.log('SBTN layer removed from map');
+                  }
+                } catch (error) {
+                  console.error('Error removing SBTN layer:', error);
+                }
+              }
+            }
+
+            // Setup deforestation layer controls
+            setupDeforestationLayers();
 
             console.log('EUDR Map loaded with', analysisResults.length, 'plots');
             console.log('Polygons rendered:', polygons.length);
