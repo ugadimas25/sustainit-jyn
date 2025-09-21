@@ -197,19 +197,40 @@ export default function DeforestationMonitoring() {
             const props = feature.properties || {};
             const plotId = props.plot_id || props.id || `PLOT_${Math.random().toString(36).substring(7)}`;
 
+            // Extract loss percentages from API response and convert to hectares
+            const totalAreaHa = parseFloat(props.total_area_hectares || '1');
+            const gfwLossPercent = parseFloat(props.gfw_loss?.gfw_loss_area?.toString() || '0');
+            const jrcLossPercent = parseFloat(props.jrc_loss?.jrc_loss_area?.toString() || '0'); 
+            const sbtnLossPercent = parseFloat(props.sbtn_loss?.sbtn_loss_area?.toString() || '0');
+
+            // Convert percentages to actual hectares (0.09 = 9% * area)
+            const gfwLossArea = gfwLossPercent * totalAreaHa;
+            const jrcLossArea = jrcLossPercent * totalAreaHa;
+            const sbtnLossArea = sbtnLossPercent * totalAreaHa;
+
+            console.log(`🔍 API Plot ${plotId} loss calculation:`, {
+              totalAreaHa,
+              gfwLossPercent: `${(gfwLossPercent * 100).toFixed(1)}%`,
+              jrcLossPercent: `${(jrcLossPercent * 100).toFixed(1)}%`,
+              sbtnLossPercent: `${(sbtnLossPercent * 100).toFixed(1)}%`,
+              gfwLossArea: `${gfwLossArea.toFixed(4)} ha`,
+              jrcLossArea: `${jrcLossArea.toFixed(4)} ha`,
+              sbtnLossArea: `${sbtnLossArea.toFixed(4)} ha`
+            });
+
             return {
               plotId,
               country: props.country_name || 'Unknown',
-              area: parseFloat(props.total_area_hectares || '1'),
+              area: parseFloat(props.area_ha || props.area || props.area_hectares || totalAreaHa.toString()),
               overallRisk: props.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
               complianceStatus: props.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
               gfwLoss: (props.gfw_loss?.gfw_loss_area || 0) > 0 ? 'TRUE' : 'FALSE',
               jrcLoss: (props.jrc_loss?.jrc_loss_area || 0) > 0 ? 'TRUE' : 'FALSE', 
               sbtnLoss: (props.sbtn_loss?.sbtn_loss_area || 0) > 0 ? 'TRUE' : 'FALSE',
               highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area?.toString() || props.gfwLossArea || '0'),
-              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area?.toString() || props.jrcLossArea || '0'),
-              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area?.toString() || props.sbtnLossArea || '0'),
+              gfwLossArea: gfwLossArea, // Already calculated in hectares
+              jrcLossArea: jrcLossArea, // Already calculated in hectares
+              sbtnLossArea: sbtnLossArea, // Already calculated in hectares
               geometry: feature.geometry
             };
           });
