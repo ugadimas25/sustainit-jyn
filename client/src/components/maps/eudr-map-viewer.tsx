@@ -723,20 +723,20 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               
               // Get a wider bounding box to capture more features
               const bounds = map.getBounds();
-              const expandedBounds = bounds.pad(0.5); // Expand bounds by 50%
+              const expandedBounds = bounds.pad(1.0); // Expand bounds by 100% to get more features
               const bbox = \`\${expandedBounds.getWest()},\${expandedBounds.getSouth()},\${expandedBounds.getEast()},\${expandedBounds.getNorth()}\`;
               
-              // Enhanced query to get ALL IUCN categories without restrictions
+              // Enhanced query using correct field name 'iucn_cat' and get ALL categories
               const query = new URLSearchParams({
-                where: "IUCN_CAT IS NOT NULL OR IUCN_CAT = '' OR IUCN_CAT = 'Not Assigned' OR IUCN_CAT = 'Not Reported'", // Include all categories including null/empty
-                outFields: '*', // Get all fields
+                where: "1=1", // Get all features - no filtering by category
+                outFields: 'wdpaid,name,desig,desig_eng,iucn_cat,status,gov_type,mang_auth,rep_area,iso3', // Specific fields we need
                 geometry: bbox,
                 geometryType: 'esriGeometryEnvelope',
                 spatialRel: 'esriSpatialRelIntersects',
                 f: 'geojson',
                 returnGeometry: 'true',
-                maxRecordCount: 2000, // Increase limit significantly
-                orderByFields: 'IUCN_CAT' // Order by category to see distribution
+                maxRecordCount: 5000, // Increase limit significantly
+                orderByFields: 'iucn_cat,rep_area DESC' // Order by category then by area
               });
 
               const url = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${query}\`;
@@ -761,11 +761,11 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     // If no features found in bounds, try a global query for a sample
                     const globalQuery = new URLSearchParams({
                       where: '1=1',
-                      outFields: '*',
+                      outFields: 'wdpaid,name,desig_eng,iucn_cat,status,gov_type,mang_auth,rep_area,iso3',
                       f: 'geojson',
                       returnGeometry: 'true',
-                      maxRecordCount: 100,
-                      orderByFields: 'REP_AREA DESC' // Get largest areas first
+                      maxRecordCount: 500,
+                      orderByFields: 'rep_area DESC' // Get largest areas first
                     });
                     
                     const globalUrl = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${globalQuery}\`;
@@ -781,7 +781,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   const uniqueCategories = new Set();
                   
                   data.features.forEach(feature => {
-                    const cat = feature.properties.IUCN_CAT || 'Not Assigned';
+                    const cat = feature.properties.iucn_cat || 'Not Assigned';
                     const cleanCat = cat.toString().trim() || 'Empty';
                     uniqueCategories.add(cleanCat);
                     categoryStats[cleanCat] = (categoryStats[cleanCat] || 0) + 1;
@@ -790,11 +790,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   console.log('IUCN Categories found:', Array.from(uniqueCategories));
                   console.log('Category distribution:', categoryStats);
                   
-                  return data;
-
                   const layer = L.geoJSON(data, {
                     style: function(feature) {
-                      const iucnCategory = (feature.properties.IUCN_CAT || 'Not Assigned').toString().trim();
+                      const iucnCategory = (feature.properties.iucn_cat || 'Not Assigned').toString().trim();
                       let color = wdpaColors[iucnCategory];
                       
                       // Handle various category formats and fallbacks
@@ -823,14 +821,14 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     },
                     onEachFeature: function(feature, layer) {
                       const props = feature.properties;
-                      const name = props.NAME || 'Unknown';
-                      const designation = props.DESIG_ENG || 'Unknown';
-                      const iucnCategory = props.IUCN_CAT || 'Not Assigned';
-                      const status = props.STATUS || 'Unknown';
-                      const wdpaId = props.WDPAID || 'N/A';
-                      const govType = props.GOV_TYPE || 'Unknown';
-                      const managementAuth = props.MANG_AUTH || 'Unknown';
-                      const area = props.REP_AREA || 'Unknown';
+                      const name = props.name || 'Unknown';
+                      const designation = props.desig_eng || 'Unknown';
+                      const iucnCategory = props.iucn_cat || 'Not Assigned';
+                      const status = props.status || 'Unknown';
+                      const wdpaId = props.wdpaid || 'N/A';
+                      const govType = props.gov_type || 'Unknown';
+                      const managementAuth = props.mang_auth || 'Unknown';
+                      const area = props.rep_area || 'Unknown';
                       
                       const popupContent = \`
                         <div style="min-width: 300px; font-family: Arial, sans-serif;">
