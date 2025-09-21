@@ -157,9 +157,9 @@ export default function DeforestationMonitoring() {
           jrcLoss: result.jrcLoss || 'UNKNOWN',
           sbtnLoss: result.sbtnLoss || 'UNKNOWN',
           highRiskDatasets: result.highRiskDatasets || [],
-          gfwLossArea: Number(result.gfw_loss_area) || 0,
-          jrcLossArea: Number(result.jrc_loss_area) || 0,
-          sbtnLossArea: Number(result.sbtn_loss_area) || 0,
+          gfwLossArea: Number(result.gfwLossArea || result.gfw_loss_area) || 0,
+          jrcLossArea: Number(result.jrcLossArea || result.jrc_loss_area) || 0,
+          sbtnLossArea: Number(result.sbtnLossArea || result.sbtn_loss_area) || 0,
           geometry: result.geometry // This contains the actual polygon coordinates
         }));
 
@@ -195,9 +195,9 @@ export default function DeforestationMonitoring() {
               jrcLoss: props.jrc_loss?.jrc_loss_area > 0 ? 'TRUE' : 'FALSE',
               sbtnLoss: props.sbtn_loss?.sbtn_loss_area > 0 ? 'TRUE' : 'FALSE',
               highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area || '0'),
-              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area || '0'),
-              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area || '0'),
+              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area || props.gfwLossArea || '0'),
+              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area || props.jrcLossArea || '0'),
+              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area || props.sbtnLossArea || '0'),
               geometry: feature.geometry
             };
           });
