@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,11 @@ export default function DeforestationMonitoring() {
   const [showQuickPreview, setShowQuickPreview] = useState(false); // State for quick preview modal
   const [showMapViewer, setShowMapViewer] = useState(false); // State for full map viewer modal
 
+  // Save Modal States
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(10);
@@ -95,11 +100,32 @@ export default function DeforestationMonitoring() {
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [complianceFilter, setComplianceFilter] = useState<string>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
-  const [selectedResults, setSelectedResults] = useState<number[]>([]);
+  const [selectedResults, setSelectedResults] = useState<number[]>([]); // Stores indices of selected rows
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const quickPreviewMapRef = useRef<HTMLDivElement>(null); // Ref for the quick preview map
   const { toast } = useToast();
+
+  // Fetch Suppliers
+  const { data: suppliers = [], refetch: refetchSuppliers } = useQuery({
+    queryKey: ['suppliers'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/suppliers');
+      if (!response.ok) {
+        throw new Error('Failed to fetch suppliers');
+      }
+      return response.json();
+    },
+    onError: (err) => {
+      console.error("Error fetching suppliers:", err);
+      toast({
+        title: "Failed to Load Suppliers",
+        description: "Could not retrieve supplier list. Please try again later.",
+        variant: "destructive",
+      });
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // GeoJSON upload mutation with enhanced error handling
   const uploadMutation = useMutation({
@@ -389,6 +415,40 @@ export default function DeforestationMonitoring() {
     },
   });
 
+  // Mutation to save plot-supplier associations
+  const savePlotsMutation = useMutation({
+    mutationFn: async (payload: { plotIds: string[], supplierId: string }) => {
+      const response = await apiRequest('POST', '/api/plots/save-association', payload);
+      if (!response.ok) {
+        throw new Error('Failed to save plot associations.');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Plots Saved Successfully",
+        description: "Associated plots with the selected supplier and updated database.",
+      });
+      // Trigger step 3 availability (e.g., by navigating or updating state elsewhere)
+      // For now, we'll just show a success message. Actual step 3 enabling might depend on a broader state management.
+      setShowSaveModal(false);
+      setIsSaving(false);
+      // Optionally refresh the table or clear selections
+      setSelectedResults([]);
+      // Reset supplier selection
+      setSelectedSupplierId(null);
+    },
+    onError: (error: any) => {
+      console.error("Error saving plots:", error);
+      toast({
+        title: "Save Failed",
+        description: error.message || "An error occurred while saving plots.",
+        variant: "destructive",
+      });
+      setIsSaving(false);
+    },
+  });
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -401,7 +461,7 @@ export default function DeforestationMonitoring() {
       toast({
         title: "Invalid file type",
         description: "Please upload a GeoJSON (.json/.geojson) or KML (.kml) file",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -415,7 +475,7 @@ export default function DeforestationMonitoring() {
           toast({
             title: "Invalid file",
             description: "The uploaded file appears to be empty",
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
@@ -431,7 +491,7 @@ export default function DeforestationMonitoring() {
             toast({
               title: "Empty file",
               description: "The uploaded file appears to be empty",
-              variant: "destructive"
+              variant: "destructive",
             });
             return;
           }
@@ -456,7 +516,7 @@ export default function DeforestationMonitoring() {
             toast({
               title: "JSON Parse Error",
               description: `${friendlyMsg}. ${errorMsg}`,
-              variant: "destructive"
+              variant: "destructive",
             });
             return;
           }
@@ -466,7 +526,7 @@ export default function DeforestationMonitoring() {
           toast({
             title: "File Processing Error",
             description: "Failed to process the file. Please ensure it's a valid GeoJSON file.",
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
@@ -477,7 +537,7 @@ export default function DeforestationMonitoring() {
           toast({
             title: "Invalid GeoJSON",
             description: "File must contain a valid JSON object",
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
@@ -494,7 +554,7 @@ export default function DeforestationMonitoring() {
           toast({
             title: "Unsupported GeoJSON Type",
             description: `Expected FeatureCollection or Feature, got ${parsedGeoJSON.type || 'unknown'}. Please ensure your file contains geographic features.`,
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
@@ -504,7 +564,7 @@ export default function DeforestationMonitoring() {
           toast({
             title: "Invalid GeoJSON Structure",
             description: "Missing or invalid features array. Please check your GeoJSON structure.",
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
@@ -514,7 +574,7 @@ export default function DeforestationMonitoring() {
           toast({
             title: "Empty GeoJSON",
             description: "GeoJSON file contains no features to analyze",
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
@@ -602,7 +662,7 @@ export default function DeforestationMonitoring() {
           toast({
             title: "No Valid Features",
             description: "No valid features found that can be processed for EUDR analysis",
-            variant: "destructive"
+            variant: "destructive",
           });
           return;
         }
@@ -676,6 +736,8 @@ export default function DeforestationMonitoring() {
     setSelectedResults([]);
     setShowMapViewer(false); // Hide map viewer if cleared
     setShowQuickPreview(false); // Hide quick preview if cleared
+    setShowSaveModal(false); // Hide save modal if cleared
+    setSelectedSupplierId(null); // Reset supplier selection
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -754,6 +816,44 @@ export default function DeforestationMonitoring() {
       geojsonFile: uploadedFile.content,
       fileName: uploadedFile.name
     });
+  };
+
+  // Handler for the Save action
+  const handleSaveAction = () => {
+    if (selectedResults.length === 0) {
+      toast({
+        title: "No Plots Selected",
+        description: "Please select at least one plot to save.",
+        variant: "default"
+      });
+      return;
+    }
+    // Ensure suppliers are loaded before showing modal
+    if (suppliers.length === 0) {
+      refetchSuppliers(); // Try to refetch if empty
+      toast({
+        title: "Loading Suppliers",
+        description: "Please wait while we load the supplier list.",
+        variant: "default"
+      });
+      return;
+    }
+    setShowSaveModal(true);
+  };
+
+  // Handler to save plots with selected supplier
+  const handleSavePlots = () => {
+    if (!selectedSupplierId || selectedResults.length === 0) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a supplier and ensure plots are selected.",
+        variant: "destructive"
+      });
+      return;
+    }
+    setIsSaving(true);
+    const plotIdsToSave = selectedResults.map(index => filteredResults[index].plotId);
+    savePlotsMutation.mutate({ plotIds: plotIdsToSave, supplierId: selectedSupplierId });
   };
 
   // Check for stored results when component mounts (returning from map viewer)
@@ -850,7 +950,7 @@ export default function DeforestationMonitoring() {
 
           // Clear the flags after use
           localStorage.removeItem('shouldShowResultsTable');
-          localStorage.removeItem('refreshAfterEdit');
+          localStorage.removeItem('refreshTableAfterEdit');
           localStorage.removeItem('fromMapViewer');
         }
       } catch (error) {
@@ -859,7 +959,7 @@ export default function DeforestationMonitoring() {
         localStorage.removeItem('currentAnalysisResults');
         localStorage.removeItem('hasRealAnalysisData');
         localStorage.removeItem('shouldShowResultsTable');
-        localStorage.removeItem('refreshAfterEdit');
+        localStorage.removeItem('refreshTableAfterEdit');
         localStorage.removeItem('fromMapViewer');
       }
     } else if (!shouldRestoreResults) {
@@ -1860,6 +1960,14 @@ export default function DeforestationMonitoring() {
                       <CheckSquare className="h-4 w-4" />
                       Verify Data (Single)
                     </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={handleSaveAction}
+                      className="flex items-center gap-2 cursor-pointer"
+                      disabled={selectedResults.length === 0}
+                    >
+                      <FileText className="h-4 w-4" />
+                      Save to Database
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button 
@@ -2190,7 +2298,81 @@ export default function DeforestationMonitoring() {
         )}
       </div>
 
-      {/* Quick Preview Modal with Proper Map */}
+      {/* Save Modal */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Save Plots to Database</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSaveModal(false)}
+                disabled={isSaving}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  Selected plots: {selectedResults.length}
+                </p>
+                <div className="max-h-32 overflow-y-auto bg-gray-50 p-2 rounded text-xs">
+                  {selectedResults.map(index => filteredResults[index].plotId).join(', ')}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Supplier *
+                </label>
+                <Select value={selectedSupplierId ?? ""} onValueChange={setSelectedSupplierId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a supplier..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((supplier: any) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        <div>
+                          <div className="font-medium">{supplier.companyName}</div>
+                          <div className="text-xs text-gray-500">{supplier.name}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSaveModal(false)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSavePlots}
+                  disabled={!selectedSupplierId || selectedResults.length === 0 || isSaving}
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save to Database'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Preview Modal */}
       {showQuickPreview && analysisResults && analysisResults.length > 0 && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div className="w-[90vw] h-[90vh] bg-white rounded-lg shadow-xl flex flex-col">

@@ -1780,6 +1780,74 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAnalysisResultsByPlotIds(plotIds: string[]): Promise<any[]> {
+    try {
+      const results = await db.select().from(analysisResults).where(
+        sql`${analysisResults.plotId} = ANY(${plotIds})`
+      );
+      return results;
+    } catch (error) {
+      console.error("Error getting analysis results by plot IDs:", error);
+      throw error;
+    }
+  }
+
+  async updateAnalysisResult(id: string, updates: any): Promise<any> {
+    try {
+      const [updated] = await db.update(analysisResults)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(analysisResults.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error("Error updating analysis result:", error);
+      throw error;
+    }
+  }
+
+  async getPlotByPlotId(plotId: string): Promise<any> {
+    try {
+      const [plot] = await db.select().from(plots).where(eq(plots.plotId, plotId));
+      return plot;
+    } catch (error) {
+      console.error("Error getting plot by plot ID:", error);
+      throw error;
+    }
+  }
+
+  async createPlot(plotData: any): Promise<any> {
+    try {
+      const [created] = await db.insert(plots).values(plotData).returning();
+      return created;
+    } catch (error) {
+      console.error("Error creating plot:", error);
+      throw error;
+    }
+  }
+
+  async updatePlot(id: string, updates: any): Promise<any> {
+    try {
+      const [updated] = await db.update(plots)
+        .set(updates)
+        .where(eq(plots.id, id))
+        .returning();
+      return updated;
+    } catch (error) {
+      console.error("Error updating plot:", error);
+      throw error;
+    }
+  }
+
+  async getSupplier(id: string): Promise<any> {
+    try {
+      const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, id));
+      return supplier;
+    } catch (error) {
+      console.error("Error getting supplier:", error);
+      throw error;
+    }
+  }
+
   async getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]> {
     try {
       const results = await db.select().from(analysisResults);

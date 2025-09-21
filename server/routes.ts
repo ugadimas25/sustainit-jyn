@@ -200,6 +200,87 @@ async function seedSampleData() {
       console.log("✓ Sample DDS reports created");
     }
 
+    // Create sample suppliers with real names
+    const suppliers = await storage.getSuppliers();
+    if (suppliers.length === 0) {
+      await storage.createSupplier({
+        name: "PT Perkebunan Nusantara III",
+        companyName: "PT Perkebunan Nusantara III (Persero)",
+        businessType: "Estate",
+        supplierType: "Estate",
+        contactPerson: "Budi Santoso",
+        email: "budi.santoso@ptpn3.co.id",
+        phone: "+62-61-4567890",
+        address: "Jl. Sei Batanghari No. 2, Medan, Sumatera Utara",
+        tier: 1,
+        legalityStatus: "verified",
+        legalityScore: 85,
+        certifications: ["RSPO", "ISPO"]
+      });
+
+      await storage.createSupplier({
+        name: "PT Astra Agro Lestari",
+        companyName: "PT Astra Agro Lestari Tbk",
+        businessType: "Estate",
+        supplierType: "Estate",
+        contactPerson: "Sari Indrawati",
+        email: "sari.indrawati@aal.astra.co.id",
+        phone: "+62-21-5794567",
+        address: "Jl. Pulo Ayang Raya Blok OR-1, Jakarta Timur",
+        tier: 1,
+        legalityStatus: "verified",
+        legalityScore: 92,
+        certifications: ["RSPO", "ISPO", "ISCC"]
+      });
+
+      await storage.createSupplier({
+        name: "PT Sampoerna Agro",
+        companyName: "PT Sampoerna Agro Tbk",
+        businessType: "Estate",
+        supplierType: "Estate",
+        contactPerson: "Ahmad Wijaya",
+        email: "ahmad.wijaya@sampagro.com",
+        phone: "+62-21-5290123",
+        address: "Jl. Thamrin No. 59, Jakarta Pusat",
+        tier: 1,
+        legalityStatus: "pending",
+        legalityScore: 75,
+        certifications: ["ISPO"]
+      });
+
+      await storage.createSupplier({
+        name: "PT Golden Agri-Resources",
+        companyName: "PT Golden Agri-Resources Tbk",
+        businessType: "Estate",
+        supplierType: "Estate",
+        contactPerson: "Dewi Lestari",
+        email: "dewi.lestari@goldenagri.com.sg",
+        phone: "+62-21-5012345",
+        address: "Jl. Barito II No. 2, Jakarta Selatan",
+        tier: 1,
+        legalityStatus: "verified",
+        legalityScore: 88,
+        certifications: ["RSPO", "ISPO"]
+      });
+
+      await storage.createSupplier({
+        name: "PT Salim Ivomas Pratama",
+        companyName: "PT Salim Ivomas Pratama Tbk",
+        businessType: "Estate",
+        supplierType: "Estate",
+        contactPerson: "Rina Maharani",
+        email: "rina.maharani@simp.co.id",
+        phone: "+62-21-5678901",
+        address: "Jl. Sudirman Kav. 76-78, Jakarta Selatan",
+        tier: 1,
+        legalityStatus: "verified",
+        legalityScore: 90,
+        certifications: ["RSPO", "ISPO", "ISCC"]
+      });
+
+      console.log("✓ Sample suppliers created");
+    }
+
     console.log("✓ Sample data seeded successfully");
   } catch (error) {
     console.error("Error seeding sample data:", error);
@@ -1308,6 +1389,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching compliance trend:", error);
       res.status(500).json({ error: "Failed to fetch compliance trend data" });
+    }
+  });
+
+  // Save polygon-supplier association endpoint
+  app.post("/api/plots/save-association", isAuthenticated, async (req, res) => {
+    try {
+      const { plotIds, supplierId } = req.body;
+      
+      if (!plotIds || !Array.isArray(plotIds) || plotIds.length === 0) {
+        return res.status(400).json({ error: "plotIds array is required" });
+      }
+      
+      if (!supplierId) {
+        return res.status(400).json({ error: "supplierId is required" });
+      }
+
+      // Verify supplier exists
+      const supplier = await storage.getSupplier(supplierId);
+      if (!supplier) {
+        return res.status(404).json({ error: "Supplier not found" });
+      }
+
+      // Get analysis results for the selected plots
+      const analysisResultsToUpdate = await storage.getAnalysisResultsByPlotIds(plotIds);
+      
+      if (analysisResultsToUpdate.length === 0) {
+        return res.status(404).json({ error: "No analysis results found for the specified plot IDs" });
+      }
+
+      // Update analysis results with supplier association
+      const updatedAnalysisResults = [];
+      for (const result of analysisResultsToUpdate) {
+        const updated = await storage.updateAnalysisResult(result.id, { supplierId });
+        updatedAnalysisResults.push(updated);
+
+        // Create or update plot record
+        try {
+          const existingPlot = await storage.getPlotByPlotId(result.plotId);
+          if (existingPlot) {
+            // Update existing plot
+            await storage.updatePlot(existingPlot.id, { supplierId });
+          } else {
+            // Create new plot record
+            await storage.createPlot({
+              plotId: result.plotId,
+              supplierId: supplierId,
+              polygon: result.geometry ? JSON.stringify(result.geometry) : null,
+              areaHa: parseFloat(result.area.toString()),
+              crop: "oil_palm", // Default crop
+              isActive: true
+            });
+          }
+        } catch (plotError) {
+          console.error(`Error handling plot ${result.plotId}:`, plotError);
+        }
+      }
+
+      // Update supplier assessment progress to enable Step 3 (Legality Compliance)
+      try {
+        const progress = await storage.getSupplierAssessmentProgressByName(supplier.name);
+        if (progress) {
+          // Mark data collection as completed and enable legality compliance
+          await storage.updateSupplierAssessmentProgress(progress.id, {
+            dataCollectionCompleted: true,
+            dataCollectionCompletedAt: new Date(),
+            currentStep: 2 // Enable Step 2 (Legality Compliance)
+          });
+        } else {
+          // Create new progress record
+          await storage.createSupplierAssessmentProgress({
+            supplierName: supplier.name,
+            supplierType: supplier.supplierType,
+            dataCollectionCompleted: true,
+            dataCollectionCompletedAt: new Date(),
+            currentStep: 2
+          });
+        }
+      } catch (progressError) {
+        console.error("Error updating supplier assessment progress:", progressError);
+      }
+
+      res.json({
+        success: true,
+        message: `Successfully associated ${updatedAnalysisResults.length} plots with supplier ${supplier.name}`,
+        data: {
+          updatedResults: updatedAnalysisResults.length,
+          supplier: {
+            id: supplier.id,
+            name: supplier.name,
+            companyName: supplier.companyName
+          },
+          plotIds: plotIds
+        }
+      });
+
+    } catch (error) {
+      console.error("Error saving plot-supplier association:", error);
+      res.status(500).json({ error: "Failed to save plot-supplier association" });
     }
   });
 

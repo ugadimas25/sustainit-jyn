@@ -53,6 +53,7 @@ export const analysisResults = pgTable("analysis_results", {
   peatlandArea: decimal("peatland_area", { precision: 12, scale: 4 }).default("0"),
   geometry: jsonb("geometry"), // Store the original GeoJSON geometry
   uploadSession: text("upload_session"), // Track which upload session this belongs to
+  supplierId: varchar("supplier_id").references(() => suppliers.id), // Link to supplier
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -192,6 +193,7 @@ export const plots = pgTable("plots", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   plotId: text("plot_id").notNull().unique(),
   facilityId: varchar("facility_id").references(() => facilities.id), // reference to grower facility
+  supplierId: varchar("supplier_id").references(() => suppliers.id), // Link to supplier
   polygon: text("polygon"), // PostGIS POLYGON stored as text
   areaHa: decimal("area_ha", { precision: 10, scale: 4 }), // computed via PostGIS
   crop: text("crop"),
