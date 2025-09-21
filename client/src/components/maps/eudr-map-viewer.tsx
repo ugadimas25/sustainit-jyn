@@ -562,6 +562,17 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               </div>
 
               <div class="control-group">
+                <label>Protected Areas</label>
+                <div class="layer-controls">
+                  <label class="layer-checkbox">
+                    <input type="checkbox" id="wdpaLayer">
+                    <span class="checkmark"></span>
+                    <span class="layer-name">WDPA Protected Areas</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="control-group">
                 <label>Deforestation Layers</label>
                 <div class="layer-controls">
                   <label class="layer-checkbox">
@@ -595,17 +606,51 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 <div class="legend-color" style="background-color: #10b981; animation: pulse-green 2s infinite;"></div>
                 <span>Low Risk - Compliant</span>
               </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff4444;"></div>
-                <span>GFW Forest Loss</span>
+              <div style="margin: 10px 0; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+                <div style="font-weight: bold; margin-bottom: 5px; color: #4da6ff;">WDPA Protected Areas:</div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #264653;"></div>
+                  <span>Strict Nature Reserve (Ia)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #2a9d8f;"></div>
+                  <span>Wilderness Area (Ib)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #1d3557;"></div>
+                  <span>National Park (II)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #e9c46a;"></div>
+                  <span>Natural Monument (III)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #f4a261;"></div>
+                  <span>Habitat Management (IV)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #e76f51;"></div>
+                  <span>Protected Landscape (V)</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #8ab17d;"></div>
+                  <span>Sustainable Use (VI)</span>
+                </div>
               </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background-color: #10b981;"></div>
-                <span>JRC Forest</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff00ff;"></div>
-                <span>SBTN Natural Loss</span>
+              <div style="margin: 10px 0; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+                <div style="font-weight: bold; margin-bottom: 5px; color: #4da6ff;">Deforestation Layers:</div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #ff4444;"></div>
+                  <span>GFW Forest Loss</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #10b981;"></div>
+                  <span>JRC Forest</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #ff00ff;"></div>
+                  <span>SBTN Natural Loss</span>
+                </div>
               </div>
             </div>
           </div>
@@ -630,6 +675,72 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Set default base layer
             baseLayers.satellite.addTo(map);
+
+            // WDPA color mapping for IUCN categories
+            const wdpaColors = {
+              'Ia': '#264653',
+              'Ib': '#2a9d8f', 
+              'II': '#1d3557',
+              'III': '#e9c46a',
+              'IV': '#f4a261',
+              'V': '#e76f51',
+              'VI': '#8ab17d',
+              'Not Reported': '#9e9e9e',
+              'Not Assigned': '#bdbdbd'
+            };
+
+            // WDPA Protected Areas Layer
+            let wdpaLayer = null;
+
+            // Function to create WDPA layer
+            function createWDPALayer() {
+              return fetch('https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?where=1%3D1&outFields=*&f=geojson')
+                .then(response => response.json())
+                .then(data => {
+                  const layer = L.geoJSON(data, {
+                    style: function(feature) {
+                      const iucnCategory = feature.properties.IUCN_CAT || feature.properties.iucn_cat || 'Not Assigned';
+                      const color = wdpaColors[iucnCategory] || wdpaColors['Not Assigned'];
+                      return {
+                        color: color,
+                        fillColor: color,
+                        weight: 1,
+                        opacity: 0.8,
+                        fillOpacity: 0.5
+                      };
+                    },
+                    onEachFeature: function(feature, layer) {
+                      const props = feature.properties;
+                      const name = props.NAME || props.name || 'Unknown';
+                      const designation = props.DESIG_ENG || props.designation || 'Unknown';
+                      const iucnCategory = props.IUCN_CAT || props.iucn_cat || 'Not Assigned';
+                      const status = props.STATUS || props.status || 'Unknown';
+                      
+                      const popupContent = \`
+                        <div style="min-width: 200px;">
+                          <h4 style="margin: 0 0 10px 0; color: #264653; font-size: 14px; font-weight: bold;">\${name}</h4>
+                          <div style="font-size: 12px;">
+                            <div style="margin-bottom: 5px;"><strong>Designation:</strong> \${designation}</div>
+                            <div style="margin-bottom: 5px;"><strong>IUCN Category:</strong> \${iucnCategory}</div>
+                            <div style="margin-bottom: 5px;"><strong>Status:</strong> \${status}</div>
+                            <div style="margin-bottom: 5px;">
+                              <strong>Color:</strong> 
+                              <span style="display: inline-block; width: 16px; height: 16px; background: \${wdpaColors[iucnCategory] || wdpaColors['Not Assigned']}; border: 1px solid #ccc; margin-left: 5px; vertical-align: middle;"></span>
+                            </div>
+                          </div>
+                        </div>
+                      \`;
+                      
+                      layer.bindPopup(popupContent);
+                    }
+                  });
+                  return layer;
+                })
+                .catch(error => {
+                  console.error('Error loading WDPA layer:', error);
+                  return null;
+                });
+            }
 
             // Deforestation layers from multiple sources
             const deforestationLayers = {
@@ -940,6 +1051,30 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   map.removeLayer(centerMarker);
                 }
               });
+            });
+
+            // WDPA layer control
+            document.getElementById('wdpaLayer').addEventListener('change', function(e) {
+              if (e.target.checked) {
+                if (!wdpaLayer) {
+                  console.log('Loading WDPA Protected Areas layer...');
+                  createWDPALayer().then(layer => {
+                    if (layer) {
+                      wdpaLayer = layer;
+                      layer.addTo(map);
+                      console.log('WDPA layer added to map');
+                    }
+                  });
+                } else {
+                  wdpaLayer.addTo(map);
+                  console.log('WDPA layer restored to map');
+                }
+              } else {
+                if (wdpaLayer && map.hasLayer(wdpaLayer)) {
+                  map.removeLayer(wdpaLayer);
+                  console.log('WDPA layer removed from map');
+                }
+              }
             });
 
             // Deforestation layer controls
