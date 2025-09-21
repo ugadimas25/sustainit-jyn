@@ -538,6 +538,22 @@ export default function DeforestationMonitoring() {
     }
   };
 
+  const getLossBadge = (loss: string) => {
+    switch (loss.toUpperCase()) {
+      case 'TRUE':
+      case 'HIGH':
+      case 'YES':
+        return <Badge className="bg-red-100 text-red-800">1</Badge>;
+      case 'FALSE':
+      case 'LOW':
+      case 'NO':
+      case 'NONE':
+        return <Badge className="bg-green-100 text-green-800">0</Badge>;
+      default:
+        return <Badge variant="secondary">0</Badge>;
+    }
+  };
+
   const getComplianceBadge = (status: string) => {
     switch (status) {
       case 'COMPLIANT':
@@ -1029,13 +1045,13 @@ export default function DeforestationMonitoring() {
                           {getComplianceBadge(result.complianceStatus)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getRiskBadge(result.gfwLoss)}
+                          {getLossBadge(result.gfwLoss)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getRiskBadge(result.jrcLoss)}
+                          {getLossBadge(result.jrcLoss)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getRiskBadge(result.sbtnLoss)}
+                          {getLossBadge(result.sbtnLoss)}
                         </td>
                       </tr>
                       );
