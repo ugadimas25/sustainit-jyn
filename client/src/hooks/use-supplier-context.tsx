@@ -100,7 +100,7 @@ export function useSupplierStepAccess(step: number) {
     queryKey: ['/api/supplier-step-access', currentSupplier, step],
     queryFn: async () => {
       if (!currentSupplier) {
-        return { hasAccess: step === 1 }; // Only allow Data Collection without supplier
+        return { hasAccess: step === 1 || step === 2 }; // Allow Data Collection and Spatial Analysis without supplier
       }
       
       const response = await fetch(`/api/supplier-step-access/${encodeURIComponent(currentSupplier)}/${step}`, {
@@ -112,7 +112,7 @@ export function useSupplierStepAccess(step: number) {
       }
       return response.json();
     },
-    enabled: !!currentSupplier || step === 1, // Always check for step 1, others need supplier
+    enabled: !!currentSupplier || step === 1 || step === 2, // Always check for steps 1 and 2, others need supplier
     staleTime: 30 * 1000, // 30 seconds
   });
 }
