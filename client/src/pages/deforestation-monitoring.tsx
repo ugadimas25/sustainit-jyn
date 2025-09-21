@@ -207,9 +207,9 @@ export default function DeforestationMonitoring() {
               jrcLoss: (props.jrc_loss?.jrc_loss_area || 0) > 0 ? 'TRUE' : 'FALSE', 
               sbtnLoss: (props.sbtn_loss?.sbtn_loss_area || 0) > 0 ? 'TRUE' : 'FALSE',
               highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area?.toString() || '0'),
-              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area?.toString() || '0'),
-              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area?.toString() || '0'),
+              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area?.toString() || props.gfwLossArea || '0'),
+              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area?.toString() || props.jrcLossArea || '0'),
+              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area?.toString() || props.sbtnLossArea || '0'),
               geometry: feature.geometry
             };
           });
