@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { ObjectUploader } from '@/components/ObjectUploader';
-import { Plus, Trash2, FileText, Upload } from 'lucide-react';
+import { FileText, Upload, Satellite } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
 
 export default function DataCollection() {
@@ -57,18 +57,7 @@ export default function DataCollection() {
     emailTimInternal: '',
     nomorTeleponTimInternal: '',
     
-    // Bagian 2 - Sumber TBS (array of kebun)
-    daftarKebun: [{
-      no: 1,
-      namaKebun: '',
-      alamat: '',
-      luasLahan: 0,
-      longitude: '',
-      latitude: '',
-      tahunTanam: '',
-      jenisBibit: '',
-      produksiTBS1Tahun: ''
-    }],
+    // Note: Daftar Kebun moved to Spatial Analysis step
     
     // Bagian 3 - Perlindungan Hutan dan Gambut
     memilikiKebijakanPerlindunganHutan: false,
@@ -213,7 +202,7 @@ export default function DataCollection() {
         koordinatKantor: '', jenisSupplier: '', jenisKebun: '', totalProduksiTBSTahun: '', tanggalPengisianKuisioner: '',
         namaPenanggungJawab: '', jabatanPenanggungJawab: '', emailPenanggungJawab: '', nomorTeleponPenanggungJawab: '',
         namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', nomorTeleponTimInternal: '',
-        daftarKebun: [{ no: 1, namaKebun: '', alamat: '', luasLahan: 0, longitude: '', latitude: '', tahunTanam: '', jenisBibit: '', produksiTBS1Tahun: '' }],
+        
         memilikiKebijakanPerlindunganHutan: false, memilikiKebijakanPerlindunganGambut: false
       });
     },
@@ -314,34 +303,7 @@ export default function DataCollection() {
     }
   };
 
-  // Add Kebun function
-  const addKebun = () => {
-    setEstateForm(prev => ({
-      ...prev,
-      daftarKebun: [
-        ...prev.daftarKebun,
-        {
-          no: prev.daftarKebun.length + 1,
-          namaKebun: '',
-          alamat: '',
-          luasLahan: 0,
-          longitude: '',
-          latitude: '',
-          tahunTanam: '',
-          jenisBibit: '',
-          produksiTBS1Tahun: ''
-        }
-      ]
-    }));
-  };
-
-  // Remove Kebun function
-  const removeKebun = (index: number) => {
-    setEstateForm(prev => ({
-      ...prev,
-      daftarKebun: prev.daftarKebun.filter((_, i) => i !== index).map((kebun, i) => ({ ...kebun, no: i + 1 }))
-    }));
-  };
+  // Note: Kebun management moved to Spatial Analysis step
 
   // Add Pemasok function
   const addPemasok = () => {
@@ -572,59 +534,17 @@ export default function DataCollection() {
                   </div>
                 </div>
 
-                {/* Bagian 2 - Daftar Kebun */}
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Daftar Kebun</h3>
-                    <Button type="button" onClick={addKebun} size="sm" data-testid="button-add-kebun">
-                      <Plus size={16} className="mr-1" />
-                      Tambah Kebun
-                    </Button>
+                {/* Note: Daftar Kebun moved to Step 2 - Spatial Analysis */}
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-blue-800">
+                      <Satellite className="w-5 h-5" />
+                      <h4 className="font-medium">Plot/Kebun Mapping</h4>
+                    </div>
+                    <p className="text-blue-700 text-sm mt-2">
+                      Informasi daftar kebun dan plot akan dikelola di <strong>Step 2 - Spatial Analysis</strong> melalui upload GeoJSON file untuk akurasi koordinat yang lebih baik.
+                    </p>
                   </div>
-                  
-                  {estateForm.daftarKebun.map((kebun, index) => (
-                    <Card key={index} className="p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium">Kebun #{kebun.no}</h4>
-                        {estateForm.daftarKebun.length > 1 && (
-                          <Button type="button" variant="destructive" size="sm" onClick={() => removeKebun(index)} data-testid={`button-remove-kebun-${index}`}>
-                            <Trash2 size={16} />
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`namaKebun-${index}`}>Nama Kebun</Label>
-                          <Input
-                            id={`namaKebun-${index}`}
-                            value={kebun.namaKebun}
-                            onChange={(e) => {
-                              const newKebun = [...estateForm.daftarKebun];
-                              newKebun[index].namaKebun = e.target.value;
-                              setEstateForm(prev => ({ ...prev, daftarKebun: newKebun }));
-                            }}
-                            placeholder="Masukkan nama kebun"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`luasLahan-${index}`}>Luas Lahan (Ha)</Label>
-                          <Input
-                            id={`luasLahan-${index}`}
-                            type="number"
-                            value={kebun.luasLahan}
-                            onChange={(e) => {
-                              const newKebun = [...estateForm.daftarKebun];
-                              newKebun[index].luasLahan = parseFloat(e.target.value) || 0;
-                              setEstateForm(prev => ({ ...prev, daftarKebun: newKebun }));
-                            }}
-                            placeholder="Masukkan luas lahan"
-                          />
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
                 </div>
 
                 <div className="flex justify-end">

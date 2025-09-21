@@ -62,7 +62,7 @@ export function Sidebar() {
   const [location, setLocation] = useLocation();
   const [expandedModules, setExpandedModules] = useState<string[]>(['Supply Chain Analysis']);
   const { toast } = useToast();
-  
+
   // Temporarily bypass authentication for direct access
   const user = { name: 'Demo User', role: 'compliance_officer' };
   const logoutMutation = { mutate: () => {} };
@@ -93,11 +93,11 @@ export function Sidebar() {
 
   const renderNavigationItem = (item: NavigationItem) => {
     const hasSubModules = item.subModules && item.subModules.length > 0;
-    
+
     if (hasSubModules) {
       const isExpanded = expandedModules.includes(item.name);
       const hasActiveSubModule = isSubModuleActive(item);
-      
+
       return (
         <div key={item.name} className="space-y-1">
           {/* Parent Module */}
@@ -117,7 +117,7 @@ export function Sidebar() {
               <item.icon className="w-5 h-5" />
               <span className="ml-3">{item.name}</span>
             </button>
-            
+
             {/* Separate chevron button for toggle */}
             <button
               onClick={(e) => {
@@ -134,13 +134,13 @@ export function Sidebar() {
               )}
             </button>
           </div>
-          
+
           {/* Sub Modules */}
           {isExpanded && (
             <div className="ml-4 space-y-1">
               {item.subModules!.map((subModule) => {
                 const isActive = location === subModule.href;
-                
+
                 return (
                   <WorkflowStepButton
                     key={subModule.name}
@@ -195,7 +195,7 @@ export function Sidebar() {
           {navigation.map(renderNavigationItem)}
         </div>
       </div>
-      
+
       <div className="p-4 border-t border-neutral-border bg-white">
         <div className="flex items-center">
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
@@ -235,19 +235,22 @@ interface WorkflowStepButtonProps {
 function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: WorkflowStepButtonProps) {
   const { data: accessData, isLoading } = useSupplierStepAccess(subModule.step);
   const { toast } = useToast();
-  
+
   const hasAccess = accessData?.hasAccess ?? (subModule.step === 1 || subModule.step === 2); // Default to allow steps 1 and 2
   const isAccessible = !isLoading && hasAccess;
-  
+
   const handleClick = () => {
     if (isLoading) return;
-    
+
     if (!hasAccess) {
       let requiredStep = "";
-      if (subModule.step === 2) requiredStep = "Data Collection";
+      if (subModule.step === 2) {
+        // Spatial Analysis is always available - no restrictions
+        return;
+      }
       if (subModule.step === 3) requiredStep = "Data Collection and Spatial Analysis";
       if (subModule.step === 4) requiredStep = "Data Collection, Spatial Analysis, and Legality Compliance";
-      
+
       toast({
         title: "Step Locked",
         description: `Please complete ${requiredStep} first before accessing ${subModule.name}.`,
@@ -255,7 +258,7 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
       });
       return;
     }
-    
+
     onNavigate(subModule.step, () => setLocation(subModule.href));
   };
 
