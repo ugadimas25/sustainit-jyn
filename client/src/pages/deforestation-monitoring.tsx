@@ -188,9 +188,9 @@ export default function DeforestationMonitoring() {
             jrcLoss: result.jrcLoss || 'UNKNOWN',
             sbtnLoss: result.sbtnLoss || 'UNKNOWN',
             highRiskDatasets: result.highRiskDatasets || [],
-            gfwLossArea: Math.round(gfwLossHa * 10000), // Convert to m² and round
-            jrcLossArea: Math.round(jrcLossHa * 10000), // Convert to m² and round
-            sbtnLossArea: Math.round(sbtnLossHa * 10000), // Convert to m² and round
+            gfwLossArea: gfwLossHa, // Keep in hectares
+            jrcLossArea: jrcLossHa, // Keep in hectares  
+            sbtnLossArea: sbtnLossHa, // Keep in hectares
             geometry: result.geometry
           };
         });
@@ -1048,7 +1048,7 @@ export default function DeforestationMonitoring() {
                         onClick={() => handleSort('gfwLoss')}
                       >
                         <div className="flex items-center gap-2">
-                          GFW Loss (m²)
+                          GFW Loss (ha)
                           {getSortIcon('gfwLoss')}
                         </div>
                       </th>
@@ -1057,7 +1057,7 @@ export default function DeforestationMonitoring() {
                         onClick={() => handleSort('jrcLoss')}
                       >
                         <div className="flex items-center gap-2">
-                          JRC Loss (m²)
+                          JRC Loss (ha)
                           {getSortIcon('jrcLoss')}
                         </div>
                       </th>
@@ -1066,7 +1066,7 @@ export default function DeforestationMonitoring() {
                         onClick={() => handleSort('sbtnLoss')}
                       >
                         <div className="flex items-center gap-2">
-                          SBTN Loss (m²)
+                          SBTN Loss (ha)
                           {getSortIcon('sbtnLoss')}
                         </div>
                       </th>
