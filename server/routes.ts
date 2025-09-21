@@ -3263,15 +3263,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`📏 Plot ${plotId}: Calculated area ${area}ha from geometry using PostGIS`);
             }
 
-            // Get risk data, provide defaults
+            // Get risk data and calculate actual loss areas
             const overallRisk = feature.properties?.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN';
             const complianceStatus = feature.properties?.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT';
-            const gfwLossArea = parseFloat(feature.properties?.gfw_loss?.gfw_loss_area || '0');
-            const jrcLossArea = parseFloat(feature.properties?.jrc_loss?.jrc_loss_area || '0');
-            const sbtnLossArea = parseFloat(feature.properties?.sbtn_loss?.sbtn_loss_area || '0');
+            
+            // Get loss percentages from API and convert to actual hectares
+            const totalAreaHa = parseFloat(feature.properties?.total_area_hectares || area.toString() || '1');
+            const gfwLossPercent = parseFloat(feature.properties?.gfw_loss?.gfw_loss_area || '0');
+            const jrcLossPercent = parseFloat(feature.properties?.jrc_loss?.jrc_loss_area || '0');
+            const sbtnLossPercent = parseFloat(feature.properties?.sbtn_loss?.sbtn_loss_area || '0');
+            
+            // Calculate actual loss areas in hectares
+            const gfwLossArea = gfwLossPercent * totalAreaHa;
+            const jrcLossArea = jrcLossPercent * totalAreaHa;
+            const sbtnLossArea = sbtnLossPercent * totalAreaHa;
+            
             const highRiskDatasets = feature.properties?.overall_compliance?.high_risk_datasets || [];
 
-            console.log(`🔍 Plot ${plotId} - GFW: ${gfwLossArea}ha, JRC: ${jrcLossArea}ha, SBTN: ${sbtnLossArea}ha`);
+            console.log(`🔍 Plot ${plotId} calculation:`, {
+              totalAreaHa,
+              gfwLossPercent: `${(gfwLossPercent * 100).toFixed(1)}%`,
+              jrcLossPercent: `${(jrcLossPercent * 100).toFixed(1)}%`,
+              sbtnLossPercent: `${(sbtnLossPercent * 100).toFixed(1)}%`,
+              gfwLossArea: `${gfwLossArea.toFixed(4)}ha`,
+              jrcLossArea: `${jrcLossArea.toFixed(4)}ha`,
+              sbtnLossArea: `${sbtnLossArea.toFixed(4)}ha`
+            });
 
             // Create analysis result with comprehensive Indonesian metadata
             const analysisResult = {
@@ -3283,6 +3300,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               gfwLoss: gfwLossArea > 0 ? 'TRUE' : 'FALSE',
               jrcLoss: jrcLossArea > 0 ? 'TRUE' : 'FALSE',
               sbtnLoss: sbtnLossArea > 0 ? 'TRUE' : 'FALSE',
+              gfwLossArea: gfwLossArea.toString(),
+              jrcLossArea: jrcLossArea.toString(),
+              sbtnLossArea: sbtnLossArea.toString(),
               peatlandOverlap: 'UNKNOWN', // Default value for peatland analysis
               highRiskDatasets,
               uploadSession: uploadSession,

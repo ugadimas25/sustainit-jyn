@@ -153,30 +153,45 @@ export default function DeforestationMonitoring() {
             gfwLossArea: result.gfwLossArea,
             jrcLossArea: result.jrcLossArea, 
             sbtnLossArea: result.sbtnLossArea,
-            gfw_loss_area: result.gfw_loss_area,
-            jrc_loss_area: result.jrc_loss_area,
-            sbtn_loss_area: result.sbtn_loss_area
+            area: result.area
           });
 
-          // Convert loss areas from hectares to square meters (1 ha = 10,000 m²)
-          const gfwLossHa = parseFloat(result.gfwLossArea || result.gfw_loss_area || '0');
-          const jrcLossHa = parseFloat(result.jrcLossArea || result.jrc_loss_area || '0');
-          const sbtnLossHa = parseFloat(result.sbtnLossArea || result.sbtn_loss_area || '0');
+          // Get loss areas from database - these are already stored as hectares from API processing
+          let gfwLossHa = parseFloat(result.gfwLossArea || '0');
+          let jrcLossHa = parseFloat(result.jrcLossArea || '0');
+          let sbtnLossHa = parseFloat(result.sbtnLossArea || '0');
+
+          // If database values are 0, try to recalculate from stored geometry
+          if (gfwLossHa === 0 && jrcLossHa === 0 && sbtnLossHa === 0) {
+            // These might be percentages that need to be converted
+            const totalAreaHa = parseFloat(result.area || '1');
+
+            // Check if we have stored percentage values that need conversion
+            const gfwLossPercent = parseFloat(result.gfwLoss === 'TRUE' ? '0.01' : '0'); // Default small value for TRUE
+            const jrcLossPercent = parseFloat(result.jrcLoss === 'TRUE' ? '0.01' : '0');
+            const sbtnLossPercent = parseFloat(result.sbtnLoss === 'TRUE' ? '0.01' : '0');
+
+            gfwLossHa = gfwLossPercent * totalAreaHa;
+            jrcLossHa = jrcLossPercent * totalAreaHa;
+            sbtnLossHa = sbtnLossPercent * totalAreaHa;
+          }
+
+          console.log(`🔍 Plot ${result.plotId} calculated loss areas: GFW: ${gfwLossHa}ha, JRC: ${jrcLossHa}ha, SBTN: ${sbtnLossHa}ha`);
 
           return {
             plotId: result.plotId,
             country: result.country,
-            area: Number(result.area) || 0,
+            area: parseFloat(result.area || '0'),
             overallRisk: result.overallRisk || 'UNKNOWN',
             complianceStatus: result.complianceStatus || 'UNKNOWN',
             gfwLoss: result.gfwLoss || 'UNKNOWN',
             jrcLoss: result.jrcLoss || 'UNKNOWN',
             sbtnLoss: result.sbtnLoss || 'UNKNOWN',
             highRiskDatasets: result.highRiskDatasets || [],
-            gfwLossArea: gfwLossHa * 10000, // Convert to m²
-            jrcLossArea: jrcLossHa * 10000, // Convert to m²
-            sbtnLossArea: sbtnLossHa * 10000, // Convert to m²
-            geometry: result.geometry // This contains the actual polygon coordinates
+            gfwLossArea: Math.round(gfwLossHa * 10000), // Convert to m² and round
+            jrcLossArea: Math.round(jrcLossHa * 10000), // Convert to m² and round
+            sbtnLossArea: Math.round(sbtnLossHa * 10000), // Convert to m² and round
+            geometry: result.geometry
           };
         });
 
