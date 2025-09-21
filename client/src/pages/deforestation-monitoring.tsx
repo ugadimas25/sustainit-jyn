@@ -157,9 +157,9 @@ export default function DeforestationMonitoring() {
           jrcLoss: result.jrcLoss || 'UNKNOWN',
           sbtnLoss: result.sbtnLoss || 'UNKNOWN',
           highRiskDatasets: result.highRiskDatasets || [],
-          gfwLossArea: Number(result.gfwLossArea) || 0,
-          jrcLossArea: Number(result.jrcLossArea) || 0,
-          sbtnLossArea: Number(result.sbtnLossArea) || 0,
+          gfwLossArea: Number(result.gfw_loss_area) || 0,
+          jrcLossArea: Number(result.jrc_loss_area) || 0,
+          sbtnLossArea: Number(result.sbtn_loss_area) || 0,
           geometry: result.geometry // This contains the actual polygon coordinates
         }));
 
