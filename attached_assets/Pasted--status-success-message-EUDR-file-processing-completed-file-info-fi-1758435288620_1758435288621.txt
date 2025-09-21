@@ -1,0 +1,2764 @@
+{
+  "status": "success",
+  "message": "EUDR file processing completed",
+  "file_info": {
+    "filename": "example_geojson_24_plots.json",
+    "size_mb": 0.02,
+    "features_count": 24
+  },
+  "analysis_summary": {
+    "total_processed": 0,
+    "high_risk": 0,
+    "low_risk": 24,
+    "parallel_processing": false,
+    "processing_time_seconds": 8.78
+  },
+  "data": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_004",
+          "country_name": "Ghana",
+          "total_area_hectares": 1.95,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -1.612173914909363,
+                6.160144879904404
+              ],
+              [
+                -1.612812280654907,
+                6.159344862841789
+              ],
+              [
+                -1.612833738327027,
+                6.15914219166122
+              ],
+              [
+                -1.612077355384827,
+                6.158870185481485
+              ],
+              [
+                -1.611771583557129,
+                6.158838184745289
+              ],
+              [
+                -1.611181497573853,
+                6.159483532552345
+              ],
+              [
+                -1.611224412918091,
+                6.160011543811027
+              ],
+              [
+                -1.61173939704895,
+                6.160299549730771
+              ],
+              [
+                -1.612173914909363,
+                6.160144879904404
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_007",
+          "country_name": "Indonesia",
+          "total_area_hectares": 20.98,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                103.97641181945802,
+                -3.086458311224095
+              ],
+              [
+                103.97767782211304,
+                -3.086286898841223
+              ],
+              [
+                103.97993087768556,
+                -3.0848298924706
+              ],
+              [
+                103.97937297821046,
+                -3.082515819425304
+              ],
+              [
+                103.97789239883424,
+                -3.081015954577795
+              ],
+              [
+                103.97499561309816,
+                -3.082751512280555
+              ],
+              [
+                103.97641181945802,
+                -3.086458311224095
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_003",
+          "country_name": "Brazil",
+          "total_area_hectares": 197.59,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0.04,
+            "gfw_loss_area": 0.09,
+            "gfw_loss_year_compilation": 2023,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "high",
+            "jrc_loss_percent": 0.04,
+            "jrc_loss_area": 0.09,
+            "jrc_loss_year_compilation": 2023,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "high",
+            "sbtn_loss_percent": 0.04,
+            "sbtn_loss_area": 0.09,
+            "sbtn_loss_year_compilation": 2023,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss",
+              "JRC Forest Loss",
+              "SBTN Natural Lands Loss"
+            ],
+            "total_high_risk_indicators": 3
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -54.39339965327361,
+                -11.90464689274762
+              ],
+              [
+                -54.38217625632861,
+                -11.902542505820433
+              ],
+              [
+                -54.379487317477206,
+                -11.916513296809256
+              ],
+              [
+                -54.39106144557674,
+                -11.918442318159178
+              ],
+              [
+                -54.39339965327361,
+                -11.90464689274762
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_008",
+          "country_name": "Ivory Coast",
+          "total_area_hectares": 8.32,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0.29,
+            "gfw_loss_area": 0.02,
+            "gfw_loss_year_compilation": 2023,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "high",
+            "sbtn_loss_percent": 0.29,
+            "sbtn_loss_area": 0.02,
+            "sbtn_loss_year_compilation": 2023,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss",
+              "SBTN Natural Lands Loss"
+            ],
+            "total_high_risk_indicators": 2
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -4.102889299392701,
+                5.713707261060872
+              ],
+              [
+                -4.102438688278199,
+                5.710173648788193
+              ],
+              [
+                -4.101483821868897,
+                5.710205675583411
+              ],
+              [
+                -4.101086854934693,
+                5.710664726118069
+              ],
+              [
+                -4.100604057312013,
+                5.710344458341974
+              ],
+              [
+                -4.100368022918702,
+                5.711657555086256
+              ],
+              [
+                -4.100528955459596,
+                5.712810515599572
+              ],
+              [
+                -4.101483821868897,
+                5.713525776973704
+              ],
+              [
+                -4.102889299392701,
+                5.713707261060872
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_005",
+          "country_name": "Indonesia",
+          "total_area_hectares": 31.35,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                103.95149946212769,
+                -3.053332356414264
+              ],
+              [
+                103.95143508911134,
+                -3.056010754388729
+              ],
+              [
+                103.96061897277832,
+                -3.056096463013569
+              ],
+              [
+                103.96061897277832,
+                -3.053225220356327
+              ],
+              [
+                103.95149946212769,
+                -3.053332356414264
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_001",
+          "country_name": "Central African Republic",
+          "total_area_hectares": 5804.6,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0.01,
+            "gfw_loss_year_compilation": 2022,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "high",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": 2021,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "high",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0.01,
+            "sbtn_loss_year_compilation": 2022,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss",
+              "JRC Forest Loss",
+              "SBTN Natural Lands Loss"
+            ],
+            "total_high_risk_indicators": 3
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                16.2800016976857,
+                4.14723820524654
+              ],
+              [
+                16.2798367678978,
+                4.14695536937449
+              ],
+              [
+                16.2810703578022,
+                4.14705657022182
+              ],
+              [
+                16.290350772154,
+                4.1419542867565
+              ],
+              [
+                16.2962543259281,
+                4.13742271061199
+              ],
+              [
+                16.2982250760496,
+                4.13770209680893
+              ],
+              [
+                16.3013170916305,
+                4.13515344493771
+              ],
+              [
+                16.3044095491827,
+                4.13288740456279
+              ],
+              [
+                16.3069330425799,
+                4.12694825908828
+              ],
+              [
+                16.3100217496657,
+                4.12242127427232
+              ],
+              [
+                16.3128340622065,
+                4.12100353912602
+              ],
+              [
+                16.3162111428716,
+                4.12071532958334
+              ],
+              [
+                16.3191847245655,
+                4.11771966087849
+              ],
+              [
+                16.3188291929356,
+                4.11721413507241
+              ],
+              [
+                16.3135348810788,
+                4.10968609787352
+              ],
+              [
+                16.3082584358147,
+                4.10264591023189
+              ],
+              [
+                16.3082772707913,
+                4.10240454033165
+              ],
+              [
+                16.3043090250074,
+                4.1022118239104
+              ],
+              [
+                16.2999180203728,
+                4.1000162116044
+              ],
+              [
+                16.2999059299474,
+                4.09252677516345
+              ],
+              [
+                16.3029650096968,
+                4.08503234407812
+              ],
+              [
+                16.3029648066775,
+                4.08490647203371
+              ],
+              [
+                16.285162236922,
+                4.06645079172747
+              ],
+              [
+                16.285518321914,
+                4.06560420507182
+              ],
+              [
+                16.2849399856358,
+                4.05544217741982
+              ],
+              [
+                16.2866218375619,
+                4.05233415226416
+              ],
+              [
+                16.2835227791891,
+                4.04810451879993
+              ],
+              [
+                16.2854821952666,
+                4.04273762376387
+              ],
+              [
+                16.2837834792677,
+                4.03511810019776
+              ],
+              [
+                16.2832716803042,
+                4.03130926728382
+              ],
+              [
+                16.2834232251944,
+                4.03123024714122
+              ],
+              [
+                16.2822587840073,
+                4.03092716432413
+              ],
+              [
+                16.2780006689493,
+                4.02971269115653
+              ],
+              [
+                16.2747556253596,
+                4.02829307026021
+              ],
+              [
+                16.2674608417219,
+                4.02932215071368
+              ],
+              [
+                16.2605713761437,
+                4.03035054256131
+              ],
+              [
+                16.2546980767301,
+                4.03320911322226
+              ],
+              [
+                16.2512556436281,
+                4.03524976873668
+              ],
+              [
+                16.2461945389107,
+                4.03912471417605
+              ],
+              [
+                16.2425524696099,
+                4.04320099827052
+              ],
+              [
+                16.2395828593678,
+                4.04646417194388
+              ],
+              [
+                16.2381008673211,
+                4.04809265567475
+              ],
+              [
+                16.235065231804,
+                4.05115032540948
+              ],
+              [
+                16.2297997190369,
+                4.05400785588158
+              ],
+              [
+                16.2251409966846,
+                4.05605029863918
+              ],
+              [
+                16.2246874498741,
+                4.05608894683085
+              ],
+              [
+                16.2617656800258,
+                4.0916917361852
+              ],
+              [
+                16.2618791857552,
+                4.09204800663854
+              ],
+              [
+                16.2648921846254,
+                4.09678581370468
+              ],
+              [
+                16.2657044035761,
+                4.0977342851533
+              ],
+              [
+                16.2677245313938,
+                4.10009327706511
+              ],
+              [
+                16.2677349770039,
+                4.10671716939692
+              ],
+              [
+                16.2696272341325,
+                4.11144551459402
+              ],
+              [
+                16.2738747607482,
+                4.11569694196878
+              ],
+              [
+                16.2748231795673,
+                4.11948050061192
+              ],
+              [
+                16.2743572530739,
+                4.12279319292215
+              ],
+              [
+                16.2720065101973,
+                4.12610891240642
+              ],
+              [
+                16.2729572107373,
+                4.13131187180496
+              ],
+              [
+                16.2743821687466,
+                4.13840660072847
+              ],
+              [
+                16.2776882339952,
+                4.14313260610964
+              ],
+              [
+                16.2791064357752,
+                4.14596911289566
+              ],
+              [
+                16.2800016976857,
+                4.14723820524654
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_002",
+          "country_name": "Ivory Coast",
+          "total_area_hectares": 1439.07,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": 2022,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss"
+            ],
+            "total_high_risk_indicators": 1
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                2.150806993589529,
+                7.039736246748737
+              ],
+              [
+                2.153811067686209,
+                7.041439916513774
+              ],
+              [
+                2.157072633848318,
+                7.042206565866722
+              ],
+              [
+                2.161364168272146,
+                7.042802847820684
+              ],
+              [
+                2.164539903745779,
+                7.043654677853594
+              ],
+              [
+                2.168058961973318,
+                7.046636070644865
+              ],
+              [
+                2.171148866758474,
+                7.049958171451356
+              ],
+              [
+                2.174925417051443,
+                7.052002529339013
+              ],
+              [
+                2.179388612852224,
+                7.053365429584498
+              ],
+              [
+                2.187113374815115,
+                7.055665314652532
+              ],
+              [
+                2.193207353696951,
+                7.053450610716659
+              ],
+              [
+                2.198443025694021,
+                7.053365429584498
+              ],
+              [
+                2.200331300840506,
+                7.049447080569794
+              ],
+              [
+                2.201361269102224,
+                7.047913804542653
+              ],
+              [
+                2.199987978086599,
+                7.043825043672392
+              ],
+              [
+                2.199043840513357,
+                7.040758449358538
+              ],
+              [
+                2.199644655332693,
+                7.038714041886886
+              ],
+              [
+                2.202906221494803,
+                7.036414072715293
+              ],
+              [
+                2.205824464903006,
+                7.033177059761643
+              ],
+              [
+                2.206167787656912,
+                7.031047433671024
+              ],
+              [
+                2.202648729429373,
+                7.02942891131269
+              ],
+              [
+                2.197584718809256,
+                7.027725197476525
+              ],
+              [
+                2.192778200254568,
+                7.026277035805394
+              ],
+              [
+                2.189945787534842,
+                7.023210325611045
+              ],
+              [
+                2.18874415789617,
+                7.018525034880891
+              ],
+              [
+                2.183079332456717,
+                7.019462096801435
+              ],
+              [
+                2.178101152525076,
+                7.022699205279062
+              ],
+              [
+                2.174152940855154,
+                7.024147378094068
+              ],
+              [
+                2.170376390562185,
+                7.024658496834401
+              ],
+              [
+                2.167458147153982,
+                7.027043710193314
+              ],
+              [
+                2.16402491961492,
+                7.029088169045147
+              ],
+              [
+                2.160162538633474,
+                7.03087706316199
+              ],
+              [
+                2.155613512144217,
+                7.034880753603009
+              ],
+              [
+                2.152266115293631,
+                7.035647413792183
+              ],
+              [
+                2.148832887754568,
+                7.037180730372198
+              ],
+              [
+                2.150806993589529,
+                7.039736246748737
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_010",
+          "country_name": "China",
+          "total_area_hectares": 8.12,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                108.0648258991921,
+                13.78928698224155
+              ],
+              [
+                108.0640586046741,
+                13.78852425476126
+              ],
+              [
+                108.0636085399911,
+                13.78889461498075
+              ],
+              [
+                108.0632316167814,
+                13.78842438075984
+              ],
+              [
+                108.0628874591179,
+                13.7887239503842
+              ],
+              [
+                108.0627295313794,
+                13.78850310431021
+              ],
+              [
+                108.0630247917857,
+                13.78823631173916
+              ],
+              [
+                108.0624749518309,
+                13.78755292045052
+              ],
+              [
+                108.0621811935506,
+                13.78781539273821
+              ],
+              [
+                108.0606995501631,
+                13.78588806788671
+              ],
+              [
+                108.061011769582,
+                13.78566934950299
+              ],
+              [
+                108.0612219502347,
+                13.78562528431305
+              ],
+              [
+                108.0613537471187,
+                13.78564094058607
+              ],
+              [
+                108.0615333245302,
+                13.78557574473487
+              ],
+              [
+                108.0623841725321,
+                13.78625648172974
+              ],
+              [
+                108.0624515163785,
+                13.78612681661161
+              ],
+              [
+                108.0658128831517,
+                13.7883729611123
+              ],
+              [
+                108.0648258991921,
+                13.78928698224155
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_009",
+          "country_name": "Nigeria",
+          "total_area_hectares": 1.02,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                12.595622736885025,
+                4.232556430957794
+              ],
+              [
+                12.595738692657317,
+                4.23215062820015
+              ],
+              [
+                12.595957204795285,
+                4.232208624930959
+              ],
+              [
+                12.596452120989403,
+                4.232271027378304
+              ],
+              [
+                12.596733079489104,
+                4.232012395675572
+              ],
+              [
+                12.596791057917914,
+                4.23187862255115
+              ],
+              [
+                12.596947126884437,
+                4.232199689376769
+              ],
+              [
+                12.597210220052693,
+                4.232324586569103
+              ],
+              [
+                12.597473313820007,
+                4.232279938817438
+              ],
+              [
+                12.597433114034496,
+                4.23245389391963
+              ],
+              [
+                12.597397468484752,
+                4.232676817576778
+              ],
+              [
+                12.59710319606177,
+                4.232690227219323
+              ],
+              [
+                12.59661712271877,
+                4.232663410357032
+              ],
+              [
+                12.596171250753189,
+                4.232672350736111
+              ],
+              [
+                12.595756558964906,
+                4.232663410191494
+              ],
+              [
+                12.595622736885025,
+                4.232556430957794
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_012",
+          "country_name": "China",
+          "total_area_hectares": 6.23,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                107.5915071013707,
+                12.27618416008693
+              ],
+              [
+                107.58962034125,
+                12.2767911983312
+              ],
+              [
+                107.5885399087328,
+                12.27774590232351
+              ],
+              [
+                107.5876989162804,
+                12.27894367843058
+              ],
+              [
+                107.5868403256658,
+                12.27868749510442
+              ],
+              [
+                107.587265887163,
+                12.27772303011793
+              ],
+              [
+                107.5874948191412,
+                12.27736146075729
+              ],
+              [
+                107.5879184370481,
+                12.2771694172499
+              ],
+              [
+                107.5877265483873,
+                12.27642656176032
+              ],
+              [
+                107.5893751853614,
+                12.27584287558136
+              ],
+              [
+                107.589598085493,
+                12.27605845903122
+              ],
+              [
+                107.5904475012057,
+                12.27581979233625
+              ],
+              [
+                107.5913783687805,
+                12.27554917161022
+              ],
+              [
+                107.5915071013707,
+                12.27618416008693
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_011",
+          "country_name": "China",
+          "total_area_hectares": 7.61,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                108.1008039171132,
+                12.9386646781893
+              ],
+              [
+                108.1046484682801,
+                12.93906674332878
+              ],
+              [
+                108.1044266842246,
+                12.94073947011462
+              ],
+              [
+                108.1020092867697,
+                12.94050453860684
+              ],
+              [
+                108.1019968129879,
+                12.94034602512257
+              ],
+              [
+                108.1006208309822,
+                12.94017300161677
+              ],
+              [
+                108.1008039171132,
+                12.9386646781893
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_006",
+          "country_name": "Indonesia",
+          "total_area_hectares": 1.97,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                103.96965265274048,
+                -3.068192023956511
+              ],
+              [
+                103.96944344043733,
+                -3.069113380834418
+              ],
+              [
+                103.971004486084,
+                -3.069472281263726
+              ],
+              [
+                103.97136926651001,
+                -3.068572351601213
+              ],
+              [
+                103.96965265274048,
+                -3.068192023956511
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_014",
+          "country_name": "Nigeria",
+          "total_area_hectares": 1.01,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                12.639446791721685,
+                4.199844427905626
+              ],
+              [
+                12.639567172026492,
+                4.199822197024734
+              ],
+              [
+                12.639602830554129,
+                4.199759765217771
+              ],
+              [
+                12.639700957271458,
+                4.199572462365891
+              ],
+              [
+                12.639972996506122,
+                4.199224674573957
+              ],
+              [
+                12.640053250392391,
+                4.199010604025166
+              ],
+              [
+                12.640374266491966,
+                4.199278191398258
+              ],
+              [
+                12.64065077561209,
+                4.199599181786764
+              ],
+              [
+                12.640512520969752,
+                4.199844478614159
+              ],
+              [
+                12.640418861866378,
+                4.200071845085015
+              ],
+              [
+                12.640249417057422,
+                4.200379580243243
+              ],
+              [
+                12.639946186814116,
+                4.200201219929269
+              ],
+              [
+                12.639446791721685,
+                4.199844427905626
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_013",
+          "country_name": "Ghana",
+          "total_area_hectares": 4.17,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0.47,
+            "gfw_loss_area": 0.02,
+            "gfw_loss_year_compilation": 2023,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "high",
+            "sbtn_loss_percent": 0.49,
+            "sbtn_loss_area": 0.02,
+            "sbtn_loss_year_compilation": 2023,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss",
+              "SBTN Natural Lands Loss"
+            ],
+            "total_high_risk_indicators": 2
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -1.645744442939759,
+                6.105442277883695
+              ],
+              [
+                -1.646157503128052,
+                6.105180912298894
+              ],
+              [
+                -1.646109223365784,
+                6.104567502772512
+              ],
+              [
+                -1.645760536193848,
+                6.104503494781471
+              ],
+              [
+                -1.645905375480652,
+                6.104060772634007
+              ],
+              [
+                -1.645309925079346,
+                6.104092776656924
+              ],
+              [
+                -1.644151210784912,
+                6.103644720161975
+              ],
+              [
+                -1.643378734588623,
+                6.105186246291696
+              ],
+              [
+                -1.643636226654053,
+                6.105788987136111
+              ],
+              [
+                -1.64419412612915,
+                6.105756983214514
+              ],
+              [
+                -1.644296050071717,
+                6.105250254201175
+              ],
+              [
+                -1.644483804702759,
+                6.104748858705616
+              ],
+              [
+                -1.645111441612244,
+                6.105191580284448
+              ],
+              [
+                -1.645159721374512,
+                6.105522287731098
+              ],
+              [
+                -1.645744442939759,
+                6.105442277883695
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_015",
+          "country_name": "Brazil",
+          "total_area_hectares": 873.31,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": 2024,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss"
+            ],
+            "total_high_risk_indicators": 1
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -52.61567030577843,
+                -20.51619342271263
+              ],
+              [
+                -52.60021819159494,
+                -20.483151550091023
+              ],
+              [
+                -52.58079616665285,
+                -20.49365654471379
+              ],
+              [
+                -52.587025872766354,
+                -20.502207121732322
+              ],
+              [
+                -52.58299488645761,
+                -20.50452799263735
+              ],
+              [
+                -52.598752378391765,
+                -20.52309495987759
+              ],
+              [
+                -52.615609230228294,
+                -20.516254498262764
+              ],
+              [
+                -52.61567030577843,
+                -20.51619342271263
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_016",
+          "country_name": "Indonesia",
+          "total_area_hectares": 5.67,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                108.1202224042316,
+                13.72400812983016
+              ],
+              [
+                108.1195326338911,
+                13.72360315709646
+              ],
+              [
+                108.1195900016473,
+                13.72244501397283
+              ],
+              [
+                108.1196273673684,
+                13.72139346401735
+              ],
+              [
+                108.11962721243,
+                13.72031467552087
+              ],
+              [
+                108.1213478841685,
+                13.72023742917682
+              ],
+              [
+                108.1213404355873,
+                13.72115292753418
+              ],
+              [
+                108.120871944104,
+                13.72117359922648
+              ],
+              [
+                108.1208996243345,
+                13.7218310916616
+              ],
+              [
+                108.1213600696629,
+                13.72183979724066
+              ],
+              [
+                108.1213558255433,
+                13.72277085861441
+              ],
+              [
+                108.1202507321979,
+                13.72274241850399
+              ],
+              [
+                108.1202224042316,
+                13.72400812983016
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_017",
+          "country_name": "Nigeria",
+          "total_area_hectares": 4.26,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                12.326912893328428,
+                4.25823189102313
+              ],
+              [
+                12.327180429895389,
+                4.258017852871597
+              ],
+              [
+                12.327135782174318,
+                4.257790478396697
+              ],
+              [
+                12.327488071526409,
+                4.257692375339617
+              ],
+              [
+                12.32775115341054,
+                4.257424855601486
+              ],
+              [
+                12.328023148051516,
+                4.257754820247314
+              ],
+              [
+                12.328495841885557,
+                4.257661128256601
+              ],
+              [
+                12.329191430658451,
+                4.257496175371472
+              ],
+              [
+                12.329423323668768,
+                4.257977726828731
+              ],
+              [
+                12.329494709066733,
+                4.258116018682772
+              ],
+              [
+                12.329490252938967,
+                4.258437050508048
+              ],
+              [
+                12.32928064038436,
+                4.258396923055583
+              ],
+              [
+                12.329026467121517,
+                4.258664456905896
+              ],
+              [
+                12.328571682782757,
+                4.258923056950008
+              ],
+              [
+                12.32798749950325,
+                4.259244131000217
+              ],
+              [
+                12.327733329178326,
+                4.259538411728125
+              ],
+              [
+                12.327211622149452,
+                4.259435907844826
+              ],
+              [
+                12.327060029623754,
+                4.259337756931056
+              ],
+              [
+                12.326952997560754,
+                4.258932015670936
+              ],
+              [
+                12.326966365641393,
+                4.25839246489029
+              ],
+              [
+                12.326912893328428,
+                4.25823189102313
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_018",
+          "country_name": "Ivory Coast",
+          "total_area_hectares": 1.99,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 2.75,
+            "gfw_loss_area": 0.05,
+            "gfw_loss_year_compilation": 2024,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss"
+            ],
+            "total_high_risk_indicators": 1
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -4.086956977844239,
+                5.674729567168177
+              ],
+              [
+                -4.08767580986023,
+                5.672711751061028
+              ],
+              [
+                -4.087289571762086,
+                5.672594311810939
+              ],
+              [
+                -4.087091088294984,
+                5.673213536678412
+              ],
+              [
+                -4.08668339252472,
+                5.673181507822257
+              ],
+              [
+                -4.08593773841858,
+                5.674558747030553
+              ],
+              [
+                -4.086956977844239,
+                5.674729567168177
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_019",
+          "country_name": "Ghana",
+          "total_area_hectares": 3.63,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -7.5078946352005,
+                6.07248787441419
+              ],
+              [
+                -7.507594227790833,
+                6.070455495611355
+              ],
+              [
+                -7.506065368652345,
+                6.070471498624001
+              ],
+              [
+                -7.506564259529114,
+                6.072546551903519
+              ],
+              [
+                -7.5078946352005,
+                6.07248787441419
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_023",
+          "country_name": "Indonesia",
+          "total_area_hectares": 2.57,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  100.17870033300625,
+                  1.18559044633713
+                ],
+                [
+                  100.17864438781714,
+                  1.186065980444141
+                ],
+                [
+                  100.1787283056006,
+                  1.186256194086866
+                ],
+                [
+                  100.17933251364246,
+                  1.186647810410193
+                ],
+                [
+                  100.17991434360852,
+                  1.186910752798781
+                ],
+                [
+                  100.180126935327,
+                  1.187061804809161
+                ],
+                [
+                  100.18042344482888,
+                  1.186949914431125
+                ],
+                [
+                  100.18068079269847,
+                  1.186670188485778
+                ],
+                [
+                  100.18088219537918,
+                  1.186552703588802
+                ],
+                [
+                  100.18101086931398,
+                  1.186463191286293
+                ],
+                [
+                  100.18101086931398,
+                  1.186161087265418
+                ],
+                [
+                  100.18095492412488,
+                  1.186015629773863
+                ],
+                [
+                  100.18083743922784,
+                  1.185881361320241
+                ],
+                [
+                  100.18070317077422,
+                  1.185847794206722
+                ],
+                [
+                  100.18046260646122,
+                  1.185847794206722
+                ],
+                [
+                  100.1803115544509,
+                  1.185970873622693
+                ],
+                [
+                  100.18014371888376,
+                  1.185965279103698
+                ],
+                [
+                  100.18000945042996,
+                  1.185870172282307
+                ],
+                [
+                  100.17988637101399,
+                  1.185741498347511
+                ],
+                [
+                  100.17979685871148,
+                  1.185702336715167
+                ],
+                [
+                  100.17943880950168,
+                  1.185780659979798
+                ],
+                [
+                  100.17935489171799,
+                  1.185791849017789
+                ],
+                [
+                  100.1792262177832,
+                  1.185836605168902
+                ],
+                [
+                  100.17907516577287,
+                  1.185836605168902
+                ],
+                [
+                  100.1789744644326,
+                  1.185752687385445
+                ],
+                [
+                  100.17896327539484,
+                  1.185674364120757
+                ],
+                [
+                  100.1789688699136,
+                  1.185601635374894
+                ],
+                [
+                  100.17870033300625,
+                  1.18559044633713
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_020",
+          "country_name": "China",
+          "total_area_hectares": 5.6,
+          "gfw_loss": {
+            "gfw_loss_stat": "high",
+            "gfw_loss_percent": 0.73,
+            "gfw_loss_area": 0.04,
+            "gfw_loss_year_compilation": 2024,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "high",
+            "sbtn_loss_percent": 0.6,
+            "sbtn_loss_area": 0.03,
+            "sbtn_loss_year_compilation": 2024,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "high",
+            "compliance_status": "NON_COMPLIANT",
+            "high_risk_datasets": [
+              "GFW Forest Loss",
+              "SBTN Natural Lands Loss"
+            ],
+            "total_high_risk_indicators": 2
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                108.1014375852372,
+                12.9116256918085
+              ],
+              [
+                108.101798072511,
+                12.91160387490412
+              ],
+              [
+                108.1019463041932,
+                12.91157495558204
+              ],
+              [
+                108.1021637279591,
+                12.91153191786967
+              ],
+              [
+                108.1029199762106,
+                12.91148582870912
+              ],
+              [
+                108.102964722946,
+                12.91462199251699
+              ],
+              [
+                108.1014490708163,
+                12.91467344543843
+              ],
+              [
+                108.1014375852372,
+                12.9116256918085
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_024",
+          "country_name": "Indonesia",
+          "total_area_hectares": 6.88,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  100.1762946898773,
+                  1.188931423095653
+                ],
+                [
+                  100.17671427879503,
+                  1.189053803196714
+                ],
+                [
+                  100.17770206103927,
+                  1.189211149041
+                ],
+                [
+                  100.17862865323286,
+                  1.189464650678815
+                ],
+                [
+                  100.17923181230236,
+                  1.1896394793946
+                ],
+                [
+                  100.17990490285814,
+                  1.18979682523883
+                ],
+                [
+                  100.18000105865167,
+                  1.189490874986177
+                ],
+                [
+                  100.17984371280755,
+                  1.18914995899047
+                ],
+                [
+                  100.17945908963287,
+                  1.188826525866261
+                ],
+                [
+                  100.17922307086656,
+                  1.188485609870384
+                ],
+                [
+                  100.17908320789394,
+                  1.188109728131508
+                ],
+                [
+                  100.17899579353588,
+                  1.187856226493693
+                ],
+                [
+                  100.17890837917821,
+                  1.187716363520906
+                ],
+                [
+                  100.17851501456761,
+                  1.187803777878969
+                ],
+                [
+                  100.17828773723716,
+                  1.187768812135801
+                ],
+                [
+                  100.17798178698445,
+                  1.187742587828438
+                ],
+                [
+                  100.17783318257602,
+                  1.187576500548346
+                ],
+                [
+                  100.17779821683285,
+                  1.187322998910531
+                ],
+                [
+                  100.17719505776347,
+                  1.187130687323076
+                ],
+                [
+                  100.17675798597406,
+                  1.187095721580079
+                ],
+                [
+                  100.17651322577188,
+                  1.187078238708352
+                ],
+                [
+                  100.17642581141405,
+                  1.187786295007299
+                ],
+                [
+                  100.17644329428555,
+                  1.188232108232569
+                ],
+                [
+                  100.17643455284986,
+                  1.188546799920914
+                ],
+                [
+                  100.1762946898773,
+                  1.188931423095653
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_021",
+          "country_name": "Indonesia",
+          "total_area_hectares": 7.47,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  100.1841493944197,
+                  1.188740160480677
+                ],
+                [
+                  100.18437876969477,
+                  1.188907996047817
+                ],
+                [
+                  100.18439555325136,
+                  1.188852050858713
+                ],
+                [
+                  100.18442912036488,
+                  1.188689809810342
+                ],
+                [
+                  100.18436758065695,
+                  1.188466029054325
+                ],
+                [
+                  100.18430044643009,
+                  1.188147141476634
+                ],
+                [
+                  100.18423890672216,
+                  1.187867415531457
+                ],
+                [
+                  100.18418296153305,
+                  1.187570906029521
+                ],
+                [
+                  100.18415498893853,
+                  1.187302369121994
+                ],
+                [
+                  100.18397596433363,
+                  1.187319152678754
+                ],
+                [
+                  100.18376896713414,
+                  1.187112155479269
+                ],
+                [
+                  100.18370742742604,
+                  1.186972292506709
+                ],
+                [
+                  100.18361791512359,
+                  1.186871591166437
+                ],
+                [
+                  100.18344448503746,
+                  1.186804456939569
+                ],
+                [
+                  100.18332140562165,
+                  1.186703755599126
+                ],
+                [
+                  100.1831759481301,
+                  1.186742917231641
+                ],
+                [
+                  100.18296895093061,
+                  1.186854807609677
+                ],
+                [
+                  100.18288503314716,
+                  1.186810051458394
+                ],
+                [
+                  100.18288503314716,
+                  1.186631026853433
+                ],
+                [
+                  100.18277314276895,
+                  1.186351300908086
+                ],
+                [
+                  100.18257733460723,
+                  1.18639046254043
+                ],
+                [
+                  100.18243747163467,
+                  1.18625059956787
+                ],
+                [
+                  100.18234795933222,
+                  1.186300950238149
+                ],
+                [
+                  100.18198431560342,
+                  1.18639046254043
+                ],
+                [
+                  100.18193396493325,
+                  1.186155492746593
+                ],
+                [
+                  100.18180529099845,
+                  1.186161087265418
+                ],
+                [
+                  100.1815311595721,
+                  1.186172276303182
+                ],
+                [
+                  100.18150878149635,
+                  1.185948495546938
+                ],
+                [
+                  100.18107240902185,
+                  1.186004440736042
+                ],
+                [
+                  100.18107800354085,
+                  1.186105142076315
+                ],
+                [
+                  100.18118989391888,
+                  1.186362489946077
+                ],
+                [
+                  100.18106121998409,
+                  1.186491163880874
+                ],
+                [
+                  100.1809828967194,
+                  1.186675783004773
+                ],
+                [
+                  100.18109478709744,
+                  1.186709350118122
+                ],
+                [
+                  100.18143605275066,
+                  1.186765295307225
+                ],
+                [
+                  100.18167102254472,
+                  1.186921941836601
+                ],
+                [
+                  100.18161507735562,
+                  1.187089777403685
+                ],
+                [
+                  100.18154234860992,
+                  1.187156911630609
+                ],
+                [
+                  100.18127381170251,
+                  1.187408664981206
+                ],
+                [
+                  100.18107240902185,
+                  1.187537338916002
+                ],
+                [
+                  100.18083743922784,
+                  1.187481393727069
+                ],
+                [
+                  100.18063044202836,
+                  1.187514960840417
+                ],
+                [
+                  100.18060806395277,
+                  1.187710769002138
+                ],
+                [
+                  100.18065282010394,
+                  1.187878604569278
+                ],
+                [
+                  100.18110038161643,
+                  1.188029656579602
+                ],
+                [
+                  100.18212417857598,
+                  1.18846043453533
+                ],
+                [
+                  100.18285706055258,
+                  1.188527568762197
+                ],
+                [
+                  100.18303049063854,
+                  1.188438056459745
+                ],
+                [
+                  100.18317035361127,
+                  1.188443650978741
+                ],
+                [
+                  100.18320392072462,
+                  1.188544352318956
+                ],
+                [
+                  100.18393680270128,
+                  1.18879610566961
+                ],
+                [
+                  100.18392561366346,
+                  1.188617081064649
+                ],
+                [
+                  100.1841493944197,
+                  1.188740160480677
+                ]
+              ]
+            ]
+          ]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "plot_id": "PLOT_022",
+          "country_name": "Indonesia",
+          "total_area_hectares": 6.1,
+          "gfw_loss": {
+            "gfw_loss_stat": "low",
+            "gfw_loss_percent": 0,
+            "gfw_loss_area": 0,
+            "gfw_loss_year_compilation": null,
+            "dataset": "GFW_LOSS Loss Detection (2021-2024)"
+          },
+          "jrc_loss": {
+            "jrc_loss_stat": "low",
+            "jrc_loss_percent": 0,
+            "jrc_loss_area": 0,
+            "jrc_loss_year_compilation": null,
+            "dataset": "JRC_LOSS Loss Detection (2021-2024)"
+          },
+          "sbtn_loss": {
+            "sbtn_loss_stat": "low",
+            "sbtn_loss_percent": 0,
+            "sbtn_loss_area": 0,
+            "sbtn_loss_year_compilation": null,
+            "dataset": "SBTN_LOSS Loss Detection (2021-2024)"
+          },
+          "overall_compliance": {
+            "overall_risk": "low",
+            "compliance_status": "COMPLIANT",
+            "high_risk_datasets": [],
+            "total_high_risk_indicators": 0
+          }
+        },
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  100.18053533520691,
+                  1.190088439536737
+                ],
+                [
+                  100.1806696036607,
+                  1.190222707990472
+                ],
+                [
+                  100.18093254604929,
+                  1.190379354519848
+                ],
+                [
+                  100.1812905952591,
+                  1.190563973643577
+                ],
+                [
+                  100.18150878149658,
+                  1.190614324313856
+                ],
+                [
+                  100.18186683070638,
+                  1.190715025654129
+                ],
+                [
+                  100.18207382790587,
+                  1.190770970843005
+                ],
+                [
+                  100.18230320318088,
+                  1.190776565362
+                ],
+                [
+                  100.18238152644574,
+                  1.19060872979486
+                ],
+                [
+                  100.18243747163467,
+                  1.19044089422772
+                ],
+                [
+                  100.18248782230478,
+                  1.190144384725841
+                ],
+                [
+                  100.18263327979633,
+                  1.189825497148149
+                ],
+                [
+                  100.18268922498544,
+                  1.189635283505424
+                ],
+                [
+                  100.18277314276895,
+                  1.189338774003488
+                ],
+                [
+                  100.1828682495904,
+                  1.189047859020377
+                ],
+                [
+                  100.18294097833609,
+                  1.188756944037266
+                ],
+                [
+                  100.18288503314716,
+                  1.188656242696993
+                ],
+                [
+                  100.18273398113661,
+                  1.18860029750789
+                ],
+                [
+                  100.18252138941835,
+                  1.188605892026885
+                ],
+                [
+                  100.18224166347301,
+                  1.18860029750789
+                ],
+                [
+                  100.18205144983028,
+                  1.188538757800018
+                ],
+                [
+                  100.18167102254472,
+                  1.188471623573093
+                ],
+                [
+                  100.18151437601534,
+                  1.188342949638297
+                ],
+                [
+                  100.18106121998409,
+                  1.188141546957809
+                ],
+                [
+                  100.18058568587725,
+                  1.188063223693177
+                ],
+                [
+                  100.18047379549904,
+                  1.18832057156277
+                ],
+                [
+                  100.18042344482888,
+                  1.188645053659229
+                ],
+                [
+                  100.18027239281855,
+                  1.188824078264133
+                ],
+                [
+                  100.18023882570498,
+                  1.189003102869037
+                ],
+                [
+                  100.18036749963977,
+                  1.189142965841825
+                ],
+                [
+                  100.1803115544509,
+                  1.189338774003488
+                ],
+                [
+                  100.18037868867776,
+                  1.189517798608449
+                ],
+                [
+                  100.18052974068814,
+                  1.189556960240736
+                ],
+                [
+                  100.1804905790558,
+                  1.189730390326872
+                ],
+                [
+                  100.18053533520691,
+                  1.190088439536737
+                ]
+              ]
+            ]
+          ]
+        }
+      }
+    ],
+    "processing_stats": {
+      "total_features": 24,
+      "successful": 24,
+      "failed": 0,
+      "processing_mode": "parallel",
+      "workers_used": 8,
+      "accounts_available": 16
+    }
+  }
+}
