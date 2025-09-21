@@ -212,7 +212,7 @@ export default function SupplyChainAnalysis() {
             <div className="space-y-2">
               <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">15</span><span className="text-sm text-gray-600">Plots Analyzed</span></div>
               <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">3</span><span className="text-sm text-gray-600">High Risk</span></div>
-              <Button className="mt-3" size="sm" onClick={() => setLocation('/deforestation-monitoring')} data-testid="button-view-spatial">View Details</Button>
+              <Button className="mt-3" size="sm" onClick={() => setLocation('/spatial-analysis')} data-testid="button-view-spatial">View Details</Button>
             </div>
           </CardContent>
         </Card>
@@ -569,7 +569,7 @@ export default function SupplyChainAnalysis() {
                   <span className="font-medium">GKIB124133 - High Deforestation</span>
                   <div className="flex items-center gap-2">
                     <Badge className="bg-red-100 text-red-800">High Risk</Badge>
-                    <Button variant="outline" size="sm" onClick={() => setLocation('/deforestation-monitoring')}>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/spatial-analysis')}>
                       <Eye className="w-3 h-3 mr-1" />
                       View Map
                     </Button>
@@ -579,7 +579,7 @@ export default function SupplyChainAnalysis() {
                   <span className="font-medium">GKIB124126 - Forest Loss Detected</span>
                   <div className="flex items-center gap-2">
                     <Badge className="bg-red-100 text-red-800">High Risk</Badge>
-                    <Button variant="outline" size="sm" onClick={() => setLocation('/deforestation-monitoring')}>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/spatial-analysis')}>
                       <Eye className="w-3 h-3 mr-1" />
                       View Map
                     </Button>
@@ -589,7 +589,7 @@ export default function SupplyChainAnalysis() {
                   <span className="font-medium">GKIB124129 - No Forest Loss</span>
                   <div className="flex items-center gap-2">
                     <Badge className="bg-green-100 text-green-800">Compliant</Badge>
-                    <Button variant="outline" size="sm" onClick={() => setLocation('/deforestation-monitoring')}>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/spatial-analysis')}>
                       <Eye className="w-3 h-3 mr-1" />
                       View Map
                     </Button>

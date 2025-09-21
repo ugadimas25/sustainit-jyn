@@ -41,7 +41,6 @@ interface NavigationItem {
 
 const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/', icon: BarChart3, testId: 'nav-dashboard' },
-  { name: 'Spatial Analysis', href: '/spatial-analysis', icon: Satellite, testId: 'nav-spatial-analysis' },
   { 
     name: 'Supply Chain Analysis', 
     href: '/supply-chain-analysis', 
