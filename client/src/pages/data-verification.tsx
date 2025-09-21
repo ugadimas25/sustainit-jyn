@@ -65,9 +65,10 @@ export default function DataVerification() {
 
         // Set current date and time as defaults
         const now = new Date();
+        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         setFormData(prev => ({
           ...prev,
-          updatedDate: now.toISOString().split('T')[0],
+          updatedDate: localDateTime,
           updatedTime: now.toTimeString().slice(0, 5),
           assessedBy: 'Current User', // Default assessor
           assessment: `Initial verification assessment for plot ${polygonData.plotId}`
@@ -267,6 +268,13 @@ export default function DataVerification() {
       const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
       elementsToHide.forEach(el => (el as HTMLElement).style.display = 'none');
 
+      // Show form values for PDF and hide input fields
+      const formFields = document.querySelectorAll('.pdf-form-field');
+      const pdfOnlyElements = document.querySelectorAll('.pdf-only');
+      
+      formFields.forEach(el => (el as HTMLElement).style.display = 'none');
+      pdfOnlyElements.forEach(el => (el as HTMLElement).style.display = 'flex');
+
       // Create canvas from the verification content
       const canvas = await html2canvas(verificationContentRef.current, {
         scale: 2,
@@ -298,16 +306,23 @@ export default function DataVerification() {
       // Download PDF
       pdf.save(filename);
 
-      // Show UI elements again
+      // Restore UI elements
       elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
+      formFields.forEach(el => (el as HTMLElement).style.display = '');
+      pdfOnlyElements.forEach(el => (el as HTMLElement).style.display = 'none');
 
       return true;
     } catch (error) {
       console.error('Error generating PDF:', error);
 
-      // Show UI elements again on error
+      // Restore UI elements on error
       const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
+      const formFields = document.querySelectorAll('.pdf-form-field');
+      const pdfOnlyElements = document.querySelectorAll('.pdf-only');
+      
       elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
+      formFields.forEach(el => (el as HTMLElement).style.display = '');
+      pdfOnlyElements.forEach(el => (el as HTMLElement).style.display = 'none');
 
       return false;
     }
@@ -521,40 +536,67 @@ export default function DataVerification() {
             <Label htmlFor="updated-date" className="text-sm font-medium">
               Updated date & time
             </Label>
-            <Input
-              id="updated-date"
-              type="datetime-local"
-              value={formData.updatedDate}
-              onChange={(e) => handleFormChange('updatedDate', e.target.value)}
-              placeholder="YYYY/MM/DD • HH:MM"
-              data-testid="input-updated-date"
-            />
+            <div className="relative">
+              <Input
+                id="updated-date"
+                type="datetime-local"
+                value={formData.updatedDate}
+                onChange={(e) => handleFormChange('updatedDate', e.target.value)}
+                placeholder="YYYY/MM/DD • HH:MM"
+                data-testid="input-updated-date"
+                className="pdf-form-field"
+              />
+              {/* Display value for PDF */}
+              <div className="pdf-only absolute inset-0 flex items-center px-3 text-sm bg-white border rounded" style={{display: 'none'}}>
+                {formData.updatedDate ? new Date(formData.updatedDate).toLocaleString('id-ID', {
+                  day: '2-digit',
+                  month: '2-digit', 
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }) : ''}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="assessment" className="text-sm font-medium">
               Assessment
             </Label>
-            <Input
-              id="assessment"
-              value={formData.assessment}
-              onChange={(e) => handleFormChange('assessment', e.target.value)}
-              placeholder="Name of assessment"
-              data-testid="input-assessment"
-            />
+            <div className="relative">
+              <Input
+                id="assessment"
+                value={formData.assessment}
+                onChange={(e) => handleFormChange('assessment', e.target.value)}
+                placeholder="Name of assessment"
+                data-testid="input-assessment"
+                className="pdf-form-field"
+              />
+              {/* Display value for PDF */}
+              <div className="pdf-only absolute inset-0 flex items-center px-3 text-sm bg-white border rounded" style={{display: 'none'}}>
+                {formData.assessment}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="assessed-by" className="text-sm font-medium">
               Asses by
             </Label>
-            <Input
-              id="assessed-by"
-              value={formData.assessedBy}
-              onChange={(e) => handleFormChange('assessedBy', e.target.value)}
-              placeholder="Name of Data Collector"
-              data-testid="input-assessed-by"
-            />
+            <div className="relative">
+              <Input
+                id="assessed-by"
+                value={formData.assessedBy}
+                onChange={(e) => handleFormChange('assessedBy', e.target.value)}
+                placeholder="Name of Data Collector"
+                data-testid="input-assessed-by"
+                className="pdf-form-field"
+              />
+              {/* Display value for PDF */}
+              <div className="pdf-only absolute inset-0 flex items-center px-3 text-sm bg-white border rounded" style={{display: 'none'}}>
+                {formData.assessedBy}
+              </div>
+            </div>
           </div>
         </div>
 
