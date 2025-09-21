@@ -1987,6 +1987,9 @@ export default function DeforestationMonitoring() {
                           {getSortIcon('peatlandStatus')}
                         </div>
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -2040,6 +2043,90 @@ export default function DeforestationMonitoring() {
                         </td>
                         <td className="px-4 py-4 text-sm">
                           <Badge className="bg-green-100 text-green-800">COMPLIANT</Badge>
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex items-center gap-2"
+                                data-testid={`action-button-${result.plotId}`}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                                Action
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem 
+                                onClick={() => handleEdit(result.plotId)}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit Polygon
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleVerification(result.plotId)}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <CheckSquare className="h-4 w-4" />
+                                Verify Data
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleRevalidation(result.plotId)}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                                Revalidate Analysis
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  const plotResult = analysisResults.find(r => r.plotId === result.plotId);
+                                  if (plotResult && plotResult.geometry) {
+                                    localStorage.setItem('selectedPolygonForVisualization', JSON.stringify(plotResult));
+                                    setLocation('/map-viewer');
+                                  }
+                                }}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <MapPin className="h-4 w-4" />
+                                View on Map
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  // Generate and download report for this plot
+                                  const plotData = {
+                                    plotId: result.plotId,
+                                    country: result.country,
+                                    area: result.area,
+                                    riskLevel: result.overallRisk,
+                                    complianceStatus: result.complianceStatus,
+                                    gfwLoss: result.gfwLossArea || 0,
+                                    jrcLoss: result.jrcLossArea || 0,
+                                    sbtnLoss: result.sbtnLossArea || 0
+                                  };
+                                  
+                                  const reportContent = JSON.stringify(plotData, null, 2);
+                                  const blob = new Blob([reportContent], { type: 'application/json' });
+                                  const url = URL.createObjectURL(blob);
+                                  const link = document.createElement('a');
+                                  link.href = url;
+                                  link.download = `plot-report-${result.plotId}.json`;
+                                  link.click();
+                                  URL.revokeObjectURL(url);
+                                  
+                                  toast({
+                                    title: "Report Downloaded",
+                                    description: `Analysis report for plot ${result.plotId} has been downloaded.`,
+                                  });
+                                }}
+                                className="flex items-center gap-2 cursor-pointer"
+                              >
+                                <FileText className="h-4 w-4" />
+                                Download Report
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
                       );
