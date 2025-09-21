@@ -25,7 +25,7 @@ import {
   riskAssessmentItems, type RiskAssessmentItem, type InsertRiskAssessmentItem
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql } from "drizzle-orm";
+import { eq, desc, and, or, sql, inArray } from "drizzle-orm";
 import MemoryStore from "memorystore";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
@@ -1783,7 +1783,7 @@ export class DatabaseStorage implements IStorage {
   async getAnalysisResultsByPlotIds(plotIds: string[]): Promise<any[]> {
     try {
       const results = await db.select().from(analysisResults).where(
-        sql`${analysisResults.plotId} = ANY(${plotIds})`
+        inArray(analysisResults.plotId, plotIds)
       );
       return results;
     } catch (error) {
