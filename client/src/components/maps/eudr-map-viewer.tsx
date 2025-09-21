@@ -7,7 +7,7 @@ interface EudrMapViewerProps {
   onClose: () => void;
 }
 
-export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
+function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -2047,3 +2047,5 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
     </div>
   );
 }
+
+export default EudrMapViewer;
