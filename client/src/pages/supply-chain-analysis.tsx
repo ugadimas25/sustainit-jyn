@@ -180,8 +180,8 @@ export default function SupplyChainAnalysis() {
         </div>
       </div>
 
-      {/* Consolidated Results Hub - Three Module Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" data-testid="consolidated-results-hub">
+      {/* Consolidated Results Hub - Four Module Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-testid="consolidated-results-hub">
         <Card data-testid="card-data-collection-results">
           <CardHeader>
             <CardTitle className="flex items-center gap-2" data-testid="title-data-collection-results">
@@ -196,6 +196,23 @@ export default function SupplyChainAnalysis() {
               <div className="text-sm text-gray-600">Avg completeness</div>
               <Progress value={85} className="mt-2" />
               <Button className="mt-3" size="sm" onClick={() => setLocation('/data-collection')} data-testid="button-view-data-collection">View Details</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-spatial-analysis-results">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2" data-testid="title-spatial-analysis-results">
+              <MapPin className="w-5 h-5" />
+              Spatial Analysis Results
+            </CardTitle>
+            <CardDescription>Deforestation monitoring and risk assessment</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">15</span><span className="text-sm text-gray-600">Plots Analyzed</span></div>
+              <div className="flex items-baseline gap-2"><span className="text-2xl font-bold">3</span><span className="text-sm text-gray-600">High Risk</span></div>
+              <Button className="mt-3" size="sm" onClick={() => setLocation('/deforestation-monitoring')} data-testid="button-view-spatial">View Details</Button>
             </div>
           </CardContent>
         </Card>
@@ -388,7 +405,7 @@ export default function SupplyChainAnalysis() {
             Assessment Workflow
           </CardTitle>
           <CardDescription>
-            Step-by-step risk evaluation process
+            4-step comprehensive risk evaluation process
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -400,7 +417,7 @@ export default function SupplyChainAnalysis() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">Data Collection</p>
-                  <p className="text-sm text-gray-600">Complete supplier data collection</p>
+                  <p className="text-sm text-gray-600">Complete supplier data collection and documentation</p>
                 </div>
               </div>
               
@@ -409,18 +426,28 @@ export default function SupplyChainAnalysis() {
                   2
                 </div>
                 <div>
+                  <p className="font-medium text-gray-900">Spatial Analysis</p>
+                  <p className="text-sm text-gray-600">Geospatial risk assessment and deforestation monitoring</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-semibold">
+                  3
+                </div>
+                <div>
                   <p className="font-medium text-gray-900">Legality Compliance</p>
-                  <p className="text-sm text-gray-600">Verify legal compliance status</p>
+                  <p className="text-sm text-gray-600">Verify legal compliance and regulatory requirements</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
-                  3
+                  4
                 </div>
                 <div>
                   <p className="font-medium text-blue-900">Risk Assessment</p>
-                  <p className="text-sm text-blue-700">Comprehensive risk evaluation</p>
+                  <p className="text-sm text-blue-700">Comprehensive risk evaluation and scoring</p>
                 </div>
               </div>
             </div>
@@ -492,6 +519,79 @@ export default function SupplyChainAnalysis() {
                     <Button variant="outline" size="sm" onClick={() => setLocation('/data-collection')}>
                       <Eye className="w-3 h-3 mr-1" />
                       View Details
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Spatial Analysis Results */}
+      <Card data-testid="card-spatial-analysis-detailed-results">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2" data-testid="title-spatial-analysis-detailed-results">
+            <MapPin className="w-5 h-5 text-purple-600" />
+            Spatial Analysis Results
+          </CardTitle>
+          <CardDescription>
+            Geospatial risk assessment and deforestation monitoring results
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">15</div>
+                <div className="text-sm text-gray-600">Plots Analyzed</div>
+              </div>
+              <div className="text-center p-4 bg-red-50 rounded-lg">
+                <div className="text-2xl font-bold text-red-600">14</div>
+                <div className="text-sm text-gray-600">High Risk</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">1</div>
+                <div className="text-sm text-gray-600">Compliant</div>
+              </div>
+              <div className="text-center p-4 bg-orange-50 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">0.42</div>
+                <div className="text-sm text-gray-600">Avg Loss (ha)</div>
+              </div>
+            </div>
+            
+            {/* Recent Spatial Analysis */}
+            <div>
+              <h4 className="font-semibold mb-3">Recent Spatial Analysis</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">GKIB124133 - High Deforestation</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-red-100 text-red-800">High Risk</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/deforestation-monitoring')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Map
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">GKIB124126 - Forest Loss Detected</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-red-100 text-red-800">High Risk</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/deforestation-monitoring')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Map
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                  <span className="font-medium">GKIB124129 - No Forest Loss</span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-100 text-green-800">Compliant</Badge>
+                    <Button variant="outline" size="sm" onClick={() => setLocation('/deforestation-monitoring')}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View Map
                     </Button>
                   </div>
                 </div>
