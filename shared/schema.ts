@@ -1074,6 +1074,22 @@ export const insertTraceabilityDataCollectionSchema = createInsertSchema(traceab
 export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollection);
 export const insertBulkingDataCollectionSchema = createInsertSchema(bulkingDataCollection);
 
+// Administrative Boundaries Level 0 (Country Boundaries) table
+export const admBoundaryLv0 = pgTable("adm_boundary_lv0", {
+  gid: integer("gid").primaryKey(),
+  iso_a3: varchar("iso_a3", { length: 3 }),
+  iso_a2: varchar("iso_a2", { length: 2 }),
+  wb_a3: varchar("wb_a3", { length: 3 }),
+  hasc_0: varchar("hasc_0", { length: 10 }),
+  gaul_0: decimal("gaul_0", { precision: 10, scale: 0 }),
+  wb_region: varchar("wb_region", { length: 50 }),
+  wb_status: varchar("wb_status", { length: 50 }),
+  sovereign: varchar("sovereign", { length: 100 }),
+  nam_0: varchar("nam_0", { length: 100 }), // Country name
+  geom: text("geom"), // PostGIS geometry column stored as text
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Export types for workflow entities (supplement to existing Supplier types)
 export type SupplierWorkflowLink = typeof supplierWorkflowLinks.$inferSelect;
 export type InsertSupplierWorkflowLink = z.infer<typeof insertSupplierWorkflowLinkSchema>;
@@ -1091,6 +1107,8 @@ export type KcpDataCollection = typeof kcpDataCollection.$inferSelect;
 export type InsertKcpDataCollection = typeof kcpDataCollection.$inferInsert;
 export type BulkingDataCollection = typeof bulkingDataCollection.$inferSelect;
 export type InsertBulkingDataCollection = typeof bulkingDataCollection.$inferInsert;
+export type AdmBoundaryLv0 = typeof admBoundaryLv0.$inferSelect;
+export type InsertAdmBoundaryLv0 = typeof admBoundaryLv0.$inferInsert;
 
 // Digital Signature Types
 export interface SignatureData {

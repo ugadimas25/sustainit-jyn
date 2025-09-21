@@ -3337,72 +3337,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to get country from coordinates using Nominatim API
+  // Helper function to get country from coordinates using adm_boundary_lv0
   async function getCountryFromCoordinates(lat: number, lng: number): Promise<string> {
     try {
-      // Use reverse geocoding with proper parameters according to Nominatim API docs
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=3&addressdetails=1&extratags=0&namedetails=0`;
-
-      console.log(`🔍 Nominatim API request: ${url}`);
-
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'KPN-EUDR-Compliance-System/1.0 (support@kpn.com)'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`📍 Nominatim response for (${lat}, ${lng}):`, JSON.stringify(data, null, 2));
-
-        // According to Nominatim docs, country is available in multiple places
-        let country = null;
-
-        if (data.address) {
-          // Try different country field names from Nominatim response
-          country = data.address.country ||
-                   data.address.country_code ||
-                   data.address.country_name;
-        }
-
-        // Also check display_name for country information
-        if (!country && data.display_name) {
-          const displayParts = data.display_name.split(', ');
-          country = displayParts[displayParts.length - 1]; // Last part is usually country
-        }
-
-        if (country) {
-          console.log(`✅ Country detected from Nominatim: ${country}`);
-          return country;
-        }
-
-        console.log(`⚠️  No country found in Nominatim response, using coordinate fallback`);
-      } else {
-        console.log(`⚠️  Nominatim API error: ${response.status} ${response.statusText}`);
-      }
-
-      // Fallback to database lookup for adm_boundary_lv0
+      // Primary method: Use PostGIS database lookup for adm_boundary_lv0
       console.log(`🗄️  Checking adm_boundary_lv0 for coordinates (${lat}, ${lng})`);
-      const admResult = await db.query.admBoundaryLv0.findFirst({
-        where: (boundary, { sql }) =>
-          sql`ST_Contains(ST_SetSRID(ST_MakeEnvelope(${lng}-0.01, ${lat}-0.01, ${lng}+0.01, ${lat}+0.01, 4326), 4326), boundary.geom)`,
-        columns: {
-          nam_0: true // Assuming 'nam_0' is the country name column
-        }
-      });
+      
+      try {
+        // Use raw SQL query to check if point is within any country boundary
+        const result = await db.execute(sql`
+          SELECT nam_0 
+          FROM adm_boundary_lv0 
+          WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))
+          LIMIT 1
+        `);
 
-      if (admResult && admResult.nam_0) {
-        console.log(`✅ Country detected from adm_boundary_lv0: ${admResult.nam_0}`);
-        return admResult.nam_0;
-      } else {
-        console.log(`❌ Country not found in adm_boundary_lv0 for coordinates.`);
+        if (result.rows && result.rows.length > 0) {
+          const countryName = result.rows[0].nam_0;
+          console.log(`✅ Country detected from adm_boundary_lv0: ${countryName}`);
+          return countryName as string;
+        }
+      } catch (dbError) {
+        console.log(`❌ Database query error:`, dbError);
       }
 
-      // Enhanced coordinate-based fallback with more precise ranges
+      // Fallback 1: Try with a buffer around the point for more tolerance
+      try {
+        const result = await db.execute(sql`
+          SELECT nam_0 
+          FROM adm_boundary_lv0 
+          WHERE ST_DWithin(geom, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326), 0.01)
+          ORDER BY ST_Distance(geom, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))
+          LIMIT 1
+        `);
+
+        if (result.rows && result.rows.length > 0) {
+          const countryName = result.rows[0].nam_0;
+          console.log(`✅ Country detected from adm_boundary_lv0 with buffer: ${countryName}`);
+          return countryName as string;
+        }
+      } catch (dbError) {
+        console.log(`❌ Database buffer query error:`, dbError);
+      }
+
+      // Fallback 2: Enhanced coordinate-based country detection for Indonesia
       console.log(`🗺️  Using coordinate-based country detection for (${lat}, ${lng})`);
 
-      // Indonesia (more precise bounds)
+      // Indonesia - more precise bounds including Sulawesi
       if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
+        // Special check for Sulawesi region where your plots are located
+        if (lat >= -6 && lat <= 2 && lng >= 118 && lng <= 125) {
+          console.log(`🇮🇩 Detected Indonesia (Sulawesi region) by coordinates`);
+          return 'Indonesia';
+        }
         console.log(`🇮🇩 Detected Indonesia by coordinates`);
         return 'Indonesia';
       }
@@ -3441,9 +3428,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return 'Unknown';
 
     } catch (error) {
-      console.error('Nominatim API or DB lookup error:', error);
+      console.error('Database lookup error:', error);
 
-      // Fallback based on coordinate ranges
+      // Final fallback based on coordinate ranges
       if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
         return 'Indonesia';
       } else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
@@ -3557,22 +3544,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
           continue;
         }
 
-        // Get country using Nominatim API based on geometry centroid
+        // Get country from multiple sources with priority order
         let detectedCountry = 'Unknown';
-        const centroid = getCentroidFromGeometry(feature.geometry);
-
-        if (centroid) {
-          console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
-          detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
-          console.log(`✅ Country detected: ${detectedCountry}`);
-
-          // Add a delay to respect Nominatim rate limits (1 request per second)
-          await new Promise(resolve => setTimeout(resolve, 1100));
-        } else {
-          // Fallback to property-based detection
-          detectedCountry = props['.Distict'] || props['.Aggregator Location'] ||
-                           props.country_name || props.country || props.district ||
-                           props.region || props.province || props.kabupaten || 'Indonesia';
+        
+        // Priority 1: Use country_name from API response if available and not "unknown"
+        if (feature.properties?.country_name && 
+            feature.properties.country_name !== 'unknown' && 
+            feature.properties.country_name !== 'Unknown') {
+          detectedCountry = feature.properties.country_name;
+          console.log(`✅ Country from API response: ${detectedCountry}`);
+        }
+        // Priority 2: Use PostGIS spatial lookup based on geometry centroid
+        else {
+          const centroid = getCentroidFromGeometry(feature.geometry);
+          if (centroid) {
+            console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
+            detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
+            console.log(`✅ Country detected: ${detectedCountry}`);
+            
+            // No delay needed since we're using local database
+          } else {
+            // Priority 3: Fallback to property-based detection for Indonesian data
+            if (props['.Distict'] || props['.Aggregator Location']) {
+              detectedCountry = 'Indonesia';
+              console.log(`🇮🇩 Using Indonesian data format fallback: ${detectedCountry}`);
+            } else {
+              detectedCountry = props.country_name || props.country || props.district ||
+                               props.region || props.province || props.kabupaten || 'Indonesia';
+              console.log(`🌍 Using property fallback: ${detectedCountry}`);
+            }
+          }
         }
 
         // Update feature properties with detected country
@@ -3680,33 +3681,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`🔄 API returned different plot_id: ${feature.properties.plot_id}, keeping original: ${plotId}`);
             }
 
-            // Use detected country from Nominatim API with better fallback handling
+            // Use detected country with proper validation and fallback
             let country = feature.properties?.detected_country || 'Unknown';
 
             console.log(`🌍 Initial country detection: ${country}`);
 
-            // If Nominatim didn't detect country properly, extract from Indonesian properties
-            if (country === 'Unknown' || !country) {
+            // Apply additional validation and fallback logic
+            if (!country || country === 'Unknown' || country === 'unknown') {
+              // Check for Indonesian-specific field patterns
               if (feature.properties?.['.Distict']) {
-                // Indonesian district format: "Bone" -> "Bone, Indonesia"
-                const district = feature.properties['.Distict'];
-                country = `${district}, Indonesia`;
-                console.log(`🇮🇩 Using Indonesian district: ${country}`);
-              } else if (feature.properties?.['.Aggregator Location']) {
-                // Indonesian aggregator location: "Makassar, South Sulawesi - Indonesia"
-                const location = feature.properties['.Aggregator Location'];
-                country = location.includes('Indonesia') ? location : `${location}, Indonesia`;
-                console.log(`🇮🇩 Using Indonesian aggregator location: ${country}`);
-              } else if (feature.properties?.country_name) {
-                country = feature.properties.country_name;
-                console.log(`🌍 Using country_name: ${country}`);
-              } else if (feature.properties?.country) {
-                country = feature.properties.country;
-                console.log(`🌍 Using country: ${country}`);
-              } else {
-                // Default to Indonesia for Indonesian data format
                 country = 'Indonesia';
-                console.log(`🇮🇩 Using default Indonesia fallback`);
+                console.log(`🇮🇩 Detected Indonesia from district field`);
+              } else if (feature.properties?.['.Aggregator Location']) {
+                country = 'Indonesia';
+                console.log(`🇮🇩 Detected Indonesia from aggregator location field`);
+              } else if (feature.properties?.country_name && 
+                        feature.properties.country_name !== 'unknown') {
+                country = feature.properties.country_name;
+                console.log(`🌍 Using country_name from API: ${country}`);
+              } else {
+                // Use centroid-based detection as final fallback
+                const centroid = getCentroidFromGeometry(feature.geometry);
+                if (centroid) {
+                  country = await getCountryFromCoordinates(centroid.lat, centroid.lng);
+                  console.log(`🗺️ Country from coordinates: ${country}`);
+                } else {
+                  country = 'Indonesia'; // Default for most palm oil data
+                  console.log(`🇮🇩 Using Indonesia as final fallback`);
+                }
               }
             }
 
