@@ -1428,8 +1428,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const existingPlot = await storage.getPlotByPlotId(result.plotId);
           if (existingPlot) {
-            // Update existing plot
+            // Update existing plot with supplier association
             await storage.updatePlot(existingPlot.id, { supplierId });
+            console.log(`✓ Updated existing plot ${result.plotId} with supplier ${supplierId}`);
           } else {
             // Create new plot record
             await storage.createPlot({
@@ -1440,9 +1441,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               crop: "oil_palm", // Default crop
               isActive: true
             });
+            console.log(`✓ Created new plot ${result.plotId} with supplier ${supplierId}`);
           }
         } catch (plotError) {
           console.error(`Error handling plot ${result.plotId}:`, plotError);
+          // Continue with other plots even if one fails
         }
       }
 
@@ -1472,7 +1475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         success: true,
-        message: `Successfully associated ${updatedAnalysisResults.length} plots with supplier ${supplier.name}`,
+        message: `Successfully associated ${updatedAnalysisResults.length} plots with supplier ${supplier.name}. Step 2 (Legality Compliance) is now available!`,
         data: {
           updatedResults: updatedAnalysisResults.length,
           supplier: {
@@ -1480,7 +1483,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             name: supplier.name,
             companyName: supplier.companyName
           },
-          plotIds: plotIds
+          plotIds: plotIds,
+          nextStepEnabled: "Step 2 - Legality Compliance"
         }
       });
 
