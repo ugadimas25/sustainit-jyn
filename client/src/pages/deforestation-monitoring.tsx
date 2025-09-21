@@ -1805,6 +1805,13 @@ export default function DeforestationMonitoring() {
               </div>
               <div className="flex gap-2">
                 <Button 
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  Action
+                </Button>
+                <Button 
                   onClick={handleQuickPreview}
                   variant="outline"
                   className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
