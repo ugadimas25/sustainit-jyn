@@ -1424,8 +1424,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const updated = await storage.updateAnalysisResult(result.id, { supplierId });
         updatedAnalysisResults.push(updated);
 
-        // Create or update plot record
+        // Create or update plot record (handle missing supplier_id column gracefully)
         try {
+          // First try to add supplier_id column if it doesn't exist
+          try {
+            await db.execute(sql`ALTER TABLE plots ADD COLUMN IF NOT EXISTS supplier_id VARCHAR REFERENCES suppliers(id)`);
+          } catch (alterError) {
+            console.log('supplier_id column already exists or alter failed, continuing...');
+          }
+
           const existingPlot = await storage.getPlotByPlotId(result.plotId);
           if (existingPlot) {
             // Update existing plot with supplier association
@@ -1477,7 +1484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         success: true,
-        message: `Successfully associated ${updatedAnalysisResults.length} plots with supplier ${supplier.name}. Step 2 (Legality Compliance) is now available!`,
+        message: `Successfully associated ${updatedAnalysisResults.length} plots with supplier ${supplier.name}. Step 3 (Legality Compliance) is now available!`,
         data: {
           updatedResults: updatedAnalysisResults.length,
           supplier: {
@@ -1486,7 +1493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             companyName: supplier.companyName
           },
           plotIds: plotIds,
-          nextStepEnabled: "Step 2 - Legality Compliance"
+          nextStepEnabled: "Step 3 - Legality Compliance"
         }
       });
 
