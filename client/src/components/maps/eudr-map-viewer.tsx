@@ -729,7 +729,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               // Get a wider bounding box to capture more features
               const bounds = map.getBounds();
               const expandedBounds = bounds.pad(1.0); // Expand bounds by 100% to get more features
-              const bbox = `${expandedBounds.getWest()},${expandedBounds.getSouth()},${expandedBounds.getEast()},${expandedBounds.getNorth()}`;
+              const bbox = expandedBounds.getWest() + ',' + expandedBounds.getSouth() + ',' + expandedBounds.getEast() + ',' + expandedBounds.getNorth();
 
               // Enhanced query using correct field name 'iucn_cat' and get ALL categories
               const query = new URLSearchParams({
