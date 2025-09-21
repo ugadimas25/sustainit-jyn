@@ -541,7 +541,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
           <div class="map-container">
             <div id="map"></div>
-            
+
             <div class="map-controls">
               <div class="control-group">
                 <label>Base Layer</label>
@@ -551,7 +551,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   <option value="terrain">Terrain</option>
                 </select>
               </div>
-              
+
               <div class="control-group">
                 <label>Risk Filter</label>
                 <select id="riskFilter">
@@ -560,7 +560,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   <option value="low">Low Risk Only</option>
                 </select>
               </div>
-              
+
               <div class="control-group">
                 <label>Deforestation Layers</label>
                 <div class="layer-controls">
@@ -654,20 +654,20 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Analysis results from React (contains actual polygon geometries)
             const analysisResults = ${JSON.stringify(analysisResults)};
-            
+
             // Add polygons for each plot using actual geometry data
             const polygons = [];
             const bounds = [];
-            
+
             let plotsWithGeometry = 0;
             let plotsWithoutGeometry = 0;
-            
+
             analysisResults.forEach(result => {
               // Check if geometry data is available
               if (!result.geometry || !result.geometry.coordinates || !result.geometry.coordinates[0]) {
                 console.warn('No valid geometry data for plot:', result.plotId, 'geometry:', result.geometry);
                 plotsWithoutGeometry++;
-                
+
                 // Add a fallback marker for plots without geometry (place them in Indonesia center)
                 const fallbackMarker = L.circleMarker([-2.5, 118], {
                   radius: 12,
@@ -678,7 +678,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   fillOpacity: 0.8,
                   className: 'missing-geometry-marker'
                 }).addTo(map);
-                
+
                 // Add popup for missing geometry plots
                 const popupContent = \`
                   <div class="modern-popup-content">
@@ -688,7 +688,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                       </div>
                       <h3 class="popup-title">\${result.plotId}</h3>
                     </div>
-                    
+
                     <div class="popup-body">
                       <div class="popup-row">
                         <span class="popup-label">Status</span>
@@ -705,27 +705,27 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     </div>
                   </div>
                 \`;
-                
+
                 fallbackMarker.bindPopup(popupContent, {
                   maxWidth: 400,
                   minWidth: 300,
                   className: 'modern-popup'
                 });
-                
+
                 return;
               }
-              
+
               plotsWithGeometry++;
-              
+
               const isHighRisk = result.overallRisk === 'HIGH';
               const color = isHighRisk ? '#dc2626' : '#10b981';
-              
+
               try {
                 // Convert coordinates for Leaflet (handle complex polygon structures)
                 let coordinates = result.geometry.coordinates;
-                
+
                 console.log(\`Processing \${result.plotId} geometry:, type: \${result.geometry.type}, coordinates structure:\`, coordinates);
-                
+
                 // Handle different coordinate structures
                 if (result.geometry.type === 'Polygon') {
                   // Standard Polygon: [[[lng, lat], [lng, lat], ...]]
@@ -740,16 +740,16 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   // MultiPolygon: [[[[lng, lat], [lng, lat], ...]], ...]
                   coordinates = coordinates[0][0].map(coord => [coord[1], coord[0]]); // Take first polygon and convert
                 }
-                
+
                 console.log(\`Final coordinates for \${result.plotId}:\`, coordinates.slice(0, 3));
-                
+
                 // Validate coordinates before creating polygon
                 if (!coordinates || coordinates.length < 3) {
                   console.warn('Invalid coordinates for plot:', result.plotId, 'coordinates:', coordinates);
                   plotsWithoutGeometry++;
                   return;
                 }
-                
+
                 // Create polygon with styling
                 const polygon = L.polygon(coordinates, {
                   fillColor: color,
@@ -759,7 +759,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   fillOpacity: 0.4,
                   className: isHighRisk ? 'high-risk-polygon' : 'low-risk-polygon'
                 }).addTo(map);
-                
+
                 // Validate that polygon was created successfully
                 if (!polygon.getBounds || !polygon.getBounds().isValid()) {
                   console.warn('Invalid polygon bounds for plot:', result.plotId);
@@ -771,7 +771,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 plotsWithoutGeometry++;
                 return;
               }
-              
+
               // Add center marker for better visibility
               const center = polygon.getBounds().getCenter();
               const centerMarker = L.circleMarker(center, {
@@ -782,7 +782,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 opacity: 1,
                 fillOpacity: 0.9
               }).addTo(map);
-              
+
               // Add modern popup with enhanced styling
               const popupContent = \`
                 <div class="modern-popup-content">
@@ -792,47 +792,47 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     </div>
                     <h3 class="popup-title">\${result.plotId}</h3>
                   </div>
-                  
+
                   <div class="popup-body">
                     <div class="popup-row">
                       <span class="popup-label">Location</span>
                       <span class="popup-value">\${result.country}</span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">Area</span>
                       <span class="popup-value">\${result.area} ha</span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">Overall Risk</span>
                       <span class="popup-value">
                         <span class="risk-badge \${isHighRisk ? 'risk-high' : 'risk-low'}">\${result.overallRisk}</span>
                       </span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">Compliance Status</span>
                       <span class="popup-value">
                         <span class="compliance-badge \${result.complianceStatus === 'COMPLIANT' ? 'compliance-compliant' : 'compliance-non-compliant'}">\${result.complianceStatus}</span>
                       </span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">GFW Forest Loss</span>
                       <span class="popup-value" style="color: \${result.gfwLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.gfwLoss}</span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">JRC Forest Loss</span>
                       <span class="popup-value" style="color: \${result.jrcLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.jrcLoss}</span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">SBTN Natural Loss</span>
                       <span class="popup-value" style="color: \${result.sbtnLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.sbtnLoss}</span>
                     </div>
-                    
+
                     \${result.highRiskDatasets.length > 0 ? \`
                       <div style="margin-top: 16px;">
                         <div class="popup-label" style="margin-bottom: 8px;">High Risk Indicators</div>
@@ -842,9 +842,8 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                       </div>
                     \` : ''}
                   </div>
-                </div>
-              \`;
-              
+                \`;
+
               // Bind popup with custom options to prevent cut-off
               const popupOptions = {
                 maxWidth: 400,
@@ -856,10 +855,10 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 keepInView: true,
                 className: 'modern-popup'
               };
-              
+
               polygon.bindPopup(popupContent, popupOptions);
               centerMarker.bindPopup(popupContent, popupOptions);
-              
+
               // Add click event to zoom to polygon bounds
               polygon.on('click', function(e) {
                 const bounds = polygon.getBounds();
@@ -868,7 +867,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   maxZoom: 16
                 });
               });
-              
+
               centerMarker.on('click', function(e) {
                 const bounds = polygon.getBounds();
                 map.fitBounds(bounds, {
@@ -876,7 +875,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   maxZoom: 16
                 });
               });
-              
+
               // Add pulsing animation to center marker
               const animation = isHighRisk ? 'pulse-red 2s infinite' : 'pulse-green 2s infinite';
               setTimeout(() => {
@@ -884,20 +883,20 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   centerMarker.getElement().style.animation = animation;
                 }
               }, 100);
-              
-              polygons.push({ 
-                polygon, 
-                centerMarker, 
+
+              polygons.push({
+                polygon,
+                centerMarker,
                 risk: result.overallRisk,
                 bounds: polygon.getBounds()
               });
-              
+
               bounds.push(polygon.getBounds());
             });
 
             // Log polygon rendering summary
             console.log(\`📊 Map Rendering Summary: \${plotsWithGeometry} plots rendered successfully, \${plotsWithoutGeometry} plots with missing/invalid geometry\`);
-            
+
             if (plotsWithoutGeometry > 0) {
               console.warn(\`⚠️  \${plotsWithoutGeometry} plots are missing from the map due to invalid geometry data. These plots will show as orange markers in Indonesia.\`);
             }
@@ -950,33 +949,33 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   deforestationLayers.gfw.addTo(map);
                   console.log('GFW tree cover loss layer added to map');
                   console.log('GFW layer URL template:', deforestationLayers.gfw._url);
-                  
+
                   // Force map refresh to show the layer
                   map.invalidateSize();
-                  
+
                   // Test if tiles are loading
                   deforestationLayers.gfw.on('tileload', function(e) {
                     console.log('GFW tile loaded successfully at:', e.coords);
                   });
-                  
+
                   deforestationLayers.gfw.on('tileerror', function(e) {
                     console.error('GFW tile load error:', e.error, 'at coords:', e.coords);
                   });
-                  
+
                   deforestationLayers.gfw.on('loading', function() {
                     console.log('GFW layer started loading tiles');
                   });
-                  
+
                   deforestationLayers.gfw.on('load', function() {
                     console.log('GFW layer finished loading tiles');
                   });
-                  
+
                   // Force tile loading by triggering a map pan
                   setTimeout(() => {
                     map.panBy([1, 1]);
                     map.panBy([-1, -1]);
                   }, 100);
-                  
+
                 } catch (error) {
                   console.error('Error adding GFW layer:', error);
                 }
@@ -1039,15 +1038,17 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
         if (event.data.type === 'closeMap' || event.data.type === 'backToResults') {
           // Ensure localStorage flags are set correctly for table restoration
           console.log('🔙 Returning from EUDR Map Viewer, setting restore flags');
-          
+
           // Make sure analysis results are preserved
           if (analysisResults && analysisResults.length > 0) {
             localStorage.setItem('currentAnalysisResults', JSON.stringify(analysisResults));
             localStorage.setItem('hasRealAnalysisData', 'true');
           }
-          
+
+          // Set flags to trigger results table display (same as analyze file workflow)
           localStorage.setItem('shouldShowResultsTable', 'true');
-          
+          localStorage.setItem('fromMapViewer', 'true');
+
           // Force a small delay to ensure localStorage is written before navigation
           setTimeout(() => {
             onClose();
@@ -1073,7 +1074,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
           <div className="text-white text-lg">Loading EUDR Map...</div>
         </div>
       )}
-      
+
       <div className="absolute top-4 right-4 z-10">
         <Button
           onClick={onClose}
@@ -1084,7 +1085,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
           <X className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <div ref={mapRef} className="w-full h-full" />
     </div>
   );

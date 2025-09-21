@@ -188,7 +188,7 @@ export default function DeforestationMonitoring() {
         localStorage.setItem('currentAnalysisResults', JSON.stringify(formattedResults));
         localStorage.setItem('hasRealAnalysisData', 'true');
         localStorage.setItem('shouldShowResultsTable', 'true');
-        
+
         // Store metadata for debugging
         const analysisMeta = {
           timestamp: new Date().toISOString(),
@@ -257,7 +257,7 @@ export default function DeforestationMonitoring() {
           localStorage.setItem('currentAnalysisResults', JSON.stringify(fallbackResults));
           localStorage.setItem('hasRealAnalysisData', 'true');
           localStorage.setItem('shouldShowResultsTable', 'true');
-          
+
           // Store metadata for debugging
           const analysisMeta = {
             timestamp: new Date().toISOString(),
@@ -425,6 +425,12 @@ export default function DeforestationMonitoring() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    // Clear relevant localStorage items
+    localStorage.removeItem('currentAnalysisResults');
+    localStorage.removeItem('hasRealAnalysisData');
+    localStorage.removeItem('shouldShowResultsTable');
+    localStorage.removeItem('refreshTableAfterEdit');
+    localStorage.removeItem('fromMapViewer');
   };
 
   const downloadExample = () => {
@@ -493,11 +499,15 @@ export default function DeforestationMonitoring() {
     const storedResults = localStorage.getItem('currentAnalysisResults');
     const hasRealData = localStorage.getItem('hasRealAnalysisData');
     const shouldShowTable = localStorage.getItem('shouldShowResultsTable');
+    const refreshAfterEdit = localStorage.getItem('refreshTableAfterEdit');
+    const fromMapViewer = localStorage.getItem('fromMapViewer');
 
     console.log('🔍 Checking stored data on mount:', {
       hasStoredResults: !!storedResults,
       hasRealData,
       shouldShowTable,
+      refreshAfterEdit,
+      fromMapViewer,
       currentResultsLength: analysisResults.length
     });
 
@@ -505,11 +515,11 @@ export default function DeforestationMonitoring() {
     if (storedResults && hasRealData === 'true') {
       try {
         const parsedResults = JSON.parse(storedResults);
-        
+
         // Always restore results if we have valid data, regardless of current state
         if (parsedResults && parsedResults.length > 0) {
           console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
-          
+
           // Ensure loss area values are preserved as numbers, not strings
           const restoredResults = parsedResults.map((result: any) => ({
             ...result,
@@ -518,25 +528,38 @@ export default function DeforestationMonitoring() {
             sbtnLossArea: result.sbtnLossArea !== undefined ? Number(result.sbtnLossArea) : undefined,
             area: Number(result.area || 0)
           }));
-          
+
           setAnalysisResults(restoredResults);
           setFilteredResults(restoredResults);
 
-          // If we're returning from map viewer, show appropriate message
-          if (shouldShowTable === 'true') {
+          // If we're returning from map viewer or edit polygon, show appropriate message
+          if (shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true') {
+            let source = 'analysis';
+            if (refreshAfterEdit === 'true') {
+              source = 'polygon editor';
+            } else if (fromMapViewer === 'true') {
+              source = 'map viewer';
+            }
+
             toast({
               title: "Results Restored", 
-              description: `Showing ${restoredResults.length} previously analyzed plots`,
+              description: `Showing ${restoredResults.length} previously analyzed plots from ${source}`,
             });
-            // Clear the flag after use
+
+            // Clear the flags after use
             localStorage.removeItem('shouldShowResultsTable');
+            localStorage.removeItem('refreshTableAfterEdit');
+            localStorage.removeItem('fromMapViewer');
           }
         }
       } catch (error) {
         console.error('Error restoring analysis results:', error);
+        // Clear all related flags if restoration fails
         localStorage.removeItem('currentAnalysisResults');
         localStorage.removeItem('hasRealAnalysisData');
         localStorage.removeItem('shouldShowResultsTable');
+        localStorage.removeItem('refreshTableAfterEdit');
+        localStorage.removeItem('fromMapViewer');
       }
     }
   }, []); // Run only on mount
@@ -545,14 +568,16 @@ export default function DeforestationMonitoring() {
   useEffect(() => {
     const handleStorageChange = () => {
       const shouldShowTable = localStorage.getItem('shouldShowResultsTable');
+      const refreshAfterEdit = localStorage.getItem('refreshTableAfterEdit');
+      const fromMapViewer = localStorage.getItem('fromMapViewer');
       const storedResults = localStorage.getItem('currentAnalysisResults');
-      
-      if (shouldShowTable === 'true' && storedResults && analysisResults.length === 0) {
+
+      if ((shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true') && storedResults && analysisResults.length === 0) {
         try {
           const parsedResults = JSON.parse(storedResults);
           if (parsedResults && parsedResults.length > 0) {
             console.log(`🔄 Re-restoring ${parsedResults.length} analysis results from navigation`);
-            
+
             // Ensure loss area values are preserved as numbers
             const restoredResults = parsedResults.map((result: any) => ({
               ...result,
@@ -561,10 +586,12 @@ export default function DeforestationMonitoring() {
               sbtnLossArea: result.sbtnLossArea !== undefined ? Number(result.sbtnLossArea) : undefined,
               area: Number(result.area || 0)
             }));
-            
+
             setAnalysisResults(restoredResults);
             setFilteredResults(restoredResults);
             localStorage.removeItem('shouldShowResultsTable');
+            localStorage.removeItem('refreshTableAfterEdit');
+            localStorage.removeItem('fromMapViewer');
           }
         } catch (error) {
           console.error('Error in storage change handler:', error);
@@ -573,14 +600,14 @@ export default function DeforestationMonitoring() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
+
     // Also check immediately in case we missed a change
     handleStorageChange();
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [analysisResults.length]);
+  }, [analysisResults.length]); // Dependency on analysisResults.length to re-evaluate if needed
 
   // Filter and sort functionality
   useEffect(() => {
@@ -784,6 +811,8 @@ export default function DeforestationMonitoring() {
 
     // Store the selected polygon data for editing
     localStorage.setItem('selectedPolygonForEdit', JSON.stringify(result));
+    // Set a flag to indicate that the table should be refreshed after editing
+    localStorage.setItem('refreshTableAfterEdit', 'true');
 
     toast({
       title: "Starting Edit Mode",
@@ -796,7 +825,8 @@ export default function DeforestationMonitoring() {
 
   const handleViewInMap = (result: AnalysisResult) => {
     localStorage.setItem('selectedPlotForMap', JSON.stringify(result));
-    // Don't set shouldShowResultsTable to false - we want to preserve the table state
+    // Set a flag to indicate that we are coming from the map viewer
+    localStorage.setItem('fromMapViewer', 'true');
     setLocation('/map-viewer');
   };
 
@@ -935,7 +965,7 @@ export default function DeforestationMonitoring() {
               </div>
               <div className="flex gap-2">
                 <Button 
-                  onClick={() => setLocation('/map-viewer')}
+                  onClick={() => handleViewInMap({} as AnalysisResult)} // Pass empty object as placeholder
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Map className="h-4 w-4 mr-2" />
