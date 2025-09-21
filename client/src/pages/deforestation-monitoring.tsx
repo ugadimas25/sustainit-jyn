@@ -323,61 +323,101 @@ export default function DeforestationMonitoring() {
         // Parse and validate GeoJSON structure early
         let parsedGeoJSON;
         try {
-          parsedGeoJSON = JSON.parse(content.toString());
-        } catch (error) {
-          throw new Error('Failed to parse GeoJSON file. Please ensure it is valid JSON.');
+          const contentStr = content.toString().trim();
+          
+          // Check if content is empty
+          if (!contentStr) {
+            throw new Error('File appears to be empty');
+          }
+
+          // Try to parse the JSON
+          parsedGeoJSON = JSON.parse(contentStr);
+          console.log('✅ Successfully parsed JSON file');
+          
+        } catch (parseError) {
+          console.error('JSON parsing error:', parseError);
+          throw new Error('Failed to parse GeoJSON file. Please ensure it is valid JSON format.');
         }
 
-        // Enhanced validation for multiple GeoJSON formats
-        if (parsedGeoJSON.type !== 'FeatureCollection' || !parsedGeoJSON.features || !Array.isArray(parsedGeoJSON.features)) {
-          throw new Error('Invalid GeoJSON format. Must be a FeatureCollection with features array.');
+        // Basic structure validation
+        if (!parsedGeoJSON || typeof parsedGeoJSON !== 'object') {
+          throw new Error('Invalid GeoJSON: File must contain a valid JSON object.');
+        }
+
+        if (parsedGeoJSON.type !== 'FeatureCollection') {
+          throw new Error(`Invalid GeoJSON: Expected FeatureCollection, got ${parsedGeoJSON.type || 'unknown'}.`);
+        }
+
+        if (!parsedGeoJSON.features || !Array.isArray(parsedGeoJSON.features)) {
+          throw new Error('Invalid GeoJSON: Missing or invalid features array.');
         }
 
         if (parsedGeoJSON.features.length === 0) {
           throw new Error('GeoJSON file contains no features.');
         }
 
-        // Flexible validation for different property naming conventions
-        const hasValidFeatures = parsedGeoJSON.features.some((feature: any) => {
+        console.log(`✅ GeoJSON validation passed: Found ${parsedGeoJSON.features.length} features`);
+
+        // Validate features have required structure
+        let validFeatureCount = 0;
+        const invalidFeatures = [];
+
+        for (let i = 0; i < parsedGeoJSON.features.length; i++) {
+          const feature = parsedGeoJSON.features[i];
+          
+          // Basic feature validation
+          if (!feature || typeof feature !== 'object') {
+            invalidFeatures.push(`Feature ${i + 1}: Not a valid object`);
+            continue;
+          }
+
+          if (feature.type !== 'Feature') {
+            invalidFeatures.push(`Feature ${i + 1}: Expected type 'Feature', got '${feature.type}'`);
+            continue;
+          }
+
+          if (!feature.geometry) {
+            invalidFeatures.push(`Feature ${i + 1}: Missing geometry`);
+            continue;
+          }
+
+          // Properties validation (more lenient)
           const props = feature.properties || {};
+          
+          // Check for any kind of identifier
+          const hasId = props.plot_id || props.id || props.Name || props.name || 
+                       props['.Farmers ID'] || props.farmer_id || 
+                       props.country_name || props.farm_name;
 
-          // Check for ID fields (prioritize 'id' field, then other formats)
-          const hasId = props.id || props.plot_id || props['.Farmers ID'] || props.Name || props.farmer_id;
-
-          // Check for area fields (Indonesian or standard format)  
-          const hasArea = props['.Plot size'] || props.area_ha || props.area || props.area_hectares;
-
-          // Check for location fields (Indonesian or standard format)
-          const hasLocation = props['.Distict'] || props['.Aggregator Location'] || 
-                            props.country || props.district || props.region;
-
-          return hasId && (hasArea || hasLocation);
-        });
-
-        if (!hasValidFeatures) {
-          console.warn('Some features may be missing required properties. Supported formats include:');
-          console.warn('- Indonesian format: .Farmers ID, .Plot size, .Distict');
-          console.warn('- Standard format: id/plot_id, area_ha/area, country');
-          toast({
-            title: "Potential Data Issues",
-            description: "Some features might be missing expected properties. Please check the console for details.",
-            variant: "warning"
-          });
-        } else {
-          console.log('✅ GeoJSON format appears valid and contains necessary fields.');
+          if (hasId) {
+            validFeatureCount++;
+          }
         }
+
+        if (validFeatureCount === 0) {
+          console.warn('No features with identifiable properties found');
+          if (invalidFeatures.length > 0) {
+            console.warn('Feature validation issues:', invalidFeatures.slice(0, 5)); // Log first 5 issues
+          }
+          // Don't throw error, just warn - let the API handle it
+        }
+
+        console.log(`✅ Found ${validFeatureCount} valid features out of ${parsedGeoJSON.features.length} total`);
 
         // Log detected format for debugging
         const sampleFeature = parsedGeoJSON.features[0];
         const props = sampleFeature?.properties || {};
-        if (props.id) {
+        
+        if (props.plot_id) {
+          console.log('✅ Detected standard GeoJSON format with "plot_id" field');
+        } else if (props.id) {
           console.log('✅ Detected standard GeoJSON format with "id" field');
         } else if (props['.Farmers ID']) {
           console.log('✅ Detected Indonesian GeoJSON format');
-        } else if (props.plot_id) {
-          console.log('✅ Detected standard GeoJSON format with "plot_id" field');
+        } else if (props.country_name || props.farm_name) {
+          console.log('✅ Detected extended GeoJSON format with country/farm info');
         } else {
-          console.log('ℹ️ Could not definitively detect GeoJSON format, but essential fields seem present.');
+          console.log('ℹ️ GeoJSON format detected but identifier fields may vary');
         }
 
 
