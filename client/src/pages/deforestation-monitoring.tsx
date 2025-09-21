@@ -158,6 +158,11 @@ export default function DeforestationMonitoring() {
             sbtn_loss_area: result.sbtn_loss_area
           });
 
+          // Convert loss areas from hectares to square meters (1 ha = 10,000 m²)
+          const gfwLossHa = parseFloat(result.gfwLossArea || result.gfw_loss_area || '0');
+          const jrcLossHa = parseFloat(result.jrcLossArea || result.jrc_loss_area || '0');
+          const sbtnLossHa = parseFloat(result.sbtnLossArea || result.sbtn_loss_area || '0');
+
           return {
             plotId: result.plotId,
             country: result.country,
@@ -168,9 +173,9 @@ export default function DeforestationMonitoring() {
             jrcLoss: result.jrcLoss || 'UNKNOWN',
             sbtnLoss: result.sbtnLoss || 'UNKNOWN',
             highRiskDatasets: result.highRiskDatasets || [],
-            gfwLossArea: parseFloat(result.gfwLossArea || result.gfw_loss_area || '0'),
-            jrcLossArea: parseFloat(result.jrcLossArea || result.jrc_loss_area || '0'),
-            sbtnLossArea: parseFloat(result.sbtnLossArea || result.sbtn_loss_area || '0'),
+            gfwLossArea: gfwLossHa * 10000, // Convert to m²
+            jrcLossArea: jrcLossHa * 10000, // Convert to m²
+            sbtnLossArea: sbtnLossHa * 10000, // Convert to m²
             geometry: result.geometry // This contains the actual polygon coordinates
           };
         });
@@ -213,9 +218,9 @@ export default function DeforestationMonitoring() {
               gfwLossPercent: `${(gfwLossPercent * 100).toFixed(1)}%`,
               jrcLossPercent: `${(jrcLossPercent * 100).toFixed(1)}%`,
               sbtnLossPercent: `${(sbtnLossPercent * 100).toFixed(1)}%`,
-              gfwLossArea: `${gfwLossArea.toFixed(4)} ha`,
-              jrcLossArea: `${jrcLossArea.toFixed(4)} ha`,
-              sbtnLossArea: `${sbtnLossArea.toFixed(4)} ha`
+              gfwLossArea: `${(gfwLossArea * 10000).toFixed(0)} m²`,
+              jrcLossArea: `${(jrcLossArea * 10000).toFixed(0)} m²`,
+              sbtnLossArea: `${(sbtnLossArea * 10000).toFixed(0)} m²`
             });
 
             return {
@@ -228,9 +233,9 @@ export default function DeforestationMonitoring() {
               jrcLoss: (props.jrc_loss?.jrc_loss_area || 0) > 0 ? 'TRUE' : 'FALSE', 
               sbtnLoss: (props.sbtn_loss?.sbtn_loss_area || 0) > 0 ? 'TRUE' : 'FALSE',
               highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-              gfwLossArea: gfwLossArea, // Already calculated in hectares
-              jrcLossArea: jrcLossArea, // Already calculated in hectares
-              sbtnLossArea: sbtnLossArea, // Already calculated in hectares
+              gfwLossArea: gfwLossArea * 10000, // Convert hectares to m²
+              jrcLossArea: jrcLossArea * 10000, // Convert hectares to m²
+              sbtnLossArea: sbtnLossArea * 10000, // Convert hectares to m²
               geometry: feature.geometry
             };
           });
@@ -585,9 +590,9 @@ export default function DeforestationMonitoring() {
     if (lossArea !== undefined && lossArea !== null) {
       const areaValue = Number(lossArea);
       if (areaValue > 0) {
-        return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(2)} ha</Badge>;
+        return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(0)} m²</Badge>;
       } else {
-        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(2)} ha</Badge>;
+        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(0)} m²</Badge>;
       }
     }
 
@@ -595,7 +600,7 @@ export default function DeforestationMonitoring() {
     if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
       return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
     } else {
-      return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
+      return <Badge className="bg-green-100 text-green-800">0 m²</Badge>;
     }
   };
 
@@ -1028,7 +1033,7 @@ export default function DeforestationMonitoring() {
                         onClick={() => handleSort('gfwLoss')}
                       >
                         <div className="flex items-center gap-2">
-                          GFW Loss
+                          GFW Loss (m²)
                           {getSortIcon('gfwLoss')}
                         </div>
                       </th>
@@ -1037,7 +1042,7 @@ export default function DeforestationMonitoring() {
                         onClick={() => handleSort('jrcLoss')}
                       >
                         <div className="flex items-center gap-2">
-                          JRC Loss
+                          JRC Loss (m²)
                           {getSortIcon('jrcLoss')}
                         </div>
                       </th>
@@ -1046,7 +1051,7 @@ export default function DeforestationMonitoring() {
                         onClick={() => handleSort('sbtnLoss')}
                       >
                         <div className="flex items-center gap-2">
-                          SBTN Loss
+                          SBTN Loss (m²)
                           {getSortIcon('sbtnLoss')}
                         </div>
                       </th>
