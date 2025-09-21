@@ -1432,13 +1432,13 @@ export default function DeforestationMonitoring() {
                         };
                       },
                       onEachFeature: function(feature, layer) {
-                        layer.bindPopup(`
+                        layer.bindPopup(\`
                           <div style="padding: 8px;">
                             <h4>🏞️ Indonesian Peatland</h4>
-                            <p><strong>Type:</strong> ${feature.properties.Kubah_GBT}</p>
-                            <p><strong>Province:</strong> ${feature.properties.Province}</p>
+                            <p><strong>Type:</strong> \${feature.properties.Kubah_GBT}</p>
+                            <p><strong>Province:</strong> \${feature.properties.Province}</p>
                           </div>
-                        `);
+                        \`);
                       }
                     });
                   }
