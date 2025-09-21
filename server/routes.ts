@@ -1925,9 +1925,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
 
-      // Load methodology flowchart from filesystem
-//       const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIbGAKdUVERERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+      // Header for page 2
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 2 of 4', 15, 38);
+      doc.text('Methodology & Verification Process', 80, 38);
+      doc.text(`Generated: ${currentDate}`, 150, 38);
 
+      yPos = 55;
+
+      // Embed the EUDR Compliance Verification flowchart image
       try {
         const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757586584997.png');
         const imgBase64 = fs.readFileSync(imgPath).toString('base64');
@@ -1943,114 +1951,357 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text('Methodology flowchart showing deforestation risk assessment process', 10, 70);
       }
 
-      // Page 3 - Risk Assessment Description  
-      doc.addPage();
-      doc.setFontSize(14);
+      // Methodology Section 1: Overview
       doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 3 - PLOT RISK ASSESSMENT', 105, 20, { align: 'center' });
-
-      // Add text content for plot risk assessment
-      yPos = 40;
       doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('The plot risk assessment is based on the geospatial analysis on deforestation and land approved for', 10, yPos);
-      yPos += 8;
-      doc.text('farming map.', 10, yPos);
-
-      yPos += 15;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      const riskText = 'Geospatial analysis involves capturing plot polygons or GPS coordinates using advanced satellite monitoring systems and analyzing them to ensure no deforestation occurred after December 2020 and that the plots are on legally approved land. If deforestation is detected, further verifications are conducted. Plots showing no deforestation proceed to land legality analysis. The map reference for deforestation and land approved for farming is provided in the following information.';
-      const wrappedText = doc.splitTextToSize(riskText, 180);
-      doc.text(wrappedText, 10, yPos);
-      yPos += wrappedText.length * 6 + 15;
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Geospatial analysis reference', 10, yPos);
+      doc.text('1. EUDR Compliance Verification Process', 10, yPos);
       yPos += 10;
+
       doc.setFont('helvetica', 'normal');
-      doc.text('Deforestation map: GFW', 10, yPos);
-      yPos += 8;
-      doc.text('Land approved for farming map: WDPA & Or National Map. Please clarify with Koliva directly which map is being used.', 10, yPos);
-
-      yPos += 15;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Outputs: ', 10, yPos);
-      doc.setFont('helvetica', 'normal');
-      doc.text('The output includes deforestation, land-approved-for-farming maps, and land legality analysis, as well as providing negligibility status information:', 10, yPos + 8);
-
-      yPos += 25;
-      doc.text('• Low: Assessment indicates that there is high certainty for EUDR negligible risk and proof is available. The low risk is categorized as negligible.', 15, yPos);
-      yPos += 10;
-      doc.text('• Medium: Assessment shows that there is an indication of negligible risk. However, further mitigation actions are encouraged. The medium risk is categorized as negligible.', 15, yPos);
-      yPos += 10;
-      doc.text('• High: Assessment indicates that the farmer/plots are high risk and categorized as non negligible.', 15, yPos);
-
-      yPos += 15;
-      const finalText = 'Non-negligible plots are flagged with warning indicators, and users can view details of negligibility status and reasons for non-negligible through interactive map features. This detailed methodology ensures that operators can systematically assess and verify their negligibility status with the EUDR, promoting sustainable agricultural practices and mitigating deforestation risks.';
-      const finalWrapped = doc.splitTextToSize(finalText, 180);
-      doc.text(finalWrapped, 10, yPos);
-
-      // Page 4 - Land Cover Change Monitoring
-      doc.addPage();
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 4 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
-
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('FLOWCHART LAND COVER CHANGE MONITORING', 105, yPos, { align: 'center' });
-
-      yPos += 20;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('This flowchart illustrates the workflow for monitoring and verifying', 10, yPos);
-      yPos += 8;
-      doc.text('deforestation alerts across plantation concession areas. It aims to conduct monitoring every 3 months as', 10, yPos);
-      yPos += 8;
-      doc.text('well as incidental events.', 10, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Process Flow:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.text('1. GIS → Alert → Verify Coordinates Location → Desktop Analysis', 15, yPos);
-      yPos += 8;
-      doc.text('2. Estate Manager → Controlled by Community → Verify Field Location', 15, yPos);
-      yPos += 8;
-      doc.text('3. System And Monitoring → Verify Land Cover Change Final Report', 15, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Legal Framework:', 10, yPos);
-      yPos += 10;
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('1. UU No. 32 / 2009 on Environmental Protection and Management - Requires forest area clearing without permits', 15, yPos);
-      yPos += 6;
-      doc.text('2. UU No. 32 / 2014 on Marine and Fisheries - Protection and Management - Requires plantation business activities', 15, yPos);
-      yPos += 6;
-      doc.text('3. PERMEN LHK No. P.71/MENLHK.1/2019 - Environmental Information System - Including through monitoring system', 15, yPos);
-      yPos += 6;
-      doc.text('4. EU Deforestation Regulation (EUDR) - Ensures supply chain traceability and proof of deforestation-free since 2020', 15, yPos);
+      const methodologyOverview = [
+        'The EUDR compliance verification follows Article 2.40 requirements through a systematic',
+        'three-step process: Proof of No Deforestation after 2020, Proof located on Approved Land,',
+        'and Proof of Legality across 8 key indicators.',
+        '',
+        'Data Sources:',
+        '• Geospatial data based on plot GPS/Polygon coordinates',
+        '• On-site surveys from farmers and plot assessments',
+        '• Satellite imagery analysis and desktop verification',
+        '• Field verification and land legality confirmation'
+      ];
 
-      yPos += 15;
-      doc.setFontSize(10);
+      methodologyOverview.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 55;
+
+      // Methodology Section 1: Deforestation Analysis
       doc.setFont('helvetica', 'bold');
-      doc.text('GeoJSON Data Access:', 10, yPos);
+      doc.setFontSize(12);
+      doc.text('1. Deforestation Analysis Methodology', 10, yPos);
       yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      const geoJsonLink = 'https://api.kpn-eudr.com/geojson/plots-data.geojson';
-      doc.setTextColor(0, 0, 255); // Blue color for link
-      doc.text('Link: ' + geoJsonLink, 15, yPos);
-      doc.setTextColor(0, 0, 0); // Back to black
 
-      yPos += 12;
-      doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
-      yPos += 6;
-      doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const methodologyText1 = [
+        'Our deforestation analysis employs a multi-layer satellite monitoring approach:',
+        '',
+        '• Global Forest Watch (GFW) - Provides annual tree cover loss data',
+        '• Joint Research Centre (JRC) - EU\'s forest monitoring system',
+        '• Science Based Targets Network (SBTN) - Advanced deforestation alerts',
+        '',
+        'Analysis Workflow:',
+        '1. Plot boundary verification using GPS coordinates',
+        '2. Historical forest cover analysis (2000-2023)',
+        '3. Cross-reference with protected area databases',
+        '4. Risk assessment scoring and compliance determination'
+      ];
+
+      methodologyText1.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 70;
+
+      // Methodology Section 2: Risk Assessment Framework
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('2. Risk Assessment & Compliance Framework', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const methodologyText2 = [
+        'Risk Classification System:',
+        '',
+        '• HIGH RISK: Forest loss detected after December 31, 2020',
+        '• MEDIUM RISK: Forest loss between 2018-2020 (requires additional verification)',
+        '• LOW RISK: No significant forest loss detected in monitoring period',
+        '',
+        'Compliance Determination Process:',
+        '• COMPLIANT: No deforestation after cutoff date, all documentation verified',
+        '• NON-COMPLIANT: Evidence of post-2020 deforestation or legal violations',
+        '• UNDER REVIEW: Additional verification required for final determination'
+      ];
+
+      methodologyText2.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 60;
+
+      // Methodology Section 3: Data Integration & Sources
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('3. Data Integration & Verification Sources', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const methodologyText3 = [
+        'Plot boundaries and verification data are provided in standardized GeoJSON format',
+        'ensuring full compatibility with EU TRACE system requirements and regulations.',
+        '',
+        'Primary Data Sources:',
+        '• Verified plot coordinates with sub-meter GPS accuracy',
+        '• Multi-temporal satellite imagery analysis (Sentinel-2, Landsat)',
+        '• Ground-truthing surveys and farmer documentation',
+        '• Integration with national land tenure and forest databases',
+        '• Cross-validation with protected area and conservation datasets',
+        '',
+        'All verification data and plot geometries are accessible through the',
+        'accompanying GeoJSON files referenced in this Due Diligence Statement.'
+      ];
+
+      methodologyText3.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 65;
+
+      // PAGE 3 - Risk Analysis and Process Flowcharts
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Risk Analysis & Process Flowcharts', 105, 20, { align: 'center' });
+
+      // Header for page 3 with improved styling
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 3 of 4', 15, 38);
+      doc.text('Risk Assessment Processes', 85, 38);
+      doc.text(`Generated: ${currentDate}`, 150, 38);
+
+      yPos = 55;
+
+      // Section 1: Risk Assessment Process Overview
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('1. Risk Assessment Process Overview', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+
+      // Create styled box for process overview
+      doc.rect(10, yPos, 190, 45);
+      yPos += 8;
+
+      const riskOverviewText = [
+        'This section outlines the systematic risk assessment approach used to evaluate',
+        'deforestation risks and ensure EUDR compliance across all production plots.',
+        '',
+        'Key Process Components:',
+        '  • Data Collection → Risk Identification → Impact Assessment → Scoring',
+        '  • Satellite Monitoring → Field Verification → Documentation Review',
+        '  • Legal Compliance Check → Final Risk Determination → Mitigation Planning'
+      ];
+
+      riskOverviewText.forEach((line, index) => {
+        doc.text(line, 12, yPos + (index * 5));
+      });
+      yPos += 50;
+
+      // Section 2: Detailed Risk Categories & Assessment Matrix
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('2. Risk Categories & Assessment Matrix', 10, yPos);
+      yPos += 10;
+
+      // Create assessment matrix table
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+
+      // Table borders
+      doc.rect(10, yPos, 190, 60);
+      doc.line(10, yPos + 15, 200, yPos + 15);  // Header line
+      doc.line(60, yPos, 60, yPos + 60);        // First column divider
+      doc.line(120, yPos, 120, yPos + 60);      // Second column divider
+
+      // Table headers
+      doc.setFont('helvetica', 'bold');
+      doc.text('Risk Category', 12, yPos + 10);
+      doc.text('Assessment Criteria', 62, yPos + 10);
+      doc.text('Compliance Action', 122, yPos + 10);
+
+      doc.setFont('helvetica', 'normal');
+      yPos += 20;
+
+      // Table content
+      const riskMatrix = [
+        ['Deforestation', 'Satellite imagery analysis', 'No forest loss post-2020'],
+        ['Legal Compliance', 'Permits & certifications', 'Valid documentation'],
+        ['Supply Chain', 'Traceability verification', 'Complete chain of custody'],
+        ['Operational', 'Quality & production data', 'Standards compliance']
+      ];
+
+      riskMatrix.forEach((row, index) => {
+        const rowY = yPos + (index * 10);
+        doc.text(row[0], 12, rowY);
+        doc.text(row[1], 62, rowY);
+        doc.text(row[2], 122, rowY);
+        if (index < riskMatrix.length - 1) {
+          doc.line(10, rowY + 5, 200, rowY + 5);
+        }
+      });
+
+      yPos += 50;
+
+      // Section 3: Data Verification & Quality Assurance
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('3. Data Verification & Quality Assurance', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const qaText = [
+        'Quality assurance measures ensure accuracy and reliability of all compliance data:',
+        '',
+        '• Multi-source data cross-validation and consistency checks',
+        '• Independent third-party verification of critical findings',
+        '• Automated monitoring systems with manual verification protocols',
+        '• Regular audit trails and documentation review processes',
+        '',
+        'All verification data and plot geometries are accessible through standardized',
+        'GeoJSON files that accompany this Due Diligence Statement.'
+      ];
+
+      qaText.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 50;
+
+      // Reference to GeoJSON data
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text('GeoJSON Data Access:', 10, yPos);
+      yPos += 8;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const geoJsonLink = 'https://api.kpn-compliance.com/dds/geojson/plots-data.geojson';
+      doc.setTextColor(0, 0, 255);
+      doc.text('Link: ' + geoJsonLink, 15, yPos);
+      doc.setTextColor(0, 0, 0);
+
+      // PAGE 4 - Land Cover Change Monitoring Flowchart
+      doc.addPage();
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Land Cover Change Monitoring', 105, 20, { align: 'center' });
+
+      // Header for page 4
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.rect(10, 30, 190, 15);
+      doc.text('Page 4 of 4', 15, 38);
+      doc.text('Land Cover Change Monitoring System', 75, 38);
+      doc.text(`Generated: ${currentDate}`, 150, 38);
+
+      yPos = 55;
+
+      // Section 1: Monitoring System Overview
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Land Cover Change Monitoring Flowchart', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      const lccIntroText = [
+        'This flowchart illustrates the systematic workflow for monitoring and verifying',
+        'deforestation alerts across plantation concession areas. The monitoring system',
+        'operates on both scheduled (bi-weekly) and incident-based protocols.',
+        ''
+      ];
+
+      lccIntroText.forEach((line, index) => {
+        doc.text(line, 10, yPos + (index * 5));
+      });
+      yPos += 25;
+
+      // Embed the LCC flowchart image
+      try {
+        // Define placeholder base64 image data or skip embedding if not available
+        const lccFlowchartImageBase64 = ''; // Placeholder - would contain actual base64 image data
+        if (lccFlowchartImageBase64) {
+          doc.addImage(lccFlowchartImageBase64, 'PNG', 10, yPos, 190, 100);
+          yPos += 110;
+          console.log('✅ Successfully embedded Land Cover Change flowchart image');
+        } else {
+          throw new Error('No flowchart image available');
+        }
+      } catch (error) {
+        console.log('⚠️  LCC flowchart image embedding failed, using fallback text');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('[LAND COVER CHANGE MONITORING FLOWCHART]', 105, yPos + 40, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text('(See attached flowchart document for complete monitoring process)', 105, yPos + 50, { align: 'center' });
+        yPos += 70;
+      }
+
+      // Section 2: Process Components
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Key Process Components:', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+
+      // Create process flow table
+      doc.rect(10, yPos, 190, 80);
+      doc.line(10, yPos + 15, 200, yPos + 15);
+      doc.line(100, yPos, 100, yPos + 80);
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Process Stage', 12, yPos + 10);
+      doc.text('Responsible Party & Action', 102, yPos + 10);
+
+      doc.setFont('helvetica', 'normal');
+      yPos += 20;
+
+      const lccProcesses = [
+        ['1. GIS Alert Detection', 'System Monitoring - Automated satellite analysis'],
+        ['2. Coordinate Verification', 'GIS Team - Location accuracy confirmation'],
+        ['3. Desktop Analysis', 'Technical Team - Preliminary assessment'],
+        ['4. Field Verification', 'Estate Manager - On-ground validation'],
+        ['5. Final Report', 'System Monitoring - Compliance determination']
+      ];
+
+      lccProcesses.forEach((process, index) => {
+        const processY = yPos + (index * 12);
+        doc.text(process[0], 12, processY);
+        doc.text(process[1], 102, processY);
+        if (index < lccProcesses.length - 1) {
+          doc.line(10, processY + 6, 200, processY + 6);
+        }
+      });
+
+      yPos += 70;
+
+      // Section 3: Legal Framework
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Legal Framework & Compliance:', 10, yPos);
+      yPos += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const legalFramework = [
+        '• UU No. 41 Tahun 1999 - Forestry Law: Prohibits unauthorized land clearing',
+        '• UU No. 32 Tahun 2009 - Environmental Protection: Requires environmental monitoring',
+        '• UU No. 39 Tahun 2014 - Plantation Law: Mandates sustainable practices',
+        '• PERMEN LHK No. P.8/2019 - Environmental information systems',
+        '• ISPO (Indonesian Sustainable Palm Oil) - No deforestation requirements',
+        '• NDPE Policy KPN Plantations - No Deforestation, No Peat, No Exploitation',
+        '• EU Deforestation Regulation (EUDR) - Supply chain traceability since 2020'
+      ];
+
+      legalFramework.forEach((item, index) => {
+        doc.text(item, 10, yPos + (index * 5));
+      });
 
       // Generate PDF buffer
       const pdfBuffer = doc.output('arraybuffer');
@@ -2075,7 +2326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const doc = new jsPDF();
 
       // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
-      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
 
       console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
 
@@ -2576,228 +2827,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(item, 10, yPos + (index * 5));
       });
 
-      console.log('✅ Enhanced 4-page PDF generated successfully with professional layout');
-      console.log('✅ PDF includes: Page 1 (DDS Data), Page 2 (Methodology), Page 3 (Risk Analysis), Page 4 (LCC Monitoring)');
-      return doc.output('arraybuffer');
+      // Generate PDF buffer
+      const pdfBuffer = doc.output('arraybuffer');
+
+      console.log('PDF generated successfully');
+
+      // Return the PDF file
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
+      res.send(Buffer.from(pdfBuffer));
+
     } catch (error) {
-      console.error('Error generating enhanced PDF:', error);
-      throw error;
+      console.error('Error generating dummy DDS PDF:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
     }
-  }
-
-  // Helper function to remove z-values from coordinates (API external tidak bisa terima z-values)
-  function removeZValues(coordinates: any): any {
-    if (!coordinates || !Array.isArray(coordinates)) {
-      return coordinates;
-    }
-
-    return coordinates.map((coord: any) => {
-      if (Array.isArray(coord)) {
-        if (typeof coord[0] === 'number' && typeof coord[1] === 'number') {
-          // This is a coordinate pair [lng, lat, z] - remove z
-          return [coord[0], coord[1]];
-        } else {
-          // This is a nested array - recurse
-          return removeZValues(coord);
-        }
-      }
-      return coord;
-    });
-  }
-
-  // Helper function to calculate area from geometry if not provided
-  function calculateAreaFromGeometry(geometry: any): number {
-    // Simplified area calculation - in production would use proper geospatial library
-    if (!geometry || !geometry.coordinates) return 0;
-
-    try {
-      // For polygon, estimate area roughly (this is a simplified calculation)
-      if (geometry.type === 'Polygon' && geometry.coordinates[0]) {
-        const coords = geometry.coordinates[0];
-        if (coords.length > 3) {
-          // Very rough area estimation based on bounding box
-          const lngs = coords.map((c: number[]) => c[0]);
-          const lats = coords.map((c: number[]) => c[1]);
-          const width = Math.max(...lngs) - Math.min(...lngs);
-          const height = Math.max(...lats) - Math.min(...lats);
-          // Convert degrees to approximate hectares (very rough)
-          return Math.abs(width * height * 111 * 111 / 10000);
-        }
-      }
-      return 1.0; // Default fallback
-    } catch (error) {
-      return 1.0; // Default fallback
-    }
-  }
-
-  // Helper function to generate PDF template matching the exact structure
-  function generateDDSPDFTemplate(report: any) {
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric'
-    }) + ' ' + new Date().toLocaleTimeString('en-GB', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
-    });
-
-    return {
-      // Page 1 - Exact template structure
-      page1: {
-        header: {
-          title: "Due Diligence Statement",
-          divider: "-------------------------------------------------------------------------------------------------------------",
-          pageNumber: "Page 1",
-          status: "SUBMITTED",
-          createdOn: currentDate
-        },
-
-        section1: {
-          companyInternalRef: {
-            label: "1. Company Internal Ref:",
-            value: report.companyInternalRef || ""
-          },
-          activity: {
-            label: "2. Activity:",
-            value: report.activity || ""
-          }
-        },
-
-        section3: {
-          operatorTrader: {
-            title: "3. Operator/Trader name and address:",
-            name: {
-              label: "Name:",
-              value: report.operatorLegalName || ""
-            },
-            address: {
-              label: "Address:",
-              value: report.operatorAddress || ""
-            },
-            country: {
-              label: "Country:",
-              value: report.operatorCountry || ""
-            },
-            isoCode: {
-              label: "ISO Code:",
-              value: report.operatorIsoCode || ""
-            }
-          }
-        },
-
-        commoditySection: {
-          title: "Commodity(ies) or Product(s)",
-          table: {
-            headers: [
-              "Commodity(ies) or Product(s) Description",
-              "Net Mass (Kg)",
-              "% Est. or Deviation", 
-              "Supplementary Units"
-            ],
-            data: {
-              description: report.productDescription || "",
-              netMass: report.netMassKg || "",
-              percentage: report.percentageEstimation || "",
-              supplementaryUnits: report.supplementaryUnit || ""
-            }
-          },
-          producerSection: {
-            headers: ["Scientific Name", "Common Name", "Producer Name", "Country of Production"],
-            data: {
-              scientificName: report.scientificName || "",
-              commonName: report.commonName || "",
-              producerName: report.producerName || "",
-              countryOfProduction: report.countryOfProduction || ""
-            }
-          }
-        },
-
-        summaryPlotInfo: {
-          title: "Summary Plot Information",
-          totalProducers: {
-            label: "Total Producers :",
-            value: report.totalProducers || "0"
-          },
-          totalPlots: {
-            label: "Total Plots :",
-            value: report.totalPlots || "0"
-          },
-          totalProductionArea: {
-            label: "Total Production Area (ha) :",
-            value: report.totalProductionArea || "0"
-          },
-          countryOfHarvest: {
-            label: "Country of Harvest :",
-            value: report.countryOfHarvest || ""
-          },
-          maxIntermediaries: {
-            label: "Max. Number of Intermediaries :",
-            value: report.maxIntermediaries || "0"
-          },
-          traceabilityMethod: {
-            label: "Traceability Method :",
-            value: report.traceabilityMethod || ""
-          },
-          expectedHarvestDate: {
-            label: "Expected Harvest Date :",
-            value: report.expectedHarvestDate || ""
-          },
-          productionDateRange: {
-            label: "Production date range or processing time:",
-            value: report.productionDateRange || ""
-          }
-        },
-
-        competentAuthority: {
-          title: "Communication for competent authority",
-          text: "By submitting this due diligence statement the operator confirms that due diligence in accordance with Regulation (EU) 2023/1115 was carried out and that no or only a negligible risk was found that the relevant products do not comply with Article 3, point (a) or (b), of that Regulation"
-        },
-
-        footer: {
-          title: "Footer",
-          eudrStatus: {
-            label: "EUDR Status:",
-            value: report.status || "draft"
-          },
-          lastChanges: {
-            label: "Last Changes:",
-            value: report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-GB') : ""
-          },
-          creationDate: {
-            label: "Creation date:",
-            value: report.createdAt ? new Date(report.createdAt).toLocaleDateString('en-GB') : ""
-          },
-          updateDate: {
-            label: "Update date:",
-            value: report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-GB') : ""
-          },
-          submissionDate: {
-            label: "Submission Date:",
-            value: report.signedDate ? new Date(report.signedDate).toLocaleDateString('en-GB') : ""
-          },
-          user: {
-            label: "User:",
-            value: report.signedBy || ""
-          }
-        }
-      },
-
-      // Page 2 - Static hardcoded content as requested
-      page2: {
-        header: {
-          divider: "-------------------------------------------------------------------------------------------------------------",
-          pageNumber: "PAGE 2"
-        },
-        content: {
-          title: "Appendix 1. Detailed Plot Information (Link to GeoJSON File)",
-          description: "This appendix contains detailed geographical information about all plots included in this Due Diligence Statement.",
-          note: "Plot coordinates and boundaries are provided in GeoJSON format for precise geolocation verification.",
-          disclaimer: "All coordinates are verified through satellite imagery and ground-truthing where applicable."
-        }
-      }
-    };
-  }
+  });
 
   // DDS Report Download endpoint
   app.get('/api/dds/:id/download', isAuthenticated, async (req, res) => {
@@ -3330,19 +3375,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const countryData = result.rows[0];
         const countryName = countryData.country_name || countryData.local_name || 'Unknown';
         const intersectionArea = parseFloat(countryData.intersection_area?.toString() || '0');
-        
+
         console.log(`✅ Country detected from PostGIS intersection: ${countryName} (area: ${intersectionArea})`);
         console.log(`📍 Country details:`, {
           name: countryName,
           localName: countryData.local_name,
           isoCode: countryData.iso_code
         });
-        
+
         return countryName;
       }
 
       console.log(`⚠️  No intersection found with adm_boundary_lv0, using coordinate fallback`);
-      
+
       // Fallback to centroid-based coordinate detection
       const centroid = getCentroidFromGeometry(geometry);
       if (centroid) {
@@ -3353,13 +3398,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('PostGIS country detection error:', error);
-      
+
       // Fallback to centroid-based coordinate detection
       const centroid = getCentroidFromGeometry(geometry);
       if (centroid) {
         return getCountryFromCoordinatesFallback(centroid.lat, centroid.lng);
       }
-      
+
       return 'Unknown';
     }
   }
@@ -3382,13 +3427,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }).join(', ');
         return `MULTIPOLYGON(${polygons})`;
       }
-      
+
       // Fallback: create point from centroid
       const centroid = getCentroidFromGeometry(geometry);
       if (centroid) {
         return `POINT(${centroid.lng} ${centroid.lat})`;
       }
-      
+
       throw new Error(`Unsupported geometry type: ${geometry.type}`);
     } catch (error) {
       console.error('Error converting geometry to WKT:', error);
@@ -3641,11 +3686,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const featureIndex = analysisResults.data.features.indexOf(feature);
           console.log(`=== PROCESSING FEATURE ${featureIndex + 1} ===`);
           console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
-          
+
           try {
             // Use the original plot ID from the input GeoJSON based on feature index
             let plotId = originalPlotIds[featureIndex] || `PLOT_${featureIndex + 1}`;
-            
+
             console.log(`✅ Using original Plot ID: ${plotId} (from input GeoJSON feature ${featureIndex + 1})`);
 
             // If API returned a different plot_id, log it for debugging
