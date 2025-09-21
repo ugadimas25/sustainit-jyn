@@ -1925,321 +1925,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
 
-      // Add text content for plot risk assessment
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('The plot risk assessment is based on the geospatial analysis on deforestation and land approved for', 10, yPos);
-      yPos += 8;
-      doc.text('farming map.', 10, yPos);
-
-      yPos += 15;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      const riskText = 'Geospatial analysis involves capturing plot polygons or GPS coordinates using advanced satellite monitoring systems and analyzing them to ensure no deforestation occurred after December 2020 and that the plots are on legally approved land. If deforestation is detected, further verifications are conducted. Plots showing no deforestation proceed to land legality analysis. The map reference for deforestation and land approved for farming is provided in the following information.';
-      const wrappedText = doc.splitTextToSize(riskText, 180);
-      doc.text(wrappedText, 10, yPos);
-      yPos += wrappedText.length * 6 + 15;
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Geospatial analysis reference', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.text('Deforestation map: GFW', 10, yPos);
-      yPos += 8;
-      doc.text('Land approved for farming map: WDPA & Or National Map. Please clarify with Koliva directly which map is being used.', 10, yPos);
-
-      yPos += 15;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Outputs: ', 10, yPos);
-      doc.setFont('helvetica', 'normal');
-      doc.text('The output includes deforestation, land-approved-for-farming maps, and land legality analysis, as well as providing negligibility status information:', 10, yPos + 8);
-
-      yPos += 25;
-      doc.text('• Low: Assessment indicates that there is high certainty for EUDR negligible risk and proof is available. The low risk is categorized as negligible.', 15, yPos);
-      yPos += 10;
-      doc.text('• Medium: Assessment shows that there is an indication of negligible risk. However, further mitigation actions are encouraged. The medium risk is categorized as negligible.', 15, yPos);
-      yPos += 10;
-      doc.text('• High: Assessment indicates that the farmer/plots are high risk and categorized as non negligible.', 15, yPos);
-
-      yPos += 15;
-      const finalText = 'Non-negligible plots are flagged with warning indicators, and users can view details of negligibility status and reasons for non-negligible through interactive map features. This detailed methodology ensures that operators can systematically assess and verify their negligibility status with the EUDR, promoting sustainable agricultural practices and mitigating deforestation risks.';
-      const finalWrapped = doc.splitTextToSize(finalText, 180);
-      doc.text(finalWrapped, 10, yPos);
-
-      // Page 3 - Land Cover Change Monitoring Flowchart
-      doc.addPage();
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 3 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
-
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('FLOWCHART LAND COVER CHANGE MONITORING', 105, yPos, { align: 'center' });
-
-      yPos += 20;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('This flowchart illustrates the workflow for monitoring and verifying', 10, yPos);
-      yPos += 8;
-      doc.text('deforestation alerts across plantation concession areas. It aims to conduct monitoring every 3 months as', 10, yPos);
-      yPos += 8;
-      doc.text('well as incidental events.', 10, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Process Flow:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.text('1. GIS → Alert → Verify Coordinates Location → Desktop Analysis', 15, yPos);
-      yPos += 8;
-      doc.text('2. Estate Manager → Controlled by Community → Verify Field Location', 15, yPos);
-      yPos += 8;
-      doc.text('3. System And Monitoring → Verify Land Cover Change Final Report', 15, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Legal Framework:', 10, yPos);
-      yPos += 10;
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('1. UU No. 32 / 2009 on Environmental Protection and Management - Requires forest area clearing without permits', 15, yPos);
-      yPos += 6;
-      doc.text('2. UU No. 32 / 2014 on Marine and Fisheries - Protection and Management - Requires plantation business activities', 15, yPos);
-      yPos += 6;
-      doc.text('3. PERMEN LHK No. P.71/MENLHK.1/2019 - Environmental Information System - Including through monitoring system', 15, yPos);
-      yPos += 6;
-      doc.text('4. EU Deforestation Regulation (EUDR) - Ensures supply chain traceability and proof of deforestation-free since 2020', 15, yPos);
-
-      yPos += 15;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('GeoJSON Data Access:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      const geoJsonLink = 'https://api.kpn-eudr.com/geojson/plots-data.geojson';
-      doc.setTextColor(0, 0, 255); // Blue color for link
-      doc.text('Link: ' + geoJsonLink, 15, yPos);
-      doc.setTextColor(0, 0, 0); // Back to black
-
-      yPos += 12;
-      doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
-      yPos += 6;
-      doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
-
-      // Page 4 - Risk Assessment Process Flowchart
-      doc.addPage();
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 4 - RISK ASSESSMENT PROCESS', 105, 20, { align: 'center' });
-
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('RISK ASSESSMENT PROCESS OVERVIEW', 105, yPos, { align: 'center' });
-
-      yPos += 20;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('This section outlines the systematic risk assessment approach used to evaluate', 10, yPos);
-      yPos += 8;
-      doc.text('deforestation risks and ensure EUDR compliance across all production plots.', 10, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Key Process Components:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.text('• Data Collection → Risk Identification → Impact Assessment → Scoring', 15, yPos);
-      yPos += 8;
-      doc.text('• Satellite Monitoring → Field Verification → Documentation Review', 15, yPos);
-      yPos += 8;
-      doc.text('• Legal Compliance Check → Final Risk Determination → Mitigation Planning', 15, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Risk Assessment Matrix:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.text('Risk Category | Assessment Criteria | Compliance Action', 10, yPos);
-      yPos += 8;
-      doc.text('Deforestation | Satellite imagery analysis | No forest loss post-2020', 10, yPos);
-      yPos += 8;
-      doc.text('Legal Compliance | Permits & certifications | Valid documentation', 10, yPos);
-      yPos += 8;
-      doc.text('Supply Chain | Traceability verification | Complete chain of custody', 10, yPos);
-      yPos += 8;
-      doc.text('Operational | Quality & production data | Standards compliance', 10, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Data Verification & Quality Assurance:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.text('• Multi-source data cross-validation and consistency checks', 15, yPos);
-      yPos += 8;
-      doc.text('• Independent third-party verification of critical findings', 15, yPos);
-      yPos += 8;
-      doc.text('• Automated monitoring systems with manual verification protocols', 15, yPos);
-      yPos += 8;
-      doc.text('• Regular audit trails and documentation review processes', 15, yPos);
-
-      // Generate PDF buffer
-      const pdfBuffer = doc.output('arraybuffer');
-
-      console.log('PDF generated successfully');
-
-      // Return the PDF file
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
-      res.send(Buffer.from(pdfBuffer));
-
-    } catch (error) {
-      console.error('Error generating dummy DDS PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
-    }
-  });
-
-  // Enhanced 4-page PDF generation with embedded flowchart images
-  function generateCleanDDSPDF(report: any): ArrayBuffer {
-    try {
-      const doc = new jsPDF();
-
-      // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
-      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
-
-      console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
-
-      // PAGE 1 - Main DDS Content with Professional Tables
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EU Due Diligence Statement', 105, 20, { align: 'center' });
-
-      // Header section with border
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.rect(10, 30, 190, 15);
-      doc.text('Page 1 of 4', 15, 38);
-      doc.text('Status: GENERATED', 90, 38);
-      const currentDate = new Date().toLocaleDateString('en-GB');
-      doc.text(`Generated: ${currentDate}`, 150, 38);
-
-      let yPos = 55;
-
-      // Section 1: Reference Information Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('1. Reference Information', 10, yPos);
-      yPos += 10;
-
-      // Create table for reference info
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 25);
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(80, yPos, 80, yPos + 25);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Company Internal Ref:', 12, yPos + 8);
-      doc.text('Activity:', 12, yPos + 20);
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.companyInternalRef || 'DDS-2024-001', 82, yPos + 8);
-      doc.text(report.activity || 'Import of Palm Oil Products', 82, yPos + 20);
-      yPos += 35;
-
-      // Section 2: Operator Information Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('2. Operator/Trader Information', 10, yPos);
-      yPos += 10;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 35);
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(10, yPos + 24, 200, yPos + 24);
-      doc.line(60, yPos, 60, yPos + 35);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Name:', 12, yPos + 8);
-      doc.text('Address:', 12, yPos + 20);
-      doc.text('Country:', 12, yPos + 32);
-
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.operatorLegalName || 'KPN Corporation Berhad', 62, yPos + 8);
-      const address = report.operatorAddress || 'Level 6, Menara KPN, Jalan Sultan Ismail, Kuala Lumpur, Malaysia';
-      const addressLines = doc.splitTextToSize(address, 135);
-      doc.text(addressLines, 62, yPos + 16);
-      doc.text(report.operatorCountry || 'Malaysia', 62, yPos + 32);
-      yPos += 45;
-
-      // Section 3: Commodity Information Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('3. Commodity Information', 10, yPos);
-      yPos += 10;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 35);
-
-      // Table headers
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(70, yPos, 70, yPos + 35);
-      doc.line(120, yPos, 120, yPos + 35);
-      doc.line(150, yPos, 150, yPos + 35);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Description', 12, yPos + 8);
-      doc.text('Net Mass (Kg)', 72, yPos + 8);
-      doc.text('% Est.', 122, yPos + 8);
-      doc.text('Units', 152, yPos + 8);
-
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.productDescription || 'Crude Palm Oil (CPO)', 12, yPos + 20);
-      doc.text(report.netMassKg?.toString() || '2150.000', 72, yPos + 20);
-      doc.text(report.percentageEstimation?.toString() + '%' || '5%', 122, yPos + 20);
-      doc.text(report.supplementaryUnit || 'MT', 152, yPos + 20);
-
-      // Scientific details
-      doc.text(`Scientific: ${report.scientificName || 'Elaeis guineensis'}`, 12, yPos + 28);
-      doc.text(`Common: ${report.commonName || 'Oil Palm'}`, 72, yPos + 28);
-      yPos += 45;
-
-      // Section 4: Summary Statistics Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('4. Summary Statistics', 10, yPos);
-      yPos += 10;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 25);
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(95, yPos, 95, yPos + 25);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Total Producers:', 12, yPos + 8);
-      doc.text('Total Plots:', 12, yPos + 20);
-      doc.text('Total Area (ha):', 97, yPos + 8);
-      doc.text('Country of Harvest:', 97, yPos + 20);
-
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.totalProducers?.toString() || '15', 55, yPos + 8);
-      doc.text(report.totalPlots?.toString() || '45', 40, yPos + 20);
-      doc.text(report.totalProductionArea?.toString() || '1250.50', 140, yPos + 8);
-      doc.text(report.countryOfHarvest || 'Malaysia', 150, yPos + 20);
-
-      // PAGE 2 - Methodology Section with Embedded Image
-      doc.addPage();
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EUDR Compliance Methodology', 105, 20, { align: 'center' });
-
       // Header for page 2
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -2252,8 +1937,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Embed the EUDR Compliance Verification flowchart image
       try {
-        doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
-        yPos += 110;
+        // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
+        const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+        if (methodologyImageBase64) {
+          doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
+          yPos += 110;
+        } else {
+          console.log('Note: Image embedding not supported, using text description');
+          yPos += 10;
+        }
       } catch (error) {
         console.log('Note: Image embedding not supported, using text description');
         yPos += 10;
@@ -2312,7 +2004,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       yPos += 70;
 
-      // Methodology Section 2: Risk Assessment Framework
+      // Methodology Section 2: Risk Assessment & Compliance Framework
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('2. Risk Assessment & Compliance Framework', 10, yPos);
@@ -3342,7 +3034,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Primary method: Use PostGIS database lookup for adm_boundary_lv0
       console.log(`🗄️  Checking adm_boundary_lv0 for coordinates (${lat}, ${lng})`);
-      
+
       try {
         // Use raw SQL query to check if point is within any country boundary
         const result = await db.execute(sql`
@@ -3546,7 +3238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Get country from multiple sources with priority order
         let detectedCountry = 'Unknown';
-        
+
         // Priority 1: Use country_name from API response if available and not "unknown"
         if (feature.properties?.country_name && 
             feature.properties.country_name !== 'unknown' && 
@@ -3561,7 +3253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
             detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
             console.log(`✅ Country detected: ${detectedCountry}`);
-            
+
             // No delay needed since we're using local database
           } else {
             // Priority 3: Fallback to property-based detection for Indonesian data
@@ -3752,10 +3444,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               gfwLoss: gfwLossArea > 0 ? 'TRUE' : 'FALSE',
               jrcLoss: jrcLossArea > 0 ? 'TRUE' : 'FALSE',
               sbtnLoss: sbtnLossArea > 0 ? 'TRUE' : 'FALSE',
-              peatlandOverlap: 'UNKNOWN', // Default value for peatland analysis
+              gfwLossArea: gfwLossArea,
+              jrcLossArea: jrcLossArea,
+              sbtnLossArea: sbtnLossArea,
               highRiskDatasets,
-              uploadSession: uploadSession,
+              peatlandOverlap: 'UNKNOWN', // Default value for peatland analysis
+              peatlandArea: 0,
               geometry: feature.geometry,
+              uploadSession: uploadSession,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
               // Enhanced metadata from Indonesian data
               farmerName: feature.properties?.['.Farmer Name'] ||
                          feature.properties?.farmer_name ||
