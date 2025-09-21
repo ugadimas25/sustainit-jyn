@@ -1039,34 +1039,37 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
           // Ensure localStorage flags are set correctly for table restoration
           console.log('🔙 Returning from EUDR Map Viewer, setting restore flags');
 
-          // Make sure analysis results are preserved
+          // Make sure analysis results are preserved with proper number formatting
           if (analysisResults && analysisResults.length > 0) {
-            localStorage.setItem('currentAnalysisResults', JSON.stringify(analysisResults));
+            // Ensure all loss areas are stored as proper numbers, not strings
+            const properlyFormatted = analysisResults.map((result: any) => ({
+              ...result,
+              // Use parseFloat to handle both string and number inputs correctly
+              gfwLossArea: result.gfwLossArea !== undefined && result.gfwLossArea !== null && result.gfwLossArea !== '' 
+                ? parseFloat(result.gfwLossArea.toString()) : 0,
+              jrcLossArea: result.jrcLossArea !== undefined && result.jrcLossArea !== null && result.jrcLossArea !== '' 
+                ? parseFloat(result.jrcLossArea.toString()) : 0,
+              sbtnLossArea: result.sbtnLossArea !== undefined && result.sbtnLossArea !== null && result.sbtnLossArea !== '' 
+                ? parseFloat(result.sbtnLossArea.toString()) : 0,
+              area: parseFloat(result.area?.toString() || '0')
+            }));
+            
+            localStorage.setItem('currentAnalysisResults', JSON.stringify(properlyFormatted));
             localStorage.setItem('hasRealAnalysisData', 'true');
+            
+            console.log('🔧 Map viewer: Stored properly formatted data with loss areas:', 
+              properlyFormatted.slice(0, 3).map(r => ({
+                plotId: r.plotId,
+                gfwLossArea: r.gfwLossArea,
+                jrcLossArea: r.jrcLossArea,
+                sbtnLossArea: r.sbtnLossArea
+              }))
+            );
           }
 
-          // Set flags to trigger results table display with proper data format
+          // Set flags to trigger results table display
           localStorage.setItem('shouldShowResultsTable', 'true');
           localStorage.setItem('fromMapViewer', 'true');
-          
-          // Force refresh of current data to ensure proper formatting
-          const currentResults = localStorage.getItem('currentAnalysisResults');
-          if (currentResults) {
-            try {
-              const parsed = JSON.parse(currentResults);
-              const properlyFormatted = parsed.map((result: any) => ({
-                ...result,
-                gfwLossArea: result.gfwLossArea !== undefined && result.gfwLossArea !== null ? Number(result.gfwLossArea) : 0,
-                jrcLossArea: result.jrcLossArea !== undefined && result.jrcLossArea !== null ? Number(result.jrcLossArea) : 0,
-                sbtnLossArea: result.sbtnLossArea !== undefined && result.sbtnLossArea !== null ? Number(result.sbtnLossArea) : 0,
-                area: Number(result.area || 0)
-              }));
-              localStorage.setItem('currentAnalysisResults', JSON.stringify(properlyFormatted));
-              console.log('🔧 Map viewer: Refreshed localStorage with properly formatted data');
-            } catch (error) {
-              console.error('Error formatting data in map viewer:', error);
-            }
-          }
 
           // Force a small delay to ensure localStorage is written before navigation
           setTimeout(() => {

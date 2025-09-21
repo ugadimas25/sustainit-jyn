@@ -530,18 +530,31 @@ export default function DeforestationMonitoring() {
 
           // Ensure loss area values are properly preserved as numbers, not strings
           const restoredResults = parsedResults.map((result: any) => {
+            // Parse stored string values back to numbers correctly
+            const gfwLossArea = result.gfwLossArea !== undefined && result.gfwLossArea !== null && result.gfwLossArea !== '' 
+              ? parseFloat(result.gfwLossArea.toString()) : 0;
+            const jrcLossArea = result.jrcLossArea !== undefined && result.jrcLossArea !== null && result.jrcLossArea !== '' 
+              ? parseFloat(result.jrcLossArea.toString()) : 0;
+            const sbtnLossArea = result.sbtnLossArea !== undefined && result.sbtnLossArea !== null && result.sbtnLossArea !== '' 
+              ? parseFloat(result.sbtnLossArea.toString()) : 0;
+
             const processed = {
               ...result,
-              gfwLossArea: result.gfwLossArea !== undefined && result.gfwLossArea !== null ? Number(result.gfwLossArea) : 0,
-              jrcLossArea: result.jrcLossArea !== undefined && result.jrcLossArea !== null ? Number(result.jrcLossArea) : 0,
-              sbtnLossArea: result.sbtnLossArea !== undefined && result.sbtnLossArea !== null ? Number(result.sbtnLossArea) : 0,
-              area: Number(result.area || 0)
+              gfwLossArea: gfwLossArea,
+              jrcLossArea: jrcLossArea,
+              sbtnLossArea: sbtnLossArea,
+              area: parseFloat(result.area?.toString() || '0')
             };
             
             console.log(`🔧 Restored ${result.plotId}:`, {
               gfwLossArea: processed.gfwLossArea,
               jrcLossArea: processed.jrcLossArea,
-              sbtnLossArea: processed.sbtnLossArea
+              sbtnLossArea: processed.sbtnLossArea,
+              originalData: {
+                gfwLossArea: result.gfwLossArea,
+                jrcLossArea: result.jrcLossArea,
+                sbtnLossArea: result.sbtnLossArea
+              }
             });
             
             return processed;
@@ -604,18 +617,31 @@ export default function DeforestationMonitoring() {
 
             // Ensure loss area values are properly preserved as numbers
             const restoredResults = parsedResults.map((result: any) => {
+              // Parse stored string values back to numbers correctly
+              const gfwLossArea = result.gfwLossArea !== undefined && result.gfwLossArea !== null && result.gfwLossArea !== '' 
+                ? parseFloat(result.gfwLossArea.toString()) : 0;
+              const jrcLossArea = result.jrcLossArea !== undefined && result.jrcLossArea !== null && result.jrcLossArea !== '' 
+                ? parseFloat(result.jrcLossArea.toString()) : 0;
+              const sbtnLossArea = result.sbtnLossArea !== undefined && result.sbtnLossArea !== null && result.sbtnLossArea !== '' 
+                ? parseFloat(result.sbtnLossArea.toString()) : 0;
+
               const processed = {
                 ...result,
-                gfwLossArea: result.gfwLossArea !== undefined && result.gfwLossArea !== null ? Number(result.gfwLossArea) : 0,
-                jrcLossArea: result.jrcLossArea !== undefined && result.jrcLossArea !== null ? Number(result.jrcLossArea) : 0,
-                sbtnLossArea: result.sbtnLossArea !== undefined && result.sbtnLossArea !== null ? Number(result.sbtnLossArea) : 0,
-                area: Number(result.area || 0)
+                gfwLossArea: gfwLossArea,
+                jrcLossArea: jrcLossArea,
+                sbtnLossArea: sbtnLossArea,
+                area: parseFloat(result.area?.toString() || '0')
               };
               
               console.log(`🔧 Storage change restored ${result.plotId}:`, {
                 gfwLossArea: processed.gfwLossArea,
                 jrcLossArea: processed.jrcLossArea,
-                sbtnLossArea: processed.sbtnLossArea
+                sbtnLossArea: processed.sbtnLossArea,
+                originalData: {
+                  gfwLossArea: result.gfwLossArea,
+                  jrcLossArea: result.jrcLossArea,
+                  sbtnLossArea: result.sbtnLossArea
+                }
               });
               
               return processed;
