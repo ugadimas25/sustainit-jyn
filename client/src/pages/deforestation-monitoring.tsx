@@ -605,9 +605,13 @@ export default function DeforestationMonitoring() {
     if (lossArea !== undefined && lossArea !== null) {
       const areaValue = Number(lossArea);
       if (areaValue > 0) {
-        return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(4)} ha</Badge>;
+        if (areaValue < 0.01) {
+          return <Badge className="bg-yellow-100 text-yellow-800">{areaValue.toFixed(3)} ha</Badge>;
+        } else {
+          return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(3)} ha</Badge>;
+        }
       } else {
-        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(4)} ha</Badge>;
+        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(3)} ha</Badge>;
       }
     }
 
@@ -615,7 +619,7 @@ export default function DeforestationMonitoring() {
     if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
       return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
     } else {
-      return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
+      return <Badge className="bg-green-100 text-green-800">0.000 ha</Badge>;
     }
   };
 
