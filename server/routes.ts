@@ -2968,6 +2968,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Helper function to calculate area from geometry using PostGIS
+  async function calculateAreaFromGeometry(geometry: any): Promise<number> {
+    try {
+      if (!geometry || !geometry.coordinates) {
+        return 1.0; // Default 1 hectare
+      }
+
+      // Convert geometry to WKT format for PostGIS calculation
+      let wkt = '';
+      
+      if (geometry.type === 'Polygon') {
+        const coords = geometry.coordinates[0];
+        if (coords && coords.length >= 4) {
+          const wktCoords = coords.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
+          wkt = `POLYGON((${wktCoords}))`;
+        }
+      } else if (geometry.type === 'MultiPolygon') {
+        const coords = geometry.coordinates[0][0];
+        if (coords && coords.length >= 4) {
+          const wktCoords = coords.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
+          wkt = `POLYGON((${wktCoords}))`;
+        }
+      }
+
+      if (!wkt) {
+        return 1.0; // Default 1 hectare
+      }
+
+      // Use PostGIS to calculate area in hectares
+      const result = await db.execute(sql`
+        SELECT ST_Area(ST_Transform(ST_GeomFromText(${wkt}, 4326), 3857)) / 10000 as area_hectares
+      `);
+
+      const areaHectares = parseFloat(result.rows[0]?.area_hectares?.toString() || '1.0');
+      
+      // Ensure minimum area and reasonable maximum
+      if (areaHectares < 0.1) return 0.1;
+      if (areaHectares > 1000) return 1000;
+      
+      console.log(`📏 Calculated area: ${areaHectares.toFixed(2)} hectares using PostGIS`);
+      return Math.round(areaHectares * 100) / 100; // Round to 2 decimal places
+
+    } catch (error) {
+      console.warn('Error calculating area from geometry:', error);
+      return 1.0; // Default 1 hectare
+    }
+  }
+
   // GeoJSON upload and analysis endpoint
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
@@ -3203,14 +3251,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`📏 Plot ${plotId}: Parsed area ${area}ha from "${plotSize}"`);
             } else if (feature.properties?.area_ha) {
               area = parseFloat(feature.properties.area_ha);
+            } else if (feature.properties?.total_area_hectares) {
+              area = parseFloat(feature.properties.total_area_hectares);
             } else if (feature.properties?.area) {
               area = parseFloat(feature.properties.area);
             } else if (feature.properties?.Plot_Size) {
               area = parseFloat(feature.properties.Plot_Size);
             } else {
               // Calculate area from geometry if available
-              area = calculateAreaFromGeometry(feature.geometry) || 1.0; // Default 1 hectare
-              console.log(`📏 Plot ${plotId}: Calculated area ${area}ha from geometry`);
+              area = await calculateAreaFromGeometry(feature.geometry);
+              console.log(`📏 Plot ${plotId}: Calculated area ${area}ha from geometry using PostGIS`);
             }
 
             // Get risk data, provide defaults
