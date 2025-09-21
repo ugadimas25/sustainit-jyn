@@ -112,84 +112,116 @@ export default function DeforestationMonitoring() {
       // Re-stringify after processing
       const processedGeojsonString = JSON.stringify(geojsonData);
 
-      const response = await apiRequest('POST', '/api/geojson/upload', { 
-        geojson: processedGeojsonString, 
-        filename: fileName 
+      const response = await fetch('/api/geojson/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          geojson: processedGeojsonString,
+          filename: fileName
+        }),
       });
-      return await response.json();
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      return response.json();
     },
-    onSuccess: (response) => {
-      toast({
-        title: "Analysis Complete", 
-        description: `GeoJSON analysis completed successfully. Processing ${response.data?.features?.length || 0} plots.`
-      });
+    onSuccess: async (data) => {
+      console.log('✅ Upload successful, fetching latest results from database...');
 
-      // Transform API response to our expected format
-      if (response.data?.features) {
-        // Parse the original GeoJSON to get the original plot IDs
-        const originalGeojson = JSON.parse(uploadedFile?.content || '{}'); // Use uploadedFile.content safely
-        const originalPlotIds = originalGeojson.features.map((feature: any, index: number) => {
-          const props = feature.properties || {};
-          return props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `PLOT_${index + 1}`;
+      try {
+        // Fetch the latest analysis results from the database API
+        const dbResponse = await fetch('/api/analysis-results');
+        if (!dbResponse.ok) {
+          throw new Error('Failed to fetch analysis results from database');
+        }
+
+        const dbResults = await dbResponse.json();
+        console.log(`✅ Fetched ${dbResults.length} analysis results from database`);
+
+        // Transform database results to match the expected format (same as map-viewer.tsx)
+        const formattedResults = dbResults.map((result: any) => ({
+          plotId: result.plotId,
+          country: result.country,
+          area: Number(result.area) || 0,
+          overallRisk: result.overallRisk || 'UNKNOWN',
+          complianceStatus: result.complianceStatus || 'UNKNOWN',
+          gfwLoss: result.gfwLoss || 'UNKNOWN',
+          jrcLoss: result.jrcLoss || 'UNKNOWN',
+          sbtnLoss: result.sbtnLoss || 'UNKNOWN',
+          highRiskDatasets: result.highRiskDatasets || [],
+          geometry: result.geometry // This contains the actual polygon coordinates
+        }));
+
+        console.log(`✅ Stored ${formattedResults.length} analysis results for spatial analysis page`);
+        setAnalysisResults(formattedResults);
+        setFilteredResults(formattedResults);
+
+        // Store in localStorage for persistence (same format as map viewer)
+        localStorage.setItem('currentAnalysisResults', JSON.stringify(formattedResults));
+        localStorage.setItem('hasRealAnalysisData', 'true');
+
+        toast({
+          title: "Analysis Complete",
+          description: `Successfully analyzed ${formattedResults.length} plots`,
         });
 
-        console.log('📋 Original Plot IDs preserved from input:', originalPlotIds);
+      } catch (error) {
+        console.error('Error fetching database results:', error);
 
-        const transformedResults = response.data.features.map((feature: any, index: number) => {
-          const props = feature.properties || {};
+        // Fallback to using API response data if database fetch fails
+        if (data?.data?.features) {
+          const fallbackResults = data.data.features.map((feature: any) => {
+            const props = feature.properties || {};
+            const plotId = props.plot_id || props.id || `PLOT_${Math.random().toString(36).substring(7)}`;
 
-          // Use the original plot ID from the input GeoJSON based on feature index
-          const plotId = originalPlotIds[index] || `PLOT_${index + 1}`;
-          console.log(`✅ Preserving original Plot ID: ${plotId} for feature ${index + 1}`);
+            return {
+              plotId,
+              country: props.country_name || 'Unknown',
+              area: parseFloat(props.total_area_hectares || '1'),
+              overallRisk: props.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
+              complianceStatus: props.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
+              gfwLoss: props.gfw_loss?.gfw_loss_area > 0 ? 'TRUE' : 'FALSE',
+              jrcLoss: props.jrc_loss?.jrc_loss_area > 0 ? 'TRUE' : 'FALSE',
+              sbtnLoss: props.sbtn_loss?.sbtn_loss_area > 0 ? 'TRUE' : 'FALSE',
+              highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
+              geometry: feature.geometry
+            };
+          });
 
-          // Robustly get country
-          const country = props['.Distict'] || props['.Aggregator Location'] || props.country || props.district || props.region || 'Unknown';
+          console.log(`⚠️ Using fallback results: ${fallbackResults.length} plots`);
+          setAnalysisResults(fallbackResults);
+          setFilteredResults(fallbackResults);
 
-          // Robustly get area, parsing "0.50 Ha" format
-          let area = 0;
-          const areaValue = props['.Plot size'] || props.area_ha || props.area || props.area_hectares;
-          if (areaValue) {
-            if (typeof areaValue === 'string' && areaValue.includes('Ha')) {
-              area = parseFloat(areaValue.replace(' Ha', '').trim()) || 0;
-            } else if (typeof areaValue === 'number') {
-              area = areaValue;
-            }
-          }
+          // Store in localStorage for persistence
+          localStorage.setItem('currentAnalysisResults', JSON.stringify(fallbackResults));
+          localStorage.setItem('hasRealAnalysisData', 'true');
 
-          return {
-            plotId: String(plotId),
-            country: String(country),
-            area: Number(area),
-            overallRisk: (props.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN') as AnalysisResult['overallRisk'],
-            complianceStatus: props.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : (props.overall_compliance?.compliance_status === 'COMPLIANT' ? 'COMPLIANT' : 'UNKNOWN'),
-            gfwLoss: (props.gfw_loss?.gfw_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['gfwLoss'],
-            jrcLoss: (props.jrc_loss?.jrc_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['jrcLoss'],
-            sbtnLoss: (props.sbtn_loss?.sbtn_loss_stat?.toUpperCase() || 'UNKNOWN') as AnalysisResult['sbtnLoss'],
-            highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-            geometry: feature.geometry
-          };
-        });
-
-        setAnalysisResults(transformedResults);
-        setFilteredResults(transformedResults);
-
-        // Store results for potential map viewer usage
-        localStorage.setItem('currentAnalysisResults', JSON.stringify(transformedResults));
+          toast({
+            title: "Analysis Complete",
+            description: `Successfully analyzed ${fallbackResults.length} plots (fallback mode)`,
+          });
+        }
       }
 
       setIsAnalyzing(false);
       setAnalysisProgress(100);
+      setUploadedFile(null);
     },
-    onError: (error: any) => {
-      console.error('Upload error:', error);
+    onError: (error) => {
+      console.error('Upload failed:', error);
       toast({
-        title: "Analysis Failed",
-        description: error.message || "Failed to analyze GeoJSON file. Please try again.",
+        title: "Analysis Failed", 
+        description: error.message,
         variant: "destructive"
       });
       setIsAnalyzing(false);
       setAnalysisProgress(0);
-    }
+    },
   });
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
