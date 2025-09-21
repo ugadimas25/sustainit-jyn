@@ -2160,7 +2160,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             
             // Test a sample WDPA tile from GFW using correct vector tile format
             const testCoords = { z: 6, x: 32, y: 21 };
-            const wdpaTestUrl = `https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/default/${testCoords.z}/${testCoords.x}/${testCoords.y}.pbf`;
+            const wdpaTestUrl = \`https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/default/\${testCoords.z}/\${testCoords.x}/\${testCoords.y}.pbf\`;
             
             fetch(wdpaTestUrl)
               .then(response => {
