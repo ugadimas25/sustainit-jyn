@@ -210,14 +210,17 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               align-items: center !important;
               gap: 10px !important;
               cursor: pointer !important;
-              margin-bottom: 10px !important;
-              padding: 8px 10px !important;
+              margin-bottom: 8px !important;
+              padding: 10px 12px !important;
               border-radius: 8px !important;
-              transition: background-color 0.2s ease !important;
+              transition: all 0.2s ease !important;
+              border: 1px solid hsl(0, 0%, 88%) !important;
+              background-color: hsl(0, 0%, 100%) !important;
             }
 
             .layer-checkbox:hover {
-              background-color: hsl(60, 4.8%, 95.9%) !important;
+              background-color: hsl(207, 90%, 54%, 0.1) !important;
+              border-color: hsl(207, 90%, 54%) !important;
             }
 
             .layer-checkbox input[type="checkbox"] {
@@ -544,7 +547,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             <div class="map-controls">
               <div class="control-group">
-                <label>Base Layer</label>
+                <label>🗺️ Base Layer</label>
                 <select id="baseLayer">
                   <option value="osm">OpenStreetMap</option>
                   <option value="satellite" selected>Satellite</option>
@@ -553,7 +556,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               </div>
 
               <div class="control-group">
-                <label>Risk Filter</label>
+                <label>🎯 Risk Filter</label>
                 <select id="riskFilter">
                   <option value="all">Show All</option>
                   <option value="high">High Risk Only</option>
@@ -562,7 +565,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               </div>
 
               <div class="control-group">
-                <label>Protected Areas</label>
+                <label>🛡️ Protected Areas</label>
                 <div class="layer-controls">
                   <label class="layer-checkbox">
                     <input type="checkbox" id="wdpaLayer">
@@ -573,18 +576,18 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               </div>
 
               <div class="control-group">
-                <label>Peatland Layers</label>
+                <label>🏞️ Indonesian Peatland</label>
                 <div class="layer-controls">
                   <label class="layer-checkbox">
                     <input type="checkbox" id="peatlandLayer">
                     <span class="checkmark"></span>
-                    <span class="layer-name">Indonesian Peatland</span>
+                    <span class="layer-name">Indonesian Peatland Areas</span>
                   </label>
                 </div>
               </div>
 
               <div class="control-group">
-                <label>Deforestation Layers</label>
+                <label>🌳 Deforestation Monitoring</label>
                 <div class="layer-controls">
                   <label class="layer-checkbox">
                     <input type="checkbox" id="gfwLayer">
@@ -594,7 +597,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   <label class="layer-checkbox">
                     <input type="checkbox" id="jrcLayer">
                     <span class="checkmark"></span>
-                    <span class="layer-name">JRC Forest</span>
+                    <span class="layer-name">JRC Forest Cover</span>
                   </label>
                   <label class="layer-checkbox">
                     <input type="checkbox" id="sbtnLayer">
@@ -1576,71 +1579,82 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               }
             });
 
-            // Peatland layer control
-            document.getElementById('peatlandLayer').addEventListener('change', function(e) {
-              if (e.target.checked) {
-                console.log('🏞️ Peatland layer checkbox checked - loading layer...');
-                
-                if (!peatlandLayer) {
-                  console.log('🔄 Creating new Indonesian Peatland layer...');
+            // Peatland layer control - ensure it's properly initialized
+            const peatlandCheckbox = document.getElementById('peatlandLayer');
+            if (peatlandCheckbox) {
+              console.log('✅ Peatland layer checkbox found and initializing...');
+              
+              peatlandCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  console.log('🏞️ Peatland layer checkbox checked - loading layer...');
                   
-                  // Show loading indicator
-                  const loadingMessage = document.createElement('div');
-                  loadingMessage.id = 'peatland-loading';
-                  loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 10000;';
-                  loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
-                  document.body.appendChild(loadingMessage);
-                  
-                  createPeatlandLayer().then(layer => {
-                    // Remove loading indicator
-                    const loader = document.getElementById('peatland-loading');
-                    if (loader) loader.remove();
+                  if (!peatlandLayer) {
+                    console.log('🔄 Creating new Indonesian Peatland layer...');
                     
-                    if (layer && layer.getLayers().length > 0) {
-                      peatlandLayer = layer;
-                      layer.addTo(map);
-                      console.log(\`✅ Indonesian Peatland layer loaded successfully with \${layer.getLayers().length} features\`);
+                    // Show loading indicator
+                    const loadingMessage = document.createElement('div');
+                    loadingMessage.id = 'peatland-loading';
+                    loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                    loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
+                    document.body.appendChild(loadingMessage);
+                    
+                    createPeatlandLayer().then(layer => {
+                      // Remove loading indicator
+                      const loader = document.getElementById('peatland-loading');
+                      if (loader) loader.remove();
                       
-                      // Force map refresh and fit bounds if features exist
-                      map.invalidateSize();
-                      
-                      // Optionally fit bounds to show peatland features
-                      try {
-                        const bounds = layer.getBounds();
-                        if (bounds.isValid()) {
-                          console.log('📍 Fitting map to peatland features bounds');
-                          map.fitBounds(bounds, { padding: [20, 20] });
-                        }
-                      } catch (e) {
-                        console.log('Could not fit bounds to peatland features:', e.message);
+                      if (layer && layer.getLayers().length > 0) {
+                        peatlandLayer = layer;
+                        layer.addTo(map);
+                        console.log(\`✅ Indonesian Peatland layer loaded successfully with \${layer.getLayers().length} features\`);
+                        
+                        // Force map refresh
+                        map.invalidateSize();
+                        
+                        // Show success message
+                        const successMsg = document.createElement('div');
+                        successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                        successMsg.innerHTML = \`✅ Indonesian Peatland layer loaded (\${layer.getLayers().length} features)\`;
+                        document.body.appendChild(successMsg);
+                        setTimeout(() => successMsg.remove(), 3000);
+                        
+                      } else {
+                        console.error('❌ Failed to load Indonesian Peatland layer - no features found');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(220, 38, 38, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                        errorMsg.innerHTML = '❌ No Indonesian Peatland data found in current view';
+                        document.body.appendChild(errorMsg);
+                        setTimeout(() => errorMsg.remove(), 5000);
                       }
+                    }).catch(error => {
+                      // Remove loading indicator
+                      const loader = document.getElementById('peatland-loading');
+                      if (loader) loader.remove();
                       
-                    } else {
-                      console.error('❌ Failed to load Indonesian Peatland layer - no features found');
-                      alert('No Indonesian Peatland data found in the current map view. Try zooming to Indonesia region.');
-                    }
-                  }).catch(error => {
-                    // Remove loading indicator
-                    const loader = document.getElementById('peatland-loading');
-                    if (loader) loader.remove();
-                    
-                    console.error('❌ Error in Indonesian Peatland layer creation:', error);
-                    alert('Error loading Indonesian Peatland layer: ' + error.message);
-                  });
+                      console.error('❌ Error in Indonesian Peatland layer creation:', error);
+                      const errorMsg = document.createElement('div');
+                      errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(220, 38, 38, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                      errorMsg.innerHTML = '❌ Error loading Indonesian Peatland: ' + error.message;
+                      document.body.appendChild(errorMsg);
+                      setTimeout(() => errorMsg.remove(), 5000);
+                    });
+                  } else {
+                    // Layer already exists, just add to map
+                    peatlandLayer.addTo(map);
+                    console.log('✅ Existing Indonesian Peatland layer restored to map');
+                  }
                 } else {
-                  // Layer already exists, just add to map
-                  peatlandLayer.addTo(map);
-                  console.log('✅ Existing Indonesian Peatland layer restored to map');
+                  console.log('🏞️ Peatland layer checkbox unchecked - removing layer...');
+                  
+                  if (peatlandLayer && map.hasLayer(peatlandLayer)) {
+                    map.removeLayer(peatlandLayer);
+                    console.log('✅ Indonesian Peatland layer removed from map');
+                  }
                 }
-              } else {
-                console.log('🏞️ Peatland layer checkbox unchecked - removing layer...');
-                
-                if (peatlandLayer && map.hasLayer(peatlandLayer)) {
-                  map.removeLayer(peatlandLayer);
-                  console.log('✅ Indonesian Peatland layer removed from map');
-                }
-              }
-            });
+              });
+            } else {
+              console.error('❌ Peatland layer checkbox not found in DOM!');
+            }
 
             // Deforestation layer controls
             document.getElementById('gfwLayer').addEventListener('change', function(e) {
