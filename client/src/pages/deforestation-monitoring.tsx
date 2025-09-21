@@ -327,7 +327,13 @@ export default function DeforestationMonitoring() {
           
           // Check if content is empty
           if (!contentStr) {
-            throw new Error('File appears to be empty');
+            console.warn('File appears to be empty');
+            toast({
+              title: "Empty file",
+              description: "The uploaded file appears to be empty",
+              variant: "destructive"
+            });
+            return;
           }
 
           // Try to parse the JSON
@@ -336,70 +342,102 @@ export default function DeforestationMonitoring() {
           
         } catch (parseError) {
           console.error('JSON parsing error:', parseError);
-          throw new Error('Failed to parse GeoJSON file. Please ensure it is valid JSON format.');
+          toast({
+            title: "Invalid JSON",
+            description: "Failed to parse the file as valid JSON. Please check the file format.",
+            variant: "destructive"
+          });
+          return;
         }
 
         // Basic structure validation
         if (!parsedGeoJSON || typeof parsedGeoJSON !== 'object') {
-          throw new Error('Invalid GeoJSON: File must contain a valid JSON object.');
+          console.warn('Invalid GeoJSON: File must contain a valid JSON object');
+          toast({
+            title: "Invalid format",
+            description: "File must contain a valid JSON object",
+            variant: "destructive"
+          });
+          return;
         }
 
         if (parsedGeoJSON.type !== 'FeatureCollection') {
-          throw new Error(`Invalid GeoJSON: Expected FeatureCollection, got ${parsedGeoJSON.type || 'unknown'}.`);
+          console.warn(`Invalid GeoJSON type: ${parsedGeoJSON.type || 'unknown'}, expected FeatureCollection`);
+          toast({
+            title: "Invalid GeoJSON",
+            description: `Expected FeatureCollection, got ${parsedGeoJSON.type || 'unknown'}`,
+            variant: "destructive"
+          });
+          return;
         }
 
         if (!parsedGeoJSON.features || !Array.isArray(parsedGeoJSON.features)) {
-          throw new Error('Invalid GeoJSON: Missing or invalid features array.');
+          console.warn('Invalid GeoJSON: Missing or invalid features array');
+          toast({
+            title: "Invalid GeoJSON",
+            description: "Missing or invalid features array",
+            variant: "destructive"
+          });
+          return;
         }
 
         if (parsedGeoJSON.features.length === 0) {
-          throw new Error('GeoJSON file contains no features.');
+          console.warn('GeoJSON file contains no features');
+          toast({
+            title: "Empty GeoJSON",
+            description: "GeoJSON file contains no features",
+            variant: "destructive"
+          });
+          return;
         }
 
         console.log(`✅ GeoJSON validation passed: Found ${parsedGeoJSON.features.length} features`);
 
-        // Validate features have required structure
+        // Validate features have required structure (more lenient approach)
         let validFeatureCount = 0;
-        const invalidFeatures = [];
+        const issues = [];
 
         for (let i = 0; i < parsedGeoJSON.features.length; i++) {
           const feature = parsedGeoJSON.features[i];
           
           // Basic feature validation
           if (!feature || typeof feature !== 'object') {
-            invalidFeatures.push(`Feature ${i + 1}: Not a valid object`);
+            issues.push(`Feature ${i + 1}: Not a valid object`);
             continue;
           }
 
           if (feature.type !== 'Feature') {
-            invalidFeatures.push(`Feature ${i + 1}: Expected type 'Feature', got '${feature.type}'`);
+            issues.push(`Feature ${i + 1}: Expected type 'Feature', got '${feature.type}'`);
             continue;
           }
 
           if (!feature.geometry) {
-            invalidFeatures.push(`Feature ${i + 1}: Missing geometry`);
+            issues.push(`Feature ${i + 1}: Missing geometry`);
             continue;
           }
 
-          // Properties validation (more lenient)
+          // Properties validation (very lenient - just count features with any properties)
           const props = feature.properties || {};
           
-          // Check for any kind of identifier
-          const hasId = props.plot_id || props.id || props.Name || props.name || 
-                       props['.Farmers ID'] || props.farmer_id || 
-                       props.country_name || props.farm_name;
-
-          if (hasId) {
+          // Accept any feature that has at least some properties or a valid geometry
+          if (Object.keys(props).length > 0 || feature.geometry) {
             validFeatureCount++;
           }
         }
 
+        // Log issues but don't block upload unless there are severe problems
+        if (issues.length > 0) {
+          console.warn('Feature validation issues:', issues.slice(0, 5)); // Log first 5 issues
+        }
+
         if (validFeatureCount === 0) {
-          console.warn('No features with identifiable properties found');
-          if (invalidFeatures.length > 0) {
-            console.warn('Feature validation issues:', invalidFeatures.slice(0, 5)); // Log first 5 issues
-          }
-          // Don't throw error, just warn - let the API handle it
+          console.warn('No valid features found');
+          toast({
+            title: "Invalid features",
+            description: "No valid features found in the GeoJSON file",
+            variant: "destructive"
+          });
+          return;
         }
 
         console.log(`✅ Found ${validFeatureCount} valid features out of ${parsedGeoJSON.features.length} total`);
