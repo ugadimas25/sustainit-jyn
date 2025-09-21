@@ -1045,9 +1045,28 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             localStorage.setItem('hasRealAnalysisData', 'true');
           }
 
-          // Set flags to trigger results table display (same as analyze file workflow)
+          // Set flags to trigger results table display with proper data format
           localStorage.setItem('shouldShowResultsTable', 'true');
           localStorage.setItem('fromMapViewer', 'true');
+          
+          // Force refresh of current data to ensure proper formatting
+          const currentResults = localStorage.getItem('currentAnalysisResults');
+          if (currentResults) {
+            try {
+              const parsed = JSON.parse(currentResults);
+              const properlyFormatted = parsed.map((result: any) => ({
+                ...result,
+                gfwLossArea: result.gfwLossArea !== undefined && result.gfwLossArea !== null ? Number(result.gfwLossArea) : 0,
+                jrcLossArea: result.jrcLossArea !== undefined && result.jrcLossArea !== null ? Number(result.jrcLossArea) : 0,
+                sbtnLossArea: result.sbtnLossArea !== undefined && result.sbtnLossArea !== null ? Number(result.sbtnLossArea) : 0,
+                area: Number(result.area || 0)
+              }));
+              localStorage.setItem('currentAnalysisResults', JSON.stringify(properlyFormatted));
+              console.log('🔧 Map viewer: Refreshed localStorage with properly formatted data');
+            } catch (error) {
+              console.error('Error formatting data in map viewer:', error);
+            }
+          }
 
           // Force a small delay to ensure localStorage is written before navigation
           setTimeout(() => {

@@ -528,14 +528,24 @@ export default function DeforestationMonitoring() {
         if (parsedResults && parsedResults.length > 0) {
           console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
 
-          // Ensure loss area values are preserved as numbers, not strings
-          const restoredResults = parsedResults.map((result: any) => ({
-            ...result,
-            gfwLossArea: result.gfwLossArea !== undefined ? Number(result.gfwLossArea) : undefined,
-            jrcLossArea: result.jrcLossArea !== undefined ? Number(result.jrcLossArea) : undefined,
-            sbtnLossArea: result.sbtnLossArea !== undefined ? Number(result.sbtnLossArea) : undefined,
-            area: Number(result.area || 0)
-          }));
+          // Ensure loss area values are properly preserved as numbers, not strings
+          const restoredResults = parsedResults.map((result: any) => {
+            const processed = {
+              ...result,
+              gfwLossArea: result.gfwLossArea !== undefined && result.gfwLossArea !== null ? Number(result.gfwLossArea) : 0,
+              jrcLossArea: result.jrcLossArea !== undefined && result.jrcLossArea !== null ? Number(result.jrcLossArea) : 0,
+              sbtnLossArea: result.sbtnLossArea !== undefined && result.sbtnLossArea !== null ? Number(result.sbtnLossArea) : 0,
+              area: Number(result.area || 0)
+            };
+            
+            console.log(`🔧 Restored ${result.plotId}:`, {
+              gfwLossArea: processed.gfwLossArea,
+              jrcLossArea: processed.jrcLossArea,
+              sbtnLossArea: processed.sbtnLossArea
+            });
+            
+            return processed;
+          });
 
           setAnalysisResults(restoredResults);
           setFilteredResults(restoredResults);
@@ -592,14 +602,24 @@ export default function DeforestationMonitoring() {
           if (parsedResults && parsedResults.length > 0) {
             console.log(`🔄 Re-restoring ${parsedResults.length} analysis results from navigation`);
 
-            // Ensure loss area values are preserved as numbers
-            const restoredResults = parsedResults.map((result: any) => ({
-              ...result,
-              gfwLossArea: result.gfwLossArea !== undefined ? Number(result.gfwLossArea) : undefined,
-              jrcLossArea: result.jrcLossArea !== undefined ? Number(result.jrcLossArea) : undefined,
-              sbtnLossArea: result.sbtnLossArea !== undefined ? Number(result.sbtnLossArea) : undefined,
-              area: Number(result.area || 0)
-            }));
+            // Ensure loss area values are properly preserved as numbers
+            const restoredResults = parsedResults.map((result: any) => {
+              const processed = {
+                ...result,
+                gfwLossArea: result.gfwLossArea !== undefined && result.gfwLossArea !== null ? Number(result.gfwLossArea) : 0,
+                jrcLossArea: result.jrcLossArea !== undefined && result.jrcLossArea !== null ? Number(result.jrcLossArea) : 0,
+                sbtnLossArea: result.sbtnLossArea !== undefined && result.sbtnLossArea !== null ? Number(result.sbtnLossArea) : 0,
+                area: Number(result.area || 0)
+              };
+              
+              console.log(`🔧 Storage change restored ${result.plotId}:`, {
+                gfwLossArea: processed.gfwLossArea,
+                jrcLossArea: processed.jrcLossArea,
+                sbtnLossArea: processed.sbtnLossArea
+              });
+              
+              return processed;
+            });
 
             setAnalysisResults(restoredResults);
             setFilteredResults(restoredResults);
@@ -714,25 +734,31 @@ export default function DeforestationMonitoring() {
   };
 
   const getLossBadge = (loss: string, lossArea?: number) => {
+    // Debug logging for troubleshooting
+    console.log('🎯 getLossBadge called with:', { loss, lossArea, type: typeof lossArea });
+
     // Always prioritize showing actual area values when available
     if (lossArea !== undefined && lossArea !== null && !isNaN(Number(lossArea))) {
       const areaValue = Number(lossArea);
+      console.log('✅ Using area value:', areaValue);
+      
       if (areaValue > 0) {
-        if (areaValue < 0.01) {
-          return <Badge className="bg-yellow-100 text-yellow-800">{areaValue.toFixed(3)} ha</Badge>;
-        } else {
+        if (areaValue >= 0.001) {
           return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(3)} ha</Badge>;
+        } else {
+          return <Badge className="bg-yellow-100 text-yellow-800">{areaValue.toFixed(4)} ha</Badge>;
         }
       } else {
-        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(3)} ha</Badge>;
+        return <Badge className="bg-green-100 text-green-800">0.000 ha</Badge>;
       }
     }
 
     // Fallback for cases without area data - should only show "Detected" if no area data exists
+    console.log('⚠️ No valid area data, falling back to status-based display');
     if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
       return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
     } else {
-      return <Badge className="bg-green-100 text-green-800">0.000 ha</Badge>;
+      return <Badge className="bg-green-100 text-green-800">No Loss</Badge>;
     }
   };
 
