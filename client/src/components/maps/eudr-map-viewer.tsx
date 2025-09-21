@@ -1804,6 +1804,34 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               })
             };
 
+            // Create deforestation layers immediately but don't add to map yet
+            console.log('🌳 Creating deforestation layers for full page view...');
+            
+            // Add enhanced error handling to all layers
+            enhancedDeforestationLayers.gfw.on('tileerror', function(e) {
+              console.warn('⚠️ GFW tile error in full view:', e.error?.message || e.error);
+            });
+            
+            enhancedDeforestationLayers.gfw.on('tileload', function(e) {
+              console.log('✅ GFW tile loaded in full view:', e.coords);
+            });
+            
+            enhancedDeforestationLayers.jrc.on('tileerror', function(e) {
+              console.warn('⚠️ JRC tile error in full view:', e.error?.message || e.error);
+            });
+            
+            enhancedDeforestationLayers.jrc.on('tileload', function(e) {
+              console.log('✅ JRC tile loaded in full view:', e.coords);
+            });
+            
+            enhancedDeforestationLayers.sbtn.on('tileerror', function(e) {
+              console.warn('⚠️ SBTN tile error in full view:', e.error?.message || e.error);
+            });
+            
+            enhancedDeforestationLayers.sbtn.on('tileload', function(e) {
+              console.log('✅ SBTN tile loaded in full view:', e.coords);
+            });
+
             // Deforestation layer controls - using function-based approach with enhanced error handling
             function setupDeforestationLayers() {
               console.log('🌳 Setting up enhanced deforestation layer controls...');
@@ -1841,41 +1869,26 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
             function handleGFWChange(e) {
               const isChecked = e.target.checked;
-              console.log('🌳 GFW checkbox changed:', isChecked);
+              console.log('🌳 GFW checkbox changed in full view:', isChecked);
 
               if (isChecked) {
                 try {
                   if (!map.hasLayer(enhancedDeforestationLayers.gfw)) {
                     enhancedDeforestationLayers.gfw.addTo(map);
-                    console.log('✅ GFW tree cover loss layer added to map');
+                    console.log('✅ GFW tree cover loss layer added to full view map');
                     console.log('🔗 GFW layer URL:', enhancedDeforestationLayers.gfw._url);
-
-                    // Add comprehensive error and success handling
-                    enhancedDeforestationLayers.gfw.on('tileerror', function(e) {
-                      console.warn('⚠️ GFW tile load error:', e.error?.message || e.error, 'at coords:', e.coords);
-                    });
-
-                    enhancedDeforestationLayers.gfw.on('tileload', function(e) {
-                      console.log('✅ GFW tile loaded successfully at:', e.coords);
-                    });
-
-                    enhancedDeforestationLayers.gfw.on('loading', function() {
-                      console.log('🔄 GFW layer started loading tiles...');
-                    });
-
-                    enhancedDeforestationLayers.gfw.on('load', function() {
-                      console.log('✅ GFW layer finished loading all tiles');
-                    });
 
                     // Force map refresh and trigger tile loading
                     map.invalidateSize();
                     setTimeout(() => {
                       map.panBy([1, 1]);
                       map.panBy([-1, -1]);
-                    }, 200);
+                    }, 100);
 
                     // Show success notification
                     showLayerNotification('GFW Forest Loss layer enabled', 'success');
+                  } else {
+                    console.log('🌳 GFW layer already on map');
                   }
                 } catch (error) {
                   console.error('❌ Error adding GFW layer:', error);
@@ -1885,7 +1898,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 try {
                   if (map.hasLayer(enhancedDeforestationLayers.gfw)) {
                     map.removeLayer(enhancedDeforestationLayers.gfw);
-                    console.log('✅ GFW tree cover loss layer removed from map');
+                    console.log('✅ GFW tree cover loss layer removed from full view map');
                     showLayerNotification('GFW Forest Loss layer disabled', 'info');
                   }
                 } catch (error) {
@@ -1896,32 +1909,25 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
             function handleJRCChange(e) {
               const isChecked = e.target.checked;
-              console.log('🌳 JRC checkbox changed:', isChecked);
+              console.log('🌳 JRC checkbox changed in full view:', isChecked);
 
               if (isChecked) {
                 try {
                   if (!map.hasLayer(enhancedDeforestationLayers.jrc)) {
                     enhancedDeforestationLayers.jrc.addTo(map);
-                    console.log('✅ JRC Tropical Moist Forest layer added to map');
-
-                    // Add error and success handling for WMS layer
-                    enhancedDeforestationLayers.jrc.on('tileerror', function(e) {
-                      console.warn('⚠️ JRC WMS tile load error:', e.error?.message || e.error);
-                    });
-
-                    enhancedDeforestationLayers.jrc.on('tileload', function(e) {
-                      console.log('✅ JRC WMS tile loaded successfully');
-                    });
+                    console.log('✅ JRC Tropical Moist Forest layer added to full view map');
 
                     // Force map refresh
                     map.invalidateSize();
                     setTimeout(() => {
                       map.panBy([1, 1]);
                       map.panBy([-1, -1]);
-                    }, 200);
+                    }, 100);
 
                     // Show success notification
                     showLayerNotification('JRC Tropical Forest layer enabled', 'success');
+                  } else {
+                    console.log('🌳 JRC layer already on map');
                   }
                 } catch (error) {
                   console.error('❌ Error adding JRC WMS layer:', error);
@@ -1931,7 +1937,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 try {
                   if (map.hasLayer(enhancedDeforestationLayers.jrc)) {
                     map.removeLayer(enhancedDeforestationLayers.jrc);
-                    console.log('✅ JRC Tropical Moist Forest layer removed from map');
+                    console.log('✅ JRC Tropical Moist Forest layer removed from full view map');
                     showLayerNotification('JRC Tropical Forest layer disabled', 'info');
                   }
                 } catch (error) {
@@ -1942,32 +1948,25 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
             function handleSBTNChange(e) {
               const isChecked = e.target.checked;
-              console.log('🌳 SBTN checkbox changed:', isChecked);
+              console.log('🌳 SBTN checkbox changed in full view:', isChecked);
 
               if (isChecked) {
                 try {
                   if (!map.hasLayer(enhancedDeforestationLayers.sbtn)) {
                     enhancedDeforestationLayers.sbtn.addTo(map);
-                    console.log('✅ SBTN Natural Lands layer added to map');
-
-                    // Add error and success handling
-                    enhancedDeforestationLayers.sbtn.on('tileerror', function(e) {
-                      console.warn('⚠️ SBTN tile load error:', e.error?.message || e.error);
-                    });
-
-                    enhancedDeforestationLayers.sbtn.on('tileload', function(e) {
-                      console.log('✅ SBTN tile loaded successfully');
-                    });
+                    console.log('✅ SBTN Natural Lands layer added to full view map');
 
                     // Force map refresh
                     map.invalidateSize();
                     setTimeout(() => {
                       map.panBy([1, 1]);
                       map.panBy([-1, -1]);
-                    }, 200);
+                    }, 100);
 
                     // Show success notification
                     showLayerNotification('SBTN Natural Lands layer enabled', 'success');
+                  } else {
+                    console.log('🌳 SBTN layer already on map');
                   }
                 } catch (error) {
                   console.error('❌ Error adding SBTN layer:', error);
@@ -1977,7 +1976,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 try {
                   if (map.hasLayer(enhancedDeforestationLayers.sbtn)) {
                     map.removeLayer(enhancedDeforestationLayers.sbtn);
-                    console.log('✅ SBTN Natural Lands layer removed from map');
+                    console.log('✅ SBTN Natural Lands layer removed from full view map');
                     showLayerNotification('SBTN Natural Lands layer disabled', 'info');
                   }
                 } catch (error) {
@@ -2011,54 +2010,86 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             // Setup deforestation layer controls with enhanced functionality
             setupDeforestationLayers();
 
-            // Test layer services availability
+            // Pre-load and test deforestation layers for immediate availability
             setTimeout(() => {
-              console.log('🔍 Testing deforestation layer services...');
+              console.log('🌳 Pre-testing deforestation layers for full view...');
+              
+              // Test each layer by attempting to load a sample tile
+              const testCoords = { z: 6, x: 32, y: 21 }; // Sample coordinates for testing
               
               // Test GFW service
-              fetch('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/6/32/21.png?start_year=2021&end_year=2024')
+              const gfwTestUrl = \`https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/\${testCoords.z}/\${testCoords.x}/\${testCoords.y}.png?start_year=2021&end_year=2024&tree_cover_density_threshold=30&render_type=true_color\`;
+              fetch(gfwTestUrl)
                 .then(response => {
                   if (response.ok) {
-                    console.log('✅ GFW service is accessible and working');
+                    console.log('✅ GFW service tested and working for full view');
                   } else {
-                    console.warn('⚠️ GFW service returned status:', response.status);
+                    console.warn('⚠️ GFW service test returned status:', response.status);
                   }
                 })
                 .catch(error => {
-                  console.warn('❌ GFW service error:', error.message);
+                  console.warn('❌ GFW service test error:', error.message);
                 });
 
               // Test JRC service
               fetch('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py?service=WMS&version=1.3.0&request=GetCapabilities')
                 .then(response => {
                   if (response.ok) {
-                    console.log('✅ JRC WMS service is accessible and working');
+                    console.log('✅ JRC WMS service tested and working for full view');
                   } else {
-                    console.warn('⚠️ JRC service returned status:', response.status);
+                    console.warn('⚠️ JRC service test returned status:', response.status);
                   }
                 })
                 .catch(error => {
-                  console.warn('❌ JRC service error:', error.message);
+                  console.warn('❌ JRC service test error:', error.message);
                 });
 
               // Test SBTN service
-              fetch('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/6/32/21')
+              const sbtnTestUrl = \`https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/\${testCoords.z}/\${testCoords.x}/\${testCoords.y}\`;
+              fetch(sbtnTestUrl)
                 .then(response => {
                   if (response.ok || response.status === 404) { // 404 is expected for non-existent tiles
-                    console.log('✅ SBTN service is accessible');
+                    console.log('✅ SBTN service tested and accessible for full view');
                   } else {
-                    console.warn('⚠️ SBTN service returned status:', response.status);
+                    console.warn('⚠️ SBTN service test returned status:', response.status);
                   }
                 })
                 .catch(error => {
-                  console.warn('❌ SBTN service error:', error.message);
+                  console.warn('❌ SBTN service test error:', error.message);
                 });
-                
-            }, 2000);
+
+              // After testing, ensure layers are ready for immediate use
+              console.log('🌳 Deforestation layers initialized and ready for full view');
+              
+            }, 1000);
 
             console.log('EUDR Map loaded with', analysisResults.length, 'plots');
             console.log('Polygons rendered:', polygons.length);
             console.log('Sample geometry data:', analysisResults[0]?.geometry);
+
+            // Auto-enable one deforestation layer for immediate visibility in full view
+            setTimeout(() => {
+              console.log('🌳 Auto-enabling GFW layer for immediate visibility in full view...');
+              
+              try {
+                // Auto-check the GFW checkbox to show the layer immediately
+                const gfwCheckbox = document.getElementById('gfwLayer');
+                if (gfwCheckbox && !gfwCheckbox.checked) {
+                  gfwCheckbox.checked = true;
+                  
+                  // Trigger the change event
+                  const changeEvent = new Event('change', { bubbles: true });
+                  gfwCheckbox.dispatchEvent(changeEvent);
+                  
+                  console.log('✅ Auto-enabled GFW Forest Loss layer in full view');
+                  
+                  // Show notification
+                  showLayerNotification('GFW Forest Loss auto-enabled for visibility', 'success');
+                }
+              } catch (error) {
+                console.error('❌ Error auto-enabling GFW layer:', error);
+              }
+            }, 2000);
             
             // Auto-load Indonesian Peatland layer for immediate visibility
             console.log('🏞️ Auto-loading Indonesian Peatland layer for immediate visibility...');
