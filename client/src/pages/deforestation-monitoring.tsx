@@ -425,12 +425,19 @@ export default function DeforestationMonitoring() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    // Clear relevant localStorage items
+    
+    // Clear all localStorage items to ensure clean state
     localStorage.removeItem('currentAnalysisResults');
     localStorage.removeItem('hasRealAnalysisData');
     localStorage.removeItem('shouldShowResultsTable');
     localStorage.removeItem('refreshTableAfterEdit');
     localStorage.removeItem('fromMapViewer');
+    localStorage.removeItem('analysisDataMeta');
+    
+    toast({
+      title: "Upload Cleared",
+      description: "All analysis data has been cleared. You can now upload a new file.",
+    });
   };
 
   const downloadExample = () => {
@@ -511,12 +518,13 @@ export default function DeforestationMonitoring() {
       currentResultsLength: analysisResults.length
     });
 
-    // Restore data if it exists and we should show the table
-    if (storedResults && hasRealData === 'true') {
+    // Only restore and show results if we have explicit flags indicating we should show the table
+    const shouldRestoreResults = shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true';
+    
+    if (storedResults && hasRealData === 'true' && shouldRestoreResults) {
       try {
         const parsedResults = JSON.parse(storedResults);
 
-        // Always restore results if we have valid data, regardless of current state
         if (parsedResults && parsedResults.length > 0) {
           console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
 
@@ -532,25 +540,23 @@ export default function DeforestationMonitoring() {
           setAnalysisResults(restoredResults);
           setFilteredResults(restoredResults);
 
-          // If we're returning from map viewer or edit polygon, show appropriate message
-          if (shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true') {
-            let source = 'analysis';
-            if (refreshAfterEdit === 'true') {
-              source = 'polygon editor';
-            } else if (fromMapViewer === 'true') {
-              source = 'map viewer';
-            }
-
-            toast({
-              title: "Results Restored", 
-              description: `Showing ${restoredResults.length} previously analyzed plots from ${source}`,
-            });
-
-            // Clear the flags after use
-            localStorage.removeItem('shouldShowResultsTable');
-            localStorage.removeItem('refreshTableAfterEdit');
-            localStorage.removeItem('fromMapViewer');
+          // Show appropriate message based on source
+          let source = 'analysis';
+          if (refreshAfterEdit === 'true') {
+            source = 'polygon editor';
+          } else if (fromMapViewer === 'true') {
+            source = 'map viewer';
           }
+
+          toast({
+            title: "Results Restored", 
+            description: `Showing ${restoredResults.length} previously analyzed plots from ${source}`,
+          });
+
+          // Clear the flags after use
+          localStorage.removeItem('shouldShowResultsTable');
+          localStorage.removeItem('refreshTableAfterEdit');
+          localStorage.removeItem('fromMapViewer');
         }
       } catch (error) {
         console.error('Error restoring analysis results:', error);
@@ -561,6 +567,11 @@ export default function DeforestationMonitoring() {
         localStorage.removeItem('refreshTableAfterEdit');
         localStorage.removeItem('fromMapViewer');
       }
+    } else if (!shouldRestoreResults) {
+      // If no explicit flag to show table, ensure results are cleared for clean state
+      console.log('📝 No explicit flag to show table - maintaining clean state');
+      setAnalysisResults([]);
+      setFilteredResults([]);
     }
   }, []); // Run only on mount
 
@@ -572,7 +583,10 @@ export default function DeforestationMonitoring() {
       const fromMapViewer = localStorage.getItem('fromMapViewer');
       const storedResults = localStorage.getItem('currentAnalysisResults');
 
-      if ((shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true') && storedResults && analysisResults.length === 0) {
+      // Only show results if we have explicit flags AND currently no results are showing
+      const shouldRestoreResults = shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true';
+      
+      if (shouldRestoreResults && storedResults && analysisResults.length === 0) {
         try {
           const parsedResults = JSON.parse(storedResults);
           if (parsedResults && parsedResults.length > 0) {
@@ -589,6 +603,8 @@ export default function DeforestationMonitoring() {
 
             setAnalysisResults(restoredResults);
             setFilteredResults(restoredResults);
+            
+            // Clear flags after successful restoration
             localStorage.removeItem('shouldShowResultsTable');
             localStorage.removeItem('refreshTableAfterEdit');
             localStorage.removeItem('fromMapViewer');
