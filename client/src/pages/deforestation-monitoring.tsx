@@ -1449,67 +1449,166 @@ export default function DeforestationMonitoring() {
               });
             }
 
-            // Deforestation layer controls
+            // Deforestation layer controls with enhanced implementation
             let gfwLayer = null;
             let jrcLayer = null;
             let sbtnLayer = null;
 
+            // Enhanced GFW Layer with proper URL and error handling
             const gfwCheckbox = window.parent.document.getElementById('quick-gfw-layer');
             if (gfwCheckbox) {
               gfwCheckbox.addEventListener('change', function(e) {
+                console.log('GFW checkbox changed:', e.target.checked);
                 if (e.target.checked) {
                   if (!gfwLayer) {
-                    gfwLayer = L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/{z}/{x}/{y}.png', {
-                      attribution: '© Global Forest Watch',
-                      opacity: 0.7,
-                      maxZoom: 12,
+                    // Enhanced GFW URL with proper parameters for 2021-2024 loss
+                    gfwLayer = L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/{z}/{x}/{y}.png?start_year=2021&end_year=2024&tree_cover_density_threshold=30&render_type=true_color', {
+                      attribution: '© Global Forest Watch - Tree Cover Loss 2021-2024',
+                      opacity: 0.8,
+                      maxZoom: 18,
+                      errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+                    });
+
+                    // Add error handling
+                    gfwLayer.on('tileerror', function(e) {
+                      console.warn('GFW tile load error:', e.error);
+                    });
+
+                    gfwLayer.on('tileload', function(e) {
+                      console.log('GFW tile loaded successfully at:', e.coords);
                     });
                   }
-                  gfwLayer.addTo(map);
-                } else if (gfwLayer && map.hasLayer(gfwLayer)) {
-                  map.removeLayer(gfwLayer);
+                  
+                  if (!map.hasLayer(gfwLayer)) {
+                    gfwLayer.addTo(map);
+                    console.log('GFW layer added to map');
+                    
+                    // Force map refresh
+                    setTimeout(() => {
+                      map.invalidateSize();
+                    }, 100);
+                  }
+                } else {
+                  if (gfwLayer && map.hasLayer(gfwLayer)) {
+                    map.removeLayer(gfwLayer);
+                    console.log('GFW layer removed from map');
+                  }
                 }
               });
             }
 
+            // Enhanced JRC Layer with correct WMS parameters
             const jrcCheckbox = window.parent.document.getElementById('quick-jrc-layer');
             if (jrcCheckbox) {
               jrcCheckbox.addEventListener('change', function(e) {
+                console.log('JRC checkbox changed:', e.target.checked);
                 if (e.target.checked) {
                   if (!jrcLayer) {
+                    // Corrected JRC TMF WMS service
                     jrcLayer = L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
-                      layers: 'gfc2020_v2', // Check if this layer name is correct for JRC Forest Cover
+                      layers: 'gfc2020_v2',
                       format: 'image/png',
                       transparent: true,
-                      attribution: '© JRC European Commission',
-                      opacity: 0.7,
-                      maxZoom: 12,
+                      attribution: '© JRC European Commission - Tropical Moist Forest',
+                      opacity: 0.8,
+                      version: '1.3.0',
+                      maxZoom: 18
+                    });
+
+                    // Add error handling
+                    jrcLayer.on('tileerror', function(e) {
+                      console.warn('JRC tile load error:', e.error);
                     });
                   }
-                  jrcLayer.addTo(map);
-                } else if (jrcLayer && map.hasLayer(jrcLayer)) {
-                  map.removeLayer(jrcLayer);
+                  
+                  if (!map.hasLayer(jrcLayer)) {
+                    jrcLayer.addTo(map);
+                    console.log('JRC layer added to map');
+                    
+                    // Force map refresh
+                    setTimeout(() => {
+                      map.invalidateSize();
+                    }, 100);
+                  }
+                } else {
+                  if (jrcLayer && map.hasLayer(jrcLayer)) {
+                    map.removeLayer(jrcLayer);
+                    console.log('JRC layer removed from map');
+                  }
                 }
               });
             }
 
+            // Enhanced SBTN Layer with proper tile service
             const sbtnCheckbox = window.parent.document.getElementById('quick-sbtn-layer');
             if (sbtnCheckbox) {
               sbtnCheckbox.addEventListener('change', function(e) {
+                console.log('SBTN checkbox changed:', e.target.checked);
                 if (e.target.checked) {
                   if (!sbtnLayer) {
+                    // SBTN Natural Lands tile service
                     sbtnLayer = L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
-                      attribution: '© SBTN',
+                      attribution: '© SBTN - Science Based Targets Network',
                       opacity: 0.7,
-                      maxZoom: 12,
+                      maxZoom: 18,
+                      errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+                    });
+
+                    // Add error handling
+                    sbtnLayer.on('tileerror', function(e) {
+                      console.warn('SBTN tile load error:', e.error);
                     });
                   }
-                  sbtnLayer.addTo(map);
-                } else if (sbtnLayer && map.hasLayer(sbtnLayer)) {
-                  map.removeLayer(sbtnLayer);
+                  
+                  if (!map.hasLayer(sbtnLayer)) {
+                    sbtnLayer.addTo(map);
+                    console.log('SBTN layer added to map');
+                    
+                    // Force map refresh
+                    setTimeout(() => {
+                      map.invalidateSize();
+                    }, 100);
+                  }
+                } else {
+                  if (sbtnLayer && map.hasLayer(sbtnLayer)) {
+                    map.removeLayer(sbtnLayer);
+                    console.log('SBTN layer removed from map');
+                  }
                 }
               });
             }
+
+            // Test layer availability and show status messages
+            setTimeout(() => {
+              console.log('Testing deforestation layer services...');
+              
+              // Test GFW service
+              fetch('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/6/32/21.png?start_year=2021&end_year=2024')
+                .then(response => {
+                  if (response.ok) {
+                    console.log('✅ GFW service is accessible');
+                  } else {
+                    console.warn('⚠️ GFW service returned:', response.status);
+                  }
+                })
+                .catch(error => {
+                  console.warn('❌ GFW service error:', error.message);
+                });
+
+              // Test JRC service
+              fetch('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py?service=WMS&version=1.3.0&request=GetCapabilities')
+                .then(response => {
+                  if (response.ok) {
+                    console.log('✅ JRC WMS service is accessible');
+                  } else {
+                    console.warn('⚠️ JRC service returned:', response.status);
+                  }
+                })
+                .catch(error => {
+                  console.warn('❌ JRC service error:', error.message);
+                });
+
+            }, 1000);
 
             console.log('Quick Preview Map loaded with', analysisResults.length, 'plots');
           </script>
@@ -2051,70 +2150,101 @@ export default function DeforestationMonitoring() {
                 id="quick-preview-map"
               />
 
-              {/* Map Controls Overlay */}
-              <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-4 min-w-[280px]">
+              {/* Map Controls Overlay - Enhanced for Better Deforestation Layer Control */}
+              <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-4 min-w-[300px] max-h-[80vh] overflow-y-auto">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Base Layer</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">🗺️ Base Layer</label>
                     <select 
                       id="quick-base-layer"
-                      className="w-full p-2 border border-gray-300 rounded text-sm"
+                      className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
                       defaultValue="satellite"
                     >
                       <option value="osm">OpenStreetMap</option>
-                      <option value="satellite">Satellite</option>
+                      <option value="satellite">Satellite Imagery</option>
                       <option value="terrain">Terrain</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Risk Filter</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">🎯 Risk Filter</label>
                     <select 
                       id="quick-risk-filter"
-                      className="w-full p-2 border border-gray-300 rounded text-sm"
+                      className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500"
                       defaultValue="all"
                     >
-                      <option value="all">Show All</option>
+                      <option value="all">Show All Plots</option>
                       <option value="high">High Risk Only</option>
-                      <option value="low">Low/Medium Risk</option> {/* Adjusted option text */}
+                      <option value="low">Low/Medium Risk Only</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Protected Areas</label>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="quick-wdpa-layer" className="rounded" />
-                        <span className="text-sm">WDPA Protected Areas</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">🛡️ Protected Areas</label>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-blue-50 rounded transition-colors">
+                        <input 
+                          type="checkbox" 
+                          id="quick-wdpa-layer" 
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm font-medium">WDPA Protected Areas</span>
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Indonesian Peatland</label>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="quick-peatland-layer" className="rounded" />
-                        <span className="text-sm">Indonesian Peatland Areas</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">🏞️ Indonesian Peatland</label>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-green-50 rounded transition-colors">
+                        <input 
+                          type="checkbox" 
+                          id="quick-peatland-layer" 
+                          className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm font-medium">Indonesian Peatland Areas</span>
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Deforestation Layers</label>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="quick-gfw-layer" className="rounded" />
-                        <span className="text-sm">GFW Forest Loss</span>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">🌳 Deforestation Analysis</label>
+                    <div className="bg-red-50 rounded-lg p-2 space-y-1">
+                      <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-red-100 rounded transition-colors">
+                        <input 
+                          type="checkbox" 
+                          id="quick-gfw-layer" 
+                          className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+                        />
+                        <span className="text-sm font-medium">GFW Forest Loss (2021-2024)</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="quick-jrc-layer" className="rounded" />
-                        <span className="text-sm">JRC Forest Cover</span>
+                      <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-red-100 rounded transition-colors">
+                        <input 
+                          type="checkbox" 
+                          id="quick-jrc-layer" 
+                          className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500"
+                        />
+                        <span className="text-sm font-medium">JRC Tropical Forest</span>
                       </label>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="quick-sbtn-layer" className="rounded" />
-                        <span className="text-sm">SBTN Natural Loss</span>
+                      <label className="flex items-center gap-2 cursor-pointer p-2 hover:bg-red-100 rounded transition-colors">
+                        <input 
+                          type="checkbox" 
+                          id="quick-sbtn-layer" 
+                          className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                        />
+                        <span className="text-sm font-medium">SBTN Natural Lands</span>
                       </label>
+                      <div className="text-xs text-gray-600 bg-white p-2 rounded border-l-2 border-red-400 mt-2">
+                        💡 <strong>Tip:</strong> Enable layers individually to see deforestation patterns overlaid on your analysis results.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-3">
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <div>• GFW: Global Forest Watch tree cover loss</div>
+                      <div>• JRC: EU Joint Research Centre tropical forest monitoring</div>
+                      <div>• SBTN: Science Based Targets Network natural lands</div>
                     </div>
                   </div>
                 </div>
