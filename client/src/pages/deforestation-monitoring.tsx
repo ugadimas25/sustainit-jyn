@@ -2133,7 +2133,7 @@ export default function DeforestationMonitoring() {
                     <span className="text-sm">Low/Medium Risk - Compliant</span> {/* Adjusted text */}
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4" style="background-color: #d2b48c;"></div> {/* Example color for WDPA */}
+                    <div className="w-4 h-4" style={{backgroundColor: "#d2b48c"}}></div> {/* Example color for WDPA */}
                     <span className="text-sm">WDPA Protected Areas</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -2141,7 +2141,7 @@ export default function DeforestationMonitoring() {
                     <span className="text-sm">Non Kubah Gambut</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4" style="background-color: #8b4513;"></div> {/* Example color for Kubah Gambut */}
+                    <div className="w-4 h-4" style={{backgroundColor: "#8b4513"}}></div> {/* Example color for Kubah Gambut */}
                     <span className="text-sm">Kubah Gambut</span>
                   </div>
                 </div>
