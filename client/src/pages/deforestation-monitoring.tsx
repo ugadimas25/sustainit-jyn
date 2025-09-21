@@ -37,6 +37,8 @@ interface AnalysisResult {
   jrcLossArea?: number;
   sbtnLossArea?: number;
   geometry?: any;
+  wdpaStatus: 'PROTECTED' | 'NOT_PROTECTED' | 'UNKNOWN';
+  peatlandStatus: 'PEATLAND' | 'NOT_PEATLAND' | 'UNKNOWN';
 }
 
 interface UploadedFile {
@@ -102,7 +104,7 @@ export default function DeforestationMonitoring() {
       let geojsonData;
       try {
         geojsonData = JSON.parse(geojsonFile);
-        
+
         // Ensure we have a FeatureCollection
         if (!geojsonData.features || !Array.isArray(geojsonData.features)) {
           throw new Error('Invalid GeoJSON structure: Missing features array');
@@ -145,7 +147,7 @@ export default function DeforestationMonitoring() {
         });
 
         console.log(`✅ Prepared ${geojsonData.features.length} features for EUDR analysis`);
-        
+
       } catch (parseError) {
         console.error('GeoJSON parsing error:', parseError);
         throw new Error(`Failed to parse GeoJSON file: ${parseError instanceof Error ? parseError.message : 'Invalid format'}`);
@@ -156,7 +158,7 @@ export default function DeforestationMonitoring() {
 
       try {
         console.log('🚀 Uploading GeoJSON for EUDR analysis...');
-        
+
         const response = await fetch('/api/geojson/upload', {
           method: 'POST',
           headers: {
@@ -170,7 +172,7 @@ export default function DeforestationMonitoring() {
 
         if (!response.ok) {
           let errorMessage = `Upload failed with status ${response.status}`;
-          
+
           try {
             const errorData = await response.json();
             errorMessage = errorData.error || errorData.details || errorMessage;
@@ -178,17 +180,17 @@ export default function DeforestationMonitoring() {
             // If we can't parse the error response, use the status text
             errorMessage = response.statusText || errorMessage;
           }
-          
+
           throw new Error(errorMessage);
         }
 
         const result = await response.json();
         console.log('✅ EUDR analysis upload successful');
         return result;
-        
+
       } catch (networkError) {
         console.error('Network error during upload:', networkError);
-        
+
         if (networkError instanceof Error) {
           // Check for specific network issues
           if (networkError.message.includes('fetch')) {
@@ -246,7 +248,9 @@ export default function DeforestationMonitoring() {
             gfwLossArea: gfwLossHa, // Keep in hectares
             jrcLossArea: jrcLossHa, // Keep in hectares  
             sbtnLossArea: sbtnLossHa, // Keep in hectares
-            geometry: result.geometry
+            geometry: result.geometry,
+            wdpaStatus: result.wdpaStatus || 'UNKNOWN',
+            peatlandStatus: result.peatlandStatus || 'UNKNOWN'
           };
         });
 
@@ -315,7 +319,9 @@ export default function DeforestationMonitoring() {
               gfwLossArea: gfwLossArea, // Keep in hectares
               jrcLossArea: jrcLossArea, // Keep in hectares
               sbtnLossArea: sbtnLossArea, // Keep in hectares
-              geometry: feature.geometry
+              geometry: feature.geometry,
+              wdpaStatus: props.wdpaStatus || 'UNKNOWN',
+              peatlandStatus: props.peatlandStatus || 'UNKNOWN'
             };
           });
 
@@ -349,10 +355,10 @@ export default function DeforestationMonitoring() {
     },
     onError: (error) => {
       console.error('EUDR analysis failed:', error);
-      
+
       let errorTitle = "EUDR Analysis Failed";
       let errorDescription = error.message;
-      
+
       // Provide specific guidance based on error type
       if (error.message.includes('parse')) {
         errorTitle = "GeoJSON Format Error";
@@ -367,13 +373,13 @@ export default function DeforestationMonitoring() {
         errorTitle = "Feature Validation Error";
         errorDescription = "Some features in your GeoJSON are invalid. Ensure all features have valid geometry and plot identifiers.";
       }
-      
+
       toast({
         title: errorTitle,
         description: errorDescription,
         variant: "destructive"
       });
-      
+
       setIsAnalyzing(false);
       setAnalysisProgress(0);
     },
@@ -414,7 +420,7 @@ export default function DeforestationMonitoring() {
         let parsedGeoJSON;
         try {
           const contentStr = content.toString().trim();
-          
+
           // Check if content is empty
           if (!contentStr) {
             console.warn('File appears to be empty');
@@ -432,17 +438,17 @@ export default function DeforestationMonitoring() {
             console.log('✅ Successfully parsed JSON file');
           } catch (syntaxError) {
             console.error('JSON syntax error:', syntaxError);
-            
+
             // Try to identify the specific JSON issue
             const errorMsg = syntaxError instanceof Error ? syntaxError.message : 'Unknown syntax error';
             let friendlyMsg = "Invalid JSON format";
-            
+
             if (errorMsg.includes('Unexpected token')) {
               friendlyMsg = "JSON syntax error - check for missing commas, brackets, or quotes";
             } else if (errorMsg.includes('Unexpected end')) {
               friendlyMsg = "Incomplete JSON file - file may be truncated";
             }
-            
+
             toast({
               title: "JSON Parse Error",
               description: `${friendlyMsg}. ${errorMsg}`,
@@ -450,7 +456,7 @@ export default function DeforestationMonitoring() {
             });
             return;
           }
-          
+
         } catch (parseError) {
           console.error('General parsing error:', parseError);
           toast({
@@ -518,7 +524,7 @@ export default function DeforestationMonitoring() {
 
         for (let i = 0; i < parsedGeoJSON.features.length; i++) {
           const feature = parsedGeoJSON.features[i];
-          
+
           try {
             // Basic feature validation
             if (!feature || typeof feature !== 'object') {
@@ -538,7 +544,7 @@ export default function DeforestationMonitoring() {
 
             // Enhanced properties handling for EUDR workflow
             const props = feature.properties || {};
-            
+
             // Auto-generate plot_id if missing (for EUDR workflow compatibility)
             if (!props.plot_id && !props.id && !props['.Farmers ID'] && !props.Name) {
               props.plot_id = `PLOT_${String(i + 1).padStart(3, '0')}`;
@@ -565,7 +571,7 @@ export default function DeforestationMonitoring() {
             feature.properties = props;
             processedFeatures.push(feature);
             validFeatureCount++;
-            
+
           } catch (featureError) {
             console.error(`Error processing feature ${i + 1}:`, featureError);
             issues.push(`Feature ${i + 1}: Processing error - ${featureError instanceof Error ? featureError.message : 'Unknown error'}`);
@@ -576,7 +582,7 @@ export default function DeforestationMonitoring() {
         // Log issues but be more forgiving
         if (issues.length > 0) {
           console.warn('Feature processing issues:', issues.slice(0, 3)); // Log first 3 issues
-          
+
           // Only show warning if more than 50% of features failed
           if (validFeatureCount < parsedGeoJSON.features.length * 0.5) {
             toast({
@@ -605,7 +611,7 @@ export default function DeforestationMonitoring() {
         // Enhanced format detection for better logging
         const sampleFeature = parsedGeoJSON.features[0];
         const props = sampleFeature?.properties || {};
-        
+
         let detectedFormat = 'Unknown';
         if (props.plot_id && props.country_name) {
           detectedFormat = 'EUDR Analysis Ready';
@@ -618,7 +624,7 @@ export default function DeforestationMonitoring() {
         } else if (props.country_name || props.farm_name) {
           detectedFormat = 'Extended GeoJSON format';
         }
-        
+
         console.log(`✅ Detected format: ${detectedFormat}`);
 
         setUploadedFile({
@@ -632,7 +638,7 @@ export default function DeforestationMonitoring() {
           title: "File uploaded successfully",
           description: `${file.name} (${(file.size / 1024).toFixed(1)} KB) - ${validFeatureCount} features ready for EUDR analysis`
         });
-        
+
       } catch (error: any) {
         console.error("File upload error:", error);
         const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
@@ -641,7 +647,7 @@ export default function DeforestationMonitoring() {
           description: `Error: ${errorMessage}. Please check the file format and try again.`,
           variant: "destructive",
         });
-        
+
         // Clear the file input if there's an error
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -801,7 +807,9 @@ export default function DeforestationMonitoring() {
                 gfwLossArea: gfwLossArea,
                 jrcLossArea: jrcLossArea,
                 sbtnLossArea: sbtnLossArea,
-                area: parseFloat(result.area?.toString() || '0')
+                area: parseFloat(result.area?.toString() || '0'),
+                wdpaStatus: result.wdpaStatus || 'UNKNOWN',
+                peatlandStatus: result.peatlandStatus || 'UNKNOWN'
               };
 
               console.log(`🔧 Restored ${result.plotId}:`, {
@@ -903,7 +911,9 @@ export default function DeforestationMonitoring() {
                 gfwLossArea: gfwLossArea,
                 jrcLossArea: jrcLossArea,
                 sbtnLossArea: sbtnLossArea,
-                area: parseFloat(result.area?.toString() || '0')
+                area: parseFloat(result.area?.toString() || '0'),
+                wdpaStatus: result.wdpaStatus || 'UNKNOWN',
+                peatlandStatus: result.peatlandStatus || 'UNKNOWN'
               };
 
               console.log(`🔧 Storage change restored ${result.plotId}:`, {
@@ -1274,8 +1284,7 @@ export default function DeforestationMonitoring() {
                          analysisProgress < 30 ? 'Detecting countries using PostGIS database...' :
                          analysisProgress < 50 ? 'Uploading to EUDR Multilayer API...' :
                          analysisProgress < 70 ? 'Analyzing with GFW Loss dataset...' :
-                         analysisProgress < 85 ? 'Processing JRC and SBTN loss data...' :
-                         analysisProgress < 95 ? 'Calculating compliance status...' :
+                         analysisProgress < 85 ? 'Calculating compliance status...' :
                          'Finalizing EUDR analysis results...'}
                       </span>
                       <span className="text-blue-600 font-medium">{analysisProgress}%</span>
@@ -1285,8 +1294,7 @@ export default function DeforestationMonitoring() {
                       {analysisProgress < 30 ? 'Validating plot boundaries and coordinates' :
                        analysisProgress < 50 ? 'Ensuring EUDR compliance data format' :
                        analysisProgress < 70 ? 'Cross-referencing with Global Forest Watch data' :
-                       analysisProgress < 85 ? 'Analyzing against JRC TMF and SBTN datasets' :
-                       'Generating compliance scores and risk assessment'}
+                       'Analyzing against JRC TMF and SBTN datasets'}
                     </p>
                   </div>
                 )}
@@ -1519,7 +1527,25 @@ export default function DeforestationMonitoring() {
                           {getSortIcon('sbtnLoss')}
                         </div>
                       </th>
-                      </tr>
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('wdpaStatus')}
+                      >
+                        <div className="flex items-center gap-2">
+                          WDPA Status
+                          {getSortIcon('wdpaStatus')}
+                        </div>
+                      </th>
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => handleSort('peatlandStatus')}
+                      >
+                        <div className="flex items-center gap-2">
+                          Peatland Status
+                          {getSortIcon('peatlandStatus')}
+                        </div>
+                      </th>
+                    </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                     {currentPageData.map((result, index) => {
@@ -1566,6 +1592,16 @@ export default function DeforestationMonitoring() {
                         </td>
                         <td className="px-4 py-4 text-sm">
                           {getLossBadge(result.sbtnLoss, result.sbtnLossArea)}
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          {result.wdpaStatus === 'PROTECTED' ? <Badge className="bg-blue-100 text-blue-800">Protected</Badge>
+                           : result.wdpaStatus === 'NOT_PROTECTED' ? <Badge className="bg-red-100 text-red-800">Not Protected</Badge>
+                           : <Badge variant="secondary">{result.wdpaStatus}</Badge>}
+                        </td>
+                        <td className="px-4 py-4 text-sm">
+                          {result.peatlandStatus === 'PEATLAND' ? <Badge className="bg-green-100 text-green-800">Peatland</Badge>
+                           : result.peatlandStatus === 'NOT_PEATLAND' ? <Badge className="bg-red-100 text-red-800">Not Peatland</Badge>
+                           : <Badge variant="secondary">{result.peatlandStatus}</Badge>}
                         </td>
                       </tr>
                       );
