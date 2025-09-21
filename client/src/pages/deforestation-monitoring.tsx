@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import EudrMapViewer from './EudrMapViewer'; // Assuming EudrMapViewer is in the same directory or correctly aliased
+import EudrMapViewer from '@/components/maps/eudr-map-viewer';
 
 interface AnalysisResult {
   plotId: string;
