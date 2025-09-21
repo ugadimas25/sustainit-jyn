@@ -1925,321 +1925,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
 
-      // Add text content for plot risk assessment
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('The plot risk assessment is based on the geospatial analysis on deforestation and land approved for', 10, yPos);
-      yPos += 8;
-      doc.text('farming map.', 10, yPos);
-
-      yPos += 15;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      const riskText = 'Geospatial analysis involves capturing plot polygons or GPS coordinates using advanced satellite monitoring systems and analyzing them to ensure no deforestation occurred after December 2020 and that the plots are on legally approved land. If deforestation is detected, further verifications are conducted. Plots showing no deforestation proceed to land legality analysis. The map reference for deforestation and land approved for farming is provided in the following information.';
-      const wrappedText = doc.splitTextToSize(riskText, 180);
-      doc.text(wrappedText, 10, yPos);
-      yPos += wrappedText.length * 6 + 15;
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Geospatial analysis reference', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.text('Deforestation map: GFW', 10, yPos);
-      yPos += 8;
-      doc.text('Land approved for farming map: WDPA & Or National Map. Please clarify with Koliva directly which map is being used.', 10, yPos);
-
-      yPos += 15;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Outputs: ', 10, yPos);
-      doc.setFont('helvetica', 'normal');
-      doc.text('The output includes deforestation, land-approved-for-farming maps, and land legality analysis, as well as providing negligibility status information:', 10, yPos + 8);
-
-      yPos += 25;
-      doc.text('• Low: Assessment indicates that there is high certainty for EUDR negligible risk and proof is available. The low risk is categorized as negligible.', 15, yPos);
-      yPos += 10;
-      doc.text('• Medium: Assessment shows that there is an indication of negligible risk. However, further mitigation actions are encouraged. The medium risk is categorized as negligible.', 15, yPos);
-      yPos += 10;
-      doc.text('• High: Assessment indicates that the farmer/plots are high risk and categorized as non negligible.', 15, yPos);
-
-      yPos += 15;
-      const finalText = 'Non-negligible plots are flagged with warning indicators, and users can view details of negligibility status and reasons for non-negligible through interactive map features. This detailed methodology ensures that operators can systematically assess and verify their negligibility status with the EUDR, promoting sustainable agricultural practices and mitigating deforestation risks.';
-      const finalWrapped = doc.splitTextToSize(finalText, 180);
-      doc.text(finalWrapped, 10, yPos);
-
-      // Page 3 - Land Cover Change Monitoring Flowchart
-      doc.addPage();
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 3 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
-
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('FLOWCHART LAND COVER CHANGE MONITORING', 105, yPos, { align: 'center' });
-
-      yPos += 20;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('This flowchart illustrates the workflow for monitoring and verifying', 10, yPos);
-      yPos += 8;
-      doc.text('deforestation alerts across plantation concession areas. It aims to conduct monitoring every 3 months as', 10, yPos);
-      yPos += 8;
-      doc.text('well as incidental events.', 10, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Process Flow:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.text('1. GIS → Alert → Verify Coordinates Location → Desktop Analysis', 15, yPos);
-      yPos += 8;
-      doc.text('2. Estate Manager → Controlled by Community → Verify Field Location', 15, yPos);
-      yPos += 8;
-      doc.text('3. System And Monitoring → Verify Land Cover Change Final Report', 15, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Legal Framework:', 10, yPos);
-      yPos += 10;
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('1. UU No. 32 / 2009 on Environmental Protection and Management - Requires forest area clearing without permits', 15, yPos);
-      yPos += 6;
-      doc.text('2. UU No. 32 / 2014 on Marine and Fisheries - Protection and Management - Requires plantation business activities', 15, yPos);
-      yPos += 6;
-      doc.text('3. PERMEN LHK No. P.71/MENLHK.1/2019 - Environmental Information System - Including through monitoring system', 15, yPos);
-      yPos += 6;
-      doc.text('4. EU Deforestation Regulation (EUDR) - Ensures supply chain traceability and proof of deforestation-free since 2020', 15, yPos);
-
-      yPos += 15;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('GeoJSON Data Access:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      const geoJsonLink = 'https://api.kpn-eudr.com/geojson/plots-data.geojson';
-      doc.setTextColor(0, 0, 255); // Blue color for link
-      doc.text('Link: ' + geoJsonLink, 15, yPos);
-      doc.setTextColor(0, 0, 0); // Back to black
-
-      yPos += 12;
-      doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
-      yPos += 6;
-      doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
-
-      // Page 4 - Risk Assessment Process Flowchart
-      doc.addPage();
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 4 - RISK ASSESSMENT PROCESS', 105, 20, { align: 'center' });
-
-      yPos = 40;
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('RISK ASSESSMENT PROCESS OVERVIEW', 105, yPos, { align: 'center' });
-
-      yPos += 20;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('This section outlines the systematic risk assessment approach used to evaluate', 10, yPos);
-      yPos += 8;
-      doc.text('deforestation risks and ensure EUDR compliance across all production plots.', 10, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Key Process Components:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.text('• Data Collection → Risk Identification → Impact Assessment → Scoring', 15, yPos);
-      yPos += 8;
-      doc.text('• Satellite Monitoring → Field Verification → Documentation Review', 15, yPos);
-      yPos += 8;
-      doc.text('• Legal Compliance Check → Final Risk Determination → Mitigation Planning', 15, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Risk Assessment Matrix:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.text('Risk Category | Assessment Criteria | Compliance Action', 10, yPos);
-      yPos += 8;
-      doc.text('Deforestation | Satellite imagery analysis | No forest loss post-2020', 10, yPos);
-      yPos += 8;
-      doc.text('Legal Compliance | Permits & certifications | Valid documentation', 10, yPos);
-      yPos += 8;
-      doc.text('Supply Chain | Traceability verification | Complete chain of custody', 10, yPos);
-      yPos += 8;
-      doc.text('Operational | Quality & production data | Standards compliance', 10, yPos);
-
-      yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Data Verification & Quality Assurance:', 10, yPos);
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.text('• Multi-source data cross-validation and consistency checks', 15, yPos);
-      yPos += 8;
-      doc.text('• Independent third-party verification of critical findings', 15, yPos);
-      yPos += 8;
-      doc.text('• Automated monitoring systems with manual verification protocols', 15, yPos);
-      yPos += 8;
-      doc.text('• Regular audit trails and documentation review processes', 15, yPos);
-
-      // Generate PDF buffer
-      const pdfBuffer = doc.output('arraybuffer');
-
-      console.log('PDF generated successfully');
-
-      // Return the PDF file
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
-      res.send(Buffer.from(pdfBuffer));
-
-    } catch (error) {
-      console.error('Error generating dummy DDS PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
-    }
-  });
-
-  // Enhanced 4-page PDF generation with embedded flowchart images
-  function generateCleanDDSPDF(report: any): ArrayBuffer {
-    try {
-      const doc = new jsPDF();
-
-      // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
-      const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
-
-      console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
-
-      // PAGE 1 - Main DDS Content with Professional Tables
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EU Due Diligence Statement', 105, 20, { align: 'center' });
-
-      // Header section with border
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.rect(10, 30, 190, 15);
-      doc.text('Page 1 of 4', 15, 38);
-      doc.text('Status: GENERATED', 90, 38);
-      const currentDate = new Date().toLocaleDateString('en-GB');
-      doc.text(`Generated: ${currentDate}`, 150, 38);
-
-      let yPos = 55;
-
-      // Section 1: Reference Information Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('1. Reference Information', 10, yPos);
-      yPos += 10;
-
-      // Create table for reference info
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 25);
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(80, yPos, 80, yPos + 25);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Company Internal Ref:', 12, yPos + 8);
-      doc.text('Activity:', 12, yPos + 20);
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.companyInternalRef || 'DDS-2024-001', 82, yPos + 8);
-      doc.text(report.activity || 'Import of Palm Oil Products', 82, yPos + 20);
-      yPos += 35;
-
-      // Section 2: Operator Information Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('2. Operator/Trader Information', 10, yPos);
-      yPos += 10;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 35);
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(10, yPos + 24, 200, yPos + 24);
-      doc.line(60, yPos, 60, yPos + 35);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Name:', 12, yPos + 8);
-      doc.text('Address:', 12, yPos + 20);
-      doc.text('Country:', 12, yPos + 32);
-
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.operatorLegalName || 'KPN Corporation Berhad', 62, yPos + 8);
-      const address = report.operatorAddress || 'Level 6, Menara KPN, Jalan Sultan Ismail, Kuala Lumpur, Malaysia';
-      const addressLines = doc.splitTextToSize(address, 135);
-      doc.text(addressLines, 62, yPos + 16);
-      doc.text(report.operatorCountry || 'Malaysia', 62, yPos + 32);
-      yPos += 45;
-
-      // Section 3: Commodity Information Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('3. Commodity Information', 10, yPos);
-      yPos += 10;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 35);
-
-      // Table headers
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(70, yPos, 70, yPos + 35);
-      doc.line(120, yPos, 120, yPos + 35);
-      doc.line(150, yPos, 150, yPos + 35);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Description', 12, yPos + 8);
-      doc.text('Net Mass (Kg)', 72, yPos + 8);
-      doc.text('% Est.', 122, yPos + 8);
-      doc.text('Units', 152, yPos + 8);
-
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.productDescription || 'Crude Palm Oil (CPO)', 12, yPos + 20);
-      doc.text(report.netMassKg?.toString() || '2150.000', 72, yPos + 20);
-      doc.text(report.percentageEstimation?.toString() + '%' || '5%', 122, yPos + 20);
-      doc.text(report.supplementaryUnit || 'MT', 152, yPos + 20);
-
-      // Scientific details
-      doc.text(`Scientific: ${report.scientificName || 'Elaeis guineensis'}`, 12, yPos + 28);
-      doc.text(`Common: ${report.commonName || 'Oil Palm'}`, 72, yPos + 28);
-      yPos += 45;
-
-      // Section 4: Summary Statistics Table
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('4. Summary Statistics', 10, yPos);
-      yPos += 10;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.rect(10, yPos, 190, 25);
-      doc.line(10, yPos + 12, 200, yPos + 12);
-      doc.line(95, yPos, 95, yPos + 25);
-
-      doc.setFont('helvetica', 'bold');
-      doc.text('Total Producers:', 12, yPos + 8);
-      doc.text('Total Plots:', 12, yPos + 20);
-      doc.text('Total Area (ha):', 97, yPos + 8);
-      doc.text('Country of Harvest:', 97, yPos + 20);
-
-      doc.setFont('helvetica', 'normal');
-      doc.text(report.totalProducers?.toString() || '15', 55, yPos + 8);
-      doc.text(report.totalPlots?.toString() || '45', 40, yPos + 20);
-      doc.text(report.totalProductionArea?.toString() || '1250.50', 140, yPos + 8);
-      doc.text(report.countryOfHarvest || 'Malaysia', 150, yPos + 20);
-
-      // PAGE 2 - Methodology Section with Embedded Image
-      doc.addPage();
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EUDR Compliance Methodology', 105, 20, { align: 'center' });
-
       // Header for page 2
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -2252,6 +1937,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Embed the EUDR Compliance Verification flowchart image
       try {
+        // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
+        const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+
+        console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
+
         doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
         yPos += 110;
       } catch (error) {
@@ -2312,7 +2002,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       yPos += 70;
 
-      // Methodology Section 2: Risk Assessment Framework
+      // Methodology Section 2: Risk Assessment & Compliance Framework
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('2. Risk Assessment & Compliance Framework', 10, yPos);
@@ -2612,228 +2302,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(item, 10, yPos + (index * 5));
       });
 
+      // Generate PDF buffer
+      const pdfBuffer = doc.output('arraybuffer');
+
       console.log('✅ Enhanced 4-page PDF generated successfully with professional layout');
       console.log('✅ PDF includes: Page 1 (DDS Data), Page 2 (Methodology), Page 3 (Risk Analysis), Page 4 (LCC Monitoring)');
-      return doc.output('arraybuffer');
+      return pdfBuffer;
+
     } catch (error) {
-      console.error('Error generating enhanced PDF:', error);
-      throw error;
+      console.error('Error generating dummy DDS PDF:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
     }
-  }
-
-  // Helper function to remove z-values from coordinates (API external tidak bisa terima z-values)
-  function removeZValues(coordinates: any): any {
-    if (!coordinates || !Array.isArray(coordinates)) {
-      return coordinates;
-    }
-
-    return coordinates.map((coord: any) => {
-      if (Array.isArray(coord)) {
-        if (typeof coord[0] === 'number' && typeof coord[1] === 'number') {
-          // This is a coordinate pair [lng, lat, z] - remove z
-          return [coord[0], coord[1]];
-        } else {
-          // This is a nested array - recurse
-          return removeZValues(coord);
-        }
-      }
-      return coord;
-    });
-  }
-
-  // Helper function to calculate area from geometry if not provided
-  function calculateAreaFromGeometry(geometry: any): number {
-    // Simplified area calculation - in production would use proper geospatial library
-    if (!geometry || !geometry.coordinates) return 0;
-
-    try {
-      // For polygon, estimate area roughly (this is a simplified calculation)
-      if (geometry.type === 'Polygon' && geometry.coordinates[0]) {
-        const coords = geometry.coordinates[0];
-        if (coords.length > 3) {
-          // Very rough area estimation based on bounding box
-          const lngs = coords.map((c: number[]) => c[0]);
-          const lats = coords.map((c: number[]) => c[1]);
-          const width = Math.max(...lngs) - Math.min(...lngs);
-          const height = Math.max(...lats) - Math.min(...lats);
-          // Convert degrees to approximate hectares (very rough)
-          return Math.abs(width * height * 111 * 111 / 10000);
-        }
-      }
-      return 1.0; // Default fallback
-    } catch (error) {
-      return 1.0; // Default fallback
-    }
-  }
-
-  // Helper function to generate PDF template matching the exact structure
-  function generateDDSPDFTemplate(report: any) {
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }) + ' ' + new Date().toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-
-    return {
-      // Page 1 - Exact template structure
-      page1: {
-        header: {
-          title: "Due Diligence Statement",
-          divider: "-------------------------------------------------------------------------------------------------------------",
-          pageNumber: "Page 1",
-          status: "SUBMITTED",
-          createdOn: currentDate
-        },
-
-        section1: {
-          companyInternalRef: {
-            label: "1. Company Internal Ref:",
-            value: report.companyInternalRef || ""
-          },
-          activity: {
-            label: "2. Activity:",
-            value: report.activity || ""
-          }
-        },
-
-        section3: {
-          operatorTrader: {
-            title: "3. Operator/Trader name and address:",
-            name: {
-              label: "Name:",
-              value: report.operatorLegalName || ""
-            },
-            address: {
-              label: "Address:",
-              value: report.operatorAddress || ""
-            },
-            country: {
-              label: "Country:",
-              value: report.operatorCountry || ""
-            },
-            isoCode: {
-              label: "ISO Code:",
-              value: report.operatorIsoCode || ""
-            }
-          }
-        },
-
-        commoditySection: {
-          title: "Commodity(ies) or Product(s)",
-          table: {
-            headers: [
-              "Commodity(ies) or Product(s) Description",
-              "Net Mass (Kg)",
-              "% Est. or Deviation",
-              "Supplementary Units"
-            ],
-            data: {
-              description: report.productDescription || "",
-              netMass: report.netMassKg || "",
-              percentage: report.percentageEstimation || "",
-              supplementaryUnits: report.supplementaryUnit || ""
-            }
-          },
-          producerSection: {
-            headers: ["Scientific Name", "Common Name", "Producer Name", "Country of Production"],
-            data: {
-              scientificName: report.scientificName || "",
-              commonName: report.commonName || "",
-              producerName: report.producerName || "",
-              countryOfProduction: report.countryOfProduction || ""
-            }
-          }
-        },
-
-        summaryPlotInfo: {
-          title: "Summary Plot Information",
-          totalProducers: {
-            label: "Total Producers :",
-            value: report.totalProducers || "0"
-          },
-          totalPlots: {
-            label: "Total Plots :",
-            value: report.totalPlots || "0"
-          },
-          totalProductionArea: {
-            label: "Total Production Area (ha) :",
-            value: report.totalProductionArea || "0"
-          },
-          countryOfHarvest: {
-            label: "Country of Harvest :",
-            value: report.countryOfHarvest || ""
-          },
-          maxIntermediaries: {
-            label: "Max. Number of Intermediaries :",
-            value: report.maxIntermediaries || "0"
-          },
-          traceabilityMethod: {
-            label: "Traceability Method :",
-            value: report.traceabilityMethod || ""
-          },
-          expectedHarvestDate: {
-            label: "Expected Harvest Date :",
-            value: report.expectedHarvestDate || ""
-          },
-          productionDateRange: {
-            label: "Production date range or processing time:",
-            value: report.productionDateRange || ""
-          }
-        },
-
-        competentAuthority: {
-          title: "Communication for competent authority",
-          text: "By submitting this due diligence statement the operator confirms that due diligence in accordance with Regulation (EU) 2023/1115 was carried out and that no or only a negligible risk was found that the relevant products do not comply with Article 3, point (a) or (b), of that Regulation"
-        },
-
-        footer: {
-          title: "Footer",
-          eudrStatus: {
-            label: "EUDR Status:",
-            value: report.status || "draft"
-          },
-          lastChanges: {
-            label: "Last Changes:",
-            value: report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-GB') : ""
-          },
-          creationDate: {
-            label: "Creation date:",
-            value: report.createdAt ? new Date(report.createdAt).toLocaleDateString('en-GB') : ""
-          },
-          updateDate: {
-            label: "Update date:",
-            value: report.updatedAt ? new Date(report.updatedAt).toLocaleDateString('en-GB') : ""
-          },
-          submissionDate: {
-            label: "Submission Date:",
-            value: report.signedDate ? new Date(report.signedDate).toLocaleDateString('en-GB') : ""
-          },
-          user: {
-            label: "User:",
-            value: report.signedBy || ""
-          }
-        }
-      },
-
-      // Page 2 - Static hardcoded content as requested
-      page2: {
-        header: {
-          divider: "-------------------------------------------------------------------------------------------------------------",
-          pageNumber: "PAGE 2"
-        },
-        content: {
-          title: "Appendix 1. Detailed Plot Information (Link to GeoJSON File)",
-          description: "This appendix contains detailed geographical information about all plots included in this Due Diligence Statement.",
-          note: "Plot coordinates and boundaries are provided in GeoJSON format for precise geolocation verification.",
-          disclaimer: "All coordinates are verified through satellite imagery and ground-truthing where applicable."
-        }
-      }
-    };
-  }
+  });
 
   // DDS Report Download endpoint
   app.get('/api/dds/:id/download', isAuthenticated, async (req, res) => {
@@ -3342,7 +2823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Primary method: Use PostGIS database lookup for adm_boundary_lv0
       console.log(`🗄️  Checking adm_boundary_lv0 for coordinates (${lat}, ${lng})`);
-      
+
       try {
         // Use raw SQL query to check if point is within any country boundary
         const result = await db.execute(sql`
@@ -3546,10 +3027,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Get country from multiple sources with priority order
         let detectedCountry = 'Unknown';
-        
+
         // Priority 1: Use country_name from API response if available and not "unknown"
-        if (feature.properties?.country_name && 
-            feature.properties.country_name !== 'unknown' && 
+        if (feature.properties?.country_name &&
+            feature.properties.country_name !== 'unknown' &&
             feature.properties.country_name !== 'Unknown') {
           detectedCountry = feature.properties.country_name;
           console.log(`✅ Country from API response: ${detectedCountry}`);
@@ -3561,7 +3042,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
             detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
             console.log(`✅ Country detected: ${detectedCountry}`);
-            
+
             // No delay needed since we're using local database
           } else {
             // Priority 3: Fallback to property-based detection for Indonesian data
@@ -3695,7 +3176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               } else if (feature.properties?.['.Aggregator Location']) {
                 country = 'Indonesia';
                 console.log(`🇮🇩 Detected Indonesia from aggregator location field`);
-              } else if (feature.properties?.country_name && 
+              } else if (feature.properties?.country_name &&
                         feature.properties.country_name !== 'unknown') {
                 country = feature.properties.country_name;
                 console.log(`🌍 Using country_name from API: ${country}`);
@@ -4422,54 +3903,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Helper functions for GeoJSON processing
-  function calculateBoundingBox(coordinates: number[][]): { north: number, south: number, east: number, west: number } {
-    let north = -90, south = 90, east = -180, west = 180;
-
-    for (const coord of coordinates) {
-      const [lng, lat] = coord;
-      north = Math.max(north, lat);
-      south = Math.min(south, lat);
-      east = Math.max(east, lng);
-      west = Math.min(west, lng);
+  function calculateBoundingBox(coordinates: number[][]): { north: number; south: number; east: number; west: number } {
+    if (!coordinates || coordinates.length === 0) {
+      return { north: 0, south: 0, east: 0, west: 0 };
     }
 
-    return { north, south, east, west };
-  }
+    let minLat = coordinates[0][1];
+    let maxLat = coordinates[0][1];
+    let minLng = coordinates[0][0];
+    let maxLng = coordinates[0][0];
 
-  function calculateCentroid(coordinates: number[][]): { lat: number, lng: number } {
-    let totalLat = 0, totalLng = 0;
-    const count = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
-    for (let i = 0; i < count; i++) {
-      const [lng, lat] = coordinates[i];
-      totalLat += lat;
-      totalLng += lng;
+    for (const coord of coordinates) {
+      if (coord[1] < minLat) minLat = coord[1];
+      if (coord[1] > maxLat) maxLat = coord[1];
+      if (coord[0] < minLng) minLng = coord[0];
+      if (coord[0] > maxLng) maxLng = coord[0];
     }
 
     return {
-      lat: totalLat / count,
-      lng: totalLng / count
+      north: maxLat,
+      south: minLat,
+      east: maxLng,
+      west: minLng
     };
   }
 
-  function calculatePolygonArea(coordinates: number[][]): number {
-    // Simple polygon area calculation using the shoelace formula
-    let area = 0;
-    const n = coordinates.length - 1; // Exclude the last coordinate as it's the same as the first
-
-    for (let i = 0; i < n; i++) {
-      const j = (i + 1) % n;
-      area += coordinates[i][0] * coordinates[j][1];
-      area -= coordinates[j][0] * coordinates[i][1];
+  // Helper function to calculate centroid from coordinates
+  function calculateCentroid(coordinates: number[][]): { lat: number; lng: number } {
+    if (!coordinates || coordinates.length === 0) {
+      return { lat: 0, lng: 0 };
     }
 
-    area = Math.abs(area) / 2;
+    let totalLat = 0;
+    let totalLng = 0;
 
-    // Convert from square degrees to hectares (rough approximation)
-    // This is a simplified conversion and should be improved for production use
-    const hectares = area * 11119.49; // Rough conversion factor
+    for (const coord of coordinates) {
+      totalLat += coord[1];
+      totalLng += coord[0];
+    }
 
-    return Math.round(hectares * 100) / 100; // Round to 2 decimal places
+    return {
+      lat: totalLat / coordinates.length,
+      lng: totalLng / coordinates.length
+    };
+  }
+
+  // Helper function to remove z-values from coordinates (API external tidak bisa terima z-values)
+  function removeZValues(coordinates: any): any {
+    if (!coordinates || !Array.isArray(coordinates)) {
+      return coordinates;
+    }
+
+    return coordinates.map((coord: any) => {
+      if (Array.isArray(coord)) {
+        if (typeof coord[0] === 'number' && typeof coord[1] === 'number') {
+          // This is a coordinate pair [lng, lat, z] - remove z
+          return [coord[0], coord[1]];
+        } else {
+          // This is a nested array - recurse
+          return removeZValues(coord);
+        }
+      }
+      return coord;
+    });
   }
 
 
