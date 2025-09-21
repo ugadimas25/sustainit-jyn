@@ -147,21 +147,33 @@ export default function DeforestationMonitoring() {
         console.log(`✅ Fetched ${dbResults.length} analysis results from database`);
 
         // Transform database results to match the expected format (same as map-viewer.tsx)
-        const formattedResults = dbResults.map((result: any) => ({
-          plotId: result.plotId,
-          country: result.country,
-          area: Number(result.area) || 0,
-          overallRisk: result.overallRisk || 'UNKNOWN',
-          complianceStatus: result.complianceStatus || 'UNKNOWN',
-          gfwLoss: result.gfwLoss || 'UNKNOWN',
-          jrcLoss: result.jrcLoss || 'UNKNOWN',
-          sbtnLoss: result.sbtnLoss || 'UNKNOWN',
-          highRiskDatasets: result.highRiskDatasets || [],
-          gfwLossArea: Number(result.gfwLossArea || result.gfw_loss_area) || 0,
-          jrcLossArea: Number(result.jrcLossArea || result.jrc_loss_area) || 0,
-          sbtnLossArea: Number(result.sbtnLossArea || result.sbtn_loss_area) || 0,
-          geometry: result.geometry // This contains the actual polygon coordinates
-        }));
+        const formattedResults = dbResults.map((result: any) => {
+          // Debug loss area data
+          console.log(`🔍 Debug Plot ${result.plotId} loss areas:`, {
+            gfwLossArea: result.gfwLossArea,
+            jrcLossArea: result.jrcLossArea, 
+            sbtnLossArea: result.sbtnLossArea,
+            gfw_loss_area: result.gfw_loss_area,
+            jrc_loss_area: result.jrc_loss_area,
+            sbtn_loss_area: result.sbtn_loss_area
+          });
+
+          return {
+            plotId: result.plotId,
+            country: result.country,
+            area: Number(result.area) || 0,
+            overallRisk: result.overallRisk || 'UNKNOWN',
+            complianceStatus: result.complianceStatus || 'UNKNOWN',
+            gfwLoss: result.gfwLoss || 'UNKNOWN',
+            jrcLoss: result.jrcLoss || 'UNKNOWN',
+            sbtnLoss: result.sbtnLoss || 'UNKNOWN',
+            highRiskDatasets: result.highRiskDatasets || [],
+            gfwLossArea: Number(result.gfwLossArea || result.gfw_loss_area) || 0,
+            jrcLossArea: Number(result.jrcLossArea || result.jrc_loss_area) || 0,
+            sbtnLossArea: Number(result.sbtnLossArea || result.sbtn_loss_area) || 0,
+            geometry: result.geometry // This contains the actual polygon coordinates
+          };
+        });
 
         console.log(`✅ Stored ${formattedResults.length} analysis results for spatial analysis page`);
         setAnalysisResults(formattedResults);
@@ -191,13 +203,13 @@ export default function DeforestationMonitoring() {
               area: parseFloat(props.total_area_hectares || '1'),
               overallRisk: props.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN',
               complianceStatus: props.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT',
-              gfwLoss: props.gfw_loss?.gfw_loss_area > 0 ? 'TRUE' : 'FALSE',
-              jrcLoss: props.jrc_loss?.jrc_loss_area > 0 ? 'TRUE' : 'FALSE',
-              sbtnLoss: props.sbtn_loss?.sbtn_loss_area > 0 ? 'TRUE' : 'FALSE',
+              gfwLoss: (props.gfw_loss?.gfw_loss_area || 0) > 0 ? 'TRUE' : 'FALSE',
+              jrcLoss: (props.jrc_loss?.jrc_loss_area || 0) > 0 ? 'TRUE' : 'FALSE', 
+              sbtnLoss: (props.sbtn_loss?.sbtn_loss_area || 0) > 0 ? 'TRUE' : 'FALSE',
               highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area || props.gfwLossArea || '0'),
-              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area || props.jrcLossArea || '0'),
-              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area || props.sbtnLossArea || '0'),
+              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area?.toString() || '0'),
+              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area?.toString() || '0'),
+              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area?.toString() || '0'),
               geometry: feature.geometry
             };
           });
@@ -549,28 +561,19 @@ export default function DeforestationMonitoring() {
 
   const getLossBadge = (loss: string, lossArea?: number) => {
     // Check if we have actual loss area data
-    if (lossArea !== undefined && lossArea !== null) {
-      if (lossArea > 0) {
-        return <Badge className="bg-red-100 text-red-800">{lossArea.toFixed(2)} ha</Badge>;
-      } else {
-        return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
-      }
+    if (lossArea !== undefined && lossArea !== null && lossArea > 0) {
+      return <Badge className="bg-red-100 text-red-800">{lossArea.toFixed(2)} ha</Badge>;
     }
 
-    // Fallback to original logic for backward compatibility
-    switch (loss.toUpperCase()) {
-      case 'TRUE':
-      case 'HIGH':
-      case 'YES':
-        return <Badge className="bg-red-100 text-red-800">1</Badge>;
-      case 'FALSE':
-      case 'LOW':
-      case 'NO':
-      case 'NONE':
-        return <Badge className="bg-green-100 text-green-800">0</Badge>;
-      default:
-        return <Badge variant="secondary">0</Badge>;
+    // For TRUE/FALSE values, show 0 ha in green for FALSE and check for actual area for TRUE
+    if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
+      // If it's TRUE but no area data, show as detected but no area calculated
+      return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
+    } else if (loss === 'FALSE' || loss === 'LOW' || loss === 'NO' || loss === 'NONE') {
+      return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
     }
+
+    return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
   };
 
   const getComplianceBadge = (status: string) => {
