@@ -223,7 +223,7 @@ export default function DeforestationMonitoring() {
             const jrcLossPercent = parseFloat(props.jrc_loss?.jrc_loss_area?.toString() || '0'); 
             const sbtnLossPercent = parseFloat(props.sbtn_loss?.sbtn_loss_area?.toString() || '0');
 
-            // Convert percentages to actual hectares (0.09 = 9% * area)
+            // Calculate actual loss areas in hectares
             const gfwLossArea = gfwLossPercent * totalAreaHa;
             const jrcLossArea = jrcLossPercent * totalAreaHa;
             const sbtnLossArea = sbtnLossPercent * totalAreaHa;
@@ -233,9 +233,9 @@ export default function DeforestationMonitoring() {
               gfwLossPercent: `${(gfwLossPercent * 100).toFixed(1)}%`,
               jrcLossPercent: `${(jrcLossPercent * 100).toFixed(1)}%`,
               sbtnLossPercent: `${(sbtnLossPercent * 100).toFixed(1)}%`,
-              gfwLossArea: `${(gfwLossArea * 10000).toFixed(0)} m²`,
-              jrcLossArea: `${(jrcLossArea * 10000).toFixed(0)} m²`,
-              sbtnLossArea: `${(sbtnLossArea * 10000).toFixed(0)} m²`
+              gfwLossArea: `${gfwLossArea.toFixed(4)} ha`,
+              jrcLossArea: `${jrcLossArea.toFixed(4)} ha`,
+              sbtnLossArea: `${sbtnLossArea.toFixed(4)} ha`
             });
 
             return {
@@ -248,9 +248,9 @@ export default function DeforestationMonitoring() {
               jrcLoss: (props.jrc_loss?.jrc_loss_area || 0) > 0 ? 'TRUE' : 'FALSE', 
               sbtnLoss: (props.sbtn_loss?.sbtn_loss_area || 0) > 0 ? 'TRUE' : 'FALSE',
               highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
-              gfwLossArea: gfwLossArea * 10000, // Convert hectares to m²
-              jrcLossArea: jrcLossArea * 10000, // Convert hectares to m²
-              sbtnLossArea: sbtnLossArea * 10000, // Convert hectares to m²
+              gfwLossArea: gfwLossArea, // Keep in hectares
+              jrcLossArea: jrcLossArea, // Keep in hectares
+              sbtnLossArea: sbtnLossArea, // Keep in hectares
               geometry: feature.geometry
             };
           });
@@ -605,9 +605,9 @@ export default function DeforestationMonitoring() {
     if (lossArea !== undefined && lossArea !== null) {
       const areaValue = Number(lossArea);
       if (areaValue > 0) {
-        return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(0)} m²</Badge>;
+        return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(4)} ha</Badge>;
       } else {
-        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(0)} m²</Badge>;
+        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(4)} ha</Badge>;
       }
     }
 
@@ -615,7 +615,7 @@ export default function DeforestationMonitoring() {
     if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
       return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
     } else {
-      return <Badge className="bg-green-100 text-green-800">0 m²</Badge>;
+      return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
     }
   };
 
