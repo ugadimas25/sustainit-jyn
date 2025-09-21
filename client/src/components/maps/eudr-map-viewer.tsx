@@ -744,7 +744,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 orderByFields: 'iucn_cat,rep_area DESC' // Order by category then by area
               });
 
-              const url = `https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?${query}`;
+              const url = 'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?' + query.toString();
 
               console.log('WDPA query URL:', url);
               console.log('Query bbox:', bbox);
