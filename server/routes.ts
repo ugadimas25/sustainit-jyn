@@ -4053,6 +4053,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Peatland data endpoint for EUDR Map Viewer
+  app.post('/api/peatland-data', isAuthenticated, async (req, res) => {
+    try {
+      const { bounds } = req.body;
+      
+      if (!bounds || !bounds.west || !bounds.south || !bounds.east || !bounds.north) {
+        return res.status(400).json({ error: 'Invalid bounds provided' });
+      }
+
+      console.log(`🏞️ Fetching peatland data for bounds:`, bounds);
+
+      // Create bounding box for PostGIS query
+      const bbox = `POLYGON((${bounds.west} ${bounds.south}, ${bounds.east} ${bounds.south}, ${bounds.east} ${bounds.north}, ${bounds.west} ${bounds.north}, ${bounds.west} ${bounds.south}))`;
+
+      // Query peatland data from PostGIS database
+      const result = await db.execute(sql`
+        SELECT 
+          "Kubah_GBT",
+          "Ekosistem",
+          "Province",
+          "Area_Ha",
+          ST_AsGeoJSON(geom) as geometry
+        FROM peatland_idn 
+        WHERE ST_Intersects(
+          geom, 
+          ST_GeomFromText(${bbox}, 4326)
+        )
+        ORDER BY "Area_Ha" DESC
+        LIMIT 1000
+      `);
+
+      const features = result.rows.map((row: any) => {
+        let geometry;
+        try {
+          geometry = JSON.parse(row.geometry);
+        } catch (error) {
+          console.warn('Failed to parse geometry for peatland feature:', error);
+          return null;
+        }
+
+        return {
+          type: 'Feature',
+          properties: {
+            Kubah_GBT: row.Kubah_GBT,
+            Ekosistem: row.Ekosistem,
+            Province: row.Province,
+            Area_Ha: parseFloat(row.Area_Ha || '0')
+          },
+          geometry: geometry
+        };
+      }).filter(Boolean); // Remove null features
+
+      console.log(`✅ Found ${features.length} peatland features in bounds`);
+
+      // Group by classification for logging
+      const classifications = features.reduce((acc: any, feature: any) => {
+        const kubahGbt = feature.properties.Kubah_GBT || 'Unknown';
+        acc[kubahGbt] = (acc[kubahGbt] || 0) + 1;
+        return acc;
+      }, {});
+
+      console.log('🏞️ Peatland classifications found:', classifications);
+
+      res.json({
+        type: 'FeatureCollection',
+        features: features
+      });
+
+    } catch (error) {
+      console.error('❌ Error fetching peatland data:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({
+        error: 'Failed to fetch peatland data',
+        details: errorMessage
+      });
+    }
+  });
+
   // Helper function to convert coordinates array to WKT format
   function coordinatesToWKT(coordinates: any): string {
     if (!coordinates || !coordinates[0]) {

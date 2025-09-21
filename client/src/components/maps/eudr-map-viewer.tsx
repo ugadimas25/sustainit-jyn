@@ -573,6 +573,17 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               </div>
 
               <div class="control-group">
+                <label>Peatland Layers</label>
+                <div class="layer-controls">
+                  <label class="layer-checkbox">
+                    <input type="checkbox" id="peatlandLayer">
+                    <span class="checkmark"></span>
+                    <span class="layer-name">Indonesian Peatland</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="control-group">
                 <label>Deforestation Layers</label>
                 <div class="layer-controls">
                   <label class="layer-checkbox">
@@ -611,6 +622,17 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 <div class="legend-item">
                   <div class="legend-color" style="background-color: #d2b48c;"></div>
                   <span>All WDPA Protected Areas</span>
+                </div>
+              </div>
+              <div style="margin: 10px 0; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+                <div style="font-weight: bold; margin-bottom: 5px; color: #4da6ff;">Peatland Areas:</div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #ffa500;"></div>
+                  <span>Non Kubah Gambut</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-color" style="background-color: #8b4513;"></div>
+                  <span>Kubah Gambut</span>
                 </div>
               </div>
               <div style="margin: 10px 0; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
@@ -673,6 +695,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // WDPA Protected Areas Layer
             let wdpaLayer = null;
             let wdpaTileLayer = null;
+
+            // Peatland Layer
+            let peatlandLayer = null;
 
             // Function to create WDPA layer using ArcGIS tile service
             function createWDPALayer() {
@@ -851,6 +876,119 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 '': 'Category information not available'
               };
               return descriptions[iucnCategory] || \`Unknown protection level: \${iucnCategory}\`;
+            }
+
+            // Function to create Peatland layer from PostGIS database
+            function createPeatlandLayer() {
+              console.log('Loading Indonesian Peatland layer from database...');
+              
+              // Get current map bounds to limit query
+              const bounds = map.getBounds();
+              const bbox = \`\${bounds.getWest()},\${bounds.getSouth()},\${bounds.getEast()},\${bounds.getNorth()}\`;
+              
+              // Fetch peatland data from server endpoint
+              return fetch('/api/peatland-data', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  bounds: {
+                    west: bounds.getWest(),
+                    south: bounds.getSouth(),
+                    east: bounds.getEast(),
+                    north: bounds.getNorth()
+                  }
+                })
+              })
+              .then(response => {
+                console.log('Peatland response status:', response.status);
+                if (!response.ok) {
+                  throw new Error(\`HTTP error! status: \${response.status}\`);
+                }
+                return response.json();
+              })
+              .then(data => {
+                console.log('Peatland data received:', data);
+                
+                if (!data.features || data.features.length === 0) {
+                  console.warn('No peatland features found in current map bounds');
+                  return null;
+                }
+
+                console.log(\`Found \${data.features.length} peatland features\`);
+                
+                const layer = L.geoJSON(data, {
+                  style: function(feature) {
+                    const kubahGbt = feature.properties.Kubah_GBT || feature.properties.kubah_gbt || '';
+                    
+                    // Style based on Kubah_GBT classification
+                    let fillColor, color;
+                    if (kubahGbt === 'Kubah Gambut') {
+                      fillColor = '#8b4513'; // Brown
+                      color = '#654321';
+                    } else {
+                      fillColor = '#ffa500'; // Orange for "Non Kubah Gambut" or other values
+                      color = '#ff8c00';
+                    }
+                    
+                    console.log(\`Styling peatland feature with Kubah_GBT: "\${kubahGbt}" as \${fillColor}\`);
+                    
+                    return {
+                      color: color,
+                      fillColor: fillColor,
+                      weight: 2,
+                      opacity: 0.8,
+                      fillOpacity: 0.6,
+                      className: 'peatland-area'
+                    };
+                  },
+                  onEachFeature: function(feature, layer) {
+                    const props = feature.properties;
+                    const kubahGbt = props.Kubah_GBT || props.kubah_gbt || 'Not specified';
+                    const ecosystemType = props.Ekosistem || props.ekosistem || 'Unknown';
+                    const area = props.area_ha || props.Area_Ha || 'Unknown';
+                    const region = props.Province || props.province || props.Region || 'Unknown';
+                    
+                    const popupContent = \`
+                      <div style="min-width: 280px; font-family: Arial, sans-serif;">
+                        <h4 style="margin: 0 0 10px 0; color: #8b4513; font-size: 16px; font-weight: bold; border-bottom: 2px solid #8b4513; padding-bottom: 5px;">Indonesian Peatland Area</h4>
+                        <div style="font-size: 13px; line-height: 1.4;">
+                          <div style="margin-bottom: 5px;"><strong>Classification:</strong> 
+                            <span style="background: \${kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500'}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${kubahGbt}</span>
+                          </div>
+                          <div style="margin-bottom: 5px;"><strong>Ecosystem Type:</strong> \${ecosystemType}</div>
+                          <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} ha</div>
+                          <div style="margin-bottom: 5px;"><strong>Region:</strong> \${region}</div>
+                          <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #8b4513; font-size: 11px;">
+                            <strong>Protection Status:</strong> \${getPeatlandProtectionStatus(kubahGbt)}
+                          </div>
+                        </div>
+                      </div>
+                    \`;
+                    
+                    layer.bindPopup(popupContent, {
+                      maxWidth: 350,
+                      className: 'peatland-popup'
+                    });
+                  }
+                });
+                
+                return layer;
+              })
+              .catch(error => {
+                console.error('Error loading Peatland layer:', error);
+                return null;
+              });
+            }
+
+            // Helper function for peatland protection status
+            function getPeatlandProtectionStatus(kubahGbt) {
+              if (kubahGbt === 'Kubah Gambut') {
+                return 'Kubah Gambut areas require special protection and management';
+              } else {
+                return 'Non-Kubah Gambut peatland areas with standard protection measures';
+              }
             }
 
             // Deforestation layers from multiple sources
@@ -1266,6 +1404,46 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               }
             });
 
+            // Peatland layer control
+            document.getElementById('peatlandLayer').addEventListener('change', function(e) {
+              if (e.target.checked) {
+                console.log('Peatland layer checkbox checked - loading layer...');
+                
+                if (!peatlandLayer) {
+                  console.log('Creating new Peatland layer...');
+                  
+                  createPeatlandLayer().then(layer => {
+                    if (layer) {
+                      peatlandLayer = layer;
+                      layer.addTo(map);
+                      console.log(\`✅ Peatland layer loaded successfully with \${layer.getLayers().length} features\`);
+                      
+                      // Force map refresh
+                      map.invalidateSize();
+                      
+                    } else {
+                      console.error('❌ Failed to load Peatland layer');
+                      alert('Unable to load Peatland layer. The service may be temporarily unavailable.');
+                    }
+                  }).catch(error => {
+                    console.error('❌ Error in Peatland layer creation:', error);
+                    alert('Error loading Peatland layer: ' + error.message);
+                  });
+                } else {
+                  // Layer already exists, just add to map
+                  peatlandLayer.addTo(map);
+                  console.log('✅ Existing Peatland layer restored to map');
+                }
+              } else {
+                console.log('Peatland layer checkbox unchecked - removing layer...');
+                
+                if (peatlandLayer && map.hasLayer(peatlandLayer)) {
+                  map.removeLayer(peatlandLayer);
+                  console.log('✅ Peatland layer removed from map');
+                }
+              }
+            });
+
             // Deforestation layer controls
             document.getElementById('gfwLayer').addEventListener('change', function(e) {
               if (e.target.checked) {
@@ -1355,7 +1533,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 console.error('❌ WDPA service test failed:', error);
               });
             
-            // Add CSS for WDPA styling - force light brown color
+            // Add CSS for WDPA and Peatland styling
             const style = document.createElement('style');
             style.textContent = \`
               .wdpa-popup .leaflet-popup-content-wrapper {
@@ -1379,6 +1557,23 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 stroke-width: 2 !important;
                 stroke-opacity: 0.8 !important;
                 fill-opacity: 0.6 !important;
+              }
+              
+              /* Style for Peatland features */
+              .peatland-area {
+                stroke-width: 2 !important;
+                stroke-opacity: 0.8 !important;
+                fill-opacity: 0.6 !important;
+              }
+              
+              /* Peatland popup styling */
+              .peatland-popup .leaflet-popup-content-wrapper {
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(139,69,19,0.3);
+                border-left: 4px solid #8b4513;
+              }
+              .peatland-popup .leaflet-popup-content {
+                margin: 12px;
               }
             \`;
             document.head.appendChild(style);
