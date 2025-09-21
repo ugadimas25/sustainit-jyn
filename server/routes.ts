@@ -1793,10 +1793,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         productionDateRange: 'January 2024 - December 2024'
       };
 
-      console.log('Starting PDF generation...');
+      // Call the PDF generation function
+      const pdfBuffer = generateCleanDDSPDF(dummyReport);
 
-      // Generate the PDF using jsPDF
-      const doc = new jsPDF();
+      // Return the PDF file
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
+      res.send(Buffer.from(pdfBuffer));
+
+    } catch (error) {
+      console.error('Error generating dummy DDS PDF:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
+    }
+  });
 
       // Set up the document
       doc.setFontSize(16);
@@ -2303,22 +2313,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(item, 10, yPos + (index * 5));
       });
 
-      // Generate PDF buffer
-      const pdfBuffer = doc.output('arraybuffer');
 
-      console.log('PDF generated successfully');
 
-      // Return the PDF file
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
-      res.send(Buffer.from(pdfBuffer));
-
-    } catch (error) {
-      console.error('Error generating dummy DDS PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
+  // Helper function to remove Z values from coordinates
+  function removeZValues(coordinates: any): any {
+    if (!coordinates) return coordinates;
+    
+    if (Array.isArray(coordinates) && typeof coordinates[0] === 'number') {
+      // Single coordinate [x, y, z] -> [x, y]
+      return coordinates.length > 2 ? [coordinates[0], coordinates[1]] : coordinates;
     }
-  });
+    
+    if (Array.isArray(coordinates)) {
+      // Nested array of coordinates
+      return coordinates.map(removeZValues);
+    }
+    
+    return coordinates;
+  }
+
+  // Helper function to calculate area from geometry
+  function calculateAreaFromGeometry(geometry: any): number {
+    if (!geometry || !geometry.coordinates) return 0;
+    
+    if (geometry.type === 'Polygon') {
+      return calculatePolygonArea(geometry.coordinates[0]);
+    } else if (geometry.type === 'MultiPolygon') {
+      return geometry.coordinates.reduce((total: number, polygon: any) => {
+        return total + calculatePolygonArea(polygon[0]);
+      }, 0);
+    }
+    
+    return 0; // For other geometry types
+  }
 
   // Enhanced 4-page PDF generation with embedded flowchart images
   function generateCleanDDSPDF(report: any): ArrayBuffer {
@@ -2827,22 +2854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(item, 10, yPos + (index * 5));
       });
 
-      // Generate PDF buffer
-      const pdfBuffer = doc.output('arraybuffer');
 
-      console.log('PDF generated successfully');
-
-      // Return the PDF file
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="dummy-dds-report.pdf"');
-      res.send(Buffer.from(pdfBuffer));
-
-    } catch (error) {
-      console.error('Error generating dummy DDS PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
-    }
-  });
 
   // DDS Report Download endpoint
   app.get('/api/dds/:id/download', isAuthenticated, async (req, res) => {
