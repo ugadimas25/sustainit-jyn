@@ -108,7 +108,7 @@ export function useSupplierStepAccess(step: number) {
       });
       if (!response.ok) {
         console.warn(`Step access check failed with status ${response.status}`);
-        return { hasAccess: step === 1, error: `HTTP ${response.status}` };
+        return { hasAccess: step === 1 || step === 2, error: `HTTP ${response.status}` }; // Allow steps 1 and 2 on error
       }
       return response.json();
     },

@@ -1457,17 +1457,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.updateSupplierAssessmentProgress(progress.id, {
             dataCollectionCompleted: true,
             dataCollectionCompletedAt: new Date(),
-            currentStep: 2 // Enable Step 2 (Legality Compliance)
+            currentStep: 3 // Enable Step 3 (Legality Compliance) - this should be step 3, not 2
           });
+          console.log(`✅ Updated existing progress for ${supplier.name} - enabled step 3`);
         } else {
           // Create new progress record
           await storage.createSupplierAssessmentProgress({
             supplierName: supplier.name,
-            supplierType: supplier.supplierType,
+            supplierType: supplier.supplierType || 'Estate',
             dataCollectionCompleted: true,
             dataCollectionCompletedAt: new Date(),
-            currentStep: 2
+            currentStep: 3 // Enable Step 3 (Legality Compliance)
           });
+          console.log(`✅ Created new progress for ${supplier.name} - enabled step 3`);
         }
       } catch (progressError) {
         console.error("Error updating supplier assessment progress:", progressError);

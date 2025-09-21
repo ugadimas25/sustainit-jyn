@@ -1280,13 +1280,18 @@ export class DatabaseStorage implements IStorage {
         return true;
       }
 
-      // Step 2 (Legality Compliance) requires Data Collection to be completed
+      // Step 2 (Spatial Analysis) is always accessible after step 1
       if (requestedStep === 2) {
+        return true; // Spatial analysis should always be accessible after data collection
+      }
+
+      // Step 3 (Legality Compliance) requires Data Collection to be completed (spatial analysis saves trigger this)
+      if (requestedStep === 3) {
         return progress.dataCollectionCompleted || false;
       }
 
-      // Step 3 (Risk Assessment) requires both Data Collection and Legality Compliance to be completed
-      if (requestedStep === 3) {
+      // Step 4 (Risk Assessment) requires both Data Collection and Legality Compliance to be completed
+      if (requestedStep === 4) {
         return (progress.dataCollectionCompleted || false) && (progress.legalityComplianceCompleted || false);
       }
 

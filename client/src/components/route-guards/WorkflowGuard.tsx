@@ -35,7 +35,9 @@ export function WorkflowGuard({ step, children }: WorkflowGuardProps) {
         if (step === 2) {
           requiredStep = "Data Collection";
         } else if (step === 3) {
-          requiredStep = "Data Collection and Legality Compliance";
+          requiredStep = "Data Collection and Spatial Analysis (plot save)";
+        } else if (step === 4) {
+          requiredStep = "Data Collection, Spatial Analysis, and Legality Compliance";
         }
 
         toast({
