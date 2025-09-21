@@ -1659,9 +1659,6 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   if (!peatlandLayer) {
                     console.log('🔄 Creating new Indonesian Peatland layer...');
                     
-                    // Always start with mock data for immediate visibility
-                    console.log('🏞️ Loading comprehensive Indonesian Peatland data (mock + API hybrid)');
-                    
                     // Show loading indicator
                     const loadingMessage = document.createElement('div');
                     loadingMessage.id = 'peatland-loading';
@@ -1669,81 +1666,81 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
                     document.body.appendChild(loadingMessage);
                     
-                    // Create layer immediately with mock data, then try API
-                    const immediateLayer = createMockPeatlandLayer();
-                    
-                    if (immediateLayer) {
-                      peatlandLayer = immediateLayer;
-                      peatlandLayer.addTo(map);
-                      
+                    // Try API first, then fallback to mock data
+                    createPeatlandLayer().then(apiLayer => {
                       // Remove loading indicator
                       const loader = document.getElementById('peatland-loading');
                       if (loader) loader.remove();
                       
-                      console.log(\`✅ Indonesian Peatland layer loaded immediately with comprehensive coverage\`);
-                      
-                      // Show success message
-                      const successMsg = document.createElement('div');
-                      successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                      successMsg.innerHTML = \`✅ Indonesian Peatland layer loaded successfully\`;
-                      document.body.appendChild(successMsg);
-                      setTimeout(() => successMsg.remove(), 3000);
-                      
-                      // Force map refresh to show the layer
-                      map.invalidateSize();
-                      
-                      // Optionally try to enhance with real data in background
-                      createPeatlandLayer().then(apiLayer => {
-                        if (apiLayer && apiLayer.getLayers().length > 0) {
-                          console.log('🔄 Enhancing peatland layer with API data');
-                          // Could merge or replace with API data here if needed
-                        }
-                      }).catch(error => {
-                        console.log('ℹ️ API enhancement failed, using comprehensive mock data:', error.message);
-                      });
-                    } else {
-                      // Fallback to API-only approach
-                      createPeatlandLayer().then(layer => {
-                        // Remove loading indicator
-                        const loader = document.getElementById('peatland-loading');
-                        if (loader) loader.remove();
+                      if (apiLayer && apiLayer.getLayers && apiLayer.getLayers().length > 0) {
+                        peatlandLayer = apiLayer;
+                        apiLayer.addTo(map);
+                        console.log(\`✅ Indonesian Peatland layer loaded from API with \${apiLayer.getLayers().length} features\`);
                         
-                        if (layer && layer.getLayers().length > 0) {
-                          peatlandLayer = layer;
-                          layer.addTo(map);
-                          console.log(\`✅ Indonesian Peatland layer loaded via API with \${layer.getLayers().length} features\`);
+                        // Show success message
+                        const successMsg = document.createElement('div');
+                        successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                        successMsg.innerHTML = \`✅ Indonesian Peatland layer loaded (\${apiLayer.getLayers().length} features)\`;
+                        document.body.appendChild(successMsg);
+                        setTimeout(() => successMsg.remove(), 3000);
+                        
+                        // Force map refresh
+                        map.invalidateSize();
+                      } else {
+                        console.log('🏞️ API returned no features, using comprehensive mock data...');
+                        
+                        // Fallback to mock data
+                        const mockLayer = createMockPeatlandLayer();
+                        if (mockLayer) {
+                          peatlandLayer = mockLayer;
+                          mockLayer.addTo(map);
                           
-                          // Force map refresh
-                          map.invalidateSize();
+                          console.log('✅ Indonesian Peatland layer loaded with comprehensive mock data');
                           
                           // Show success message
                           const successMsg = document.createElement('div');
                           successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                          successMsg.innerHTML = \`✅ Indonesian Peatland layer loaded (\${layer.getLayers().length} features)\`;
+                          successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (comprehensive coverage)';
                           document.body.appendChild(successMsg);
                           setTimeout(() => successMsg.remove(), 3000);
                           
-                        } else {
-                          console.error('❌ Failed to load Indonesian Peatland layer - no features found');
-                          const errorMsg = document.createElement('div');
-                          errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(220, 38, 38, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                          errorMsg.innerHTML = '❌ No Indonesian Peatland data found in current view';
-                          document.body.appendChild(errorMsg);
-                          setTimeout(() => errorMsg.remove(), 5000);
+                          // Force map refresh
+                          map.invalidateSize();
                         }
-                      }).catch(error => {
-                        // Remove loading indicator
-                        const loader = document.getElementById('peatland-loading');
-                        if (loader) loader.remove();
+                      }
+                    }).catch(error => {
+                      // Remove loading indicator
+                      const loader = document.getElementById('peatland-loading');
+                      if (loader) loader.remove();
+                      
+                      console.log('⚠️ API failed, using comprehensive mock data:', error.message);
+                      
+                      // Always provide fallback mock data
+                      const mockLayer = createMockPeatlandLayer();
+                      if (mockLayer) {
+                        peatlandLayer = mockLayer;
+                        mockLayer.addTo(map);
                         
-                        console.error('❌ Error in Indonesian Peatland layer creation:', error);
+                        console.log('✅ Indonesian Peatland layer loaded with comprehensive mock data');
+                        
+                        // Show success message
+                        const successMsg = document.createElement('div');
+                        successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                        successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (demo data)';
+                        document.body.appendChild(successMsg);
+                        setTimeout(() => successMsg.remove(), 3000);
+                        
+                        // Force map refresh
+                        map.invalidateSize();
+                      } else {
+                        console.error('❌ Both API and mock data failed');
                         const errorMsg = document.createElement('div');
                         errorMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(220, 38, 38, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                        errorMsg.innerHTML = '❌ Error loading Indonesian Peatland: ' + error.message;
+                        errorMsg.innerHTML = '❌ Failed to load Indonesian Peatland layer';
                         document.body.appendChild(errorMsg);
                         setTimeout(() => errorMsg.remove(), 5000);
-                      });
-                    }
+                      }
+                    });
                   } else {
                     // Layer already exists, just add to map
                     peatlandLayer.addTo(map);
@@ -1847,28 +1844,54 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             console.log('🏞️ Auto-loading Indonesian Peatland layer for immediate visibility...');
             setTimeout(() => {
               try {
-                const immediateLayer = createMockPeatlandLayer();
-                if (immediateLayer) {
-                  peatlandLayer = immediateLayer;
-                  peatlandLayer.addTo(map);
-                  console.log('✅ Indonesian Peatland layer auto-loaded successfully');
-                  
-                  // Check the checkbox to reflect the layer state
-                  const checkbox = document.getElementById('peatlandLayer');
-                  if (checkbox) {
-                    checkbox.checked = true;
+                // First try API data, then fallback to mock
+                createPeatlandLayer().then(apiLayer => {
+                  if (apiLayer && apiLayer.getLayers && apiLayer.getLayers().length > 0) {
+                    peatlandLayer = apiLayer;
+                    apiLayer.addTo(map);
+                    console.log('✅ Indonesian Peatland layer auto-loaded from API');
+                    
+                    // Check the checkbox to reflect the layer state
+                    const checkbox = document.getElementById('peatlandLayer');
+                    if (checkbox) checkbox.checked = true;
+                    
+                    // Force map refresh
+                    map.invalidateSize();
+                    
+                    // Show notification
+                    const autoLoadMsg = document.createElement('div');
+                    autoLoadMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                    autoLoadMsg.innerHTML = '🏞️ Indonesian Peatland layer loaded automatically';
+                    document.body.appendChild(autoLoadMsg);
+                    setTimeout(() => autoLoadMsg.remove(), 4000);
+                  } else {
+                    throw new Error('No features from API');
                   }
+                }).catch(error => {
+                  console.log('⚠️ API failed for auto-load, using mock data:', error.message);
                   
-                  // Force map refresh
-                  map.invalidateSize();
-                  
-                  // Show notification
-                  const autoLoadMsg = document.createElement('div');
-                  autoLoadMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                  autoLoadMsg.innerHTML = '🏞️ Indonesian Peatland layer loaded automatically';
-                  document.body.appendChild(autoLoadMsg);
-                  setTimeout(() => autoLoadMsg.remove(), 4000);
-                }
+                  // Fallback to mock data
+                  const mockLayer = createMockPeatlandLayer();
+                  if (mockLayer) {
+                    peatlandLayer = mockLayer;
+                    mockLayer.addTo(map);
+                    console.log('✅ Indonesian Peatland layer auto-loaded with mock data');
+                    
+                    // Check the checkbox to reflect the layer state
+                    const checkbox = document.getElementById('peatlandLayer');
+                    if (checkbox) checkbox.checked = true;
+                    
+                    // Force map refresh
+                    map.invalidateSize();
+                    
+                    // Show notification
+                    const autoLoadMsg = document.createElement('div');
+                    autoLoadMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                    autoLoadMsg.innerHTML = '🏞️ Indonesian Peatland layer loaded automatically (demo)';
+                    document.body.appendChild(autoLoadMsg);
+                    setTimeout(() => autoLoadMsg.remove(), 4000);
+                  }
+                });
               } catch (error) {
                 console.error('❌ Failed to auto-load peatland layer:', error);
               }

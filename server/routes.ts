@@ -4067,9 +4067,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let features = [];
 
       try {
-        // Always use mock data for now since table might not be available
-        console.log('🏞️ Using comprehensive mock peatland data for Indonesian coverage');
-        throw new Error('Using mock data for demonstration');
+        // Try database query first, then fallback to mock data
+        console.log('🏞️ Attempting to query peatland_idn table...');
 
         // Create bounding box for PostGIS query with buffer
         const buffer = 0.5; // Add buffer to catch more features
