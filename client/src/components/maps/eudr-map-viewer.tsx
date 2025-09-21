@@ -531,7 +531,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   <span>🌍</span>
                   Reset View
                 </button>
-                <button class="action-btn primary" onclick="window.parent.postMessage({type: 'closeMap'}, '*')">
+                <button class="action-btn primary" onclick="window.parent.postMessage({type: 'backToResults'}, '*')">
                   <span>←</span>
                   Back to Results
                 </button>
@@ -1036,7 +1036,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
       // Listen for close message from iframe
       const handleMessage = (event: MessageEvent) => {
-        if (event.data.type === 'closeMap') {
+        if (event.data.type === 'closeMap' || event.data.type === 'backToResults') {
+          // Ensure localStorage flags are set correctly for table restoration
+          localStorage.setItem('shouldShowResultsTable', 'true');
           onClose();
         }
       };

@@ -440,7 +440,7 @@ export default function MapViewer() {
     <body>
       <div class="map-container">
         <div id="map"></div>
-        
+
         <div class="map-controls">
           <div class="control-group">
             <label>Base Layer</label>
@@ -450,7 +450,7 @@ export default function MapViewer() {
               <option value="terrain">Terrain</option>
             </select>
           </div>
-          
+
           <div class="control-group">
             <label>Risk Filter</label>
             <select id="riskFilter">
@@ -459,7 +459,7 @@ export default function MapViewer() {
               <option value="low">Low Risk Only</option>
             </select>
           </div>
-          
+
           <div class="control-group">
             <label>Deforestation Layers</label>
             <div class="layer-controls">
@@ -570,14 +570,14 @@ export default function MapViewer() {
 
         // Analysis results from React - safely embedded
         const analysisResults = JSON.parse(${JSON.stringify(JSON.stringify(analysisResults))});
-        
+
         // Add polygons for each plot using actual geometry data
         const polygons = [];
         const bounds = [];
-        
+
         let plotsRendered = 0;
         let plotsSkipped = 0;
-        
+
         analysisResults.forEach(result => {
           // Skip if no geometry data available
           if (!result.geometry || !result.geometry.coordinates) {
@@ -585,10 +585,10 @@ export default function MapViewer() {
             plotsSkipped++;
             return;
           }
-          
+
           // Debug geometry types for all plots to identify MultiPolygons
           console.log(\`📐 \${result.plotId}: \${result.geometry.type}\`);
-          
+
           // Special debugging for PLOT_025 and PLOT_026
           if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
             console.log(\`🔍 Debugging \${result.plotId}:\`);
@@ -602,14 +602,14 @@ export default function MapViewer() {
               }
             }
           }
-          
+
           const isHighRisk = result.overallRisk === 'HIGH';
           const color = isHighRisk ? '#dc2626' : '#10b981';
-          
+
           // Convert coordinates for Leaflet
           let coordinates = result.geometry.coordinates;
           let leafletPolygons = [];
-          
+
           try {
             if (result.geometry.type === 'Polygon') {
               // Handle standard Polygon structure: [[[lng, lat], [lng, lat], ...]]
@@ -636,7 +636,7 @@ export default function MapViewer() {
                 allPolygons.push(leafletCoords);
               });
               leafletPolygons = allPolygons;
-              
+
               // Log MultiPolygon info
               if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
                 console.log(\`🟡 \${result.plotId} is MultiPolygon with \${result.geometry.coordinates.length} polygons\`);
@@ -646,19 +646,19 @@ export default function MapViewer() {
               plotsSkipped++;
               return;
             }
-            
+
             // Special logging for PLOT_025 and PLOT_026
             if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
               console.log(\`✅ Successfully parsed \${result.plotId} coordinates:, count: \${leafletPolygons.length}\`);
               console.log('First few coordinates:', leafletPolygons.slice(0, 3));
             }
-            
+
           } catch (error) {
             console.error('Error parsing coordinates for plot:', result.plotId, error);
             plotsSkipped++;
             return;
           }
-          
+
           // Handle MultiPolygon vs single Polygon differently
           if (result.geometry.type === 'MultiPolygon') {
             // For MultiPolygon, create multiple L.polygon objects
@@ -667,14 +667,14 @@ export default function MapViewer() {
               plotsSkipped++;
               return;
             }
-            
+
             const polygonGroup = [];
             leafletPolygons.forEach((singlePolygonCoords, index) => {
               if (!singlePolygonCoords || singlePolygonCoords.length < 3) {
                 console.warn(\`Skipping polygon \${index} in \${result.plotId}: insufficient coordinates\`);
                 return;
               }
-              
+
               const polygon = L.polygon(singlePolygonCoords, {
                 fillColor: color,
                 color: isHighRisk ? '#dc2626' : '#10b981',
@@ -682,12 +682,12 @@ export default function MapViewer() {
                 opacity: 0.8,
                 fillOpacity: 0.4
               }).addTo(map);
-              
+
               polygonGroup.push(polygon);
               polygons.push(polygon);
               bounds.push(polygon.getBounds());
             });
-            
+
             // Create center marker for the first polygon
             if (polygonGroup.length > 0) {
               const center = polygonGroup[0].getBounds().getCenter();
@@ -699,7 +699,7 @@ export default function MapViewer() {
                 opacity: 1,
                 fillOpacity: 0.9
               }).addTo(map);
-              
+
               // Add popup to all polygons in the group
               const popupContent = \`
                 <div class="modern-popup-content">
@@ -709,30 +709,30 @@ export default function MapViewer() {
                     </div>
                     <h3 class="popup-title">\${result.plotId}</h3>
                   </div>
-                  
+
                   <div class="popup-body">
                     <div class="popup-row">
                       <span class="popup-label">Type</span>
                       <span class="popup-value">MultiPolygon (\${polygonGroup.length} parts)</span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">Location</span>
                       <span class="popup-value">\${result.country}</span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">Area</span>
                       <span class="popup-value">\${result.area} ha</span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">Overall Risk</span>
                       <span class="popup-value">
                         <span class="risk-badge \${isHighRisk ? 'risk-high' : 'risk-low'}">\${result.overallRisk}</span>
                       </span>
                     </div>
-                    
+
                     <div class="popup-row">
                       <span class="popup-label">Compliance Status</span>
                       <span class="popup-value">
@@ -742,7 +742,7 @@ export default function MapViewer() {
                   </div>
                 </div>
               \`;
-              
+
               polygonGroup.forEach(polygon => {
                 polygon.bindPopup(popupContent, {
                   maxWidth: 400,
@@ -751,7 +751,7 @@ export default function MapViewer() {
                   autoPan: true,
                   className: 'modern-popup'
                 });
-                
+
                 polygon.on('click', function(e) {
                   const groupBounds = new L.featureGroup(polygonGroup).getBounds();
                   map.fitBounds(groupBounds, {
@@ -760,7 +760,7 @@ export default function MapViewer() {
                   });
                 });
               });
-              
+
               centerMarker.bindPopup(popupContent, {
                 maxWidth: 400,
                 minWidth: 300,
@@ -768,7 +768,7 @@ export default function MapViewer() {
                 autoPan: true,
                 className: 'modern-popup'
               });
-              
+
               centerMarker.on('click', function(e) {
                 const groupBounds = new L.featureGroup(polygonGroup).getBounds();
                 map.fitBounds(groupBounds, {
@@ -777,14 +777,14 @@ export default function MapViewer() {
                 });
               });
             }
-            
+
             // Log successful rendering for PLOT_025 and PLOT_026
             if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
               console.log(\`🎯 Successfully rendered MultiPolygon \${result.plotId} with \${polygonGroup.length} parts\`);
             }
-            
+
             plotsRendered++;
-            
+
           } else {
             // Handle single Polygon
             if (!leafletPolygons || leafletPolygons.length < 3) {
@@ -792,7 +792,7 @@ export default function MapViewer() {
               plotsSkipped++;
               return;
             }
-            
+
             // Create polygon
             const polygon = L.polygon(leafletPolygons, {
               fillColor: color,
@@ -801,7 +801,7 @@ export default function MapViewer() {
               opacity: 0.8,
               fillOpacity: 0.4
             }).addTo(map);
-            
+
             // Add center marker
             const center = polygon.getBounds().getCenter();
             const centerMarker = L.circleMarker(center, {
@@ -812,12 +812,12 @@ export default function MapViewer() {
               opacity: 1,
               fillOpacity: 0.9
             }).addTo(map);
-            
+
             // Log successful rendering for PLOT_025 and PLOT_026
             if (result.plotId === 'PLOT_025' || result.plotId === 'PLOT_026') {
               console.log(\`🎯 Successfully rendered single Polygon \${result.plotId} on map with bounds:\`, polygon.getBounds());
             }
-            
+
             // Add click handler to zoom to polygon
             polygon.on('click', function(e) {
               map.fitBounds(polygon.getBounds(), {
@@ -825,7 +825,7 @@ export default function MapViewer() {
                 maxZoom: 18
               });
             });
-            
+
             centerMarker.on('click', function(e) {
               map.fitBounds(polygon.getBounds(), {
                 padding: [50, 50],
@@ -842,47 +842,47 @@ export default function MapViewer() {
                   </div>
                   <h3 class="popup-title">\${result.plotId}</h3>
                 </div>
-                
+
                 <div class="popup-body">
                   <div class="popup-row">
                     <span class="popup-label">Location</span>
                     <span class="popup-value">\${result.country}</span>
                   </div>
-                  
+
                   <div class="popup-row">
                     <span class="popup-label">Area</span>
                     <span class="popup-value">\${result.area} ha</span>
                   </div>
-                  
+
                   <div class="popup-row">
                     <span class="popup-label">Overall Risk</span>
                     <span class="popup-value">
                       <span class="risk-badge \${isHighRisk ? 'risk-high' : 'risk-low'}">\${result.overallRisk}</span>
                     </span>
                   </div>
-                  
+
                   <div class="popup-row">
                     <span class="popup-label">Compliance Status</span>
                     <span class="popup-value">
                       <span class="compliance-badge \${result.complianceStatus === 'COMPLIANT' ? 'compliance-compliant' : 'compliance-non-compliant'}">\${result.complianceStatus}</span>
                     </span>
                   </div>
-                  
+
                   <div class="popup-row">
                     <span class="popup-label">GFW Forest Loss</span>
                     <span class="popup-value" style="color: \${result.gfwLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.gfwLoss}</span>
                   </div>
-                  
+
                   <div class="popup-row">
                     <span class="popup-label">JRC Forest Loss</span>
                     <span class="popup-value" style="color: \${result.jrcLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.jrcLoss}</span>
                   </div>
-                  
+
                   <div class="popup-row">
                     <span class="popup-label">SBTN Natural Loss</span>
                     <span class="popup-value" style="color: \${result.sbtnLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.sbtnLoss}</span>
                   </div>
-                  
+
                   \${result.highRiskDatasets.length > 0 ? \`
                     <div style="margin-top: 16px;">
                       <div class="popup-label" style="margin-bottom: 8px;">High Risk Indicators</div>
@@ -894,7 +894,7 @@ export default function MapViewer() {
                 </div>
               </div>
             \`;
-            
+
             polygon.bindPopup(popupContent, {
               maxWidth: 400,
               minWidth: 300,
@@ -902,7 +902,7 @@ export default function MapViewer() {
               autoPan: true,
               className: 'modern-popup'
             });
-            
+
             centerMarker.bindPopup(popupContent, {
               maxWidth: 400,
               minWidth: 300,
@@ -910,10 +910,10 @@ export default function MapViewer() {
               autoPan: true,
               className: 'modern-popup'
             });
-            
+
             polygons.push(polygon);
             bounds.push(polygon.getBounds());
-            
+
             plotsRendered++;
           }
         });
@@ -921,7 +921,7 @@ export default function MapViewer() {
         // Log rendering summary
         console.log(\`📊 Map Rendering Summary: \${plotsRendered} plots rendered successfully, \${plotsSkipped} plots skipped\`);
         console.log(\`Total analysis results: \${analysisResults.length}\`);
-        
+
         if (plotsSkipped > 0) {
           console.warn(\`⚠️  \${plotsSkipped} plots are missing from the map due to geometry issues\`);
         }
@@ -985,11 +985,11 @@ export default function MapViewer() {
           polygons.forEach((polygon, index) => {
             const result = analysisResults[index];
             if (!result) return;
-            
+
             const show = filter === 'all' || 
                         (filter === 'high' && result.overallRisk === 'HIGH') ||
                         (filter === 'low' && result.overallRisk === 'LOW');
-            
+
             if (show) {
               polygon.addTo(map);
             } else {
@@ -1009,7 +1009,7 @@ export default function MapViewer() {
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-semibold text-gray-900">EUDR Map Viewer</h1>
-            
+
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1">
                 <BarChart3 className="h-4 w-4 text-blue-600" />
@@ -1037,7 +1037,7 @@ export default function MapViewer() {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -1051,10 +1051,14 @@ export default function MapViewer() {
             <RotateCcw className="h-4 w-4" />
             Reset View
           </Button>
-          
+
           <Button
             className="flex items-center gap-2"
-            onClick={() => setLocation('/spatial-analysis')}
+            onClick={() => {
+              // Set flag to ensure results table is displayed when returning
+              localStorage.setItem('shouldShowResultsTable', 'true');
+              setLocation('/deforestation-monitoring');
+            }}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Results

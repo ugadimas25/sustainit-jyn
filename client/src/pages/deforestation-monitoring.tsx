@@ -487,27 +487,25 @@ export default function DeforestationMonitoring() {
 
   // Check for stored results when component mounts (returning from map viewer)
   useEffect(() => {
-    const shouldShowResults = localStorage.getItem('shouldShowResultsTable');
     const storedResults = localStorage.getItem('currentAnalysisResults');
+    const hasRealData = localStorage.getItem('hasRealAnalysisData');
 
-    if (shouldShowResults === 'true' && storedResults && analysisResults.length === 0) {
+    // Always restore data if it exists and current results are empty
+    if (storedResults && analysisResults.length === 0 && hasRealData === 'true') {
       try {
         const parsedResults = JSON.parse(storedResults);
         console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
         setAnalysisResults(parsedResults);
         setFilteredResults(parsedResults);
 
-        // Clear the flag after restoring
-        localStorage.removeItem('shouldShowResultsTable');
-
         toast({
-          title: "Results Restored",
+          title: "Results Restored", 
           description: `Showing ${parsedResults.length} previously analyzed plots`,
         });
       } catch (error) {
         console.error('Error restoring analysis results:', error);
         localStorage.removeItem('currentAnalysisResults');
-        localStorage.removeItem('shouldShowResultsTable');
+        localStorage.removeItem('hasRealAnalysisData');
       }
     }
   }, []); // Run only on mount
@@ -726,7 +724,7 @@ export default function DeforestationMonitoring() {
 
   const handleViewInMap = (result: AnalysisResult) => {
     localStorage.setItem('selectedPlotForMap', JSON.stringify(result));
-    localStorage.setItem('shouldShowResultsTable', 'false'); // Hide table when navigating to map
+    // Don't set shouldShowResultsTable to false - we want to preserve the table state
     setLocation('/map-viewer');
   };
 
