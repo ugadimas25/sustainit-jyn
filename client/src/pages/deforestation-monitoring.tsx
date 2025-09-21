@@ -156,25 +156,10 @@ export default function DeforestationMonitoring() {
             area: result.area
           });
 
-          // Get loss areas from database - these are already stored as hectares from API processing
+          // Get loss areas from database - these should be stored as hectares
           let gfwLossHa = parseFloat(result.gfwLossArea || '0');
           let jrcLossHa = parseFloat(result.jrcLossArea || '0');
           let sbtnLossHa = parseFloat(result.sbtnLossArea || '0');
-
-          // If database values are 0, try to recalculate from stored geometry
-          if (gfwLossHa === 0 && jrcLossHa === 0 && sbtnLossHa === 0) {
-            // These might be percentages that need to be converted
-            const totalAreaHa = parseFloat(result.area || '1');
-
-            // Check if we have stored percentage values that need conversion
-            const gfwLossPercent = parseFloat(result.gfwLoss === 'TRUE' ? '0.01' : '0'); // Default small value for TRUE
-            const jrcLossPercent = parseFloat(result.jrcLoss === 'TRUE' ? '0.01' : '0');
-            const sbtnLossPercent = parseFloat(result.sbtnLoss === 'TRUE' ? '0.01' : '0');
-
-            gfwLossHa = gfwLossPercent * totalAreaHa;
-            jrcLossHa = jrcLossPercent * totalAreaHa;
-            sbtnLossHa = sbtnLossPercent * totalAreaHa;
-          }
 
           console.log(`🔍 Plot ${result.plotId} calculated loss areas: GFW: ${gfwLossHa}ha, JRC: ${jrcLossHa}ha, SBTN: ${sbtnLossHa}ha`);
 
@@ -524,14 +509,24 @@ export default function DeforestationMonitoring() {
         // Always restore results if we have valid data, regardless of current state
         if (parsedResults && parsedResults.length > 0) {
           console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
-          setAnalysisResults(parsedResults);
-          setFilteredResults(parsedResults);
+          
+          // Ensure loss area values are preserved as numbers, not strings
+          const restoredResults = parsedResults.map((result: any) => ({
+            ...result,
+            gfwLossArea: result.gfwLossArea !== undefined ? Number(result.gfwLossArea) : undefined,
+            jrcLossArea: result.jrcLossArea !== undefined ? Number(result.jrcLossArea) : undefined,
+            sbtnLossArea: result.sbtnLossArea !== undefined ? Number(result.sbtnLossArea) : undefined,
+            area: Number(result.area || 0)
+          }));
+          
+          setAnalysisResults(restoredResults);
+          setFilteredResults(restoredResults);
 
           // If we're returning from map viewer, show appropriate message
           if (shouldShowTable === 'true') {
             toast({
               title: "Results Restored", 
-              description: `Showing ${parsedResults.length} previously analyzed plots`,
+              description: `Showing ${restoredResults.length} previously analyzed plots`,
             });
             // Clear the flag after use
             localStorage.removeItem('shouldShowResultsTable');
@@ -557,8 +552,18 @@ export default function DeforestationMonitoring() {
           const parsedResults = JSON.parse(storedResults);
           if (parsedResults && parsedResults.length > 0) {
             console.log(`🔄 Re-restoring ${parsedResults.length} analysis results from navigation`);
-            setAnalysisResults(parsedResults);
-            setFilteredResults(parsedResults);
+            
+            // Ensure loss area values are preserved as numbers
+            const restoredResults = parsedResults.map((result: any) => ({
+              ...result,
+              gfwLossArea: result.gfwLossArea !== undefined ? Number(result.gfwLossArea) : undefined,
+              jrcLossArea: result.jrcLossArea !== undefined ? Number(result.jrcLossArea) : undefined,
+              sbtnLossArea: result.sbtnLossArea !== undefined ? Number(result.sbtnLossArea) : undefined,
+              area: Number(result.area || 0)
+            }));
+            
+            setAnalysisResults(restoredResults);
+            setFilteredResults(restoredResults);
             localStorage.removeItem('shouldShowResultsTable');
           }
         } catch (error) {
@@ -666,8 +671,8 @@ export default function DeforestationMonitoring() {
   };
 
   const getLossBadge = (loss: string, lossArea?: number) => {
-    // Always show the area value if available (even if it's 0)
-    if (lossArea !== undefined && lossArea !== null) {
+    // Always prioritize showing actual area values when available
+    if (lossArea !== undefined && lossArea !== null && !isNaN(Number(lossArea))) {
       const areaValue = Number(lossArea);
       if (areaValue > 0) {
         if (areaValue < 0.01) {
@@ -680,7 +685,7 @@ export default function DeforestationMonitoring() {
       }
     }
 
-    // Fallback for cases without area data
+    // Fallback for cases without area data - should only show "Detected" if no area data exists
     if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
       return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
     } else {
