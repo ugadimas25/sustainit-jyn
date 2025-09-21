@@ -44,9 +44,9 @@ export const analysisResults = pgTable("analysis_results", {
   jrcLoss: text("jrc_loss").notNull(), 
   sbtnLoss: text("sbtn_loss").notNull(),
   // Intersection area data for high-risk datasets
-  gfwLossArea: real('gfw_loss_area').notNull().default(0),
-  jrcLossArea: real('jrc_loss_area').notNull().default(0),
-  sbtnLossArea: real('sbtn_loss_area').notNull().default(0),
+  gfwLossArea: decimal("gfw_loss_area", { precision: 12, scale: 4 }).default("0"),
+  jrcLossArea: decimal("jrc_loss_area", { precision: 12, scale: 4 }).default("0"),
+  sbtnLossArea: decimal("sbtn_loss_area", { precision: 12, scale: 4 }).default("0"),
   highRiskDatasets: jsonb("high_risk_datasets").$type<string[]>().default([]),
   // Peatland analysis results
   peatlandOverlap: text("peatland_overlap"), // "No overlap" or area in hectares

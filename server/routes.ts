@@ -57,7 +57,6 @@ import { Readable } from "stream";
 import { jsPDF } from "jspdf";
 import * as fs from 'fs';
 import * as path from 'path';
-import { desc } from "drizzle-orm";
 
 const scryptAsync = promisify(scrypt);
 
@@ -1537,7 +1536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let parsedGeoJson;
       try {
-        parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
+        parsedGeojson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
       } catch (parseError) {
         return res.status(400).json({
           valid: false,
@@ -1546,7 +1545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Basic GeoJSON structure validation
-      if (!parsedGeoJson.type) {
+      if (!parsedGeojson.type) {
         return res.status(400).json({
           valid: false,
           error: 'Missing type property'
@@ -1555,10 +1554,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check for valid geometry types
       const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
-      if (!validTypes.includes(parsedGeoJson.type)) {
+      if (!validTypes.includes(parsedGeojson.type)) {
         return res.status(400).json({
           valid: false,
-          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
+          error: `Invalid GeoJSON type: ${parsedGeojson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
         });
       }
 
@@ -1568,24 +1567,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let centroid = null;
 
       // Extract polygon geometry and calculate metadata
-      if (parsedGeoJson.type === 'Polygon') {
+      if (parsedGeojson.type === 'Polygon') {
         polygonFound = true;
-        const coords = parsedGeoJson.coordinates;
+        const coords = parsedGeojson.coordinates;
         if (coords && coords[0] && coords[0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0]);
           centroid = calculateCentroid(coords[0]);
           area = calculatePolygonArea(coords[0]);
         }
-      } else if (parsedGeoJson.type === 'MultiPolygon') {
+      } else if (parsedGeojson.type === 'MultiPolygon') {
         polygonFound = true;
-        const coords = parsedGeoJson.coordinates;
+        const coords = parsedGeojson.coordinates;
         if (coords && coords[0] && coords[0][0] && coords[0][0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0][0]);
           centroid = calculateCentroid(coords[0][0]);
           area = calculatePolygonArea(coords[0][0]);
         }
-      } else if (parsedGeoJson.type === 'Feature') {
-        const geometry = parsedGeoJson.geometry;
+      } else if (parsedGeojson.type === 'Feature') {
+        const geometry = parsedGeojson.geometry;
         if (geometry && (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon')) {
           polygonFound = true;
           const coords = geometry.type === 'Polygon' ? geometry.coordinates : geometry.coordinates[0];
@@ -1595,8 +1594,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             area = calculatePolygonArea(coords[0]);
           }
         }
-      } else if (parsedGeoJson.type === 'FeatureCollection') {
-        const features = parsedGeoJson.features;
+      } else if (parsedGeojson.type === 'FeatureCollection') {
+        const features = parsedGeojson.features;
         if (features && features.length > 0) {
           for (const feature of features) {
             if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
@@ -1626,7 +1625,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           area: area,
           boundingBox: boundingBox,
           centroid: centroid,
-          geometryType: parsedGeoJson.type
+          geometryType: parsedGeojson.type
         }
       });
 
@@ -1936,7 +1935,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       yPos = 55;
 
-      // Section 1: Overview
+      // Embed the EUDR Compliance Verification flowchart image
+      try {
+        // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
+        const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+
+        console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
+
+        doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
+        yPos += 110;
+      } catch (error) {
+        console.log('Note: Image embedding not supported, using text description');
+        yPos += 10;
+      }
+
+      // Methodology Section 1: Overview
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
       doc.text('1. EUDR Compliance Verification Process', 10, yPos);
@@ -2964,7 +2977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Convert geometry to WKT format for PostGIS calculation
       let wkt = '';
-
+      
       if (geometry.type === 'Polygon') {
         const coords = geometry.coordinates[0];
         if (coords && coords.length >= 4) {
@@ -2989,11 +3002,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `);
 
       const areaHectares = parseFloat(result.rows[0]?.area_hectares?.toString() || '1.0');
-
+      
       // Ensure minimum area and reasonable maximum
       if (areaHectares < 0.1) return 0.1;
       if (areaHectares > 1000) return 1000;
-
+      
       console.log(`📏 Calculated area: ${areaHectares.toFixed(2)} hectares using PostGIS`);
       return Math.round(areaHectares * 100) / 100; // Round to 2 decimal places
 
@@ -3253,13 +3266,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Get risk data, provide defaults
             const overallRisk = feature.properties?.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN';
             const complianceStatus = feature.properties?.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT';
-            const gfwLossValue = feature.properties.gfw_loss?.gfw_loss_area;
-            const jrcLossValue = feature.properties.jrc_loss?.jrc_loss_area;
-            const sbtnLossValue = feature.properties.sbtn_loss?.sbtn_loss_area;
-
-            const gfwLossArea = gfwLossValue ? parseFloat(gfwLossValue.toString()) : 0;
-            const jrcLossArea = jrcLossValue ? parseFloat(jrcLossValue.toString()) : 0;
-            const sbtnLossArea = sbtnLossValue ? parseFloat(sbtnLossValue.toString()) : 0;
+            const gfwLossArea = parseFloat(feature.properties?.gfw_loss?.gfw_loss_area || '0');
+            const jrcLossArea = parseFloat(feature.properties?.jrc_loss?.jrc_loss_area || '0');
+            const sbtnLossArea = parseFloat(feature.properties?.sbtn_loss?.sbtn_loss_area || '0');
+            const highRiskDatasets = feature.properties?.overall_compliance?.high_risk_datasets || [];
 
             console.log(`🔍 Plot ${plotId} - GFW: ${gfwLossArea}ha, JRC: ${jrcLossArea}ha, SBTN: ${sbtnLossArea}ha`);
 
@@ -3322,27 +3332,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get analysis results endpoint for map viewer
   app.get('/api/analysis-results', async (req, res) => {
     try {
-      const results = await db.select().from(analysisResults).orderBy(desc(analysisResults.createdAt));
-
-      const formattedResults = results.map(result => {
-        console.log(`📤 Sending from DB - Plot ${result.plotId}:`, {
-          gfwLossArea: result.gfwLossArea,
-          jrcLossArea: result.jrcLossArea,
-          sbtnLossArea: result.sbtnLossArea
-        });
-
-        return {
-          ...result,
-          highRiskDatasets: JSON.parse(result.highRiskDatasets || '[]'),
-          geometry: JSON.parse(result.geometry || '{}'),
-          // Ensure loss areas are properly formatted as numbers
-          gfwLossArea: parseFloat((result.gfwLossArea || 0).toString()),
-          jrcLossArea: parseFloat((result.jrcLossArea || 0).toString()),
-          sbtnLossArea: parseFloat((result.sbtnLossArea || 0).toString())
-        };
-      });
-
-      res.json(formattedResults);
+      const results = await storage.getAnalysisResults();
+      res.json(results);
     } catch (error) {
       console.error('Error fetching analysis results:', error);
       res.status(500).json({ error: 'Failed to fetch analysis results' });
@@ -3938,7 +3929,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         error: 'Failed to detect overlaps using PostGIS',
         details: errorMessage
-          });
+      });
+    }
   });
 
   // Helper function to convert coordinates array to WKT format
