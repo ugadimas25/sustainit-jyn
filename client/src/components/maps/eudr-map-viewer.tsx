@@ -610,31 +610,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 <div style="font-weight: bold; margin-bottom: 5px; color: #4da6ff;">WDPA Protected Areas:</div>
                 <div class="legend-item">
                   <div class="legend-color" style="background-color: #d2b48c;"></div>
-                  <span>Strict Nature Reserve (Ia)</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #2a9d8f;"></div>
-                  <span>Wilderness Area (Ib)</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #1d3557;"></div>
-                  <span>National Park (II)</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #e9c46a;"></div>
-                  <span>Natural Monument (III)</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #f4a261;"></div>
-                  <span>Habitat Management (IV)</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #e76f51;"></div>
-                  <span>Protected Landscape (V)</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-color" style="background-color: #8ab17d;"></div>
-                  <span>Sustainable Use (VI)</span>
+                  <span>All WDPA Protected Areas</span>
                 </div>
               </div>
               <div style="margin: 10px 0; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
@@ -676,22 +652,22 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Set default base layer
             baseLayers.satellite.addTo(map);
 
-            // Enhanced WDPA color mapping for all IUCN categories
+            // Enhanced WDPA color mapping for all IUCN categories - All light brown
             const wdpaColors = {
               'Ia': '#d2b48c',    // Strict Nature Reserve - Light brown (tan)
-              'Ib': '#2a9d8f',    // Wilderness Area - Teal
-              'II': '#1d3557',    // National Park - Dark blue
-              'III': '#e9c46a',   // Natural Monument - Yellow
-              'IV': '#f4a261',    // Habitat Management - Orange
-              'V': '#e76f51',     // Protected Landscape - Red orange
-              'VI': '#8ab17d',    // Sustainable Use - Light green
-              'Not Reported': '#9e9e9e',    // Gray
-              'Not Assigned': '#bdbdbd',    // Light gray
+              'Ib': '#d2b48c',    // Wilderness Area - Light brown (tan)
+              'II': '#d2b48c',    // National Park - Light brown (tan)
+              'III': '#d2b48c',   // Natural Monument - Light brown (tan)
+              'IV': '#d2b48c',    // Habitat Management - Light brown (tan)
+              'V': '#d2b48c',     // Protected Landscape - Light brown (tan)
+              'VI': '#d2b48c',    // Sustainable Use - Light brown (tan)
+              'Not Reported': '#d2b48c',    // Light brown (tan)
+              'Not Assigned': '#d2b48c',    // Light brown (tan)
               // Additional variations found in data
-              'I': '#264653',     // Sometimes just 'I' instead of 'Ia'
-              'Ia/Ib': '#2a6f63', // Mixed categories
-              'Other': '#795548', // Brown for other designations
-              '': '#cccccc'       // Very light gray for empty
+              'I': '#d2b48c',     // Light brown (tan)
+              'Ia/Ib': '#d2b48c', // Light brown (tan)
+              'Other': '#d2b48c', // Light brown (tan)
+              '': '#d2b48c'       // Light brown (tan)
             };
 
             // WDPA Protected Areas Layer
