@@ -901,7 +901,14 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                                            [indonesiaBounds.north, indonesiaBounds.east]);
               }
               
-              // Fetch peatland data from server endpoint
+              console.log('🔍 Requesting peatland data for bounds:', {
+                west: queryBounds.getWest(),
+                south: queryBounds.getSouth(),
+                east: queryBounds.getEast(),
+                north: queryBounds.getNorth()
+              });
+              
+              // Fetch peatland data from server endpoint with enhanced error handling
               return fetch('/api/peatland-data', {
                 method: 'POST',
                 headers: {
@@ -917,27 +924,29 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 })
               })
               .then(response => {
-                console.log('🏞️ Peatland response status:', response.status);
+                console.log('🏞️ Peatland API response status:', response.status, response.statusText);
                 if (!response.ok) {
                   const errorText = response.statusText || 'Unknown error';
+                  console.error(\`❌ Peatland API error: \${response.status} - \${errorText}\`);
                   throw new Error(\`HTTP error! status: \${response.status} - \${errorText}\`);
                 }
                 return response.json();
               })
               .then(data => {
                 console.log('🏞️ Peatland data received:', data);
+                console.log('📊 Features count:', data.features?.length || 0);
                 
                 if (!data || !data.features) {
-                  console.warn('⚠️ Invalid peatland data structure received');
-                  return createMockPeatlandLayer(); // Fallback to mock data
+                  console.warn('⚠️ Invalid peatland data structure - missing features array');
+                  throw new Error('Invalid peatland data structure');
                 }
                 
                 if (data.features.length === 0) {
-                  console.warn('⚠️ No peatland features found in current map bounds, using mock data');
-                  return createMockPeatlandLayer(); // Fallback to mock data
+                  console.warn('⚠️ No peatland features found in current map bounds');
+                  // Don't fallback immediately, return empty layer first
                 }
 
-                console.log(\`✅ Found \${data.features.length} peatland features\`);
+                console.log(\`✅ Processing \${data.features.length} peatland features from API\`);
                 
                 // Group features by classification for logging
                 const classifications = data.features.reduce((acc, feature) => {
@@ -945,8 +954,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   acc[kubahGbt] = (acc[kubahGbt] || 0) + 1;
                   return acc;
                 }, {});
-                console.log('🏞️ Peatland classifications found:', classifications);
+                console.log('🏞️ Peatland classifications distribution:', classifications);
                 
+                // Create the Leaflet GeoJSON layer
                 const layer = L.geoJSON(data, {
                   style: function(feature) {
                     const kubahGbt = feature.properties.Kubah_GBT || feature.properties.kubah_gbt || '';
@@ -957,7 +967,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                       fillColor = '#8b4513'; // Brown for Kubah Gambut
                       color = '#654321';
                     } else if (kubahGbt === 'Non Kubah Gambut') {
-                      fillColor = '#ffa500'; // Orange for Non Kubah Gambut
+                      fillColor = '#ffa500'; // Orange for Non Kubah Gambut  
                       color = '#ff8c00';
                     } else {
                       fillColor = '#d2b48c'; // Light brown for other/unknown
@@ -1003,14 +1013,19 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                       maxWidth: 350,
                       className: 'peatland-popup'
                     });
+                  },
+                  // Add filter to ensure only valid geometries
+                  filter: function(feature) {
+                    return feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates.length > 0;
                   }
                 });
                 
+                console.log(\`✅ Created peatland layer with \${layer.getLayers().length} valid features\`);
                 return layer;
               })
               .catch(error => {
-                console.error('❌ Error loading Peatland layer:', error);
-                console.log('🏞️ Using mock peatland data as fallback');
+                console.error('❌ Error loading Peatland layer from API:', error);
+                console.log('🏞️ Falling back to mock peatland data');
                 return createMockPeatlandLayer();
               });
             }

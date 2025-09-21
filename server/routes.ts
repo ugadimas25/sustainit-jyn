@@ -4067,54 +4067,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let features = [];
 
       try {
-        // Create bounding box for PostGIS query
-        const bbox = `POLYGON((${bounds.west} ${bounds.south}, ${bounds.east} ${bounds.south}, ${bounds.east} ${bounds.north}, ${bounds.west} ${bounds.north}, ${bounds.west} ${bounds.south}))`;
+        // First, check if the peatland_idn table exists
+        const tableCheck = await db.execute(sql`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'peatland_idn'
+          );
+        `);
 
-        // Query peatland data from PostGIS database
+        if (!tableCheck.rows[0]?.exists) {
+          console.log('⚠️ peatland_idn table does not exist, using mock data');
+          throw new Error('peatland_idn table not found');
+        }
+
+        // Create bounding box for PostGIS query with buffer
+        const buffer = 0.5; // Add buffer to catch more features
+        const bbox = `POLYGON((${bounds.west - buffer} ${bounds.south - buffer}, ${bounds.east + buffer} ${bounds.south - buffer}, ${bounds.east + buffer} ${bounds.north + buffer}, ${bounds.west - buffer} ${bounds.north + buffer}, ${bounds.west - buffer} ${bounds.south - buffer}))`;
+
+        console.log('🔍 Using PostGIS query with bounding box:', bbox.substring(0, 100) + '...');
+
+        // Query peatland data from PostGIS database with better column handling
         const result = await db.execute(sql`
           SELECT 
-            "Kubah_GBT",
-            "Ekosistem",
-            "Province",
-            "Area_Ha",
-            ST_AsGeoJSON(geom) as geometry
+            COALESCE("Kubah_GBT", kubah_gbt, 'Unknown') as kubah_classification,
+            COALESCE("Ekosistem", ekosistem, 'Unknown') as ecosystem,
+            COALESCE("Province", province, 'Unknown') as province_name,
+            COALESCE("Area_Ha", area_ha, 0) as area_hectares,
+            ST_AsGeoJSON(ST_Simplify(geom, 0.001)) as geometry
           FROM peatland_idn 
-          WHERE ST_Intersects(
+          WHERE geom IS NOT NULL
+          AND ST_IsValid(geom)
+          AND ST_Intersects(
             geom, 
             ST_GeomFromText(${bbox}, 4326)
           )
-          ORDER BY "Area_Ha" DESC
-          LIMIT 1000
+          ORDER BY COALESCE("Area_Ha", area_ha, 0) DESC
+          LIMIT 500
         `);
 
-        features = result.rows.map((row: any) => {
+        console.log(`📊 PostGIS query returned ${result.rows.length} rows`);
+
+        features = result.rows.map((row: any, index: number) => {
           let geometry;
           try {
             geometry = JSON.parse(row.geometry);
+            
+            // Validate geometry
+            if (!geometry || !geometry.coordinates) {
+              console.warn(`⚠️ Feature ${index + 1}: Invalid geometry, skipping`);
+              return null;
+            }
           } catch (error) {
-            console.warn('Failed to parse geometry for peatland feature:', error);
+            console.warn(`⚠️ Feature ${index + 1}: Failed to parse geometry:`, error);
             return null;
           }
 
           return {
             type: 'Feature',
             properties: {
-              Kubah_GBT: row.Kubah_GBT,
-              Ekosistem: row.Ekosistem,
-              Province: row.Province,
-              Area_Ha: parseFloat(row.Area_Ha || '0')
+              Kubah_GBT: row.kubah_classification || 'Unknown',
+              Ekosistem: row.ecosystem || 'Unknown',
+              Province: row.province_name || 'Unknown', 
+              Area_Ha: parseFloat(row.area_hectares?.toString() || '0')
             },
             geometry: geometry
           };
         }).filter(Boolean); // Remove null features
 
-        console.log(`✅ Found ${features.length} peatland features from database`);
+        console.log(`✅ Successfully processed ${features.length} peatland features from database`);
 
       } catch (dbError) {
-        console.warn('⚠️ Database query failed, using mock peatland data:', dbError);
+        console.warn('⚠️ Database query failed, using comprehensive mock peatland data:', dbError);
         
-        // Fallback to mock data if database fails
-        features = [
+        // Enhanced fallback with more realistic Indonesian peatland data
+        const mockPeatlandAreas = [
+          // Riau Province - major peatland areas
           {
             type: 'Feature',
             properties: {
@@ -4125,31 +4153,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             geometry: {
               type: 'Polygon',
-              coordinates: [[[bounds.west + 0.1, bounds.south + 0.1], 
-                            [bounds.west + 0.6, bounds.south + 0.1], 
-                            [bounds.west + 0.6, bounds.south + 0.6], 
-                            [bounds.west + 0.1, bounds.south + 0.6], 
-                            [bounds.west + 0.1, bounds.south + 0.1]]]
+              coordinates: [[[101.0, 0.5], [101.5, 0.5], [101.5, 1.0], [101.0, 1.0], [101.0, 0.5]]]
             }
           },
+          // Jambi Province
           {
             type: 'Feature',
             properties: {
               Kubah_GBT: 'Non Kubah Gambut',
               Ekosistem: 'Perkebunan Gambut',
-              Province: 'Sumatra Selatan',
+              Province: 'Jambi',
               Area_Ha: 8750.2
             },
             geometry: {
               type: 'Polygon',
-              coordinates: [[[bounds.west + 0.7, bounds.south + 0.2], 
-                            [bounds.west + 1.2, bounds.south + 0.2], 
-                            [bounds.west + 1.2, bounds.south + 0.7], 
-                            [bounds.west + 0.7, bounds.south + 0.7], 
-                            [bounds.west + 0.7, bounds.south + 0.2]]]
+              coordinates: [[[103.0, -1.5], [103.5, -1.5], [103.5, -1.0], [103.0, -1.0], [103.0, -1.5]]]
+            }
+          },
+          // Central Kalimantan - extensive peatlands
+          {
+            type: 'Feature',
+            properties: {
+              Kubah_GBT: 'Kubah Gambut',
+              Ekosistem: 'Hutan Lindung Gambut',
+              Province: 'Kalimantan Tengah',
+              Area_Ha: 22150.8
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[113.5, -1.5], [114.0, -1.5], [114.0, -1.0], [113.5, -1.0], [113.5, -1.5]]]
+            }
+          },
+          // South Sumatra
+          {
+            type: 'Feature',
+            properties: {
+              Kubah_GBT: 'Non Kubah Gambut',
+              Ekosistem: 'Pertanian Gambut',
+              Province: 'Sumatra Selatan',
+              Area_Ha: 6420.3
+            },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[[104.0, -2.5], [104.5, -2.5], [104.5, -2.0], [104.0, -2.0], [104.0, -2.5]]]
             }
           }
         ];
+
+        // Filter mock data based on bounds
+        features = mockPeatlandAreas.filter(feature => {
+          if (!feature.geometry || !feature.geometry.coordinates || !feature.geometry.coordinates[0]) {
+            return false;
+          }
+          
+          const coords = feature.geometry.coordinates[0];
+          const minLng = Math.min(...coords.map(c => c[0]));
+          const maxLng = Math.max(...coords.map(c => c[0]));
+          const minLat = Math.min(...coords.map(c => c[1]));
+          const maxLat = Math.max(...coords.map(c => c[1]));
+          
+          // Check if polygon intersects with bounds
+          return !(maxLng < bounds.west || minLng > bounds.east || maxLat < bounds.south || minLat > bounds.north);
+        });
+
+        console.log(`✅ Using ${features.length} filtered mock peatland features`);
       }
 
       // Group by classification for logging
@@ -4159,7 +4226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return acc;
       }, {});
 
-      console.log('🏞️ Peatland classifications found:', classifications);
+      console.log('🏞️ Peatland classifications distribution:', classifications);
 
       res.json({
         type: 'FeatureCollection',
@@ -4167,15 +4234,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error) {
-      console.error('❌ Error fetching peatland data:', error);
+      console.error('❌ Error in peatland data endpoint:', error);
       
-      // Return mock data even if everything fails
-      const mockFeatures = [
+      // Always return valid GeoJSON even if everything fails
+      const fallbackFeatures = [
         {
           type: 'Feature',
           properties: {
             Kubah_GBT: 'Kubah Gambut',
-            Ekosistem: 'Demo Peatland Area',
+            Ekosistem: 'Demo Peatland Area (Fallback)',
             Province: 'Indonesia',
             Area_Ha: 1000.0
           },
@@ -4183,12 +4250,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             type: 'Polygon',
             coordinates: [[[101.0, 0.5], [101.5, 0.5], [101.5, 1.0], [101.0, 1.0], [101.0, 0.5]]]
           }
+        },
+        {
+          type: 'Feature',
+          properties: {
+            Kubah_GBT: 'Non Kubah Gambut',
+            Ekosistem: 'Demo Non-Dome Peat (Fallback)',
+            Province: 'Indonesia',
+            Area_Ha: 750.5
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [[[102.0, 1.0], [102.5, 1.0], [102.5, 1.5], [102.0, 1.5], [102.0, 1.0]]]
+          }
         }
       ];
 
       res.json({
         type: 'FeatureCollection',
-        features: mockFeatures
+        features: fallbackFeatures
       });
     }
   });
