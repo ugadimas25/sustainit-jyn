@@ -242,12 +242,14 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
   const handleClick = () => {
     if (isLoading) return;
 
+    // Spatial Analysis (step 2) is always available
+    if (subModule.step === 2) {
+      onNavigate(subModule.step, () => setLocation(subModule.href));
+      return;
+    }
+
     if (!hasAccess) {
       let requiredStep = "";
-      if (subModule.step === 2) {
-        // Spatial Analysis is always available - no restrictions
-        return;
-      }
       if (subModule.step === 3) requiredStep = "Data Collection and Spatial Analysis";
       if (subModule.step === 4) requiredStep = "Data Collection, Spatial Analysis, and Legality Compliance";
 
@@ -265,11 +267,11 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
   return (
     <button
       onClick={handleClick}
-      disabled={isLoading || !isAccessible}
+      disabled={isLoading || (!isAccessible && subModule.step !== 2)}
       className={`w-full text-left px-4 py-2 rounded-lg flex items-center transition-colors duration-200 text-sm ${
         isActive 
           ? 'bg-forest-light text-forest font-medium' 
-          : isAccessible
+          : (isAccessible || subModule.step === 2)
           ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
           : 'text-gray-400 cursor-not-allowed'
       }`}
@@ -279,7 +281,7 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
         <div className="flex items-center">
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-          ) : !isAccessible ? (
+          ) : (!isAccessible && subModule.step !== 2) ? (
             <Lock className="w-4 h-4 opacity-50" />
           ) : (
             <subModule.icon className="w-4 h-4" />
@@ -289,11 +291,11 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
         <span className={`text-xs px-2 py-1 rounded-full ${
           isActive 
             ? 'bg-forest text-white' 
-            : isAccessible 
+            : (isAccessible || subModule.step === 2)
             ? 'bg-gray-200 text-gray-700'
             : 'bg-gray-100 text-gray-400'
         }`}>
-          {isLoading ? '...' : hasAccess ? 'Available' : 'Locked'}
+          {isLoading ? '...' : (hasAccess || subModule.step === 2) ? 'Available' : 'Locked'}
         </span>
       </div>
     </button>
