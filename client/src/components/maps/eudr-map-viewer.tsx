@@ -1038,8 +1038,20 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
       const handleMessage = (event: MessageEvent) => {
         if (event.data.type === 'closeMap' || event.data.type === 'backToResults') {
           // Ensure localStorage flags are set correctly for table restoration
+          console.log('🔙 Returning from EUDR Map Viewer, setting restore flags');
+          
+          // Make sure analysis results are preserved
+          if (analysisResults && analysisResults.length > 0) {
+            localStorage.setItem('currentAnalysisResults', JSON.stringify(analysisResults));
+            localStorage.setItem('hasRealAnalysisData', 'true');
+          }
+          
           localStorage.setItem('shouldShowResultsTable', 'true');
-          onClose();
+          
+          // Force a small delay to ensure localStorage is written before navigation
+          setTimeout(() => {
+            onClose();
+          }, 100);
         }
       };
 

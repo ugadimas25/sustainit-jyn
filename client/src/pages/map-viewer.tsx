@@ -45,9 +45,18 @@ export default function MapViewer() {
   // Store results in localStorage for spatial analysis page
   useEffect(() => {
     if (analysisResults.length > 0) {
+      const dataToStore = {
+        results: analysisResults,
+        timestamp: new Date().toISOString(),
+        source: 'map-viewer'
+      };
+      
       localStorage.setItem('currentAnalysisResults', JSON.stringify(analysisResults));
+      localStorage.setItem('hasRealAnalysisData', 'true');
       localStorage.setItem('shouldShowResultsTable', 'true');
-      console.log(`✅ Stored ${analysisResults.length} analysis results for spatial analysis page`);
+      localStorage.setItem('analysisDataMeta', JSON.stringify(dataToStore));
+      
+      console.log(`✅ Stored ${analysisResults.length} analysis results for spatial analysis page with metadata`);
     }
   }, [analysisResults]);
 

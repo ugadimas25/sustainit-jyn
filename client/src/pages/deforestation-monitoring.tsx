@@ -202,6 +202,15 @@ export default function DeforestationMonitoring() {
         // Store in localStorage for persistence (same format as map viewer)
         localStorage.setItem('currentAnalysisResults', JSON.stringify(formattedResults));
         localStorage.setItem('hasRealAnalysisData', 'true');
+        localStorage.setItem('shouldShowResultsTable', 'true');
+        
+        // Store metadata for debugging
+        const analysisMeta = {
+          timestamp: new Date().toISOString(),
+          source: 'analyze-file',
+          plotCount: formattedResults.length
+        };
+        localStorage.setItem('analysisDataMeta', JSON.stringify(analysisMeta));
 
         toast({
           title: "Analysis Complete",
@@ -262,6 +271,15 @@ export default function DeforestationMonitoring() {
           // Store in localStorage for persistence
           localStorage.setItem('currentAnalysisResults', JSON.stringify(fallbackResults));
           localStorage.setItem('hasRealAnalysisData', 'true');
+          localStorage.setItem('shouldShowResultsTable', 'true');
+          
+          // Store metadata for debugging
+          const analysisMeta = {
+            timestamp: new Date().toISOString(),
+            source: 'analyze-file-fallback',
+            plotCount: fallbackResults.length
+          };
+          localStorage.setItem('analysisDataMeta', JSON.stringify(analysisMeta));
 
           toast({
             title: "Analysis Complete",
@@ -489,26 +507,75 @@ export default function DeforestationMonitoring() {
   useEffect(() => {
     const storedResults = localStorage.getItem('currentAnalysisResults');
     const hasRealData = localStorage.getItem('hasRealAnalysisData');
+    const shouldShowTable = localStorage.getItem('shouldShowResultsTable');
 
-    // Always restore data if it exists and current results are empty
-    if (storedResults && analysisResults.length === 0 && hasRealData === 'true') {
+    console.log('🔍 Checking stored data on mount:', {
+      hasStoredResults: !!storedResults,
+      hasRealData,
+      shouldShowTable,
+      currentResultsLength: analysisResults.length
+    });
+
+    // Restore data if it exists and we should show the table
+    if (storedResults && hasRealData === 'true') {
       try {
         const parsedResults = JSON.parse(storedResults);
-        console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
-        setAnalysisResults(parsedResults);
-        setFilteredResults(parsedResults);
+        
+        // Always restore results if we have valid data, regardless of current state
+        if (parsedResults && parsedResults.length > 0) {
+          console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
+          setAnalysisResults(parsedResults);
+          setFilteredResults(parsedResults);
 
-        toast({
-          title: "Results Restored", 
-          description: `Showing ${parsedResults.length} previously analyzed plots`,
-        });
+          // If we're returning from map viewer, show appropriate message
+          if (shouldShowTable === 'true') {
+            toast({
+              title: "Results Restored", 
+              description: `Showing ${parsedResults.length} previously analyzed plots`,
+            });
+            // Clear the flag after use
+            localStorage.removeItem('shouldShowResultsTable');
+          }
+        }
       } catch (error) {
         console.error('Error restoring analysis results:', error);
         localStorage.removeItem('currentAnalysisResults');
         localStorage.removeItem('hasRealAnalysisData');
+        localStorage.removeItem('shouldShowResultsTable');
       }
     }
   }, []); // Run only on mount
+
+  // Additional effect to handle navigation state changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const shouldShowTable = localStorage.getItem('shouldShowResultsTable');
+      const storedResults = localStorage.getItem('currentAnalysisResults');
+      
+      if (shouldShowTable === 'true' && storedResults && analysisResults.length === 0) {
+        try {
+          const parsedResults = JSON.parse(storedResults);
+          if (parsedResults && parsedResults.length > 0) {
+            console.log(`🔄 Re-restoring ${parsedResults.length} analysis results from navigation`);
+            setAnalysisResults(parsedResults);
+            setFilteredResults(parsedResults);
+            localStorage.removeItem('shouldShowResultsTable');
+          }
+        } catch (error) {
+          console.error('Error in storage change handler:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check immediately in case we missed a change
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [analysisResults.length]);
 
   // Filter and sort functionality
   useEffect(() => {
