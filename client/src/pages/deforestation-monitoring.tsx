@@ -168,9 +168,9 @@ export default function DeforestationMonitoring() {
             jrcLoss: result.jrcLoss || 'UNKNOWN',
             sbtnLoss: result.sbtnLoss || 'UNKNOWN',
             highRiskDatasets: result.highRiskDatasets || [],
-            gfwLossArea: Number(result.gfwLossArea || result.gfw_loss_area) || 0,
-            jrcLossArea: Number(result.jrcLossArea || result.jrc_loss_area) || 0,
-            sbtnLossArea: Number(result.sbtnLossArea || result.sbtn_loss_area) || 0,
+            gfwLossArea: parseFloat(result.gfwLossArea || result.gfw_loss_area || '0'),
+            jrcLossArea: parseFloat(result.jrcLossArea || result.jrc_loss_area || '0'),
+            sbtnLossArea: parseFloat(result.sbtnLossArea || result.sbtn_loss_area || '0'),
             geometry: result.geometry // This contains the actual polygon coordinates
           };
         });
@@ -560,20 +560,22 @@ export default function DeforestationMonitoring() {
   };
 
   const getLossBadge = (loss: string, lossArea?: number) => {
-    // Check if we have actual loss area data
-    if (lossArea !== undefined && lossArea !== null && lossArea > 0) {
-      return <Badge className="bg-red-100 text-red-800">{lossArea.toFixed(2)} ha</Badge>;
+    // Always show the area value if available (even if it's 0)
+    if (lossArea !== undefined && lossArea !== null) {
+      const areaValue = Number(lossArea);
+      if (areaValue > 0) {
+        return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(2)} ha</Badge>;
+      } else {
+        return <Badge className="bg-green-100 text-green-800">{areaValue.toFixed(2)} ha</Badge>;
+      }
     }
 
-    // For TRUE/FALSE values, show 0 ha in green for FALSE and check for actual area for TRUE
+    // Fallback for cases without area data
     if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
-      // If it's TRUE but no area data, show as detected but no area calculated
       return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
-    } else if (loss === 'FALSE' || loss === 'LOW' || loss === 'NO' || loss === 'NONE') {
+    } else {
       return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
     }
-
-    return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
   };
 
   const getComplianceBadge = (status: string) => {
