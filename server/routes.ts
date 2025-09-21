@@ -2818,6 +2818,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to remove Z-coordinates (3D) from GeoJSON coordinates
+  function removeZValues(coordinates: any): any {
+    if (!coordinates || !Array.isArray(coordinates)) {
+      return coordinates;
+    }
+
+    if (typeof coordinates[0] === 'number') {
+      // This is a coordinate pair/triple, return only [x, y]
+      return coordinates.slice(0, 2);
+    }
+
+    // This is an array of coordinates, recursively process each
+    return coordinates.map(removeZValues);
+  }
+
   // Helper function to get country from coordinates using adm_boundary_lv0
   async function getCountryFromCoordinates(lat: number, lng: number): Promise<string> {
     try {
@@ -3032,14 +3047,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let parsedGeojson;
       try {
-        parsedGeojson = typeof geoJsonData === 'string' ? JSON.parse(geoJsonData) : geoJsonData;
+        // Handle different input formats
+        if (typeof geoJsonData === 'string') {
+          // Try to parse as JSON string
+          parsedGeojson = JSON.parse(geoJsonData);
+        } else if (typeof geoJsonData === 'object') {
+          // Already parsed object
+          parsedGeojson = geoJsonData;
+        } else {
+          throw new Error('Invalid GeoJSON data format');
+        }
+        
+        console.log('✅ Successfully parsed GeoJSON data');
+        console.log('📋 GeoJSON type:', parsedGeojson.type);
+        console.log('📋 Features count:', parsedGeojson.features?.length || 0);
+        
       } catch (parseError) {
-        return res.status(400).json({ error: 'Invalid JSON format' });
+        console.error('❌ JSON parsing error:', parseError);
+        return res.status(400).json({ 
+          error: 'Failed to parse GeoJSON file', 
+          details: parseError instanceof Error ? parseError.message : 'Invalid JSON format'
+        });
+      }
+
+      // Enhanced GeoJSON validation
+      if (!parsedGeojson || typeof parsedGeojson !== 'object') {
+        return res.status(400).json({ error: 'Invalid GeoJSON: root must be an object' });
+      }
+
+      if (parsedGeojson.type !== 'FeatureCollection') {
+        return res.status(400).json({ 
+          error: `Invalid GeoJSON: expected FeatureCollection, got ${parsedGeojson.type}` 
+        });
       }
 
       if (!parsedGeojson.features || !Array.isArray(parsedGeojson.features)) {
-        return res.status(400).json({ error: 'Invalid GeoJSON: missing features array' });
+        return res.status(400).json({ 
+          error: 'Invalid GeoJSON: missing or invalid features array',
+          details: `Features is ${typeof parsedGeojson.features}, expected array`
+        });
       }
+
+      if (parsedGeojson.features.length === 0) {
+        return res.status(400).json({ error: 'Invalid GeoJSON: features array is empty' });
+      }
+
+      console.log(`✅ GeoJSON validation passed: ${parsedGeojson.features.length} features found`);
 
       // Remove z-values (3D coordinates) to make it compatible with external APIs
       const cleanedGeojson = {
@@ -3062,16 +3115,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Enhanced validation for different GeoJSON formats
       const validatedFeatures = [];
 
-      for (const feature of cleanedGeojson.features) {
-        const props = feature.properties || {};
+      for (let i = 0; i < cleanedGeojson.features.length; i++) {
+        const feature = cleanedGeojson.features[i];
+        
+        try {
+          // Validate feature structure
+          if (!feature || typeof feature !== 'object') {
+            console.warn(`⚠️ Feature ${i + 1}: Invalid feature object, skipping`);
+            continue;
+          }
 
-        // Robustly get plot ID
-        const plotId = props.id || props.plot_id || props['.Farmers ID'] || props.Name || props.farmer_id || `UNKNOWN_${Math.random().toString(36).substring(7)}`;
+          if (feature.type !== 'Feature') {
+            console.warn(`⚠️ Feature ${i + 1}: Expected type 'Feature', got '${feature.type}', skipping`);
+            continue;
+          }
 
-        if (!props.id && !props.plot_id && !props['.Farmers ID'] && !props.Name && !props.farmer_id) {
-          console.warn('Feature missing critical ID property, skipping:', Object.keys(props));
-          continue;
-        }
+          if (!feature.geometry) {
+            console.warn(`⚠️ Feature ${i + 1}: Missing geometry, skipping`);
+            continue;
+          }
+
+          const props = feature.properties || {};
+
+          // Robustly get plot ID with better fallback
+          const plotId = props.id || props.plot_id || props['.Farmers ID'] || props.Name || props.farmer_id || `PLOT_${String(i + 1).padStart(3, '0')}`;
+
+          console.log(`✅ Processing feature ${i + 1}: plotId="${plotId}", properties=${JSON.stringify(Object.keys(props))}`);
+
+          // Continue processing even if some properties are missing
+          // This is more forgiving than before
 
         // Get country from multiple sources with priority order
         let detectedCountry = 'Unknown';
@@ -3106,15 +3178,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Update feature properties with detected country
-        feature.properties.detected_country = detectedCountry;
-        validatedFeatures.push(feature);
+          feature.properties.detected_country = detectedCountry;
+          validatedFeatures.push(feature);
+          
+        } catch (featureError) {
+          console.error(`❌ Error processing feature ${i + 1}:`, featureError);
+          // Continue with next feature instead of failing completely
+          continue;
+        }
       }
 
       if (validatedFeatures.length === 0) {
         return res.status(400).json({
-          error: 'No valid features found. Each feature must have geometry and identifiable properties.'
+          error: 'No valid features found after processing',
+          details: 'All features were either invalid or missing required properties (geometry, plot ID)'
         });
       }
+
+      console.log(`✅ Validated ${validatedFeatures.length} out of ${cleanedGeojson.features.length} features`);
 
       cleanedGeojson.features = validatedFeatures;
 
@@ -3135,25 +3216,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `--${boundary}--`
       ].join('\r\n');
 
-      // Call EUDR Multilayer API
-      const response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
-        method: 'POST',
-        headers: {
-          'Content-Type': `multipart/form-data; boundary=${boundary}`
-        },
-        body: formBody
-      });
+      // Call EUDR Multilayer API with enhanced error handling
+      let response;
+      let analysisResults;
+      
+      try {
+        console.log('🚀 Sending request to EUDR Multilayer API...');
+        console.log(`📤 Request size: ${formBody.length} bytes`);
+        
+        response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
+          method: 'POST',
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${boundary}`
+          },
+          body: formBody
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('RapidAPI Error:', response.status, errorText);
-        return res.status(response.status).json({
-          error: 'Failed to analyze GeoJSON file',
-          details: errorText
+        console.log(`📥 API Response status: ${response.status} ${response.statusText}`);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ API Error Response:', response.status, errorText);
+          return res.status(response.status).json({
+            error: 'Failed to analyze GeoJSON file',
+            details: `API returned ${response.status}: ${errorText}`,
+            apiStatus: response.status
+          });
+        }
+
+        analysisResults = await response.json();
+        console.log('✅ Successfully received analysis results from API');
+        
+      } catch (fetchError) {
+        console.error('❌ Network/API Error:', fetchError);
+        return res.status(500).json({
+          error: 'Failed to communicate with analysis API',
+          details: fetchError instanceof Error ? fetchError.message : 'Unknown network error'
         });
       }
-
-      const analysisResults = await response.json();
 
       // Log both request and response for debugging
       const inputFeatures = cleanedGeojson.features.length; // Use count from cleaned GeoJSON
