@@ -1376,7 +1376,7 @@ export default function DeforestationMonitoring() {
             if (wdpaCheckbox) {
               wdpaCheckbox.addEventListener('change', function(e) {
                 console.log('🛡️ WDPA checkbox changed in Quick Preview:', e.target.checked);
-                
+
                 if (e.target.checked) {
                   if (!wdpaLayer) {
                     // Use GFW raster tiles for WDPA protected areas (vector tiles require special handling)
@@ -1396,11 +1396,11 @@ export default function DeforestationMonitoring() {
                       console.log('✅ WDPA tile loaded in Quick Preview at:', e.coords);
                     });
                   }
-                  
+
                   if (!map.hasLayer(wdpaLayer)) {
                     wdpaLayer.addTo(map);
                     console.log('✅ WDPA GFW vector tiles added to Quick Preview map');
-                    
+
                     // Force map refresh
                     setTimeout(() => {
                       map.invalidateSize();
@@ -1505,11 +1505,11 @@ export default function DeforestationMonitoring() {
                       console.log('GFW tile loaded successfully at:', e.coords);
                     });
                   }
-                  
+
                   if (!map.hasLayer(gfwLayer)) {
                     gfwLayer.addTo(map);
                     console.log('GFW layer added to map');
-                    
+
                     // Force map refresh
                     setTimeout(() => {
                       map.invalidateSize();
@@ -1547,11 +1547,11 @@ export default function DeforestationMonitoring() {
                       console.warn('JRC tile load error:', e.error);
                     });
                   }
-                  
+
                   if (!map.hasLayer(jrcLayer)) {
                     jrcLayer.addTo(map);
                     console.log('JRC layer added to map');
-                    
+
                     // Force map refresh
                     setTimeout(() => {
                       map.invalidateSize();
@@ -1586,11 +1586,11 @@ export default function DeforestationMonitoring() {
                       console.warn('SBTN tile load error:', e.error);
                     });
                   }
-                  
+
                   if (!map.hasLayer(sbtnLayer)) {
                     sbtnLayer.addTo(map);
                     console.log('SBTN layer added to map');
-                    
+
                     // Force map refresh
                     setTimeout(() => {
                       map.invalidateSize();
@@ -1608,7 +1608,7 @@ export default function DeforestationMonitoring() {
             // Test layer availability and show status messages
             setTimeout(() => {
               console.log('Testing deforestation layer services...');
-              
+
               // Test GFW service
               fetch('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/6/32/21.png?start_year=2021&end_year=2024')
                 .then(response => {
