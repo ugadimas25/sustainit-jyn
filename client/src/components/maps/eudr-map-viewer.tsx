@@ -702,23 +702,30 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             // Peatland Layer
             let peatlandLayer = null;
 
-            // Function to create WDPA layer using ArcGIS tile service
+            // Function to create WDPA layer using GFW vector tiles
             function createWDPALayer() {
-              // Try multiple WDPA service URLs for better compatibility
-              const wdpaUrls = [
-                'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}',
-                'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/arcgis/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}'
-              ];
+              // Use GFW vector tiles for WDPA protected areas - more reliable and consistent
+              const gfwWdpaUrl = 'https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/{z}/{x}/{y}.png';
               
-              wdpaTileLayer = L.tileLayer(wdpaUrls[0], {
-                attribution: '© WDPA - World Database on Protected Areas',
+              wdpaTileLayer = L.tileLayer(gfwWdpaUrl, {
+                attribution: '© WDPA - World Database on Protected Areas via Global Forest Watch',
                 opacity: 0.7,
                 maxZoom: 18,
-                className: 'wdpa-tile-layer',
+                className: 'wdpa-gfw-tile-layer',
                 errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
               });
 
-              console.log('Created WDPA tile layer with URL:', wdpaUrls[0]);
+              console.log('Created WDPA GFW tile layer with URL:', gfwWdpaUrl);
+              
+              // Add enhanced error handling for GFW tiles
+              wdpaTileLayer.on('tileerror', function(e) {
+                console.warn('⚠️ WDPA GFW tile error:', e.error?.message || e.error);
+              });
+              
+              wdpaTileLayer.on('tileload', function(e) {
+                console.log('✅ WDPA GFW tile loaded successfully:', e.coords);
+              });
+              
               return Promise.resolve(wdpaTileLayer);
             }
 
@@ -1574,35 +1581,32 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                       }
                       
                     } else {
-                      console.log('🔄 GeoJSON returned no features, trying tile layer as fallback...');
+                      console.log('🔄 GeoJSON returned no features, trying GFW vector tiles as fallback...');
                       
-                      // Fallback to tile layer
+                      // Fallback to GFW vector tile layer - more reliable than ArcGIS service
                       createWDPALayer().then(layer => {
                         if (layer) {
                           wdpaTileLayer = layer;
                           layer.addTo(map);
-                          console.log('✅ WDPA tile layer added as fallback');
+                          console.log('✅ WDPA GFW vector tile layer added as fallback');
                           
-                          // Add enhanced error handling for tiles
-                          layer.on('tileerror', function(e) {
-                            console.error('❌ WDPA tile error:', e.error?.message || e);
-                          });
+                          // Force map refresh to ensure tiles are loaded
+                          map.invalidateSize();
+                          setTimeout(() => {
+                            map.panBy([1, 1]);
+                            map.panBy([-1, -1]);
+                          }, 100);
                           
-                          layer.on('tileload', function(e) {
-                            console.log('✅ WDPA tile loaded successfully:', e.coords);
-                          });
-                          
-                          layer.on('loading', function() {
-                            console.log('🔄 WDPA tiles loading...');
-                          });
-                          
-                          layer.on('load', function() {
-                            console.log('✅ All WDPA tiles loaded');
-                          });
+                          // Show success notification
+                          const successMsg = document.createElement('div');
+                          successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                          successMsg.innerHTML = '✅ WDPA Protected Areas loaded via GFW tiles';
+                          document.body.appendChild(successMsg);
+                          setTimeout(() => successMsg.remove(), 3000);
                           
                         } else {
-                          console.error('❌ Both WDPA layer methods failed');
-                          alert('Unable to load WDPA Protected Areas layer. The service may be temporarily unavailable.');
+                          console.error('❌ WDPA GFW vector tile layer creation failed');
+                          alert('Unable to load WDPA Protected Areas layer. The GFW service may be temporarily unavailable.');
                         }
                       });
                     }
@@ -2148,16 +2152,23 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }
             }, 1000);
             
-            // Test WDPA service availability
-            console.log('🔍 Testing WDPA service availability...');
-            fetch('https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer?f=json')
-              .then(response => response.json())
-              .then(data => {
-                console.log('✅ WDPA service is available:', data.serviceDescription || 'Service OK');
-                console.log('🗺️ Available layers:', data.layers?.map(l => l.name) || 'No layers info');
+            // Test WDPA GFW service availability
+            console.log('🔍 Testing WDPA GFW vector tiles service availability...');
+            
+            // Test a sample WDPA tile from GFW
+            const testCoords = { z: 6, x: 32, y: 21 };
+            const wdpaTestUrl = `https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/${testCoords.z}/${testCoords.x}/${testCoords.y}.png`;
+            
+            fetch(wdpaTestUrl)
+              .then(response => {
+                if (response.ok || response.status === 404) { // 404 is expected for tiles without data
+                  console.log('✅ WDPA GFW vector tiles service is available and accessible');
+                } else {
+                  console.warn('⚠️ WDPA GFW service returned status:', response.status);
+                }
               })
               .catch(error => {
-                console.error('❌ WDPA service test failed:', error);
+                console.error('❌ WDPA GFW service test failed:', error);
               });
             
             // Add CSS for WDPA and Peatland styling
@@ -2171,10 +2182,11 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 margin: 12px;
               }
               
-              /* Force WDPA tile layer to appear in light brown */
-              .wdpa-tile-layer {
-                filter: hue-rotate(20deg) saturate(1.2) brightness(1.1);
+              /* Style for WDPA GFW vector tiles */
+              .wdpa-gfw-tile-layer {
+                filter: hue-rotate(30deg) saturate(1.3) brightness(1.2);
                 mix-blend-mode: multiply;
+                opacity: 0.7;
               }
               
               /* Style for WDPA GeoJSON features */

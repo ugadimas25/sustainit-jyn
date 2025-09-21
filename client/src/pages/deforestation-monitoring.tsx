@@ -1370,22 +1370,49 @@ export default function DeforestationMonitoring() {
               });
             }
 
-            // WDPA layer control
+            // WDPA layer control using GFW vector tiles
             let wdpaLayer = null;
             const wdpaCheckbox = window.parent.document.getElementById('quick-wdpa-layer');
             if (wdpaCheckbox) {
               wdpaCheckbox.addEventListener('change', function(e) {
+                console.log('🛡️ WDPA checkbox changed in Quick Preview:', e.target.checked);
+                
                 if (e.target.checked) {
                   if (!wdpaLayer) {
-                    wdpaLayer = L.tileLayer('https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}', {
-                      attribution: '© WDPA',
+                    // Use GFW vector tiles for better reliability and consistency
+                    wdpaLayer = L.tileLayer('https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/{z}/{x}/{y}.png', {
+                      attribution: '© WDPA via Global Forest Watch',
                       opacity: 0.7,
-                      maxZoom: 12 // WDPA data might be less detailed at higher zooms
+                      maxZoom: 18,
+                      errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+                    });
+
+                    // Add error handling for WDPA tiles
+                    wdpaLayer.on('tileerror', function(e) {
+                      console.warn('⚠️ WDPA tile load error in Quick Preview:', e.error);
+                    });
+
+                    wdpaLayer.on('tileload', function(e) {
+                      console.log('✅ WDPA tile loaded in Quick Preview at:', e.coords);
                     });
                   }
-                  wdpaLayer.addTo(map);
-                } else if (wdpaLayer && map.hasLayer(wdpaLayer)) {
-                  map.removeLayer(wdpaLayer);
+                  
+                  if (!map.hasLayer(wdpaLayer)) {
+                    wdpaLayer.addTo(map);
+                    console.log('✅ WDPA GFW vector tiles added to Quick Preview map');
+                    
+                    // Force map refresh
+                    setTimeout(() => {
+                      map.invalidateSize();
+                      map.panBy([1, 1]);
+                      map.panBy([-1, -1]);
+                    }, 100);
+                  }
+                } else {
+                  if (wdpaLayer && map.hasLayer(wdpaLayer)) {
+                    map.removeLayer(wdpaLayer);
+                    console.log('✅ WDPA layer removed from Quick Preview map');
+                  }
                 }
               });
             }
