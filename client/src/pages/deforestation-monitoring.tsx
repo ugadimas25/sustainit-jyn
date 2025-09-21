@@ -95,43 +95,113 @@ export default function DeforestationMonitoring() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // GeoJSON upload mutation
+  // GeoJSON upload mutation with enhanced error handling
   const uploadMutation = useMutation({
     mutationFn: async ({ geojsonFile, fileName }: { geojsonFile: string, fileName: string }) => {
-      // Parse GeoJSON and remove Z-values
+      // Parse GeoJSON and remove Z-values with better error handling
       let geojsonData;
       try {
         geojsonData = JSON.parse(geojsonFile);
-        geojsonData.features = geojsonData.features.map((feature: any) => {
-          if (feature.geometry) {
-            feature.geometry = removeZValue(feature.geometry);
+        
+        // Ensure we have a FeatureCollection
+        if (!geojsonData.features || !Array.isArray(geojsonData.features)) {
+          throw new Error('Invalid GeoJSON structure: Missing features array');
+        }
+
+        // Process features to remove Z-values and ensure EUDR compatibility
+        geojsonData.features = geojsonData.features.map((feature: any, index: number) => {
+          try {
+            if (feature.geometry) {
+              feature.geometry = removeZValue(feature.geometry);
+            }
+
+            // Ensure properties exist for EUDR analysis
+            if (!feature.properties) {
+              feature.properties = {};
+            }
+
+            const props = feature.properties;
+
+            // Ensure plot_id exists for analysis
+            if (!props.plot_id && !props.id && !props['.Farmers ID'] && !props.Name) {
+              props.plot_id = `PROCESSED_PLOT_${String(index + 1).padStart(3, '0')}`;
+            }
+
+            // Normalize plot_id from various formats
+            if (!props.plot_id) {
+              props.plot_id = props.id || props['.Farmers ID'] || props.Name || `PLOT_${index + 1}`;
+            }
+
+            // Ensure country_name for EUDR analysis
+            if (!props.country_name && !props.country) {
+              props.country_name = 'unknown';
+            }
+
+            return feature;
+          } catch (featureError) {
+            console.warn(`Error processing feature ${index + 1}:`, featureError);
+            return feature; // Return original feature if processing fails
           }
-          return feature;
         });
-      } catch (e) {
-        throw new Error('Failed to parse GeoJSON file.');
+
+        console.log(`✅ Prepared ${geojsonData.features.length} features for EUDR analysis`);
+        
+      } catch (parseError) {
+        console.error('GeoJSON parsing error:', parseError);
+        throw new Error(`Failed to parse GeoJSON file: ${parseError instanceof Error ? parseError.message : 'Invalid format'}`);
       }
 
       // Re-stringify after processing
       const processedGeojsonString = JSON.stringify(geojsonData);
 
-      const response = await fetch('/api/geojson/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          geojson: processedGeojsonString,
-          filename: fileName
-        }),
-      });
+      try {
+        console.log('🚀 Uploading GeoJSON for EUDR analysis...');
+        
+        const response = await fetch('/api/geojson/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            geojson: processedGeojsonString,
+            filename: fileName
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        if (!response.ok) {
+          let errorMessage = `Upload failed with status ${response.status}`;
+          
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorData.details || errorMessage;
+          } catch (jsonError) {
+            // If we can't parse the error response, use the status text
+            errorMessage = response.statusText || errorMessage;
+          }
+          
+          throw new Error(errorMessage);
+        }
+
+        const result = await response.json();
+        console.log('✅ EUDR analysis upload successful');
+        return result;
+        
+      } catch (networkError) {
+        console.error('Network error during upload:', networkError);
+        
+        if (networkError instanceof Error) {
+          // Check for specific network issues
+          if (networkError.message.includes('fetch')) {
+            throw new Error('Network connection error. Please check your internet connection and try again.');
+          } else if (networkError.message.includes('timeout')) {
+            throw new Error('Upload timeout. The file may be too large or the connection is slow.');
+          } else {
+            throw networkError;
+          }
+        } else {
+          throw new Error('Unknown network error occurred during upload');
+        }
       }
-
-      return response.json();
     },
     onSuccess: async (data) => {
       console.log('✅ Upload successful, fetching latest results from database...');
@@ -278,12 +348,32 @@ export default function DeforestationMonitoring() {
       setUploadedFile(null);
     },
     onError: (error) => {
-      console.error('Upload failed:', error);
+      console.error('EUDR analysis failed:', error);
+      
+      let errorTitle = "EUDR Analysis Failed";
+      let errorDescription = error.message;
+      
+      // Provide specific guidance based on error type
+      if (error.message.includes('parse')) {
+        errorTitle = "GeoJSON Format Error";
+        errorDescription = "Invalid GeoJSON format. Please ensure your file has valid geometry and properties with plot_id fields.";
+      } else if (error.message.includes('network') || error.message.includes('fetch')) {
+        errorTitle = "Network Connection Error";
+        errorDescription = "Failed to connect to EUDR analysis service. Please check your connection and try again.";
+      } else if (error.message.includes('timeout')) {
+        errorTitle = "Analysis Timeout";
+        errorDescription = "The analysis is taking longer than expected. Try uploading smaller files or contact support.";
+      } else if (error.message.includes('features')) {
+        errorTitle = "Feature Validation Error";
+        errorDescription = "Some features in your GeoJSON are invalid. Ensure all features have valid geometry and plot identifiers.";
+      }
+      
       toast({
-        title: "Analysis Failed", 
-        description: error.message,
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive"
       });
+      
       setIsAnalyzing(false);
       setAnalysisProgress(0);
     },
@@ -320,7 +410,7 @@ export default function DeforestationMonitoring() {
           return;
         }
 
-        // Parse and validate GeoJSON structure early
+        // Parse and validate GeoJSON structure with robust error handling
         let parsedGeoJSON;
         try {
           const contentStr = content.toString().trim();
@@ -336,36 +426,64 @@ export default function DeforestationMonitoring() {
             return;
           }
 
-          // Try to parse the JSON
-          parsedGeoJSON = JSON.parse(contentStr);
-          console.log('✅ Successfully parsed JSON file');
+          // Try to parse the JSON with better error messaging
+          try {
+            parsedGeoJSON = JSON.parse(contentStr);
+            console.log('✅ Successfully parsed JSON file');
+          } catch (syntaxError) {
+            console.error('JSON syntax error:', syntaxError);
+            
+            // Try to identify the specific JSON issue
+            const errorMsg = syntaxError instanceof Error ? syntaxError.message : 'Unknown syntax error';
+            let friendlyMsg = "Invalid JSON format";
+            
+            if (errorMsg.includes('Unexpected token')) {
+              friendlyMsg = "JSON syntax error - check for missing commas, brackets, or quotes";
+            } else if (errorMsg.includes('Unexpected end')) {
+              friendlyMsg = "Incomplete JSON file - file may be truncated";
+            }
+            
+            toast({
+              title: "JSON Parse Error",
+              description: `${friendlyMsg}. ${errorMsg}`,
+              variant: "destructive"
+            });
+            return;
+          }
           
         } catch (parseError) {
-          console.error('JSON parsing error:', parseError);
+          console.error('General parsing error:', parseError);
           toast({
-            title: "Invalid JSON",
-            description: "Failed to parse the file as valid JSON. Please check the file format.",
+            title: "File Processing Error",
+            description: "Failed to process the file. Please ensure it's a valid GeoJSON file.",
             variant: "destructive"
           });
           return;
         }
 
-        // Basic structure validation
+        // Robust GeoJSON structure validation
         if (!parsedGeoJSON || typeof parsedGeoJSON !== 'object') {
           console.warn('Invalid GeoJSON: File must contain a valid JSON object');
           toast({
-            title: "Invalid format",
+            title: "Invalid GeoJSON",
             description: "File must contain a valid JSON object",
             variant: "destructive"
           });
           return;
         }
 
-        if (parsedGeoJSON.type !== 'FeatureCollection') {
+        // Check for FeatureCollection or try to auto-convert single Feature
+        if (parsedGeoJSON.type === 'Feature') {
+          console.log('📝 Converting single Feature to FeatureCollection');
+          parsedGeoJSON = {
+            type: 'FeatureCollection',
+            features: [parsedGeoJSON]
+          };
+        } else if (parsedGeoJSON.type !== 'FeatureCollection') {
           console.warn(`Invalid GeoJSON type: ${parsedGeoJSON.type || 'unknown'}, expected FeatureCollection`);
           toast({
-            title: "Invalid GeoJSON",
-            description: `Expected FeatureCollection, got ${parsedGeoJSON.type || 'unknown'}`,
+            title: "Unsupported GeoJSON Type",
+            description: `Expected FeatureCollection or Feature, got ${parsedGeoJSON.type || 'unknown'}. Please ensure your file contains geographic features.`,
             variant: "destructive"
           });
           return;
@@ -374,8 +492,8 @@ export default function DeforestationMonitoring() {
         if (!parsedGeoJSON.features || !Array.isArray(parsedGeoJSON.features)) {
           console.warn('Invalid GeoJSON: Missing or invalid features array');
           toast({
-            title: "Invalid GeoJSON",
-            description: "Missing or invalid features array",
+            title: "Invalid GeoJSON Structure",
+            description: "Missing or invalid features array. Please check your GeoJSON structure.",
             variant: "destructive"
           });
           return;
@@ -385,7 +503,7 @@ export default function DeforestationMonitoring() {
           console.warn('GeoJSON file contains no features');
           toast({
             title: "Empty GeoJSON",
-            description: "GeoJSON file contains no features",
+            description: "GeoJSON file contains no features to analyze",
             variant: "destructive"
           });
           return;
@@ -393,90 +511,137 @@ export default function DeforestationMonitoring() {
 
         console.log(`✅ GeoJSON validation passed: Found ${parsedGeoJSON.features.length} features`);
 
-        // Validate features have required structure (more lenient approach)
+        // Enhanced feature validation for EUDR compliance workflow
         let validFeatureCount = 0;
+        let processedFeatures = [];
         const issues = [];
 
         for (let i = 0; i < parsedGeoJSON.features.length; i++) {
           const feature = parsedGeoJSON.features[i];
           
-          // Basic feature validation
-          if (!feature || typeof feature !== 'object') {
-            issues.push(`Feature ${i + 1}: Not a valid object`);
-            continue;
-          }
+          try {
+            // Basic feature validation
+            if (!feature || typeof feature !== 'object') {
+              issues.push(`Feature ${i + 1}: Not a valid object`);
+              continue;
+            }
 
-          if (feature.type !== 'Feature') {
-            issues.push(`Feature ${i + 1}: Expected type 'Feature', got '${feature.type}'`);
-            continue;
-          }
+            if (feature.type !== 'Feature') {
+              issues.push(`Feature ${i + 1}: Expected type 'Feature', got '${feature.type}'`);
+              continue;
+            }
 
-          if (!feature.geometry) {
-            issues.push(`Feature ${i + 1}: Missing geometry`);
-            continue;
-          }
+            if (!feature.geometry) {
+              issues.push(`Feature ${i + 1}: Missing geometry`);
+              continue;
+            }
 
-          // Properties validation (very lenient - just count features with any properties)
-          const props = feature.properties || {};
-          
-          // Accept any feature that has at least some properties or a valid geometry
-          if (Object.keys(props).length > 0 || feature.geometry) {
+            // Enhanced properties handling for EUDR workflow
+            const props = feature.properties || {};
+            
+            // Auto-generate plot_id if missing (for EUDR workflow compatibility)
+            if (!props.plot_id && !props.id && !props['.Farmers ID'] && !props.Name) {
+              props.plot_id = `PLOT_${String(i + 1).padStart(3, '0')}`;
+              console.log(`📝 Auto-generated plot_id: ${props.plot_id} for feature ${i + 1}`);
+            }
+
+            // Normalize property names for better compatibility
+            if (props['.Farmers ID'] && !props.plot_id) {
+              props.plot_id = props['.Farmers ID'];
+            }
+            if (props.Name && !props.plot_id && !props['.Farmers ID']) {
+              props.plot_id = props.Name;
+            }
+            if (props.id && !props.plot_id) {
+              props.plot_id = props.id;
+            }
+
+            // Set default country if missing (for EUDR workflow)
+            if (!props.country_name && !props.country) {
+              props.country_name = 'unknown';
+            }
+
+            // Update the feature with enhanced properties
+            feature.properties = props;
+            processedFeatures.push(feature);
             validFeatureCount++;
+            
+          } catch (featureError) {
+            console.error(`Error processing feature ${i + 1}:`, featureError);
+            issues.push(`Feature ${i + 1}: Processing error - ${featureError instanceof Error ? featureError.message : 'Unknown error'}`);
+            continue;
           }
         }
 
-        // Log issues but don't block upload unless there are severe problems
+        // Log issues but be more forgiving
         if (issues.length > 0) {
-          console.warn('Feature validation issues:', issues.slice(0, 5)); // Log first 5 issues
+          console.warn('Feature processing issues:', issues.slice(0, 3)); // Log first 3 issues
+          
+          // Only show warning if more than 50% of features failed
+          if (validFeatureCount < parsedGeoJSON.features.length * 0.5) {
+            toast({
+              title: "Feature Processing Warning",
+              description: `${issues.length} features had issues. ${validFeatureCount} features will be processed.`,
+              variant: "default"
+            });
+          }
         }
 
         if (validFeatureCount === 0) {
-          console.warn('No valid features found');
+          console.warn('No valid features found after processing');
           toast({
-            title: "Invalid features",
-            description: "No valid features found in the GeoJSON file",
+            title: "No Valid Features",
+            description: "No valid features found that can be processed for EUDR analysis",
             variant: "destructive"
           });
           return;
         }
 
-        console.log(`✅ Found ${validFeatureCount} valid features out of ${parsedGeoJSON.features.length} total`);
+        // Update the parsed GeoJSON with processed features
+        parsedGeoJSON.features = processedFeatures;
 
-        // Log detected format for debugging
+        console.log(`✅ Processed ${validFeatureCount} out of ${parsedGeoJSON.features.length} total features`);
+
+        // Enhanced format detection for better logging
         const sampleFeature = parsedGeoJSON.features[0];
         const props = sampleFeature?.properties || {};
         
-        if (props.plot_id) {
-          console.log('✅ Detected standard GeoJSON format with "plot_id" field');
+        let detectedFormat = 'Unknown';
+        if (props.plot_id && props.country_name) {
+          detectedFormat = 'EUDR Analysis Ready';
+        } else if (props.plot_id) {
+          detectedFormat = 'Standard GeoJSON with plot_id';
         } else if (props.id) {
-          console.log('✅ Detected standard GeoJSON format with "id" field');
+          detectedFormat = 'Standard GeoJSON with id';
         } else if (props['.Farmers ID']) {
-          console.log('✅ Detected Indonesian GeoJSON format');
+          detectedFormat = 'Indonesian GeoJSON format';
         } else if (props.country_name || props.farm_name) {
-          console.log('✅ Detected extended GeoJSON format with country/farm info');
-        } else {
-          console.log('ℹ️ GeoJSON format detected but identifier fields may vary');
+          detectedFormat = 'Extended GeoJSON format';
         }
-
+        
+        console.log(`✅ Detected format: ${detectedFormat}`);
 
         setUploadedFile({
           name: file.name,
           size: file.size,
           type: file.type,
-          content: content.toString() // Store as string for parsing later
+          content: JSON.stringify(parsedGeoJSON) // Store the processed GeoJSON
         });
 
         toast({
           title: "File uploaded successfully",
-          description: `${file.name} (${(file.size / 1024).toFixed(1)} KB) is ready for analysis`
+          description: `${file.name} (${(file.size / 1024).toFixed(1)} KB) - ${validFeatureCount} features ready for EUDR analysis`
         });
+        
       } catch (error: any) {
         console.error("File upload error:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
         toast({
-          title: "Error processing file",
-          description: error.message || "Failed to process the uploaded file. Please check the file format and try again.",
+          title: "File Processing Failed",
+          description: `Error: ${errorMessage}. Please check the file format and try again.`,
           variant: "destructive",
         });
+        
         // Clear the file input if there's an error
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -1105,18 +1270,23 @@ export default function DeforestationMonitoring() {
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span>
-                        {analysisProgress < 20 ? 'Detecting countries using Nominatim API...' :
-                         analysisProgress < 40 ? 'Uploading cleaned GeoJSON data...' :
-                         analysisProgress < 70 ? 'Analyzing with satellite data...' :
-                         analysisProgress < 90 ? 'Processing against datasets...' :
-                         'Finalizing results...'}
+                        {analysisProgress < 15 ? 'Preprocessing GeoJSON for EUDR analysis...' :
+                         analysisProgress < 30 ? 'Detecting countries using PostGIS database...' :
+                         analysisProgress < 50 ? 'Uploading to EUDR Multilayer API...' :
+                         analysisProgress < 70 ? 'Analyzing with GFW Loss dataset...' :
+                         analysisProgress < 85 ? 'Processing JRC and SBTN loss data...' :
+                         analysisProgress < 95 ? 'Calculating compliance status...' :
+                         'Finalizing EUDR analysis results...'}
                       </span>
                       <span className="text-blue-600 font-medium">{analysisProgress}%</span>
                     </div>
                     <Progress value={analysisProgress} className="w-full" />
                     <p className="text-sm text-blue-600">
-                      {analysisProgress < 20 ? 'Using reverse geocoding for accurate country detection' :
-                       'Processing against GFW Loss, JRC, SBTN, and WDPA datasets'}
+                      {analysisProgress < 30 ? 'Validating plot boundaries and coordinates' :
+                       analysisProgress < 50 ? 'Ensuring EUDR compliance data format' :
+                       analysisProgress < 70 ? 'Cross-referencing with Global Forest Watch data' :
+                       analysisProgress < 85 ? 'Analyzing against JRC TMF and SBTN datasets' :
+                       'Generating compliance scores and risk assessment'}
                     </p>
                   </div>
                 )}
