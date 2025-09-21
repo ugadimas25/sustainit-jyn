@@ -425,7 +425,7 @@ export default function DeforestationMonitoring() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    
+
     // Clear all localStorage items to ensure clean state
     localStorage.removeItem('currentAnalysisResults');
     localStorage.removeItem('hasRealAnalysisData');
@@ -433,7 +433,7 @@ export default function DeforestationMonitoring() {
     localStorage.removeItem('refreshTableAfterEdit');
     localStorage.removeItem('fromMapViewer');
     localStorage.removeItem('analysisDataMeta');
-    
+
     toast({
       title: "Upload Cleared",
       description: "All analysis data has been cleared. You can now upload a new file.",
@@ -520,7 +520,7 @@ export default function DeforestationMonitoring() {
 
     // Only restore and show results if we have explicit flags indicating we should show the table
     const shouldRestoreResults = shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true';
-    
+
     if (storedResults && hasRealData === 'true' && shouldRestoreResults) {
       try {
         const parsedResults = JSON.parse(storedResults);
@@ -529,36 +529,51 @@ export default function DeforestationMonitoring() {
           console.log(`🔄 Restoring ${parsedResults.length} analysis results from storage`);
 
           // Ensure loss area values are properly preserved as numbers, not strings
-          const restoredResults = parsedResults.map((result: any) => {
-            // Parse stored string values back to numbers correctly
-            const gfwLossArea = result.gfwLossArea !== undefined && result.gfwLossArea !== null && result.gfwLossArea !== '' 
-              ? parseFloat(result.gfwLossArea.toString()) : 0;
-            const jrcLossArea = result.jrcLossArea !== undefined && result.jrcLossArea !== null && result.jrcLossArea !== '' 
-              ? parseFloat(result.jrcLossArea.toString()) : 0;
-            const sbtnLossArea = result.sbtnLossArea !== undefined && result.sbtnLossArea !== null && result.sbtnLossArea !== '' 
-              ? parseFloat(result.sbtnLossArea.toString()) : 0;
+            const restoredResults = parsedResults.map((result: any) => {
+              // Handle both numeric and string values properly
+              let gfwLossArea = 0;
+              let jrcLossArea = 0;
+              let sbtnLossArea = 0;
 
-            const processed = {
-              ...result,
-              gfwLossArea: gfwLossArea,
-              jrcLossArea: jrcLossArea,
-              sbtnLossArea: sbtnLossArea,
-              area: parseFloat(result.area?.toString() || '0')
-            };
-            
-            console.log(`🔧 Restored ${result.plotId}:`, {
-              gfwLossArea: processed.gfwLossArea,
-              jrcLossArea: processed.jrcLossArea,
-              sbtnLossArea: processed.sbtnLossArea,
-              originalData: {
-                gfwLossArea: result.gfwLossArea,
-                jrcLossArea: result.jrcLossArea,
-                sbtnLossArea: result.sbtnLossArea
+              // Parse gfwLossArea
+              if (result.gfwLossArea !== undefined && result.gfwLossArea !== null && result.gfwLossArea !== '') {
+                const parsed = typeof result.gfwLossArea === 'number' ? result.gfwLossArea : parseFloat(result.gfwLossArea.toString());
+                gfwLossArea = !isNaN(parsed) ? parsed : 0;
               }
+
+              // Parse jrcLossArea
+              if (result.jrcLossArea !== undefined && result.jrcLossArea !== null && result.jrcLossArea !== '') {
+                const parsed = typeof result.jrcLossArea === 'number' ? result.jrcLossArea : parseFloat(result.jrcLossArea.toString());
+                jrcLossArea = !isNaN(parsed) ? parsed : 0;
+              }
+
+              // Parse sbtnLossArea
+              if (result.sbtnLossArea !== undefined && result.sbtnLossArea !== null && result.sbtnLossArea !== '') {
+                const parsed = typeof result.sbtnLossArea === 'number' ? result.sbtnLossArea : parseFloat(result.sbtnLossArea.toString());
+                sbtnLossArea = !isNaN(parsed) ? parsed : 0;
+              }
+
+              const processed = {
+                ...result,
+                gfwLossArea: gfwLossArea,
+                jrcLossArea: jrcLossArea,
+                sbtnLossArea: sbtnLossArea,
+                area: parseFloat(result.area?.toString() || '0')
+              };
+
+              console.log(`🔧 Restored ${result.plotId}:`, {
+                gfwLossArea: processed.gfwLossArea,
+                jrcLossArea: processed.jrcLossArea,
+                sbtnLossArea: processed.sbtnLossArea,
+                originalData: {
+                  gfwLossArea: result.gfwLossArea,
+                  jrcLossArea: result.jrcLossArea,
+                  sbtnLossArea: result.sbtnLossArea
+                }
+              });
+
+              return processed;
             });
-            
-            return processed;
-          });
 
           setAnalysisResults(restoredResults);
           setFilteredResults(restoredResults);
@@ -608,7 +623,7 @@ export default function DeforestationMonitoring() {
 
       // Only show results if we have explicit flags AND currently no results are showing
       const shouldRestoreResults = shouldShowTable === 'true' || refreshAfterEdit === 'true' || fromMapViewer === 'true';
-      
+
       if (shouldRestoreResults && storedResults && analysisResults.length === 0) {
         try {
           const parsedResults = JSON.parse(storedResults);
@@ -617,13 +632,28 @@ export default function DeforestationMonitoring() {
 
             // Ensure loss area values are properly preserved as numbers
             const restoredResults = parsedResults.map((result: any) => {
-              // Parse stored string values back to numbers correctly
-              const gfwLossArea = result.gfwLossArea !== undefined && result.gfwLossArea !== null && result.gfwLossArea !== '' 
-                ? parseFloat(result.gfwLossArea.toString()) : 0;
-              const jrcLossArea = result.jrcLossArea !== undefined && result.jrcLossArea !== null && result.jrcLossArea !== '' 
-                ? parseFloat(result.jrcLossArea.toString()) : 0;
-              const sbtnLossArea = result.sbtnLossArea !== undefined && result.sbtnLossArea !== null && result.sbtnLossArea !== '' 
-                ? parseFloat(result.sbtnLossArea.toString()) : 0;
+              // Handle both numeric and string values properly
+              let gfwLossArea = 0;
+              let jrcLossArea = 0;
+              let sbtnLossArea = 0;
+
+              // Parse gfwLossArea
+              if (result.gfwLossArea !== undefined && result.gfwLossArea !== null && result.gfwLossArea !== '') {
+                const parsed = typeof result.gfwLossArea === 'number' ? result.gfwLossArea : parseFloat(result.gfwLossArea.toString());
+                gfwLossArea = !isNaN(parsed) ? parsed : 0;
+              }
+
+              // Parse jrcLossArea
+              if (result.jrcLossArea !== undefined && result.jrcLossArea !== null && result.jrcLossArea !== '') {
+                const parsed = typeof result.jrcLossArea === 'number' ? result.jrcLossArea : parseFloat(result.jrcLossArea.toString());
+                jrcLossArea = !isNaN(parsed) ? parsed : 0;
+              }
+
+              // Parse sbtnLossArea
+              if (result.sbtnLossArea !== undefined && result.sbtnLossArea !== null && result.sbtnLossArea !== '') {
+                const parsed = typeof result.sbtnLossArea === 'number' ? result.sbtnLossArea : parseFloat(result.sbtnLossArea.toString());
+                sbtnLossArea = !isNaN(parsed) ? parsed : 0;
+              }
 
               const processed = {
                 ...result,
@@ -632,7 +662,7 @@ export default function DeforestationMonitoring() {
                 sbtnLossArea: sbtnLossArea,
                 area: parseFloat(result.area?.toString() || '0')
               };
-              
+
               console.log(`🔧 Storage change restored ${result.plotId}:`, {
                 gfwLossArea: processed.gfwLossArea,
                 jrcLossArea: processed.jrcLossArea,
@@ -643,13 +673,13 @@ export default function DeforestationMonitoring() {
                   sbtnLossArea: result.sbtnLossArea
                 }
               });
-              
+
               return processed;
             });
 
             setAnalysisResults(restoredResults);
             setFilteredResults(restoredResults);
-            
+
             // Clear flags after successful restoration
             localStorage.removeItem('shouldShowResultsTable');
             localStorage.removeItem('refreshTableAfterEdit');
@@ -763,7 +793,7 @@ export default function DeforestationMonitoring() {
     // Show actual loss area values when available
     if (lossArea !== undefined && lossArea !== null && !isNaN(Number(lossArea))) {
       const areaValue = Number(lossArea);
-      
+
       if (areaValue > 0) {
         // Show values less than 0.01 ha in yellow, others in red
         if (areaValue < 0.01) {
