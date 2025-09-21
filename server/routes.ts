@@ -1808,54 +1808,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Core entity routes
-  app.get("/api/commodities", isAuthenticated, async (req, res) => {
-    try {
-      const commodities = await storage.getCommodities();
-      res.json(commodities);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch commodities" });
-    }
-  });
-      doc.setFontSize(12);
-      doc.text('1. Risk Assessment Process Overview', 10, yPos);
-      yPos += 10;
+  return httpServer;
+}
 
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-
-      // Create styled box for process overview
-      doc.rect(10, yPos, 190, 45);
-      yPos += 8;
-
-      const riskOverviewText = [
-        'This section outlines the systematic risk assessment approach used to evaluate',
-        'deforestation risks and ensure EUDR compliance across all production plots.',
-        '',
-        'Key Process Components:',
-        '  • Data Collection → Risk Identification → Impact Assessment → Scoring',
-        '  • Satellite Monitoring → Field Verification → Documentation Review',
-        '  • Legal Compliance Check → Final Risk Determination → Mitigation Planning'
-      ];
-
-      riskOverviewText.forEach((line, index) => {
-        doc.text(line, 12, yPos + (index * 5));
-      });
-      yPos += 50;
-
-      // Section 2: Detailed Risk Categories & Assessment Matrix
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('2. Risk Categories & Assessment Matrix', 10, yPos);
-      yPos += 10;
-
-      // Create assessment matrix table
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-
-      // Table borders
-      doc.rect(10, yPos, 190, 60);
-      doc.line(10, yPos + 15, 200, yPos + 15);  // Header line
+function generateCleanDDSPDF(report: any): ArrayBuffer {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  let y = 10;
+  const addHeading = (t: string) => { doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text(t, 10, y); y += 8; };
+  const addText = (lines: string[]) => { doc.setFont('helvetica','normal'); doc.setFontSize(9); lines.forEach((l) => { doc.text(l, 10, y); y += 5; }); };
+  addHeading('Due Diligence Statement');
+  addText([`Operator: ${report?.operatorLegalName ?? ''}`, `HS Code: ${report?.hsCode ?? ''}`]);
+  return doc.output('arraybuffer') as ArrayBuffer;
+}
       doc.line(60, yPos, 60, yPos + 60);        // First column divider
       doc.line(120, yPos, 120, yPos + 60);      // Second column divider
 
@@ -2311,54 +2275,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         doc.text(line, 10, yPos + (index * 5));
       });
 
-  // Core entity routes
-  app.get("/api/commodities", isAuthenticated, async (req, res) => {
-    try {
-      const commodities = await storage.getCommodities();
-      res.json(commodities);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch commodities" });
-    }
-  });
-      doc.setFontSize(12);
-      doc.text('1. Risk Assessment Process Overview', 10, yPos);
-      yPos += 10;
+  return httpServer;
+}
 
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-
-      // Create styled box for process overview
-      doc.rect(10, yPos, 190, 45);
-      yPos += 8;
-
-      const riskOverviewText = [
-        'This section outlines the systematic risk assessment approach used to evaluate',
-        'deforestation risks and ensure EUDR compliance across all production plots.',
-        '',
-        'Key Process Components:',
-        '  • Data Collection → Risk Identification → Impact Assessment → Scoring',
-        '  • Satellite Monitoring → Field Verification → Documentation Review',
-        '  • Legal Compliance Check → Final Risk Determination → Mitigation Planning'
-      ];
-
-      riskOverviewText.forEach((line, index) => {
-        doc.text(line, 12, yPos + (index * 5));
-      });
-      yPos += 50;
-
-      // Section 2: Detailed Risk Categories & Assessment Matrix
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('2. Risk Categories & Assessment Matrix', 10, yPos);
-      yPos += 10;
-
-      // Create assessment matrix table
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-
-      // Table borders
-      doc.rect(10, yPos, 190, 60);
-      doc.line(10, yPos + 15, 200, yPos + 15);  // Header line
+function generateCleanDDSPDF(report: any): ArrayBuffer {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  let y = 10;
+  const addHeading = (t: string) => { doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text(t, 10, y); y += 8; };
+  const addText = (lines: string[]) => { doc.setFont('helvetica','normal'); doc.setFontSize(9); lines.forEach((l) => { doc.text(l, 10, y); y += 5; }); };
+  addHeading('Due Diligence Statement');
+  addText([`Operator: ${report?.operatorLegalName ?? ''}`, `HS Code: ${report?.hsCode ?? ''}`]);
+  return doc.output('arraybuffer') as ArrayBuffer;
+}
       doc.line(60, yPos, 60, yPos + 60);        // First column divider
       doc.line(120, yPos, 120, yPos + 60);      // Second column divider
 
