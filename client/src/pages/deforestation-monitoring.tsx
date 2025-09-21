@@ -734,31 +734,27 @@ export default function DeforestationMonitoring() {
   };
 
   const getLossBadge = (loss: string, lossArea?: number) => {
-    // Debug logging for troubleshooting
-    console.log('🎯 getLossBadge called with:', { loss, lossArea, type: typeof lossArea });
-
-    // Always prioritize showing actual area values when available
+    // Show actual loss area values when available
     if (lossArea !== undefined && lossArea !== null && !isNaN(Number(lossArea))) {
       const areaValue = Number(lossArea);
-      console.log('✅ Using area value:', areaValue);
       
       if (areaValue > 0) {
-        if (areaValue >= 0.001) {
-          return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(3)} ha</Badge>;
+        // Show values less than 0.01 ha in yellow, others in red
+        if (areaValue < 0.01) {
+          return <Badge className="bg-yellow-100 text-yellow-800">{areaValue.toFixed(3)} ha</Badge>;
         } else {
-          return <Badge className="bg-yellow-100 text-yellow-800">{areaValue.toFixed(4)} ha</Badge>;
+          return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(3)} ha</Badge>;
         }
       } else {
         return <Badge className="bg-green-100 text-green-800">0.000 ha</Badge>;
       }
     }
 
-    // Fallback for cases without area data - should only show "Detected" if no area data exists
-    console.log('⚠️ No valid area data, falling back to status-based display');
-    if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES') {
+    // Fallback for legacy boolean values
+    if (loss === 'TRUE' || loss === 'HIGH' || loss === 'YES' || loss === 'Detected') {
       return <Badge className="bg-yellow-100 text-yellow-800">Detected</Badge>;
     } else {
-      return <Badge className="bg-green-100 text-green-800">No Loss</Badge>;
+      return <Badge className="bg-green-100 text-green-800">0.000 ha</Badge>;
     }
   };
 
