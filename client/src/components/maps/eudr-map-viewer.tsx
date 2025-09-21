@@ -676,17 +676,22 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Set default base layer
             baseLayers.satellite.addTo(map);
 
-            // WDPA color mapping for IUCN categories
+            // Enhanced WDPA color mapping for all IUCN categories
             const wdpaColors = {
-              'Ia': '#264653',
-              'Ib': '#2a9d8f', 
-              'II': '#1d3557',
-              'III': '#e9c46a',
-              'IV': '#f4a261',
-              'V': '#e76f51',
-              'VI': '#8ab17d',
-              'Not Reported': '#9e9e9e',
-              'Not Assigned': '#bdbdbd'
+              'Ia': '#264653',    // Strict Nature Reserve - Dark green
+              'Ib': '#2a9d8f',    // Wilderness Area - Teal
+              'II': '#1d3557',    // National Park - Dark blue
+              'III': '#e9c46a',   // Natural Monument - Yellow
+              'IV': '#f4a261',    // Habitat Management - Orange
+              'V': '#e76f51',     // Protected Landscape - Red orange
+              'VI': '#8ab17d',    // Sustainable Use - Light green
+              'Not Reported': '#9e9e9e',    // Gray
+              'Not Assigned': '#bdbdbd',    // Light gray
+              // Additional variations found in data
+              'I': '#264653',     // Sometimes just 'I' instead of 'Ia'
+              'Ia/Ib': '#2a6f63', // Mixed categories
+              'Other': '#795548', // Brown for other designations
+              '': '#cccccc'       // Very light gray for empty
             };
 
             // WDPA Protected Areas Layer
@@ -695,16 +700,20 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Function to create WDPA layer using ArcGIS tile service
             function createWDPALayer() {
-              // Use ArcGIS tile layer for better performance
-              const wdpaUrl = 'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}';
+              // Try multiple WDPA service URLs for better compatibility
+              const wdpaUrls = [
+                'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}',
+                'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/arcgis/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}'
+              ];
               
-              wdpaTileLayer = L.tileLayer(wdpaUrl, {
+              wdpaTileLayer = L.tileLayer(wdpaUrls[0], {
                 attribution: '© WDPA - World Database on Protected Areas',
-                opacity: 0.7,
-                maxZoom: 18
+                opacity: 0.6,
+                maxZoom: 18,
+                errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
               });
 
-              console.log('Created WDPA tile layer with URL:', wdpaUrl);
+              console.log('Created WDPA tile layer with URL:', wdpaUrls[0]);
               return Promise.resolve(wdpaTileLayer);
             }
 
@@ -716,14 +725,16 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               const bounds = map.getBounds();
               const bbox = \`\${bounds.getWest()},\${bounds.getSouth()},\${bounds.getEast()},\${bounds.getNorth()}\`;
               
+              // Enhanced query to get all IUCN categories, not just specific ones
               const query = new URLSearchParams({
-                where: '1=1',
-                outFields: 'NAME,DESIG_ENG,IUCN_CAT,STATUS,WDPAID',
+                where: '1=1', // Get all features, no category restriction
+                outFields: 'NAME,DESIG_ENG,IUCN_CAT,STATUS,WDPAID,GOV_TYPE,MANG_AUTH,REP_AREA',
                 geometry: bbox,
                 geometryType: 'esriGeometryEnvelope',
                 spatialRel: 'esriSpatialRelIntersects',
                 f: 'geojson',
-                returnGeometry: 'true'
+                returnGeometry: 'true',
+                maxRecordCount: 1000 // Increase limit to get more features
               });
 
               const url = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${query}\`;
@@ -747,17 +758,29 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   }
 
                   console.log(\`Found \${data.features.length} WDPA features\`);
+                  
+                  // Log categories found to debug
+                  const categoriesFound = new Set();
+                  data.features.forEach(feature => {
+                    const cat = feature.properties.IUCN_CAT || 'Not Assigned';
+                    categoriesFound.add(cat);
+                  });
+                  console.log('IUCN Categories found:', Array.from(categoriesFound));
 
                   const layer = L.geoJSON(data, {
                     style: function(feature) {
                       const iucnCategory = feature.properties.IUCN_CAT || 'Not Assigned';
                       const color = wdpaColors[iucnCategory] || wdpaColors['Not Assigned'];
+                      
+                      console.log(\`Styling feature \${feature.properties.NAME} with category \${iucnCategory} and color \${color}\`);
+                      
                       return {
                         color: color,
                         fillColor: color,
                         weight: 2,
                         opacity: 0.8,
-                        fillOpacity: 0.3
+                        fillOpacity: 0.4,
+                        className: \`wdpa-\${iucnCategory?.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'unknown'}\`
                       };
                     },
                     onEachFeature: function(feature, layer) {
@@ -767,9 +790,12 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                       const iucnCategory = props.IUCN_CAT || 'Not Assigned';
                       const status = props.STATUS || 'Unknown';
                       const wdpaId = props.WDPAID || 'N/A';
+                      const govType = props.GOV_TYPE || 'Unknown';
+                      const managementAuth = props.MANG_AUTH || 'Unknown';
+                      const area = props.REP_AREA || 'Unknown';
                       
                       const popupContent = \`
-                        <div style="min-width: 250px; font-family: Arial, sans-serif;">
+                        <div style="min-width: 300px; font-family: Arial, sans-serif;">
                           <h4 style="margin: 0 0 10px 0; color: #264653; font-size: 16px; font-weight: bold; border-bottom: 2px solid #264653; padding-bottom: 5px;">\${name}</h4>
                           <div style="font-size: 13px; line-height: 1.4;">
                             <div style="margin-bottom: 5px;"><strong>WDPA ID:</strong> \${wdpaId}</div>
@@ -778,6 +804,9 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                               <span style="background: \${wdpaColors[iucnCategory] || wdpaColors['Not Assigned']}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${iucnCategory}</span>
                             </div>
                             <div style="margin-bottom: 5px;"><strong>Status:</strong> \${status}</div>
+                            <div style="margin-bottom: 5px;"><strong>Governance:</strong> \${govType}</div>
+                            <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} ha</div>
+                            <div style="margin-bottom: 5px;"><strong>Management:</strong> \${managementAuth}</div>
                             <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #264653; font-size: 11px;">
                               <strong>Protection Level:</strong> \${getProtectionLevel(iucnCategory)}
                             </div>
@@ -786,9 +815,13 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                       \`;
                       
                       layer.bindPopup(popupContent, {
-                        maxWidth: 300,
+                        maxWidth: 350,
                         className: 'wdpa-popup'
                       });
+                    },
+                    filter: function(feature) {
+                      // Don't filter out any features - show all categories
+                      return true;
                     }
                   });
                   
@@ -803,17 +836,21 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             // Helper function to get protection level description
             function getProtectionLevel(iucnCategory) {
               const descriptions = {
-                'Ia': 'Strict Nature Reserve - No human activities',
-                'Ib': 'Wilderness Area - Minimal human impact',
-                'II': 'National Park - Ecosystem protection',
-                'III': 'Natural Monument - Specific features protection',
-                'IV': 'Habitat Management Area - Active management',
-                'V': 'Protected Landscape - Sustainable use',
-                'VI': 'Sustainable Use Area - Resource use allowed',
-                'Not Reported': 'Protection level not specified',
-                'Not Assigned': 'No IUCN category assigned'
+                'Ia': 'Strict Nature Reserve - No human activities, scientific research only',
+                'Ib': 'Wilderness Area - Large unmodified areas, minimal human impact',
+                'II': 'National Park - Ecosystem protection and education',
+                'III': 'Natural Monument - Specific natural features protection',
+                'IV': 'Habitat Management Area - Active conservation management',
+                'V': 'Protected Landscape - Sustainable interaction with nature',
+                'VI': 'Sustainable Use Area - Conservation with sustainable resource use',
+                'I': 'Strict Protection - Category I protection',
+                'Ia/Ib': 'Mixed strict protection areas',
+                'Other': 'Other protected area designation',
+                'Not Reported': 'Protection level not specified in database',
+                'Not Assigned': 'No IUCN category assigned to this area',
+                '': 'Category information not available'
               };
-              return descriptions[iucnCategory] || 'Unknown protection level';
+              return descriptions[iucnCategory] || \`Unknown protection level: \${iucnCategory}\`;
             }
 
             // Deforestation layers from multiple sources
@@ -1135,56 +1172,45 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 if (!wdpaLayer && !wdpaTileLayer) {
                   console.log('Creating new WDPA layer...');
                   
-                  // Try tile layer first for better performance
-                  createWDPALayer().then(layer => {
-                    if (layer) {
-                      wdpaLayer = layer;
-                      layer.addTo(map);
-                      console.log('✅ WDPA tile layer added to map successfully');
+                  // Prioritize GeoJSON layer for better category visibility
+                  console.log('🔄 Loading WDPA GeoJSON layer for detailed categories...');
+                  createWDPAGeoJSONLayer().then(geoLayer => {
+                    if (geoLayer) {
+                      wdpaLayer = geoLayer;
+                      geoLayer.addTo(map);
+                      console.log('✅ WDPA GeoJSON layer loaded successfully');
                       
                       // Force map refresh
                       map.invalidateSize();
                       
-                      // Add loading event listeners
-                      layer.on('loading', function() {
-                        console.log('🔄 WDPA tiles loading...');
-                      });
-                      
-                      layer.on('load', function() {
-                        console.log('✅ WDPA tiles loaded successfully');
-                      });
-                      
-                      layer.on('tileerror', function(e) {
-                        console.error('❌ WDPA tile error:', e);
-                        
-                        // Fallback to GeoJSON layer if tiles fail
-                        console.log('🔄 Falling back to GeoJSON layer...');
-                        createWDPAGeoJSONLayer().then(geoLayer => {
-                          if (geoLayer) {
-                            map.removeLayer(layer);
-                            wdpaLayer = geoLayer;
-                            geoLayer.addTo(map);
-                            console.log('✅ WDPA GeoJSON layer loaded as fallback');
-                          }
-                        });
-                      });
-                      
                     } else {
-                      console.error('❌ Failed to create WDPA layer');
+                      console.log('🔄 GeoJSON failed, trying tile layer as fallback...');
                       
-                      // Try GeoJSON as fallback
-                      console.log('🔄 Trying GeoJSON layer as fallback...');
-                      createWDPAGeoJSONLayer().then(geoLayer => {
-                        if (geoLayer) {
-                          wdpaLayer = geoLayer;
-                          geoLayer.addTo(map);
-                          console.log('✅ WDPA GeoJSON layer added as fallback');
+                      // Fallback to tile layer
+                      createWDPALayer().then(layer => {
+                        if (layer) {
+                          wdpaTileLayer = layer;
+                          layer.addTo(map);
+                          console.log('✅ WDPA tile layer added as fallback');
+                          
+                          // Add error handling for tiles
+                          layer.on('tileerror', function(e) {
+                            console.error('❌ WDPA tile error:', e);
+                          });
+                          
+                          layer.on('tileload', function(e) {
+                            console.log('🔄 WDPA tile loaded:', e.coords);
+                          });
+                          
                         } else {
                           console.error('❌ Both WDPA layer methods failed');
-                          alert('Unable to load WDPA Protected Areas layer. Please check your internet connection and try again.');
+                          alert('Unable to load WDPA Protected Areas layer. The service may be temporarily unavailable.');
                         }
                       });
                     }
+                  }).catch(error => {
+                    console.error('❌ Error in WDPA layer creation:', error);
+                    alert('Error loading WDPA layer: ' + error.message);
                   });
                 } else {
                   // Layer already exists, just add to map
