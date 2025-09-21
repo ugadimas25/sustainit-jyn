@@ -16,7 +16,7 @@ const supplierAssessments = [
     dataCollectionStatus: "completed",
     dataCollectionScore: 95,
     dataCollectionDate: "2024-12-10",
-    legalityStatus: "completed", 
+    legalityStatus: "completed",
     legalityScore: 88,
     legalityDate: "2024-12-12",
     riskAssessmentStatus: "completed",
@@ -39,7 +39,7 @@ const supplierAssessments = [
     riskAssessmentStatus: "in_progress",
     riskAssessmentScore: null,
     riskAssessmentDate: null,
-    overallStatus: "in_progress", 
+    overallStatus: "in_progress",
     overallScore: 89,
     lastUpdated: "2024-12-11"
   },
@@ -263,7 +263,7 @@ export default function SupplyChainAnalysis() {
             <div className="text-2xl font-bold text-gray-900">{supplierAssessments.length}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Compliant</CardTitle>
@@ -274,7 +274,7 @@ export default function SupplyChainAnalysis() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Overall Progress</CardTitle>
@@ -284,7 +284,7 @@ export default function SupplyChainAnalysis() {
             <Progress value={getOverallProgress()} className="mt-2" />
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Average Score</CardTitle>
@@ -336,20 +336,20 @@ export default function SupplyChainAnalysis() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <StatusBadge 
-                        status={supplier.dataCollectionStatus} 
+                      <StatusBadge
+                        status={supplier.dataCollectionStatus}
                         score={supplier.dataCollectionScore}
                       />
                     </TableCell>
                     <TableCell className="text-center">
-                      <StatusBadge 
-                        status={supplier.legalityStatus} 
+                      <StatusBadge
+                        status={supplier.legalityStatus}
                         score={supplier.legalityScore}
                       />
                     </TableCell>
                     <TableCell className="text-center">
-                      <StatusBadge 
-                        status={supplier.riskAssessmentStatus} 
+                      <StatusBadge
+                        status={supplier.riskAssessmentStatus}
                         score={supplier.riskAssessmentScore}
                       />
                     </TableCell>
@@ -361,8 +361,8 @@ export default function SupplyChainAnalysis() {
                         <span className="text-lg font-bold text-gray-900">
                           {supplier.overallScore}%
                         </span>
-                        <Progress 
-                          value={supplier.overallScore} 
+                        <Progress
+                          value={supplier.overallScore}
                           className="w-16 h-2 mt-1"
                         />
                       </div>
@@ -420,17 +420,17 @@ export default function SupplyChainAnalysis() {
                   <p className="text-sm text-green-700">Complete supplier data collection and documentation</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
                 <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   2
                 </div>
                 <div>
                   <p className="font-medium text-purple-900">Spatial Analysis</p>
-                  <p className="text-sm text-purple-700">Geospatial risk assessment and deforestation monitoring</p>
+                  <p className="text-sm text-purple-700">Analyze geospatial data and deforestation risks</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   3
@@ -440,14 +440,14 @@ export default function SupplyChainAnalysis() {
                   <p className="text-sm text-blue-700">Verify legal compliance and regulatory requirements</p>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
+
+              <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   4
                 </div>
                 <div>
-                  <p className="font-medium text-red-900">Risk Assessment</p>
-                  <p className="text-sm text-red-700">Comprehensive risk evaluation and scoring</p>
+                  <p className="font-medium text-orange-900">Risk Assessment</p>
+                  <p className="text-sm text-orange-700">Comprehensive risk evaluation and scoring</p>
                 </div>
               </div>
             </div>
@@ -487,7 +487,7 @@ export default function SupplyChainAnalysis() {
                 <div className="text-sm text-gray-600">Avg AI Score</div>
               </div>
             </div>
-            
+
             {/* Recent Data Collection */}
             <div>
               <h4 className="font-semibold mb-3">Recent Data Collections</h4>
@@ -560,7 +560,7 @@ export default function SupplyChainAnalysis() {
                 <div className="text-sm text-gray-600">Avg Loss (ha)</div>
               </div>
             </div>
-            
+
             {/* Recent Spatial Analysis */}
             <div>
               <h4 className="font-semibold mb-3">Recent Spatial Analysis</h4>
@@ -629,7 +629,7 @@ export default function SupplyChainAnalysis() {
                 <div className="text-sm text-gray-600">Non-Compliant</div>
               </div>
             </div>
-            
+
             {/* Recent Assessments */}
             <div>
               <h4 className="font-semibold mb-3">Recent Legality Assessments</h4>
@@ -692,7 +692,7 @@ export default function SupplyChainAnalysis() {
                 <div className="text-sm text-gray-600">Avg Risk Score</div>
               </div>
             </div>
-            
+
             {/* Recent Risk Assessments */}
             <div>
               <h4 className="font-semibold mb-3">Recent Risk Assessments</h4>
