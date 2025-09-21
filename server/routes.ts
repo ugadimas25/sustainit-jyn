@@ -4134,11 +4134,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ Successfully processed ${features.length} peatland features from database`);
 
       } catch (dbError) {
-        console.warn('⚠️ Database query failed, using comprehensive mock peatland data:', dbError);
+        console.warn('⚠️ Database query failed, using comprehensive mock peatland data with global coverage:', dbError);
         
-        // Enhanced fallback with comprehensive Indonesian peatland data covering major regions
+        // Always provide comprehensive mock data for immediate visibility
         const mockPeatlandAreas = [
-          // Riau Province - Central Sumatra
+          // Riau Province - Central Sumatra - Larger coverage
           {
             type: 'Feature',
             properties: {
@@ -4147,14 +4147,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               Province: 'Riau',
               Kabupaten: 'Pelalawan',
               Kecamatan: 'Kerumutan',
-              Area_Ha: 15420.5
+              Area_Ha: 25420.5
             },
             geometry: {
               type: 'Polygon',
-              coordinates: [[[100.5, 0.0], [101.5, 0.0], [101.5, 1.0], [100.5, 1.0], [100.5, 0.0]]]
+              coordinates: [[[100.0, -0.5], [102.0, -0.5], [102.0, 1.5], [100.0, 1.5], [100.0, -0.5]]]
             }
           },
-          // Jambi Province - Large coverage
+          // Jambi Province - Extended coverage
           {
             type: 'Feature',
             properties: {
@@ -4163,14 +4163,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               Province: 'Jambi',
               Kabupaten: 'Muaro Jambi',
               Kecamatan: 'Kumpeh Ulu',
-              Area_Ha: 8750.2
+              Area_Ha: 18750.2
             },
             geometry: {
               type: 'Polygon',
-              coordinates: [[[102.5, -1.8], [104.0, -1.8], [104.0, -0.5], [102.5, -0.5], [102.5, -1.8]]]
+              coordinates: [[[102.0, -2.2], [104.5, -2.2], [104.5, -0.2], [102.0, -0.2], [102.0, -2.2]]]
             }
           },
-          // Central Kalimantan - Extensive peatlands
+          // Central Kalimantan - Massive coverage
           {
             type: 'Feature',
             properties: {
@@ -4179,11 +4179,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               Province: 'Kalimantan Tengah',
               Kabupaten: 'Palangka Raya',
               Kecamatan: 'Sebangau',
-              Area_Ha: 22150.8
+              Area_Ha: 32150.8
             },
             geometry: {
               type: 'Polygon',
-              coordinates: [[[113.0, -2.5], [115.0, -2.5], [115.0, -0.5], [113.0, -0.5], [113.0, -2.5]]]
+              coordinates: [[[112.5, -3.0], [115.5, -3.0], [115.5, -0.2], [112.5, -0.2], [112.5, -3.0]]]
             }
           },
           // South Sumatra - Peatland agriculture
