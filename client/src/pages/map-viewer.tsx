@@ -1057,7 +1057,7 @@ export default function MapViewer() {
             onClick={() => {
               // Set flag to ensure results table is displayed when returning
               localStorage.setItem('shouldShowResultsTable', 'true');
-              setLocation('/deforestation-monitoring');
+              setLocation('/spatial-analysis');
             }}
           >
             <ArrowLeft className="h-4 w-4" />
