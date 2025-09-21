@@ -1370,7 +1370,7 @@ export default function DeforestationMonitoring() {
               });
             }
 
-            // WDPA layer control using ArcGIS REST service
+            // WDPA layer control using GFW vector tiles
             let wdpaLayer = null;
             const wdpaCheckbox = window.parent.document.getElementById('quick-wdpa-layer');
             if (wdpaCheckbox) {
@@ -1379,159 +1379,34 @@ export default function DeforestationMonitoring() {
                 
                 if (e.target.checked) {
                   if (!wdpaLayer) {
-                    console.log('🔄 Loading WDPA features from ArcGIS REST service...');
-                    
-                    // Get current map bounds for spatial query
-                    const bounds = map.getBounds();
-                    const bbox = \`\${bounds.getWest()},\${bounds.getSouth()},\${bounds.getEast()},\${bounds.getNorth()}\`;
-                    
-                    // Query ArcGIS REST service for WDPA features
-                    const query = new URLSearchParams({
-                      where: "1=1",
-                      outFields: 'wdpaid,name,desig_eng,iucn_cat,status,gov_type,mang_auth,rep_area,iso3',
-                      geometry: bbox,
-                      geometryType: 'esriGeometryEnvelope',
-                      spatialRel: 'esriSpatialRelIntersects',
-                      f: 'geojson',
-                      returnGeometry: 'true',
-                      maxRecordCount: 2000
+                    // Use GFW raster tiles for WDPA protected areas (vector tiles require special handling)
+                    wdpaLayer = L.tileLayer('https://tiles.globalforestwatch.org/wdpa_protected_areas/latest/dynamic/{z}/{x}/{y}.png', {
+                      attribution: '© WDPA via Global Forest Watch',
+                      opacity: 0.7,
+                      maxZoom: 18,
+                      errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
                     });
 
-                    const url = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${query}\`;
-                    
-                    fetch(url)
-                      .then(response => response.json())
-                      .then(data => {
-                        if (data.features && data.features.length > 0) {
-                          console.log(\`✅ Loaded \${data.features.length} WDPA features in Quick Preview\`);
-                          
-                          wdpaLayer = L.geoJSON(data, {
-                            style: function(feature) {
-                              const iucnCategory = feature.properties.iucn_cat || 'Not Assigned';
-                              let fillColor = '#d2b48c'; // Default tan
-                              
-                              // Color scheme based on IUCN protection categories
-                              switch(iucnCategory) {
-                                case 'Ia': fillColor = '#8B0000'; break; // Dark red - strictest
-                                case 'Ib': fillColor = '#B22222'; break; // Fire brick red
-                                case 'II': fillColor = '#228B22'; break; // Forest green
-                                case 'III': fillColor = '#32CD32'; break; // Lime green
-                                case 'IV': fillColor = '#FFD700'; break; // Gold
-                                case 'V': fillColor = '#FFA500'; break; // Orange
-                                case 'VI': fillColor = '#FF6347'; break; // Tomato
-                                default: fillColor = '#d2b48c'; // Tan
-                              }
-                              
-                              return {
-                                color: fillColor,
-                                fillColor: fillColor,
-                                weight: 0.25,
-                                opacity: 0.8,
-                                fillOpacity: 0.6
-                              };
-                            },
-                            onEachFeature: function(feature, layer) {
-                              const props = feature.properties;
-                              const popupContent = \`
-                                <div style="padding: 12px; min-width: 250px;">
-                                  <h3 style="margin: 0 0 8px 0; color: #264653; font-size: 16px;">🛡️ \${props.name || 'Protected Area'}</h3>
-                                  <div style="font-size: 13px; line-height: 1.4;">
-                                    <p><strong>WDPA ID:</strong> \${props.wdpaid || 'N/A'}</p>
-                                    <p><strong>IUCN Category:</strong> <span style="background: \${getIUCNColor(props.iucn_cat)}; color: white; padding: 2px 6px; border-radius: 3px;">\${props.iucn_cat || 'Not Assigned'}</span></p>
-                                    <p><strong>Designation:</strong> \${props.desig_eng || 'Unknown'}</p>
-                                    <p><strong>Status:</strong> \${props.status || 'Unknown'}</p>
-                                    <p><strong>Area:</strong> \${props.rep_area || 'Unknown'} ha</p>
-                                  </div>
-                                </div>
-                              \`;
-                              layer.bindPopup(popupContent);
-                            }
-                          });
-                          
-                          // Helper function for IUCN colors
-                          function getIUCNColor(category) {
-                            switch(category) {
-                              case 'Ia': return '#8B0000';
-                              case 'Ib': return '#B22222';
-                              case 'II': return '#228B22';
-                              case 'III': return '#32CD32';
-                              case 'IV': return '#FFD700';
-                              case 'V': return '#FFA500';
-                              case 'VI': return '#FF6347';
-                              default: return '#d2b48c';
-                            }
-                          }
-                          
-                          wdpaLayer.addTo(map);
-                          console.log('✅ WDPA ArcGIS features added to Quick Preview map');
-                        } else {
-                          console.warn('⚠️ No WDPA features found in current view');
-                          
-                          // Try a global sample query if no local features
-                          const globalQuery = new URLSearchParams({
-                            where: "1=1",
-                            outFields: 'wdpaid,name,desig_eng,iucn_cat,status,rep_area',
-                            f: 'geojson',
-                            returnGeometry: 'true',
-                            maxRecordCount: 500,
-                            orderByFields: 'rep_area DESC'
-                          });
-                          
-                          const globalUrl = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${globalQuery}\`;
-                          
-                          return fetch(globalUrl).then(resp => resp.json()).then(globalData => {
-                            if (globalData.features && globalData.features.length > 0) {
-                              console.log(\`✅ Loaded \${globalData.features.length} global WDPA features as fallback\`);
-                              
-                              wdpaLayer = L.geoJSON(globalData, {
-                                style: function(feature) {
-                                  const iucnCategory = feature.properties.iucn_cat || 'Not Assigned';
-                                  let fillColor = '#d2b48c';
-                                  
-                                  switch(iucnCategory) {
-                                    case 'Ia': fillColor = '#8B0000'; break;
-                                    case 'Ib': fillColor = '#B22222'; break;
-                                    case 'II': fillColor = '#228B22'; break;
-                                    case 'III': fillColor = '#32CD32'; break;
-                                    case 'IV': fillColor = '#FFD700'; break;
-                                    case 'V': fillColor = '#FFA500'; break;
-                                    case 'VI': fillColor = '#FF6347'; break;
-                                    default: fillColor = '#d2b48c';
-                                  }
-                                  
-                                  return {
-                                    color: fillColor,
-                                    fillColor: fillColor,
-                                    weight: 0.25,
-                                    opacity: 0.8,
-                                    fillOpacity: 0.6
-                                  };
-                                },
-                                onEachFeature: function(feature, layer) {
-                                  const props = feature.properties;
-                                  layer.bindPopup(\`
-                                    <div style="padding: 8px;">
-                                      <h4>🛡️ \${props.name || 'Protected Area'}</h4>
-                                      <p><strong>IUCN:</strong> \${props.iucn_cat || 'Not Assigned'}</p>
-                                      <p><strong>Area:</strong> \${props.rep_area || 'Unknown'} ha</p>
-                                    </div>
-                                  \`);
-                                }
-                              });
-                              
-                              wdpaLayer.addTo(map);
-                            }
-                          });
-                        }
-                      })
-                      .catch(error => {
-                        console.error('❌ Error loading WDPA from ArcGIS:', error);
-                      });
+                    // Add error handling for WDPA tiles
+                    wdpaLayer.on('tileerror', function(e) {
+                      console.warn('⚠️ WDPA tile load error in Quick Preview:', e.error);
+                    });
+
+                    wdpaLayer.on('tileload', function(e) {
+                      console.log('✅ WDPA tile loaded in Quick Preview at:', e.coords);
+                    });
                   }
                   
-                  if (wdpaLayer && !map.hasLayer(wdpaLayer)) {
+                  if (!map.hasLayer(wdpaLayer)) {
                     wdpaLayer.addTo(map);
-                    console.log('✅ Existing WDPA layer added to Quick Preview map');
+                    console.log('✅ WDPA GFW vector tiles added to Quick Preview map');
+                    
+                    // Force map refresh
+                    setTimeout(() => {
+                      map.invalidateSize();
+                      map.panBy([1, 1]);
+                      map.panBy([-1, -1]);
+                    }, 100);
                   }
                 } else {
                   if (wdpaLayer && map.hasLayer(wdpaLayer)) {
