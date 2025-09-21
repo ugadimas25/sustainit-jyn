@@ -1805,15 +1805,6 @@ export default function DeforestationMonitoring() {
               </div>
               <div className="flex gap-2">
                 <Button 
-                  onClick={handleViewFullMap}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                  data-testid="view-map-button"
-                >
-                  <Map className="h-4 w-4" />
-                  View Full Map
-                </Button>
-
-                <Button 
                   onClick={handleQuickPreview}
                   variant="outline"
                   className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
