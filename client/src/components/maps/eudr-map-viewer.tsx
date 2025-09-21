@@ -709,7 +709,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}',
                 'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/arcgis/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}'
               ];
-
+              
               wdpaTileLayer = L.tileLayer(wdpaUrls[0], {
                 attribution: '© WDPA - World Database on Protected Areas',
                 opacity: 0.7,
@@ -725,12 +725,12 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             // Alternative function to load WDPA as GeoJSON for detailed features
             function createWDPAGeoJSONLayer() {
               console.log('Loading WDPA GeoJSON layer...');
-
+              
               // Get a wider bounding box to capture more features
               const bounds = map.getBounds();
               const expandedBounds = bounds.pad(1.0); // Expand bounds by 100% to get more features
-              const bbox = expandedBounds.getWest() + ',' + expandedBounds.getSouth() + ',' + expandedBounds.getEast() + ',' + expandedBounds.getNorth();
-
+              const bbox = \`\${expandedBounds.getWest()},\${expandedBounds.getSouth()},\${expandedBounds.getEast()},\${expandedBounds.getNorth()}\`;
+              
               // Enhanced query using correct field name 'iucn_cat' and get ALL categories
               const query = new URLSearchParams({
                 where: "1=1", // Get all features - no filtering by category
@@ -744,8 +744,8 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 orderByFields: 'iucn_cat,rep_area DESC' // Order by category then by area
               });
 
-              const url = 'https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?' + query.toString();
-
+              const url = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${query}\`;
+              
               console.log('WDPA query URL:', url);
               console.log('Query bbox:', bbox);
 
@@ -753,16 +753,16 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 .then(response => {
                   console.log('WDPA response status:', response.status);
                   if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(\`HTTP error! status: \${response.status}\`);
                   }
                   return response.json();
                 })
                 .then(data => {
                   console.log('WDPA data received:', data);
-
+                  
                   if (!data.features || data.features.length === 0) {
                     console.warn('No WDPA features found in current map bounds - trying global query');
-
+                    
                     // If no features found in bounds, try a global query for a sample
                     const globalQuery = new URLSearchParams({
                       where: '1=1',
@@ -772,36 +772,36 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                       maxRecordCount: 500,
                       orderByFields: 'rep_area DESC' // Get largest areas first
                     });
-
-                    const globalUrl = `https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?${globalQuery}`;
+                    
+                    const globalUrl = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${globalQuery}\`;
                     console.log('Trying global WDPA query:', globalUrl);
-
+                    
                     return fetch(globalUrl).then(resp => resp.json());
                   }
 
-                  console.log(`Found ${data.features.length} WDPA features`);
-
+                  console.log(\`Found \${data.features.length} WDPA features\`);
+                  
                   // Enhanced category analysis
                   const categoryStats = {};
                   const uniqueCategories = new Set();
-
+                  
                   data.features.forEach(feature => {
                     const cat = feature.properties.iucn_cat || 'Not Assigned';
                     const cleanCat = cat.toString().trim() || 'Empty';
                     uniqueCategories.add(cleanCat);
                     categoryStats[cleanCat] = (categoryStats[cleanCat] || 0) + 1;
                   });
-
+                  
                   console.log('IUCN Categories found:', Array.from(uniqueCategories));
                   console.log('Category distribution:', categoryStats);
-
+                  
                   const layer = L.geoJSON(data, {
                     style: function(feature) {
                       // Force all WDPA features to use light brown color
                       const lightBrown = '#d2b48c';
-
-                      console.log(`Styling WDPA feature ${feature.properties.name || feature.properties.NAME || 'Unknown'} with light brown color`);
-
+                      
+                      console.log(\`Styling WDPA feature \${feature.properties.name || feature.properties.NAME || 'Unknown'} with light brown color\`);
+                      
                       return {
                         color: lightBrown,
                         fillColor: lightBrown,
@@ -821,27 +821,27 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                       const govType = props.gov_type || 'Unknown';
                       const managementAuth = props.mang_auth || 'Unknown';
                       const area = props.rep_area || 'Unknown';
-
-                      const popupContent = `
+                      
+                      const popupContent = \`
                         <div style="min-width: 300px; font-family: Arial, sans-serif;">
-                          <h4 style="margin: 0 0 10px 0; color: #264653; font-size: 16px; font-weight: bold; border-bottom: 2px solid #264653; padding-bottom: 5px;">${name}</h4>
+                          <h4 style="margin: 0 0 10px 0; color: #264653; font-size: 16px; font-weight: bold; border-bottom: 2px solid #264653; padding-bottom: 5px;">\${name}</h4>
                           <div style="font-size: 13px; line-height: 1.4;">
-                            <div style="margin-bottom: 5px;"><strong>WDPA ID:</strong> ${wdpaId}</div>
-                            <div style="margin-bottom: 5px;"><strong>Designation:</strong> ${designation}</div>
+                            <div style="margin-bottom: 5px;"><strong>WDPA ID:</strong> \${wdpaId}</div>
+                            <div style="margin-bottom: 5px;"><strong>Designation:</strong> \${designation}</div>
                             <div style="margin-bottom: 5px;"><strong>IUCN Category:</strong> 
-                              <span style="background: #d2b48c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${iucnCategory}</span>
+                              <span style="background: #d2b48c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${iucnCategory}</span>
                             </div>
-                            <div style="margin-bottom: 5px;"><strong>Status:</strong> ${status}</div>
-                            <div style="margin-bottom: 5px;"><strong>Governance:</strong> ${govType}</div>
-                            <div style="margin-bottom: 5px;"><strong>Area:</strong> ${area} ha</div>
-                            <div style="margin-bottom: 5px;"><strong>Management:</strong> ${managementAuth}</div>
+                            <div style="margin-bottom: 5px;"><strong>Status:</strong> \${status}</div>
+                            <div style="margin-bottom: 5px;"><strong>Governance:</strong> \${govType}</div>
+                            <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} ha</div>
+                            <div style="margin-bottom: 5px;"><strong>Management:</strong> \${managementAuth}</div>
                             <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #264653; font-size: 11px;">
-                              <strong>Protection Level:</strong> ${getProtectionLevel(iucnCategory)}
+                              <strong>Protection Level:</strong> \${getProtectionLevel(iucnCategory)}
                             </div>
                           </div>
                         </div>
-                      `;
-
+                      \`;
+                      
                       layer.bindPopup(popupContent, {
                         maxWidth: 350,
                         className: 'wdpa-popup'
@@ -852,7 +852,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                       return true;
                     }
                   });
-
+                  
                   return layer;
                 })
                 .catch(error => {
@@ -878,17 +878,17 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 'Not Assigned': 'No IUCN category assigned to this area',
                 '': 'Category information not available'
               };
-              return descriptions[iucnCategory] || `Unknown protection level: ${iucnCategory}`;
+              return descriptions[iucnCategory] || \`Unknown protection level: \${iucnCategory}\`;
             }
 
             // Function to create Peatland layer from PostGIS database
             function createPeatlandLayer() {
               console.log('🏞️ Loading Indonesian Peatland layer from database...');
-
+              
               // Get current map bounds - use Indonesia bounds if current view is too wide
               const bounds = map.getBounds();
               let queryBounds = bounds;
-
+              
               // If bounds are too wide (covering more than Indonesia), use Indonesia bounds
               const indonesiaBounds = {
                 west: 95,
@@ -896,21 +896,21 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 east: 141,
                 north: 6
               };
-
+              
               if (bounds.getWest() < 90 || bounds.getEast() > 145 || 
                   bounds.getSouth() < -15 || bounds.getNorth() > 10) {
                 console.log('🇮🇩 Using Indonesia bounds for peatland query');
                 queryBounds = L.latLngBounds([indonesiaBounds.south, indonesiaBounds.west], 
                                            [indonesiaBounds.north, indonesiaBounds.east]);
               }
-
+              
               console.log('🔍 Requesting peatland data for bounds:', {
                 west: queryBounds.getWest(),
                 south: queryBounds.getSouth(),
                 east: queryBounds.getEast(),
                 north: queryBounds.getNorth()
               });
-
+              
               // Fetch peatland data from server endpoint with enhanced error handling
               return fetch('/api/peatland-data', {
                 method: 'POST',
@@ -930,40 +930,40 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 console.log('🏞️ Peatland API response status:', response.status, response.statusText);
                 if (!response.ok) {
                   const errorText = response.statusText || 'Unknown error';
-                  console.error(`❌ Peatland API error: ${response.status} - ${errorText}`);
-                  throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                  console.error(\`❌ Peatland API error: \${response.status} - \${errorText}\`);
+                  throw new Error(\`HTTP error! status: \${response.status} - \${errorText}\`);
                 }
                 return response.json();
               })
               .then(data => {
                 console.log('🏞️ Peatland data received:', data);
                 console.log('📊 Features count:', data.features?.length || 0);
-
+                
                 if (!data || !data.features) {
                   console.warn('⚠️ Invalid peatland data structure - missing features array');
                   throw new Error('Invalid peatland data structure');
                 }
-
+                
                 if (data.features.length === 0) {
                   console.warn('⚠️ No peatland features found in current map bounds');
                   // Don't fallback immediately, return empty layer first
                 }
 
-                console.log(`✅ Processing ${data.features.length} peatland features from API`);
-
+                console.log(\`✅ Processing \${data.features.length} peatland features from API\`);
+                
                 // Group features by classification for logging
                 const classifications = data.features.reduce((acc, feature) => {
-                  const kubahGbt = feature.properties.Kubah_GBT || feature.properties.kubah_gbt || 'Unknown';
+                  const kubahGbt = feature.properties.Kubah_GBT || 'Unknown';
                   acc[kubahGbt] = (acc[kubahGbt] || 0) + 1;
                   return acc;
                 }, {});
                 console.log('🏞️ Peatland classifications distribution:', classifications);
-
+                
                 // Create the Leaflet GeoJSON layer
                 const layer = L.geoJSON(data, {
                   style: function(feature) {
                     const kubahGbt = feature.properties.Kubah_GBT || feature.properties.kubah_gbt || '';
-
+                    
                     // Style based on Kubah_GBT classification with proper colors
                     let fillColor, color;
                     if (kubahGbt === 'Kubah Gambut') {
@@ -976,9 +976,9 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                       fillColor = '#d2b48c'; // Light brown for other/unknown
                       color = '#bc9a6a';
                     }
-
-                    console.log(`🎨 Styling peatland feature with Kubah_GBT: "${kubahGbt}" as ${fillColor}`);
-
+                    
+                    console.log(\`🎨 Styling peatland feature with Kubah_GBT: "\${kubahGbt}" as \${fillColor}\`);
+                    
                     return {
                       color: color,
                       fillColor: fillColor,
@@ -994,24 +994,24 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                     const ecosystemType = props.Ekosistem || props.ekosistem || 'Unknown';
                     const area = props.Area_Ha || props.area_ha || 'Unknown';
                     const region = props.Province || props.province || props.Region || 'Unknown';
-
-                    const popupContent = `
+                    
+                    const popupContent = \`
                       <div style="min-width: 280px; font-family: Arial, sans-serif;">
                         <h4 style="margin: 0 0 10px 0; color: #8b4513; font-size: 16px; font-weight: bold; border-bottom: 2px solid #8b4513; padding-bottom: 5px;">🏞️ Indonesian Peatland Area</h4>
                         <div style="font-size: 13px; line-height: 1.4;">
                           <div style="margin-bottom: 5px;"><strong>Classification:</strong> 
-                            <span style="background: ${kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500'}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${kubahGbt}</span>
+                            <span style="background: \${kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500'}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${kubahGbt}</span>
                           </div>
-                          <div style="margin-bottom: 5px;"><strong>Ecosystem:</strong> ${ecosystemType}</div>
-                          <div style="margin-bottom: 5px;"><strong>Area:</strong> ${area} hectares</div>
-                          <div style="margin-bottom: 5px;"><strong>Province:</strong> ${region}</div>
+                          <div style="margin-bottom: 5px;"><strong>Ecosystem:</strong> \${ecosystemType}</div>
+                          <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} hectares</div>
+                          <div style="margin-bottom: 5px;"><strong>Province:</strong> \${region}</div>
                           <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #8b4513; font-size: 11px;">
-                            <strong>Protection Status:</strong> ${getPeatlandProtectionStatus(kubahGbt)}
+                            <strong>Protection Status:</strong> \${getPeatlandProtectionStatus(kubahGbt)}
                           </div>
                         </div>
                       </div>
-                    `;
-
+                    \`;
+                    
                     layer.bindPopup(popupContent, {
                       maxWidth: 350,
                       className: 'peatland-popup'
@@ -1022,8 +1022,8 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                     return feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates.length > 0;
                   }
                 });
-
-                console.log(`✅ Created peatland layer with ${layer.getLayers().length} valid features`);
+                
+                console.log(\`✅ Created peatland layer with \${layer.getLayers().length} valid features\`);
                 return layer;
               })
               .catch(error => {
@@ -1036,7 +1036,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             // Function to create comprehensive mock peatland layer for immediate visibility
             function createMockPeatlandLayer() {
               console.log('🏞️ Creating comprehensive mock Indonesian Peatland layer with extensive coverage');
-
+              
               // Enhanced mock peatland data covering major Indonesian peatland areas
               const mockPeatlandData = {
                 type: "FeatureCollection",
@@ -1167,7 +1167,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               const layer = L.geoJSON(mockPeatlandData, {
                 style: function(feature) {
                   const kubahGbt = feature.properties.Kubah_GBT || '';
-
+                  
                   // Style based on Kubah_GBT classification
                   let fillColor, color;
                   if (kubahGbt === 'Kubah Gambut') {
@@ -1180,7 +1180,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                     fillColor = '#d2b48c'; // Light brown for other/unknown
                     color = '#bc9a6a';
                   }
-
+                  
                   return {
                     color: color,
                     fillColor: fillColor,
@@ -1196,24 +1196,24 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   const ecosystemType = props.Ekosistem || 'Unknown';
                   const area = props.Area_Ha || 'Unknown';
                   const region = props.Province || 'Unknown';
-
-                  const popupContent = `
+                  
+                  const popupContent = \`
                     <div style="min-width: 280px; font-family: Arial, sans-serif;">
                       <h4 style="margin: 0 0 10px 0; color: #8b4513; font-size: 16px; font-weight: bold; border-bottom: 2px solid #8b4513; padding-bottom: 5px;">🏞️ Indonesian Peatland Area (Demo)</h4>
                       <div style="font-size: 13px; line-height: 1.4;">
                         <div style="margin-bottom: 5px;"><strong>Classification:</strong> 
-                          <span style="background: ${kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500'}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">${kubahGbt}</span>
+                          <span style="background: \${kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500'}; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${kubahGbt}</span>
                         </div>
-                        <div style="margin-bottom: 5px;"><strong>Ecosystem:</strong> ${ecosystemType}</div>
-                        <div style="margin-bottom: 5px;"><strong>Area:</strong> ${area} hectares</div>
-                        <div style="margin-bottom: 5px;"><strong>Province:</strong> ${region}</div>
+                        <div style="margin-bottom: 5px;"><strong>Ecosystem:</strong> \${ecosystemType}</div>
+                        <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} hectares</div>
+                        <div style="margin-bottom: 5px;"><strong>Province:</strong> \${region}</div>
                         <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #8b4513; font-size: 11px;">
                           <strong>Note:</strong> This is demonstration data. Actual peatland data would be loaded from PostGIS database.
                         </div>
                       </div>
                     </div>
-                  `;
-
+                  \`;
+                  
                   layer.bindPopup(popupContent, {
                     maxWidth: 350,
                     className: 'peatland-popup'
@@ -1221,7 +1221,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 }
               });
 
-              console.log(`✅ Created mock peatland layer with ${mockPeatlandData.features.length} features`);
+              console.log(\`✅ Created mock peatland layer with \${mockPeatlandData.features.length} features\`);
               return layer;
             }
 
@@ -1272,7 +1272,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 plotsWithoutGeometry++;
 
                 // Add a fallback marker for plots without geometry (place them in Indonesia center)
-                const fallbackMarker = L.circleMarker([ -2.5, 118], {
+                const fallbackMarker = L.circleMarker([-2.5, 118], {
                   radius: 12,
                   fillColor: '#ff6b35',
                   color: '#fff',
@@ -1283,13 +1283,13 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 }).addTo(map);
 
                 // Add popup for missing geometry plots
-                const popupContent = `
+                const popupContent = \`
                   <div class="modern-popup-content">
                     <div class="popup-header">
                       <div class="popup-icon" style="background: #ff6b35;">
                         ❌
                       </div>
-                      <h3 class="popup-title">${result.plotId}</h3>
+                      <h3 class="popup-title">\${result.plotId}</h3>
                     </div>
 
                     <div class="popup-body">
@@ -1299,15 +1299,15 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                       </div>
                       <div class="popup-row">
                         <span class="popup-label">Location</span>
-                        <span class="popup-value">${result.country}</span>
+                        <span class="popup-value">\${result.country}</span>
                       </div>
                       <div class="popup-row">
                         <span class="popup-label">Area</span>
-                        <span class="popup-value">${result.area} ha</span>
+                        <span class="popup-value">\${result.area} ha</span>
                       </div>
                     </div>
                   </div>
-                `;
+                \`;
 
                 fallbackMarker.bindPopup(popupContent, {
                   maxWidth: 400,
@@ -1327,7 +1327,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 // Convert coordinates for Leaflet (handle complex polygon structures)
                 let coordinates = result.geometry.coordinates;
 
-                console.log(`Processing ${result.plotId} geometry:, type: ${result.geometry.type}, coordinates structure:`, coordinates);
+                console.log(\`Processing \${result.plotId} geometry:, type: \${result.geometry.type}, coordinates structure:\`, coordinates);
 
                 // Handle different coordinate structures
                 if (result.geometry.type === 'Polygon') {
@@ -1344,7 +1344,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   coordinates = coordinates[0][0].map(coord => [coord[1], coord[0]]); // Take first polygon and convert
                 }
 
-                console.log(`Final coordinates for ${result.plotId}:`, coordinates.slice(0, 3));
+                console.log(\`Final coordinates for \${result.plotId}:\`, coordinates.slice(0, 3));
 
                 // Validate coordinates before creating polygon
                 if (!coordinates || coordinates.length < 3) {
@@ -1387,65 +1387,65 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }).addTo(map);
 
               // Add modern popup with enhanced styling
-              const popupContent = `
+              const popupContent = \`
                 <div class="modern-popup-content">
                   <div class="popup-header">
-                    <div class="popup-icon" style="background: ${color};">
-                      ${isHighRisk ? '⚠️' : '✅'}
+                    <div class="popup-icon" style="background: \${color};">
+                      \${isHighRisk ? '⚠️' : '✅'}
                     </div>
-                    <h3 class="popup-title">${result.plotId}</h3>
+                    <h3 class="popup-title">\${result.plotId}</h3>
                   </div>
 
                   <div class="popup-body">
                     <div class="popup-row">
                       <span class="popup-label">Location</span>
-                      <span class="popup-value">${result.country}</span>
+                      <span class="popup-value">\${result.country}</span>
                     </div>
 
                     <div class="popup-row">
                       <span class="popup-label">Area</span>
-                      <span class="popup-value">${result.area} ha</span>
+                      <span class="popup-value">\${result.area} ha</span>
                     </div>
 
                     <div class="popup-row">
                       <span class="popup-label">Overall Risk</span>
                       <span class="popup-value">
-                        <span class="risk-badge ${isHighRisk ? 'risk-high' : 'risk-low'}">${result.overallRisk}</span>
+                        <span class="risk-badge \${isHighRisk ? 'risk-high' : 'risk-low'}">\${result.overallRisk}</span>
                       </span>
                     </div>
 
                     <div class="popup-row">
                       <span class="popup-label">Compliance Status</span>
                       <span class="popup-value">
-                        <span class="compliance-badge ${result.complianceStatus === 'COMPLIANT' ? 'compliance-compliant' : 'compliance-non-compliant'}">${result.complianceStatus}</span>
+                        <span class="compliance-badge \${result.complianceStatus === 'COMPLIANT' ? 'compliance-compliant' : 'compliance-non-compliant'}">\${result.complianceStatus}</span>
                       </span>
                     </div>
 
                     <div class="popup-row">
                       <span class="popup-label">GFW Forest Loss</span>
-                      <span class="popup-value" style="color: ${result.gfwLoss === 'HIGH' ? '#dc2626' : '#10b981'}">${result.gfwLoss}</span>
+                      <span class="popup-value" style="color: \${result.gfwLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.gfwLoss}</span>
                     </div>
 
                     <div class="popup-row">
                       <span class="popup-label">JRC Forest Loss</span>
-                      <span class="popup-value" style="color: ${result.jrcLoss === 'HIGH' ? '#dc2626' : '#10b981'}">${result.jrcLoss}</span>
+                      <span class="popup-value" style="color: \${result.jrcLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.jrcLoss}</span>
                     </div>
 
                     <div class="popup-row">
                       <span class="popup-label">SBTN Natural Loss</span>
-                      <span class="popup-value" style="color: ${result.sbtnLoss === 'HIGH' ? '#dc2626' : '#10b981'}">${result.sbtnLoss}</span>
+                      <span class="popup-value" style="color: \${result.sbtnLoss === 'HIGH' ? '#dc2626' : '#10b981'}">\${result.sbtnLoss}</span>
                     </div>
 
-                    ${result.highRiskDatasets.length > 0 ? `
+                    \${result.highRiskDatasets.length > 0 ? \`
                       <div style="margin-top: 16px;">
                         <div class="popup-label" style="margin-bottom: 8px;">High Risk Indicators</div>
                         <div class="datasets-list">
-                          ${result.highRiskDatasets.map(dataset => `<div class="dataset-item">• ${dataset}</div>`).join('')}
+                          \${result.highRiskDatasets.map(dataset => \`<div class="dataset-item">• \${dataset}</div>\`).join('')}
                         </div>
                       </div>
-                    ` : ''}
+                    \` : ''}
                   </div>
-                `;
+                \`;
 
               // Bind popup with custom options to prevent cut-off
               const popupOptions = {
@@ -1498,10 +1498,10 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             });
 
             // Log polygon rendering summary
-            console.log(`📊 Map Rendering Summary: ${plotsWithGeometry} plots rendered successfully, ${plotsWithoutGeometry} plots with missing/invalid geometry`);
+            console.log(\`📊 Map Rendering Summary: \${plotsWithGeometry} plots rendered successfully, \${plotsWithoutGeometry} plots with missing/invalid geometry\`);
 
             if (plotsWithoutGeometry > 0) {
-              console.warn(`⚠️  ${plotsWithoutGeometry} plots are missing from the map due to invalid geometry data. These plots will show as orange markers in Indonesia.`);
+              console.warn(\`⚠️  \${plotsWithoutGeometry} plots are missing from the map due to invalid geometry data. These plots will show as orange markers in Indonesia.\`);
             }
 
             // Fit map to show all polygons
@@ -1565,22 +1565,22 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
               if (isChecked) {
                 console.log('WDPA layer checkbox checked - loading layer...');
-
+                
                 if (!wdpaLayer && !wdpaTileLayer) {
                   console.log('Creating new WDPA layer...');
-
+                  
                   // Show loading indicator
                   console.log('🔄 Loading WDPA GeoJSON layer for detailed categories...');
-
+                  
                   createWDPAGeoJSONLayer().then(geoLayer => {
                     if (geoLayer && geoLayer.getLayers && geoLayer.getLayers().length > 0) {
                       wdpaLayer = geoLayer;
                       geoLayer.addTo(map);
-                      console.log(`✅ WDPA GeoJSON layer loaded successfully with ${geoLayer.getLayers().length} features`);
-
+                      console.log(\`✅ WDPA GeoJSON layer loaded successfully with \${geoLayer.getLayers().length} features\`);
+                      
                       // Force map refresh and fit bounds if features exist
                       map.invalidateSize();
-
+                      
                       // Optionally fit bounds to show WDPA features
                       try {
                         const bounds = geoLayer.getBounds();
@@ -1591,34 +1591,34 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                       } catch (e) {
                         console.log('Could not fit bounds to WDPA features:', e.message);
                       }
-
+                      
                     } else {
                       console.log('🔄 GeoJSON returned no features, trying tile layer as fallback...');
-
+                      
                       // Fallback to tile layer
                       createWDPALayer().then(layer => {
                         if (layer) {
                           wdpaTileLayer = layer;
                           layer.addTo(map);
                           console.log('✅ WDPA tile layer added as fallback');
-
+                          
                           // Add enhanced error handling for tiles
                           layer.on('tileerror', function(e) {
                             console.error('❌ WDPA tile error:', e.error?.message || e);
                           });
-
+                          
                           layer.on('tileload', function(e) {
                             console.log('✅ WDPA tile loaded successfully:', e.coords);
                           });
-
+                          
                           layer.on('loading', function() {
                             console.log('🔄 WDPA tiles loading...');
                           });
-
+                          
                           layer.on('load', function() {
                             console.log('✅ All WDPA tiles loaded');
                           });
-
+                          
                         } else {
                           console.error('❌ Both WDPA layer methods failed');
                           alert('Unable to load WDPA Protected Areas layer. The service may be temporarily unavailable.');
@@ -1628,7 +1628,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   }).catch(error => {
                     console.error('❌ Error in WDPA layer creation:', error);
                     console.log('🔄 Trying tile layer due to GeoJSON error...');
-
+                    
                     // Try tile layer as backup when GeoJSON fails
                     createWDPALayer().then(layer => {
                       if (layer) {
@@ -1652,7 +1652,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 }
               } else {
                 console.log('WDPA layer checkbox unchecked - removing layer...');
-
+                
                 // Remove both possible layer types
                 if (wdpaLayer && map.hasLayer(wdpaLayer)) {
                   map.removeLayer(wdpaLayer);
@@ -1678,7 +1678,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }
 
               console.log('✅ Indonesian Peatland layer checkbox found and initializing...');
-
+              
               // Remove any existing event listeners to prevent duplicates
               peatlandCheckbox.removeEventListener('change', handlePeatlandChange);
               peatlandCheckbox.addEventListener('change', handlePeatlandChange);
@@ -1691,55 +1691,55 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
               if (isChecked) {
                 console.log('🏞️ Peatland layer checkbox checked - loading layer...');
-
+                
                 if (!peatlandLayer) {
                   console.log('🔄 Creating new Indonesian Peatland layer...');
-
+                  
                   // Show loading indicator
                   const loadingMessage = document.createElement('div');
                   loadingMessage.id = 'peatland-loading';
                   loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
                   loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
                   document.body.appendChild(loadingMessage);
-
+                  
                   // Try API first, then fallback to mock data
                   createPeatlandLayer().then(apiLayer => {
                     // Remove loading indicator
                     const loader = document.getElementById('peatland-loading');
                     if (loader) loader.remove();
-
+                    
                     if (apiLayer && apiLayer.getLayers && apiLayer.getLayers().length > 0) {
                       peatlandLayer = apiLayer;
                       apiLayer.addTo(map);
-                      console.log(`✅ Indonesian Peatland layer loaded from API with ${apiLayer.getLayers().length} features`);
-
+                      console.log(\`✅ Indonesian Peatland layer loaded from API with \${apiLayer.getLayers().length} features\`);
+                      
                       // Show success message
                       const successMsg = document.createElement('div');
                       successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                      successMsg.innerHTML = `✅ Indonesian Peatland layer loaded (${apiLayer.getLayers().length} features)`;
+                      successMsg.innerHTML = \`✅ Indonesian Peatland layer loaded (\${apiLayer.getLayers().length} features)\`;
                       document.body.appendChild(successMsg);
                       setTimeout(() => successMsg.remove(), 3000);
-
+                      
                       // Force map refresh
                       map.invalidateSize();
                     } else {
                       console.log('🏞️ API returned no features, using comprehensive mock data...');
-
+                      
                       // Fallback to mock data
                       const mockLayer = createMockPeatlandLayer();
                       if (mockLayer) {
                         peatlandLayer = mockLayer;
                         mockLayer.addTo(map);
-
+                        
                         console.log('✅ Indonesian Peatland layer loaded with comprehensive mock data');
-
+                        
                         // Show success message
                         const successMsg = document.createElement('div');
                         successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
                         successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (comprehensive coverage)';
                         document.body.appendChild(successMsg);
                         setTimeout(() => successMsg.remove(), 3000);
-
+                        
                         // Force map refresh
                         map.invalidateSize();
                       }
@@ -1748,24 +1748,24 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                     // Remove loading indicator
                     const loader = document.getElementById('peatland-loading');
                     if (loader) loader.remove();
-
+                    
                     console.log('⚠️ API failed, using comprehensive mock data:', error.message);
-
+                    
                     // Always provide fallback mock data
                     const mockLayer = createMockPeatlandLayer();
                     if (mockLayer) {
                       peatlandLayer = mockLayer;
                       mockLayer.addTo(map);
-
+                      
                       console.log('✅ Indonesian Peatland layer loaded with comprehensive mock data');
-
+                      
                       // Show success message
                       const successMsg = document.createElement('div');
                       successMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
                       successMsg.innerHTML = '✅ Indonesian Peatland layer loaded (demo data)';
                       document.body.appendChild(successMsg);
                       setTimeout(() => successMsg.remove(), 3000);
-
+                      
                       // Force map refresh
                       map.invalidateSize();
                     } else {
@@ -1781,13 +1781,13 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   // Layer already exists, just add to map
                   peatlandLayer.addTo(map);
                   console.log('✅ Existing Indonesian Peatland layer restored to map');
-
+                  
                   // Force map refresh
                   map.invalidateSize();
                 }
               } else {
                 console.log('🏞️ Peatland layer checkbox unchecked - removing layer...');
-
+                
                 if (peatlandLayer && map.hasLayer(peatlandLayer)) {
                   map.removeLayer(peatlandLayer);
                   console.log('✅ Indonesian Peatland layer removed from map');
@@ -1939,7 +1939,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             console.log('EUDR Map loaded with', analysisResults.length, 'plots');
             console.log('Polygons rendered:', polygons.length);
             console.log('Sample geometry data:', analysisResults[0]?.geometry);
-
+            
             // Auto-load Indonesian Peatland layer for immediate visibility
             console.log('🏞️ Auto-loading Indonesian Peatland layer for immediate visibility...');
             setTimeout(() => {
@@ -1950,14 +1950,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                     peatlandLayer = apiLayer;
                     apiLayer.addTo(map);
                     console.log('✅ Indonesian Peatland layer auto-loaded from API');
-
+                    
                     // Check the checkbox to reflect the layer state
                     const checkbox = document.getElementById('peatlandLayer');
                     if (checkbox) checkbox.checked = true;
-
+                    
                     // Force map refresh
                     map.invalidateSize();
-
+                    
                     // Show notification
                     const autoLoadMsg = document.createElement('div');
                     autoLoadMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
@@ -1969,21 +1969,21 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   }
                 }).catch(error => {
                   console.log('⚠️ API failed for auto-load, using mock data:', error.message);
-
+                  
                   // Fallback to mock data
                   const mockLayer = createMockPeatlandLayer();
                   if (mockLayer) {
                     peatlandLayer = mockLayer;
                     mockLayer.addTo(map);
                     console.log('✅ Indonesian Peatland layer auto-loaded with mock data');
-
+                    
                     // Check the checkbox to reflect the layer state
                     const checkbox = document.getElementById('peatlandLayer');
                     if (checkbox) checkbox.checked = true;
-
+                    
                     // Force map refresh
                     map.invalidateSize();
-
+                    
                     // Show notification
                     const autoLoadMsg = document.createElement('div');
                     autoLoadMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
@@ -1996,7 +1996,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 console.error('❌ Failed to auto-load peatland layer:', error);
               }
             }, 1000);
-
+            
             // Test WDPA service availability
             console.log('🔍 Testing WDPA service availability...');
             fetch('https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer?f=json')
@@ -2008,10 +2008,10 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               .catch(error => {
                 console.error('❌ WDPA service test failed:', error);
               });
-
+            
             // Add CSS for WDPA and Peatland styling
             const style = document.createElement('style');
-            style.textContent = `
+            style.textContent = \`
               .wdpa-popup .leaflet-popup-content-wrapper {
                 border-radius: 8px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -2019,13 +2019,13 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               .wdpa-popup .leaflet-popup-content {
                 margin: 12px;
               }
-
+              
               /* Force WDPA tile layer to appear in light brown */
               .wdpa-tile-layer {
                 filter: hue-rotate(20deg) saturate(1.2) brightness(1.1);
                 mix-blend-mode: multiply;
               }
-
+              
               /* Style for WDPA GeoJSON features */
               .wdpa-protected-area {
                 stroke: #d2b48c !important;
@@ -2034,14 +2034,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 stroke-opacity: 0.8 !important;
                 fill-opacity: 0.6 !important;
               }
-
+              
               /* Style for Peatland features */
               .peatland-area {
                 stroke-width: 2 !important;
                 stroke-opacity: 0.8 !important;
                 fill-opacity: 0.6 !important;
               }
-
+              
               /* Peatland popup styling */
               .peatland-popup .leaflet-popup-content-wrapper {
                 border-radius: 8px;
@@ -2051,79 +2051,8 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               .peatland-popup .leaflet-popup-content {
                 margin: 12px;
               }
-            `;
+            \`;
             document.head.appendChild(style);
-
-            // Ensure all checkboxes are clickable by using event delegation as fallback
-            document.addEventListener('click', function(e) {
-              const target = e.target;
-
-              // Handle checkbox clicks through event delegation
-              if (target && target.tagName === 'INPUT' && target.type === 'checkbox') {
-                console.log('🖱️ Checkbox clicked via delegation:', target.id);
-
-                // Force trigger change event if it wasn't triggered automatically
-                setTimeout(() => {
-                  const changeEvent = new Event('change', { bubbles: true });
-                  target.dispatchEvent(changeEvent);
-                }, 10);
-              }
-
-              // Handle label clicks for custom checkboxes
-              if (target && target.classList.contains('layer-checkbox')) {
-                e.preventDefault();
-                const checkbox = target.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                  checkbox.checked = !checkbox.checked;
-                  const changeEvent = new Event('change', { bubbles: true });
-                  checkbox.dispatchEvent(changeEvent);
-                  console.log('🖱️ Custom checkbox toggled:', checkbox.id, 'checked:', checkbox.checked);
-                }
-              }
-
-              // Handle checkmark span clicks
-              if (target && target.classList.contains('checkmark')) {
-                e.preventDefault();
-                const checkbox = target.previousElementSibling;
-                if (checkbox && checkbox.type === 'checkbox') {
-                  checkbox.checked = !checkbox.checked;
-                  const changeEvent = new Event('change', { bubbles: true });
-                  checkbox.dispatchEvent(changeEvent);
-                  console.log('🖱️ Checkmark clicked for:', checkbox.id, 'checked:', checkbox.checked);
-                }
-              }
-            });
-
-            // Setup event delegation for all layer checkboxes to ensure they work properly
-            document.addEventListener('change', function(e) {
-              if (e.target && e.target.type === 'checkbox') {
-                const checkboxId = e.target.id;
-                const isChecked = e.target.checked;
-
-                console.log('🔄 Checkbox change detected:', checkboxId, 'checked:', isChecked);
-
-                // Handle each layer type specifically
-                switch(checkboxId) {
-                  case 'gfwLayer':
-                    handleGFWChange({ target: e.target });
-                    break;
-                  case 'jrcLayer':
-                    handleJRCChange({ target: e.target });
-                    break;
-                  case 'sbtnLayer':
-                    handleSBTNChange({ target: e.target });
-                    break;
-                  case 'wdpaLayer':
-                    handleWDPAChange({ target: e.target });
-                    break;
-                  case 'peatlandLayer':
-                    handlePeatlandChange({ target: e.target });
-                    break;
-                  default:
-                    console.log('⚠️ Unknown checkbox:', checkboxId);
-                }
-              }
-            });
           </script>
         </body>
         </html>
@@ -2142,7 +2071,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
       // Listen for close message from iframe
       const handleMessage = (event: MessageEvent) => {
         if (event.data.type === 'closeMap' || event.data.type === 'backToResults') {
-          // Ensure localStorage flags are set correctly for restoration
+          // Ensure localStorage flags are set correctly for table restoration
           console.log('🔙 Returning from EUDR Map Viewer, setting restore flags');
 
           // Make sure analysis results are preserved with proper number formatting
@@ -2159,10 +2088,10 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 ? parseFloat(result.sbtnLossArea.toString()) : 0,
               area: parseFloat(result.area?.toString() || '0')
             }));
-
+            
             localStorage.setItem('currentAnalysisResults', JSON.stringify(properlyFormatted));
             localStorage.setItem('hasRealAnalysisData', 'true');
-
+            
             console.log('🔧 Map viewer: Stored properly formatted data with loss areas:', 
               properlyFormatted.slice(0, 3).map(r => ({
                 plotId: r.plotId,
