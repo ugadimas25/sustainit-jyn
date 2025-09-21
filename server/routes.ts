@@ -4,7 +4,7 @@ import express from 'express';
 import { setupAuth, isAuthenticated } from "./auth";
 import { voiceAssistantRouter } from "./routes/voice-assistant";
 import { storage } from "./storage";
-import { 
+import {
   insertCommoditySchema,
   insertPartySchema,
   insertFacilitySchema,
@@ -123,7 +123,7 @@ async function seedSampleData() {
 
       const millParty = await storage.createParty({
         name: "Central Palm Mill",
-        type: "mill", 
+        type: "mill",
         address: "Central Sumatra, Indonesia",
         country: "Indonesia",
         certifications: ["RSPO", "ISCC", "SFC"]
@@ -236,9 +236,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'plot-riau-001',
               type: 'plot',
               name: 'Palm Plot A - Riau Province',
-              data: { 
-                level: 0, 
-                area: '5.2 hectares', 
+              data: {
+                level: 0,
+                area: '5.2 hectares',
                 farmer: 'Budi Santoso',
                 crop: 'oil_palm',
                 plantingYear: 2018
@@ -253,9 +253,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'collection-riau-001',
               type: 'facility',
               name: 'Riau Collection Center A',
-              data: { 
-                level: 1, 
-                facilityType: 'collection_center', 
+              data: {
+                level: 1,
+                facilityType: 'collection_center',
                 capacity: '1000 tonnes/day',
                 operatingHours: '24/7'
               },
@@ -269,9 +269,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'mill-sumatra-001',
               type: 'facility',
               name: 'Central Palm Mill Complex',
-              data: { 
-                level: 2, 
-                facilityType: 'mill', 
+              data: {
+                level: 2,
+                facilityType: 'mill',
                 capacity: '200 tonnes/hour',
                 processes: ['sterilization', 'pressing', 'clarification']
               },
@@ -283,11 +283,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             },
             {
               id: 'refinery-jakarta-001',
-              type: 'facility', 
+              type: 'facility',
               name: 'Jakarta Oil Refinery Complex',
-              data: { 
-                level: 3, 
-                facilityType: 'refinery', 
+              data: {
+                level: 3,
+                facilityType: 'refinery',
                 capacity: '500 tonnes/day',
                 processes: ['neutralization', 'bleaching', 'deodorization']
               },
@@ -301,9 +301,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'port-jakarta-001',
               type: 'facility',
               name: 'Tanjung Priok Export Terminal',
-              data: { 
-                level: 4, 
-                facilityType: 'port', 
+              data: {
+                level: 4,
+                facilityType: 'port',
                 capacity: '10000 tonnes storage',
                 exportDestinations: ['Rotterdam', 'Hamburg', 'Antwerp']
               },
@@ -317,9 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               id: 'shipment-exp-001',
               type: 'shipment',
               name: 'Export Shipment EXP-2024-001',
-              data: { 
-                level: 5, 
-                destination: 'Rotterdam, Netherlands', 
+              data: {
+                level: 5,
+                destination: 'Rotterdam, Netherlands',
                 vessel: 'MV Palm Carrier',
                 departureDate: '2024-08-15',
                 estimatedArrival: '2024-09-10'
@@ -332,47 +332,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ],
           edges: [
-            { 
-              source: 'plot-riau-001', 
-              target: 'collection-riau-001', 
-              type: 'delivery', 
-              quantity: 50.5, 
+            {
+              source: 'plot-riau-001',
+              target: 'collection-riau-001',
+              type: 'delivery',
+              quantity: 50.5,
               uom: 'tonnes',
               date: '2024-08-10',
               eventType: 'TRANSFER'
             },
-            { 
-              source: 'collection-riau-001', 
-              target: 'mill-sumatra-001', 
-              type: 'processing', 
-              quantity: 48.2, 
+            {
+              source: 'collection-riau-001',
+              target: 'mill-sumatra-001',
+              type: 'processing',
+              quantity: 48.2,
               uom: 'tonnes',
               date: '2024-08-11',
               eventType: 'TRANSFORM'
             },
-            { 
-              source: 'mill-sumatra-001', 
-              target: 'refinery-jakarta-001', 
-              type: 'transformation', 
-              quantity: 22.1, 
+            {
+              source: 'mill-sumatra-001',
+              target: 'refinery-jakarta-001',
+              type: 'transformation',
+              quantity: 22.1,
               uom: 'tonnes',
               date: '2024-08-12',
               eventType: 'TRANSFER'
             },
-            { 
-              source: 'refinery-jakarta-001', 
-              target: 'port-jakarta-001', 
-              type: 'transfer', 
-              quantity: 21.8, 
+            {
+              source: 'refinery-jakarta-001',
+              target: 'port-jakarta-001',
+              type: 'transfer',
+              quantity: 21.8,
               uom: 'tonnes',
               date: '2024-08-13',
               eventType: 'TRANSFER'
             },
-            { 
-              source: 'port-jakarta-001', 
-              target: 'shipment-exp-001', 
-              type: 'shipment', 
-              quantity: 21.8, 
+            {
+              source: 'port-jakarta-001',
+              target: 'shipment-exp-001',
+              type: 'shipment',
+              quantity: 21.8,
               uom: 'tonnes',
               date: '2024-08-15',
               eventType: 'TRANSFER'
@@ -443,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         };
 
-        const operation = query.includes('traceForward') ? 'traceForward' : 
+        const operation = query.includes('traceForward') ? 'traceForward' :
                          query.includes('traceBackward') ? 'traceBackward' : 'getFullLineage';
         res.json({ data: { [operation]: mockLineageResult } });
       } else if (query.includes('getCustodyChains')) {
@@ -1528,36 +1528,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { geojson } = req.body;
 
       if (!geojson) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: 'No GeoJSON data provided' 
+        return res.status(400).json({
+          valid: false,
+          error: 'No GeoJSON data provided'
         });
       }
 
       let parsedGeoJson;
       try {
-        parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
+        parsedGeojson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
       } catch (parseError) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: 'Invalid JSON format' 
+        return res.status(400).json({
+          valid: false,
+          error: 'Invalid JSON format'
         });
       }
 
       // Basic GeoJSON structure validation
-      if (!parsedGeoJson.type) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: 'Missing type property' 
+      if (!parsedGeojson.type) {
+        return res.status(400).json({
+          valid: false,
+          error: 'Missing type property'
         });
       }
 
       // Check for valid geometry types
       const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
-      if (!validTypes.includes(parsedGeoJson.type)) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon` 
+      if (!validTypes.includes(parsedGeojson.type)) {
+        return res.status(400).json({
+          valid: false,
+          error: `Invalid GeoJSON type: ${parsedGeojson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
         });
       }
 
@@ -1567,24 +1567,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let centroid = null;
 
       // Extract polygon geometry and calculate metadata
-      if (parsedGeoJson.type === 'Polygon') {
+      if (parsedGeojson.type === 'Polygon') {
         polygonFound = true;
-        const coords = parsedGeoJson.coordinates;
+        const coords = parsedGeojson.coordinates;
         if (coords && coords[0] && coords[0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0]);
           centroid = calculateCentroid(coords[0]);
           area = calculatePolygonArea(coords[0]);
         }
-      } else if (parsedGeoJson.type === 'MultiPolygon') {
+      } else if (parsedGeojson.type === 'MultiPolygon') {
         polygonFound = true;
-        const coords = parsedGeoJson.coordinates;
+        const coords = parsedGeojson.coordinates;
         if (coords && coords[0] && coords[0][0] && coords[0][0].length >= 4) {
           boundingBox = calculateBoundingBox(coords[0][0]);
           centroid = calculateCentroid(coords[0][0]);
           area = calculatePolygonArea(coords[0][0]);
         }
-      } else if (parsedGeoJson.type === 'Feature') {
-        const geometry = parsedGeoJson.geometry;
+      } else if (parsedGeojson.type === 'Feature') {
+        const geometry = parsedGeojson.geometry;
         if (geometry && (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon')) {
           polygonFound = true;
           const coords = geometry.type === 'Polygon' ? geometry.coordinates : geometry.coordinates[0];
@@ -1594,8 +1594,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             area = calculatePolygonArea(coords[0]);
           }
         }
-      } else if (parsedGeoJson.type === 'FeatureCollection') {
-        const features = parsedGeoJson.features;
+      } else if (parsedGeojson.type === 'FeatureCollection') {
+        const features = parsedGeojson.features;
         if (features && features.length > 0) {
           for (const feature of features) {
             if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
@@ -1613,9 +1613,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!polygonFound) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.' 
+        return res.status(400).json({
+          valid: false,
+          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.'
         });
       }
 
@@ -1625,15 +1625,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           area: area,
           boundingBox: boundingBox,
           centroid: centroid,
-          geometryType: parsedGeoJson.type
+          geometryType: parsedGeojson.type
         }
       });
 
     } catch (error) {
       console.error('Error validating GeoJSON:', error);
-      res.status(500).json({ 
-        valid: false, 
-        error: 'Server error during validation' 
+      res.status(500).json({
+        valid: false,
+        error: 'Server error during validation'
       });
     }
   });
@@ -1925,30 +1925,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.setFont('helvetica', 'bold');
       doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
 
-      // Load methodology flowchart from filesystem
-//       const methodologyImage = 'iVBORw0KGgoAAAANSUhEUgAAB3UAAAU6CAYAAAD1CSwhAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7P13kGT3fd57v38ndO7JeXNOSEQgwAAQJE1KUCAlKl/ZV1eWHtuy9Dwu3Stf21cuFetRlcu+rvKjdC2rLFqiJEqUSJuSJYESSTBJyBmLXewusHF2ZnbyTOc+6ff80TOzM72zCVgCs4vPq6qLQJ/TJ0+jeT7n+/0Za61FRERERERERERERERERRER2JKf9DRERERERERERERERERER2TgU6oqIiIiIiIiIiIiIbGAKdUVERERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IeWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
-
-      try {
-        const imgPath = path.resolve(process.cwd(), 'attached_assets', 'image_1757586584997.png');
-        const imgBase64 = fs.readFileSync(imgPath).toString('base64');
-        doc.addImage('data:image/png;base64,' + imgBase64, 'PNG', 15, yPos, 180, 100);
-        yPos += 110;
-      } catch (error) {
-        console.log('Failed to add methodology image, using text fallback');
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Deforestation Analysis Methodology', 10, 50);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Methodology flowchart showing deforestation risk assessment process', 10, 70);
-      }
-
-      // Page 3 - Risk Assessment Description  
-      doc.addPage();
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 3 - PLOT RISK ASSESSMENT', 105, 20, { align: 'center' });
-
       // Add text content for plot risk assessment
       yPos = 40;
       doc.setFontSize(12);
@@ -1991,11 +1967,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const finalWrapped = doc.splitTextToSize(finalText, 180);
       doc.text(finalWrapped, 10, yPos);
 
-      // Page 4 - Land Cover Change Monitoring
+      // Page 3 - Land Cover Change Monitoring Flowchart
       doc.addPage();
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 4 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
+      doc.text('PAGE 3 - LAND COVER CHANGE MONITORING', 105, 20, { align: 'center' });
 
       yPos = 40;
       doc.setFontSize(12);
@@ -2051,6 +2027,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text('This GeoJSON file contains detailed plot boundaries, coordinates,', 15, yPos);
       yPos += 6;
       doc.text('and verification status for all plots included in this DDS report.', 15, yPos);
+
+      // Page 4 - Risk Assessment Process Flowchart
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PAGE 4 - RISK ASSESSMENT PROCESS', 105, 20, { align: 'center' });
+
+      yPos = 40;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('RISK ASSESSMENT PROCESS OVERVIEW', 105, yPos, { align: 'center' });
+
+      yPos += 20;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('This section outlines the systematic risk assessment approach used to evaluate', 10, yPos);
+      yPos += 8;
+      doc.text('deforestation risks and ensure EUDR compliance across all production plots.', 10, yPos);
+
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Key Process Components:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.text('• Data Collection → Risk Identification → Impact Assessment → Scoring', 15, yPos);
+      yPos += 8;
+      doc.text('• Satellite Monitoring → Field Verification → Documentation Review', 15, yPos);
+      yPos += 8;
+      doc.text('• Legal Compliance Check → Final Risk Determination → Mitigation Planning', 15, yPos);
+
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Risk Assessment Matrix:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text('Risk Category | Assessment Criteria | Compliance Action', 10, yPos);
+      yPos += 8;
+      doc.text('Deforestation | Satellite imagery analysis | No forest loss post-2020', 10, yPos);
+      yPos += 8;
+      doc.text('Legal Compliance | Permits & certifications | Valid documentation', 10, yPos);
+      yPos += 8;
+      doc.text('Supply Chain | Traceability verification | Complete chain of custody', 10, yPos);
+      yPos += 8;
+      doc.text('Operational | Quality & production data | Standards compliance', 10, yPos);
+
+      yPos += 20;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Data Verification & Quality Assurance:', 10, yPos);
+      yPos += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text('• Multi-source data cross-validation and consistency checks', 15, yPos);
+      yPos += 8;
+      doc.text('• Independent third-party verification of critical findings', 15, yPos);
+      yPos += 8;
+      doc.text('• Automated monitoring systems with manual verification protocols', 15, yPos);
+      yPos += 8;
+      doc.text('• Regular audit trails and documentation review processes', 15, yPos);
 
       // Generate PDF buffer
       const pdfBuffer = doc.output('arraybuffer');
@@ -2232,6 +2267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
+
       const methodologyOverview = [
         'The EUDR compliance verification follows Article 2.40 requirements through a systematic',
         'three-step process: Proof of No Deforestation after 2020, Proof located on Approved Land,',
@@ -2634,12 +2670,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function generateDDSPDFTemplate(report: any) {
     const currentDate = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
-      month: '2-digit', 
+      month: '2-digit',
       year: 'numeric'
-    }) + ' ' + new Date().toLocaleTimeString('en-GB', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    }) + ' ' + new Date().toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     });
 
     return {
@@ -2692,7 +2728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             headers: [
               "Commodity(ies) or Product(s) Description",
               "Net Mass (Kg)",
-              "% Est. or Deviation", 
+              "% Est. or Deviation",
               "Supplementary Units"
             ],
             data: {
@@ -2843,10 +2879,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'submitted'
       });
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: 'DDS report submitted to EU Trace system',
-        euTraceReference: euTraceRef 
+        euTraceReference: euTraceRef
       });
     } catch (error) {
       console.error('Error submitting to EU Trace:', error);
@@ -2881,10 +2917,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         kmlFileName: fileName || 'uploaded-polygons.kml'
       });
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: 'KML file processed successfully',
-        extractedPlots: mockPolygonCoordinates.length 
+        extractedPlots: mockPolygonCoordinates.length
       });
     } catch (error) {
       console.error('Error processing KML upload:', error);
@@ -2963,8 +2999,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         geojsonFilePaths: JSON.stringify([...filePaths, combinedFilePath])
       });
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: 'GeoJSON files generated successfully',
         files: [
           ...geoJsonFiles.map((file: { fileName: string; plotId: string }) => ({
@@ -3324,8 +3360,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         if (data.address) {
           // Try different country field names from Nominatim response
-          country = data.address.country || 
-                   data.address.country_code || 
+          country = data.address.country ||
+                   data.address.country_code ||
                    data.address.country_name;
         }
 
@@ -3345,6 +3381,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`⚠️  Nominatim API error: ${response.status} ${response.statusText}`);
       }
 
+      // Fallback to database lookup for adm_boundary_lv0
+      console.log(`🗄️  Checking adm_boundary_lv0 for coordinates (${lat}, ${lng})`);
+      const admResult = await db.query.admBoundaryLv0.findFirst({
+        where: (boundary, { sql }) =>
+          sql`ST_Contains(ST_SetSRID(ST_MakeEnvelope(${lng}-0.01, ${lat}-0.01, ${lng}+0.01, ${lat}+0.01, 4326), 4326), boundary.geom)`,
+        columns: {
+          nam_0: true // Assuming 'nam_0' is the country name column
+        }
+      });
+
+      if (admResult && admResult.nam_0) {
+        console.log(`✅ Country detected from adm_boundary_lv0: ${admResult.nam_0}`);
+        return admResult.nam_0;
+      } else {
+        console.log(`❌ Country not found in adm_boundary_lv0 for coordinates.`);
+      }
+
       // Enhanced coordinate-based fallback with more precise ranges
       console.log(`🗺️  Using coordinate-based country detection for (${lat}, ${lng})`);
 
@@ -3353,7 +3406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🇮🇩 Detected Indonesia by coordinates`);
         return 'Indonesia';
       }
-      // Malaysia  
+      // Malaysia
       else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
         console.log(`🇲🇾 Detected Malaysia by coordinates`);
         return 'Malaysia';
@@ -3388,7 +3441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return 'Unknown';
 
     } catch (error) {
-      console.error('Nominatim API error:', error);
+      console.error('Nominatim API or DB lookup error:', error);
 
       // Fallback based on coordinate ranges
       if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
@@ -3517,8 +3570,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await new Promise(resolve => setTimeout(resolve, 1100));
         } else {
           // Fallback to property-based detection
-          detectedCountry = props['.Distict'] || props['.Aggregator Location'] || 
-                           props.country_name || props.country || props.district || 
+          detectedCountry = props['.Distict'] || props['.Aggregator Location'] ||
+                           props.country_name || props.country || props.district ||
                            props.region || props.province || props.kabupaten || 'Indonesia';
         }
 
@@ -3528,8 +3581,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (validatedFeatures.length === 0) {
-        return res.status(400).json({ 
-          error: 'No valid features found. Each feature must have geometry and identifiable properties.' 
+        return res.status(400).json({
+          error: 'No valid features found. Each feature must have geometry and identifiable properties.'
         });
       }
 
@@ -3564,9 +3617,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('RapidAPI Error:', response.status, errorText);
-        return res.status(response.status).json({ 
+        return res.status(response.status).json({
           error: 'Failed to analyze GeoJSON file',
-          details: errorText 
+          details: errorText
         });
       }
 
@@ -3615,11 +3668,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const featureIndex = analysisResults.data.features.indexOf(feature);
           console.log(`=== PROCESSING FEATURE ${featureIndex + 1} ===`);
           console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
-          
+
           try {
             // Use the original plot ID from the input GeoJSON based on feature index
             let plotId = originalPlotIds[featureIndex] || `PLOT_${featureIndex + 1}`;
-            
+
             console.log(`✅ Using original Plot ID: ${plotId} (from input GeoJSON feature ${featureIndex + 1})`);
 
             // If API returned a different plot_id, log it for debugging
@@ -3635,7 +3688,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // If Nominatim didn't detect country properly, extract from Indonesian properties
             if (country === 'Unknown' || !country) {
               if (feature.properties?.['.Distict']) {
-                // Indonesian district format: "Bone" -> "Bone, Indonesia"  
+                // Indonesian district format: "Bone" -> "Bone, Indonesia"
                 const district = feature.properties['.Distict'];
                 country = `${district}, Indonesia`;
                 console.log(`🇮🇩 Using Indonesian district: ${country}`);
@@ -3695,21 +3748,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
               overallRisk,
               complianceStatus,
               gfwLoss: gfwLossArea > 0 ? 'TRUE' : 'FALSE',
-              jrcLoss: jrcLossArea > 0 ? 'TRUE' : 'FALSE', 
+              jrcLoss: jrcLossArea > 0 ? 'TRUE' : 'FALSE',
               sbtnLoss: sbtnLossArea > 0 ? 'TRUE' : 'FALSE',
               peatlandOverlap: 'UNKNOWN', // Default value for peatland analysis
               highRiskDatasets,
               uploadSession: uploadSession,
               geometry: feature.geometry,
               // Enhanced metadata from Indonesian data
-              farmerName: feature.properties?.['.Farmer Name'] || 
-                         feature.properties?.farmer_name || 
+              farmerName: feature.properties?.['.Farmer Name'] ||
+                         feature.properties?.farmer_name ||
                          feature.properties?.grower_name || null,
-              aggregatorName: feature.properties?.['.Aggregator Name'] || 
-                             feature.properties?.aggregator || 
+              aggregatorName: feature.properties?.['.Aggregator Name'] ||
+                             feature.properties?.aggregator ||
                              feature.properties?.cooperative || null,
-              mappingDate: feature.properties?.['.Mapping date'] || 
-                          feature.properties?.mapping_date || 
+              mappingDate: feature.properties?.['.Mapping date'] ||
+                          feature.properties?.mapping_date ||
                           feature.properties?.survey_date || null,
               // Additional Indonesian-specific fields
               aggregatorLocation: feature.properties?.['.Aggregator Location'] || null,
@@ -3736,9 +3789,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('GeoJSON upload error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Internal server error during GeoJSON analysis',
-        details: errorMessage 
+        details: errorMessage
       });
     }
   });
@@ -3782,8 +3835,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Plot not found' });
       }
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: `Updated geometry for ${plotId}`,
         plotId,
         coordinatesCount: coordinates.length
@@ -3980,7 +4033,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Supply Chain Tier Management endpoint  
+  // Supply Chain Tier Management endpoint
   app.post('/api/supply-chain/tiers', isAuthenticated, async (req, res) => {
     try {
       const tierAssignments = req.body;
@@ -3994,8 +4047,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For now, we'll store it in memory or could extend to database storage later
       console.log('✅ Supply chain tier configuration saved successfully');
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: 'Supply chain configuration saved successfully!',
         savedAt: new Date().toISOString(),
         tierCount: Object.keys(tierAssignments).length,
@@ -4016,7 +4069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch estate data collection
       const estates = await storage.getEstateDataCollection();
 
-      // Fetch mill data collection  
+      // Fetch mill data collection
       const mills = await storage.getMillDataCollection();
 
       // Combine and format supplier data for auto-fill
@@ -4075,7 +4128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
 
-      // Add mill suppliers  
+      // Add mill suppliers
       mills.forEach(mill => {
         suppliers.push({
           id: mill.id,
@@ -4121,8 +4174,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store the data (you may want to add this to your storage interface)
       // For now, we'll just return success
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: 'Supplier compliance data saved successfully',
         id: Date.now().toString()
       });
@@ -4206,7 +4259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error analyzing supplier compliance:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Failed to analyze supplier compliance',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -4261,7 +4314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error in bulk analysis:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Failed to perform bulk analysis',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -4299,7 +4352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // Use PostGIS ST_Intersection to detect overlap
             const result = await db.execute(sql`
-              SELECT 
+              SELECT
                 ST_Area(ST_Intersection(
                   ST_GeomFromText(${wkt1}, 4326),
                   ST_GeomFromText(${wkt2}, 4326)
@@ -4340,9 +4393,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in PostGIS overlap detection:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Failed to detect overlaps using PostGIS',
-        details: errorMessage 
+        details: errorMessage
       });
     }
   });
