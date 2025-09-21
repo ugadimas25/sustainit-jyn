@@ -609,7 +609,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
               <div style="margin: 10px 0; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
                 <div style="font-weight: bold; margin-bottom: 5px; color: #4da6ff;">WDPA Protected Areas:</div>
                 <div class="legend-item">
-                  <div class="legend-color" style="background-color: #264653;"></div>
+                  <div class="legend-color" style="background-color: #d2b48c;"></div>
                   <span>Strict Nature Reserve (Ia)</span>
                 </div>
                 <div class="legend-item">
@@ -678,7 +678,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
 
             // Enhanced WDPA color mapping for all IUCN categories
             const wdpaColors = {
-              'Ia': '#264653',    // Strict Nature Reserve - Dark green
+              'Ia': '#d2b48c',    // Strict Nature Reserve - Light brown (tan)
               'Ib': '#2a9d8f',    // Wilderness Area - Teal
               'II': '#1d3557',    // National Park - Dark blue
               'III': '#e9c46a',   // Natural Monument - Yellow
