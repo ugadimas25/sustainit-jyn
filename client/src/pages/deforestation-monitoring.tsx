@@ -18,7 +18,7 @@ import {
   Upload, File, Download, Trash2, Play, Map, AlertTriangle, 
   CheckCircle2, XCircle, Clock, Eye, Info, Zap, ChevronUp, ChevronDown,
   Search, Filter, ChevronLeft, ChevronRight, MoreHorizontal, Edit, 
-  RefreshCw, CheckSquare, FileText, BarChart3
+  RefreshCw, CheckSquare, FileText, BarChart3, MapPin, X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -83,7 +83,8 @@ export default function DeforestationMonitoring() {
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult[]>([]);
   const [filteredResults, setFilteredResults] = useState<AnalysisResult[]>([]);
   const [, setLocation] = useLocation();
-  const [showMapViewer, setShowMapViewer] = useState(false); // State for map viewer modal
+  const [showQuickPreview, setShowQuickPreview] = useState(false); // State for quick preview modal
+  const [showMapViewer, setShowMapViewer] = useState(false); // State for full map viewer modal
 
   // Table state
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,6 +98,7 @@ export default function DeforestationMonitoring() {
   const [selectedResults, setSelectedResults] = useState<number[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const quickPreviewMapRef = useRef<HTMLDivElement>(null); // Ref for the quick preview map
   const { toast } = useToast();
 
   // GeoJSON upload mutation with enhanced error handling
@@ -673,6 +675,7 @@ export default function DeforestationMonitoring() {
     setCountryFilter('all');
     setSelectedResults([]);
     setShowMapViewer(false); // Hide map viewer if cleared
+    setShowQuickPreview(false); // Hide quick preview if cleared
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -1173,12 +1176,367 @@ export default function DeforestationMonitoring() {
     setLocation('/edit-polygon');
   };
 
-  const handleViewInMap = (result: AnalysisResult) => {
-    localStorage.setItem('selectedPlotForMap', JSON.stringify(result));
-    // Set a flag to indicate that we are coming from the map viewer
-    localStorage.setItem('fromMapViewer', 'true');
+  const handleQuickPreview = () => {
+    setShowQuickPreview(true);
+  };
+
+  const handleViewFullMap = () => {
+    console.log('🗺️ Navigating to full map viewer');
     setLocation('/map-viewer');
   };
+
+
+  // Initialize Quick Preview Map
+  useEffect(() => {
+    if (!showQuickPreview || !quickPreviewMapRef.current || !analysisResults || analysisResults.length === 0) return;
+
+    const initializeQuickPreviewMap = () => {
+      if (!quickPreviewMapRef.current) return;
+
+      // Clear any existing content
+      quickPreviewMapRef.current.innerHTML = '';
+
+      // Create complete HTML content for quick preview map
+      const mapHtml = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+          <title>Quick Preview Map</title>
+          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+          <style>
+            body { margin: 0; background: white; }
+            #map { height: 100vh; width: 100%; }
+            .leaflet-popup-content-wrapper {
+              background: white !important;
+              border-radius: 8px !important;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+            }
+            .leaflet-control-zoom { margin-top: 50px !important; } /* Adjust zoom control position */
+            .leaflet-control-layers { margin-top: 10px !important; } /* Adjust layer control position */
+          </style>
+        </head>
+        <body>
+          <div id="map"></div>
+          <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+          <script>
+            const map = L.map('map', {
+              center: [0, 0],
+              zoom: 2,
+              zoomControl: true,
+              layers: [] // Initialize with no layers
+            });
+
+            // Base layers
+            const baseLayers = {
+              osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18,
+              }),
+              satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri, Maxar, GeoEye, Earthstar Geographics',
+                maxZoom: 18,
+              }),
+              terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenTopoMap contributors',
+                maxZoom: 18,
+              })
+            };
+
+            baseLayers.satellite.addTo(map); // Default to satellite
+
+            const analysisResults = ${JSON.stringify(analysisResults)};
+            const polygons = [];
+            const bounds = [];
+
+            // Add analysis result polygons
+            analysisResults.forEach(result => {
+              if (!result.geometry || !result.geometry.coordinates || !result.geometry.coordinates[0]) {
+                return;
+              }
+
+              const isHighRisk = result.overallRisk === 'HIGH';
+              const color = isHighRisk ? '#dc2626' : '#10b981'; // Red for high risk, green for low/medium
+
+              try {
+                let coordinates = result.geometry.coordinates;
+
+                if (result.geometry.type === 'Polygon') {
+                  // Ensure coordinates are in [lat, lng] format and remove Z if present
+                  coordinates = coordinates[0].map(coord => [coord[1], coord[0]]);
+                } else if (result.geometry.type === 'MultiPolygon') {
+                  coordinates = coordinates[0][0].map(coord => [coord[1], coord[0]]);
+                }
+
+                if (!coordinates || coordinates.length < 3) return; // Need at least 3 points for a polygon
+
+                const polygon = L.polygon(coordinates, {
+                  fillColor: color,
+                  color: color,
+                  weight: 2,
+                  opacity: 0.8,
+                  fillOpacity: 0.4
+                }).addTo(map);
+
+                const center = polygon.getBounds().getCenter();
+                const centerMarker = L.circleMarker(center, {
+                  radius: 8,
+                  fillColor: color,
+                  color: '#fff',
+                  weight: 2,
+                  opacity: 1,
+                  fillOpacity: 0.9
+                }).addTo(map);
+
+                const popupContent = \`
+                  <div style="padding: 12px; min-width: 250px;">
+                    <h3 style="margin: 0 0 8px 0; color: \${color}; font-size: 16px;">
+                      \${isHighRisk ? '⚠️ High Risk:' : '✅ Low/Medium Risk:'} \${result.plotId || 'Unknown Plot'}
+                    </h3>
+                    <div style="font-size: 13px; line-height: 1.4;">
+                      <p><strong>Country:</strong> \${result.country || 'Unknown'}</p>
+                      <p><strong>Area:</strong> \${result.area ? result.area.toFixed(2) + ' ha' : 'N/A'}</p>
+                      <p><strong>Risk Level:</strong> \${result.overallRisk || 'Unknown'}</p>
+                      <p><strong>Compliance:</strong> \${result.complianceStatus || 'Unknown'}</p>
+                      <p><strong>GFW Loss:</strong> \${result.gfwLossArea ? result.gfwLossArea.toFixed(3) + ' ha' : 'No data'}</p>
+                      <p><strong>JRC Loss:</strong> \${result.jrcLossArea ? result.jrcLossArea.toFixed(3) + ' ha' : 'No data'}</p>
+                      <p><strong>SBTN Loss:</strong> \${result.sbtnLossArea ? result.sbtnLossArea.toFixed(3) + ' ha' : 'No data'}</p>
+                    </div>
+                  </div>
+                \`;
+
+                polygon.bindPopup(popupContent);
+                centerMarker.bindPopup(popupContent);
+
+                polygons.push({ polygon, centerMarker, risk: result.overallRisk });
+                bounds.push(polygon.getBounds());
+              } catch (error) {
+                console.error('Error creating polygon for plot:', result.plotId, error);
+              }
+            });
+
+            // Fit map to show all polygons
+            if (bounds.length > 0) {
+              const group = new L.featureGroup([]);
+              bounds.forEach(bound => {
+                // L.rectangle is a simple way to add bounds to a featureGroup
+                const tempLayer = L.rectangle(bound);
+                group.addLayer(tempLayer);
+              });
+              map.fitBounds(group.getBounds().pad(0.1));
+            }
+
+            // --- Map Controls ---
+
+            // Base layer control
+            const baseLayerSelect = window.parent.document.getElementById('quick-base-layer');
+            if (baseLayerSelect) {
+              baseLayerSelect.addEventListener('change', function(e) {
+                Object.values(baseLayers).forEach(layer => {
+                  if (map.hasLayer(layer)) {
+                    map.removeLayer(layer);
+                  }
+                });
+                if (baseLayers[e.target.value]) {
+                  baseLayers[e.target.value].addTo(map);
+                }
+              });
+            }
+
+            // Risk filter control
+            const riskFilterSelect = window.parent.document.getElementById('quick-risk-filter');
+            if (riskFilterSelect) {
+              riskFilterSelect.addEventListener('change', function(e) {
+                const filterValue = e.target.value;
+                polygons.forEach(({polygon, centerMarker, risk}) => {
+                  let shouldShow = false;
+                  if (filterValue === 'all') {
+                    shouldShow = true;
+                  } else if (filterValue === 'high' && risk === 'HIGH') {
+                    shouldShow = true;
+                  } else if (filterValue === 'low' && (risk === 'LOW' || risk === 'MEDIUM')) { // Treat MEDIUM as low risk for filtering
+                    shouldShow = true;
+                  }
+
+                  if (shouldShow) {
+                    if (!map.hasLayer(polygon)) polygon.addTo(map);
+                    if (!map.hasLayer(centerMarker)) centerMarker.addTo(map);
+                  } else {
+                    if (map.hasLayer(polygon)) map.removeLayer(polygon);
+                    if (map.hasLayer(centerMarker)) map.removeLayer(centerMarker);
+                  }
+                });
+              });
+            }
+
+            // WDPA layer control
+            let wdpaLayer = null;
+            const wdpaCheckbox = window.parent.document.getElementById('quick-wdpa-layer');
+            if (wdpaCheckbox) {
+              wdpaCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  if (!wdpaLayer) {
+                    wdpaLayer = L.tileLayer('https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/MapServer/tile/{z}/{y}/{x}', {
+                      attribution: '© WDPA',
+                      opacity: 0.7,
+                      maxZoom: 12 // WDPA data might be less detailed at higher zooms
+                    });
+                  }
+                  wdpaLayer.addTo(map);
+                } else if (wdpaLayer && map.hasLayer(wdpaLayer)) {
+                  map.removeLayer(wdpaLayer);
+                }
+              });
+            }
+
+            // Peatland layer control
+            let peatlandLayer = null;
+            const peatlandCheckbox = window.parent.document.getElementById('quick-peatland-layer');
+            if (peatlandCheckbox) {
+              peatlandCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  if (!peatlandLayer) {
+                    // Example Peatland Data (replace with actual data source if available)
+                    const peatlandData = {
+                      type: "FeatureCollection",
+                      features: [
+                        {
+                          type: "Feature",
+                          properties: { Kubah_GBT: "Kubah Gambut", Province: "Riau" },
+                          geometry: {
+                            type: "Polygon",
+                            coordinates: [[[100.5, 0.0], [101.8, 0.0], [101.8, 1.2], [100.5, 1.2], [100.5, 0.0]]] // Example coords
+                          }
+                        },
+                        {
+                          type: "Feature", 
+                          properties: { Kubah_GBT: "Non Kubah Gambut", Province: "Jambi" },
+                          geometry: {
+                            type: "Polygon",
+                            coordinates: [[[102.0, -2.0], [104.2, -2.0], [104.2, -0.5], [102.0, -0.5], [102.0, -2.0]]] // Example coords
+                          }
+                        }
+                      ]
+                    };
+
+                    peatlandLayer = L.geoJSON(peatlandData, {
+                      style: function(feature) {
+                        const kubahGbt = feature.properties.Kubah_GBT;
+                        return {
+                          color: kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500', // Brown for Kubah Gambut, Orange for Non
+                          fillColor: kubahGbt === 'Kubah Gambut' ? '#8b4513' : '#ffa500',
+                          weight: 1,
+                          opacity: 0.8,
+                          fillOpacity: 0.6
+                        };
+                      },
+                      onEachFeature: function(feature, layer) {
+                        layer.bindPopup(`
+                          <div style="padding: 8px;">
+                            <h4>🏞️ Indonesian Peatland</h4>
+                            <p><strong>Type:</strong> ${feature.properties.Kubah_GBT}</p>
+                            <p><strong>Province:</strong> ${feature.properties.Province}</p>
+                          </div>
+                        `);
+                      }
+                    });
+                  }
+                  peatlandLayer.addTo(map);
+                } else if (peatlandLayer && map.hasLayer(peatlandLayer)) {
+                  map.removeLayer(peatlandLayer);
+                }
+              });
+            }
+
+            // Deforestation layer controls
+            let gfwLayer = null;
+            let jrcLayer = null;
+            let sbtnLayer = null;
+
+            const gfwCheckbox = window.parent.document.getElementById('quick-gfw-layer');
+            if (gfwCheckbox) {
+              gfwCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  if (!gfwLayer) {
+                    gfwLayer = L.tileLayer('https://tiles.globalforestwatch.org/umd_tree_cover_loss/v1.12/dynamic/{z}/{x}/{y}.png', {
+                      attribution: '© Global Forest Watch',
+                      opacity: 0.7,
+                      maxZoom: 12,
+                    });
+                  }
+                  gfwLayer.addTo(map);
+                } else if (gfwLayer && map.hasLayer(gfwLayer)) {
+                  map.removeLayer(gfwLayer);
+                }
+              });
+            }
+
+            const jrcCheckbox = window.parent.document.getElementById('quick-jrc-layer');
+            if (jrcCheckbox) {
+              jrcCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  if (!jrcLayer) {
+                    jrcLayer = L.tileLayer.wms('https://ies-ows.jrc.ec.europa.eu/iforce/gfc2020/wms.py', {
+                      layers: 'gfc2020_v2', // Check if this layer name is correct for JRC Forest Cover
+                      format: 'image/png',
+                      transparent: true,
+                      attribution: '© JRC European Commission',
+                      opacity: 0.7,
+                      maxZoom: 12,
+                    });
+                  }
+                  jrcLayer.addTo(map);
+                } else if (jrcLayer && map.hasLayer(jrcLayer)) {
+                  map.removeLayer(jrcLayer);
+                }
+              });
+            }
+
+            const sbtnCheckbox = window.parent.document.getElementById('quick-sbtn-layer');
+            if (sbtnCheckbox) {
+              sbtnCheckbox.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                  if (!sbtnLayer) {
+                    sbtnLayer = L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
+                      attribution: '© SBTN',
+                      opacity: 0.7,
+                      maxZoom: 12,
+                    });
+                  }
+                  sbtnLayer.addTo(map);
+                } else if (sbtnLayer && map.hasLayer(sbtnLayer)) {
+                  map.removeLayer(sbtnLayer);
+                }
+              });
+            }
+
+            console.log('Quick Preview Map loaded with', analysisResults.length, 'plots');
+          </script>
+        </body>
+        </html>
+      `;
+
+      // Create iframe and inject the HTML
+      const iframe = document.createElement('iframe');
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.srcdoc = mapHtml;
+
+      quickPreviewMapRef.current.appendChild(iframe);
+    };
+
+    // Initialize map with a small delay to ensure DOM is ready and parent document elements are accessible
+    const timer = setTimeout(initializeQuickPreviewMap, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (quickPreviewMapRef.current) {
+        quickPreviewMapRef.current.innerHTML = '';
+      }
+    };
+  }, [showQuickPreview, analysisResults]); // Re-run if showQuickPreview or analysisResults changes
 
 
   return (
@@ -1321,10 +1679,7 @@ export default function DeforestationMonitoring() {
               </div>
               <div className="flex gap-2">
                 <Button 
-                  onClick={() => {
-                    console.log('🗺️ Navigating to full map viewer');
-                    setLocation('/map-viewer');
-                  }}
+                  onClick={handleViewFullMap}
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                   data-testid="view-map-button"
                 >
@@ -1333,10 +1688,7 @@ export default function DeforestationMonitoring() {
                 </Button>
 
                 <Button 
-                  onClick={() => {
-                    console.log('👁️ Opening map preview modal');
-                    setShowMapViewer(true);
-                  }}
+                  onClick={handleQuickPreview}
                   variant="outline"
                   className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
                   data-testid="preview-map-button"
@@ -1667,14 +2019,146 @@ export default function DeforestationMonitoring() {
         )}
       </div>
 
-      {/* Map Viewer Modal */}
-      {showMapViewer && analysisResults.length > 0 && (
+      {/* Quick Preview Modal with Proper Map */}
+      {showQuickPreview && analysisResults && analysisResults.length > 0 && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="w-[90vw] h-[90vh] bg-white rounded-lg shadow-xl flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-lg">
+              <h3 className="text-lg font-semibold">Quick Preview - EUDR Analysis Results</h3>
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowQuickPreview(false); // Close preview
+                    setShowMapViewer(true);     // Open full map viewer
+                  }}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  View Full Map
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowQuickPreview(false)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Map Container */}
+            <div className="flex-1 relative">
+              <div 
+                ref={quickPreviewMapRef} 
+                className="w-full h-full"
+                id="quick-preview-map"
+              />
+
+              {/* Map Controls Overlay */}
+              <div className="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-4 min-w-[280px]">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Base Layer</label>
+                    <select 
+                      id="quick-base-layer"
+                      className="w-full p-2 border border-gray-300 rounded text-sm"
+                      defaultValue="satellite"
+                    >
+                      <option value="osm">OpenStreetMap</option>
+                      <option value="satellite">Satellite</option>
+                      <option value="terrain">Terrain</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Risk Filter</label>
+                    <select 
+                      id="quick-risk-filter"
+                      className="w-full p-2 border border-gray-300 rounded text-sm"
+                      defaultValue="all"
+                    >
+                      <option value="all">Show All</option>
+                      <option value="high">High Risk Only</option>
+                      <option value="low">Low/Medium Risk</option> {/* Adjusted option text */}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Protected Areas</label>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="quick-wdpa-layer" className="rounded" />
+                        <span className="text-sm">WDPA Protected Areas</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Indonesian Peatland</label>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="quick-peatland-layer" className="rounded" />
+                        <span className="text-sm">Indonesian Peatland Areas</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Deforestation Layers</label>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="quick-gfw-layer" className="rounded" />
+                        <span className="text-sm">GFW Forest Loss</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="quick-jrc-layer" className="rounded" />
+                        <span className="text-sm">JRC Forest Cover</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="quick-sbtn-layer" className="rounded" />
+                        <span className="text-sm">SBTN Natural Loss</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="absolute bottom-4 left-4 z-[1000] bg-white rounded-lg shadow-lg p-4 min-w-[250px]">
+                <h4 className="font-semibold text-blue-600 mb-3">🗺️ Map Legend</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-red-600 rounded-full animate-pulse"></div>
+                    <span className="text-sm">High Risk - Non-Compliant</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-600 rounded-full animate-pulse"></div>
+                    <span className="text-sm">Low/Medium Risk - Compliant</span> {/* Adjusted text */}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4" style="background-color: #d2b48c;"></div> {/* Example color for WDPA */}
+                    <span className="text-sm">WDPA Protected Areas</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-orange-500"></div> {/* Example color for Non Kubah Gambut */}
+                    <span className="text-sm">Non Kubah Gambut</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4" style="background-color: #8b4513;"></div> {/* Example color for Kubah Gambut */}
+                    <span className="text-sm">Kubah Gambut</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Map Viewer Modal */}
+      {showMapViewer && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div className="w-[95vw] h-[95vh] bg-white rounded-lg shadow-xl">
             <EudrMapViewer 
               analysisResults={analysisResults}
               onClose={() => {
-                console.log('❌ Closing map preview');
+                console.log('❌ Closing full map viewer');
                 setShowMapViewer(false);
               }}
             />
