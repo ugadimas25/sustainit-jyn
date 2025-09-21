@@ -721,25 +721,28 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
             function createWDPAGeoJSONLayer() {
               console.log('Loading WDPA GeoJSON layer...');
               
-              // Use bounding box to limit features for better performance
+              // Get a wider bounding box to capture more features
               const bounds = map.getBounds();
-              const bbox = \`\${bounds.getWest()},\${bounds.getSouth()},\${bounds.getEast()},\${bounds.getNorth()}\`;
+              const expandedBounds = bounds.pad(0.5); // Expand bounds by 50%
+              const bbox = \`\${expandedBounds.getWest()},\${expandedBounds.getSouth()},\${expandedBounds.getEast()},\${expandedBounds.getNorth()}\`;
               
-              // Enhanced query to get all IUCN categories, not just specific ones
+              // Enhanced query to get ALL IUCN categories without restrictions
               const query = new URLSearchParams({
-                where: '1=1', // Get all features, no category restriction
-                outFields: 'NAME,DESIG_ENG,IUCN_CAT,STATUS,WDPAID,GOV_TYPE,MANG_AUTH,REP_AREA',
+                where: "IUCN_CAT IS NOT NULL OR IUCN_CAT = '' OR IUCN_CAT = 'Not Assigned' OR IUCN_CAT = 'Not Reported'", // Include all categories including null/empty
+                outFields: '*', // Get all fields
                 geometry: bbox,
                 geometryType: 'esriGeometryEnvelope',
                 spatialRel: 'esriSpatialRelIntersects',
                 f: 'geojson',
                 returnGeometry: 'true',
-                maxRecordCount: 1000 // Increase limit to get more features
+                maxRecordCount: 2000, // Increase limit significantly
+                orderByFields: 'IUCN_CAT' // Order by category to see distribution
               });
 
               const url = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${query}\`;
               
               console.log('WDPA query URL:', url);
+              console.log('Query bbox:', bbox);
 
               return fetch(url)
                 .then(response => {
@@ -753,33 +756,68 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                   console.log('WDPA data received:', data);
                   
                   if (!data.features || data.features.length === 0) {
-                    console.warn('No WDPA features found in current map bounds');
-                    return null;
+                    console.warn('No WDPA features found in current map bounds - trying global query');
+                    
+                    // If no features found in bounds, try a global query for a sample
+                    const globalQuery = new URLSearchParams({
+                      where: '1=1',
+                      outFields: '*',
+                      f: 'geojson',
+                      returnGeometry: 'true',
+                      maxRecordCount: 100,
+                      orderByFields: 'REP_AREA DESC' // Get largest areas first
+                    });
+                    
+                    const globalUrl = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${globalQuery}\`;
+                    console.log('Trying global WDPA query:', globalUrl);
+                    
+                    return fetch(globalUrl).then(resp => resp.json());
                   }
 
                   console.log(\`Found \${data.features.length} WDPA features\`);
                   
-                  // Log categories found to debug
-                  const categoriesFound = new Set();
+                  // Enhanced category analysis
+                  const categoryStats = {};
+                  const uniqueCategories = new Set();
+                  
                   data.features.forEach(feature => {
                     const cat = feature.properties.IUCN_CAT || 'Not Assigned';
-                    categoriesFound.add(cat);
+                    const cleanCat = cat.toString().trim() || 'Empty';
+                    uniqueCategories.add(cleanCat);
+                    categoryStats[cleanCat] = (categoryStats[cleanCat] || 0) + 1;
                   });
-                  console.log('IUCN Categories found:', Array.from(categoriesFound));
+                  
+                  console.log('IUCN Categories found:', Array.from(uniqueCategories));
+                  console.log('Category distribution:', categoryStats);
+                  
+                  return data;
 
                   const layer = L.geoJSON(data, {
                     style: function(feature) {
-                      const iucnCategory = feature.properties.IUCN_CAT || 'Not Assigned';
-                      const color = wdpaColors[iucnCategory] || wdpaColors['Not Assigned'];
+                      const iucnCategory = (feature.properties.IUCN_CAT || 'Not Assigned').toString().trim();
+                      let color = wdpaColors[iucnCategory];
                       
-                      console.log(\`Styling feature \${feature.properties.NAME} with category \${iucnCategory} and color \${color}\`);
+                      // Handle various category formats and fallbacks
+                      if (!color) {
+                        // Try exact matches for common variations
+                        if (iucnCategory.includes('Ia')) color = wdpaColors['Ia'];
+                        else if (iucnCategory.includes('Ib')) color = wdpaColors['Ib'];
+                        else if (iucnCategory.includes('II')) color = wdpaColors['II'];
+                        else if (iucnCategory.includes('III')) color = wdpaColors['III'];
+                        else if (iucnCategory.includes('IV')) color = wdpaColors['IV'];
+                        else if (iucnCategory.includes('V')) color = wdpaColors['V'];
+                        else if (iucnCategory.includes('VI')) color = wdpaColors['VI'];
+                        else color = wdpaColors['Not Assigned'] || '#cccccc';
+                      }
+                      
+                      console.log(\`Styling feature \${feature.properties.NAME || 'Unknown'} with category "\${iucnCategory}" and color \${color}\`);
                       
                       return {
                         color: color,
                         fillColor: color,
-                        weight: 2,
-                        opacity: 0.8,
-                        fillOpacity: 0.4,
+                        weight: 1.5,
+                        opacity: 0.9,
+                        fillOpacity: 0.5,
                         className: \`wdpa-\${iucnCategory?.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'unknown'}\`
                       };
                     },
@@ -1172,19 +1210,31 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 if (!wdpaLayer && !wdpaTileLayer) {
                   console.log('Creating new WDPA layer...');
                   
-                  // Prioritize GeoJSON layer for better category visibility
+                  // Show loading indicator
                   console.log('🔄 Loading WDPA GeoJSON layer for detailed categories...');
+                  
                   createWDPAGeoJSONLayer().then(geoLayer => {
-                    if (geoLayer) {
+                    if (geoLayer && geoLayer.getLayers().length > 0) {
                       wdpaLayer = geoLayer;
                       geoLayer.addTo(map);
-                      console.log('✅ WDPA GeoJSON layer loaded successfully');
+                      console.log(\`✅ WDPA GeoJSON layer loaded successfully with \${geoLayer.getLayers().length} features\`);
                       
-                      // Force map refresh
+                      // Force map refresh and fit bounds if features exist
                       map.invalidateSize();
                       
+                      // Optionally fit bounds to show WDPA features
+                      try {
+                        const bounds = geoLayer.getBounds();
+                        if (bounds.isValid()) {
+                          console.log('📍 Fitting map to WDPA features bounds');
+                          map.fitBounds(bounds, { padding: [20, 20] });
+                        }
+                      } catch (e) {
+                        console.log('Could not fit bounds to WDPA features:', e.message);
+                      }
+                      
                     } else {
-                      console.log('🔄 GeoJSON failed, trying tile layer as fallback...');
+                      console.log('🔄 GeoJSON returned no features, trying tile layer as fallback...');
                       
                       // Fallback to tile layer
                       createWDPALayer().then(layer => {
@@ -1193,13 +1243,21 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                           layer.addTo(map);
                           console.log('✅ WDPA tile layer added as fallback');
                           
-                          // Add error handling for tiles
+                          // Add enhanced error handling for tiles
                           layer.on('tileerror', function(e) {
-                            console.error('❌ WDPA tile error:', e);
+                            console.error('❌ WDPA tile error:', e.error?.message || e);
                           });
                           
                           layer.on('tileload', function(e) {
-                            console.log('🔄 WDPA tile loaded:', e.coords);
+                            console.log('✅ WDPA tile loaded successfully:', e.coords);
+                          });
+                          
+                          layer.on('loading', function() {
+                            console.log('🔄 WDPA tiles loading...');
+                          });
+                          
+                          layer.on('load', function() {
+                            console.log('✅ All WDPA tiles loaded');
                           });
                           
                         } else {
@@ -1210,7 +1268,18 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                     }
                   }).catch(error => {
                     console.error('❌ Error in WDPA layer creation:', error);
-                    alert('Error loading WDPA layer: ' + error.message);
+                    console.log('🔄 Trying tile layer due to GeoJSON error...');
+                    
+                    // Try tile layer as backup when GeoJSON fails
+                    createWDPALayer().then(layer => {
+                      if (layer) {
+                        wdpaTileLayer = layer;
+                        layer.addTo(map);
+                        console.log('✅ WDPA tile layer added after GeoJSON failure');
+                      } else {
+                        alert('Error loading WDPA layer: ' + error.message);
+                      }
+                    });
                   });
                 } else {
                   // Layer already exists, just add to map
@@ -1226,7 +1295,7 @@ export function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) 
                 // Remove both possible layer types
                 if (wdpaLayer && map.hasLayer(wdpaLayer)) {
                   map.removeLayer(wdpaLayer);
-                  console.log('✅ WDPA layer removed from map');
+                  console.log('✅ WDPA GeoJSON layer removed from map');
                 }
                 if (wdpaTileLayer && map.hasLayer(wdpaTileLayer)) {
                   map.removeLayer(wdpaTileLayer);
