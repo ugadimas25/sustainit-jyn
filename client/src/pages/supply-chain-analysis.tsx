@@ -431,13 +431,13 @@ export default function SupplyChainAnalysis() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
+              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-semibold text-white">
                   3
                 </div>
                 <div>
-                  <p className="font-medium text-orange-900">Legality Compliance</p>
-                  <p className="text-sm text-orange-700">Verify legal compliance and regulatory requirements</p>
+                  <p className="font-medium text-blue-900">Legality Compliance</p>
+                  <p className="text-sm text-blue-700">Verify legal compliance and regulatory requirements</p>
                 </div>
               </div>
               
