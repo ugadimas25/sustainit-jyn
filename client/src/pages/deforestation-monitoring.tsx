@@ -33,6 +33,9 @@ interface AnalysisResult {
   jrcLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
   sbtnLoss: 'LOW' | 'MEDIUM' | 'HIGH' | 'UNKNOWN';
   highRiskDatasets: string[];
+  gfwLossArea?: number;
+  jrcLossArea?: number;
+  sbtnLossArea?: number;
   geometry?: any;
 }
 
@@ -154,6 +157,9 @@ export default function DeforestationMonitoring() {
           jrcLoss: result.jrcLoss || 'UNKNOWN',
           sbtnLoss: result.sbtnLoss || 'UNKNOWN',
           highRiskDatasets: result.highRiskDatasets || [],
+          gfwLossArea: Number(result.gfwLossArea) || 0,
+          jrcLossArea: Number(result.jrcLossArea) || 0,
+          sbtnLossArea: Number(result.sbtnLossArea) || 0,
           geometry: result.geometry // This contains the actual polygon coordinates
         }));
 
@@ -189,6 +195,9 @@ export default function DeforestationMonitoring() {
               jrcLoss: props.jrc_loss?.jrc_loss_area > 0 ? 'TRUE' : 'FALSE',
               sbtnLoss: props.sbtn_loss?.sbtn_loss_area > 0 ? 'TRUE' : 'FALSE',
               highRiskDatasets: props.overall_compliance?.high_risk_datasets || [],
+              gfwLossArea: parseFloat(props.gfw_loss?.gfw_loss_area || '0'),
+              jrcLossArea: parseFloat(props.jrc_loss?.jrc_loss_area || '0'),
+              sbtnLossArea: parseFloat(props.sbtn_loss?.sbtn_loss_area || '0'),
               geometry: feature.geometry
             };
           });
@@ -538,7 +547,17 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  const getLossBadge = (loss: string) => {
+  const getLossBadge = (loss: string, lossArea?: number) => {
+    // Check if we have actual loss area data
+    if (lossArea !== undefined && lossArea !== null) {
+      if (lossArea > 0) {
+        return <Badge className="bg-red-100 text-red-800">{lossArea.toFixed(2)} ha</Badge>;
+      } else {
+        return <Badge className="bg-green-100 text-green-800">0 ha</Badge>;
+      }
+    }
+
+    // Fallback to original logic for backward compatibility
     switch (loss.toUpperCase()) {
       case 'TRUE':
       case 'HIGH':
@@ -1045,13 +1064,13 @@ export default function DeforestationMonitoring() {
                           {getComplianceBadge(result.complianceStatus)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getLossBadge(result.gfwLoss)}
+                          {getLossBadge(result.gfwLoss, result.gfwLossArea)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getLossBadge(result.jrcLoss)}
+                          {getLossBadge(result.jrcLoss, result.jrcLossArea)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          {getLossBadge(result.sbtnLoss)}
+                          {getLossBadge(result.sbtnLoss, result.sbtnLossArea)}
                         </td>
                       </tr>
                       );
