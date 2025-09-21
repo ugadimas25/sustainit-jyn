@@ -850,7 +850,7 @@ export default function DeforestationMonitoring() {
 
           // Clear the flags after use
           localStorage.removeItem('shouldShowResultsTable');
-          localStorage.removeItem('refreshTableAfterEdit');
+          localStorage.removeItem('refreshAfterEdit');
           localStorage.removeItem('fromMapViewer');
         }
       } catch (error) {
@@ -859,7 +859,7 @@ export default function DeforestationMonitoring() {
         localStorage.removeItem('currentAnalysisResults');
         localStorage.removeItem('hasRealAnalysisData');
         localStorage.removeItem('shouldShowResultsTable');
-        localStorage.removeItem('refreshTableAfterEdit');
+        localStorage.removeItem('refreshAfterEdit');
         localStorage.removeItem('fromMapViewer');
       }
     } else if (!shouldRestoreResults) {
@@ -1859,111 +1859,6 @@ export default function DeforestationMonitoring() {
                     >
                       <CheckSquare className="h-4 w-4" />
                       Verify Data (Single)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={async () => {
-                        if (selectedResults.length === 0) return;
-                        
-                        toast({
-                          title: "Revalidating Analysis",
-                          description: `Revalidating ${selectedResults.length} selected plots...`,
-                        });
-
-                        for (const selectedIndex of selectedResults) {
-                          const selectedResult = filteredResults[selectedIndex];
-                          if (selectedResult) {
-                            await handleRevalidation(selectedResult.plotId);
-                          }
-                        }
-                      }}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      Revalidate Analysis ({selectedResults.length})
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        if (selectedResults.length === 1) {
-                          const selectedIndex = selectedResults[0];
-                          const selectedResult = filteredResults[selectedIndex];
-                          if (selectedResult && selectedResult.geometry) {
-                            localStorage.setItem('selectedPolygonForVisualization', JSON.stringify(selectedResult));
-                            setLocation('/map-viewer');
-                          }
-                        } else {
-                          // For multiple selection, store all selected plots
-                          const selectedPlots = selectedResults.map(index => filteredResults[index]).filter(Boolean);
-                          if (selectedPlots.length > 0) {
-                            localStorage.setItem('selectedPlotsForVisualization', JSON.stringify(selectedPlots));
-                            setLocation('/map-viewer');
-                          }
-                        }
-                      }}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <MapPin className="h-4 w-4" />
-                      View on Map ({selectedResults.length})
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        if (selectedResults.length === 0) return;
-
-                        const selectedPlots = selectedResults.map(index => filteredResults[index]).filter(Boolean);
-                        
-                        if (selectedPlots.length === 1) {
-                          // Single plot report
-                          const plot = selectedPlots[0];
-                          const plotData = {
-                            plotId: plot.plotId,
-                            country: plot.country,
-                            area: plot.area,
-                            riskLevel: plot.overallRisk,
-                            complianceStatus: plot.complianceStatus,
-                            gfwLoss: plot.gfwLossArea || 0,
-                            jrcLoss: plot.jrcLossArea || 0,
-                            sbtnLoss: plot.sbtnLossArea || 0
-                          };
-                          
-                          const reportContent = JSON.stringify(plotData, null, 2);
-                          const blob = new Blob([reportContent], { type: 'application/json' });
-                          const url = URL.createObjectURL(blob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          link.download = `plot-report-${plot.plotId}.json`;
-                          link.click();
-                          URL.revokeObjectURL(url);
-                        } else {
-                          // Multiple plots report
-                          const reportsData = selectedPlots.map(plot => ({
-                            plotId: plot.plotId,
-                            country: plot.country,
-                            area: plot.area,
-                            riskLevel: plot.overallRisk,
-                            complianceStatus: plot.complianceStatus,
-                            gfwLoss: plot.gfwLossArea || 0,
-                            jrcLoss: plot.jrcLossArea || 0,
-                            sbtnLoss: plot.sbtnLossArea || 0
-                          }));
-                          
-                          const reportContent = JSON.stringify(reportsData, null, 2);
-                          const blob = new Blob([reportContent], { type: 'application/json' });
-                          const url = URL.createObjectURL(blob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          link.download = `multiple-plots-report-${selectedPlots.length}-plots.json`;
-                          link.click();
-                          URL.revokeObjectURL(url);
-                        }
-                        
-                        toast({
-                          title: "Report Downloaded",
-                          description: `Analysis report for ${selectedResults.length} plot(s) has been downloaded.`,
-                        });
-                      }}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Download Report ({selectedResults.length})
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
