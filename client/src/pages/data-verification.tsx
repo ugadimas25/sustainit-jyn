@@ -45,6 +45,8 @@ export default function DataVerification() {
 
   // Selected polygon data
   const [selectedPolygon, setSelectedPolygon] = useState<AnalysisResult | null>(null);
+  const [selectedPolygons, setSelectedPolygons] = useState<AnalysisResult[]>([]);
+  const [isMultipleVerification, setIsMultipleVerification] = useState(false);
   const [detailPanelExpanded, setDetailPanelExpanded] = useState(true);
   const [mapType, setMapType] = useState<'Terrain' | 'Satellite' | 'Silver' | 'UAV'>('Satellite');
 
@@ -53,43 +55,81 @@ export default function DataVerification() {
   const [selectedTiffFile, setSelectedTiffFile] = useState<string | null>(null);
   const [isLoadingTiff, setIsLoadingTiff] = useState(false);
 
-  // Load selected polygon from localStorage
+  // Load selected polygon(s) from localStorage
   useEffect(() => {
-    // Load polygon data from localStorage
-    const storedData = localStorage.getItem('selectedPolygonForVerification');
-    if (storedData) {
+    // Try to load multiple polygons first
+    const multipleData = localStorage.getItem('selectedPolygonsForVerification');
+    if (multipleData) {
       try {
-        const polygonData = JSON.parse(storedData);
-        console.log('Loaded polygon data for verification:', polygonData);
-        setSelectedPolygon(polygonData);
+        const polygonsData = JSON.parse(multipleData);
+        console.log('Loaded multiple polygons data for verification:', polygonsData);
+        setSelectedPolygons(polygonsData);
+        setIsMultipleVerification(true);
+        
+        // For multiple verification, set the first polygon as primary for form display
+        if (polygonsData.length > 0) {
+          setSelectedPolygon(polygonsData[0]);
+        }
 
         // Set current date and time as defaults
         const now = new Date();
         const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        const plotIds = polygonsData.map((p: AnalysisResult) => p.plotId).join(', ');
         setFormData(prev => ({
           ...prev,
           updatedDate: localDateTime,
           updatedTime: now.toTimeString().slice(0, 5),
-          assessedBy: 'Current User', // Default assessor
-          assessment: `Initial verification assessment for plot ${polygonData.plotId}`
+          assessedBy: 'Current User',
+          assessment: `Batch verification assessment for plots: ${plotIds}`
         }));
       } catch (error) {
-        console.error('Error parsing stored polygon data:', error);
+        console.error('Error parsing multiple polygons data:', error);
         toast({
           title: "Data Loading Error",
-          description: "Failed to load polygon data. Redirecting to spatial analysis.",
+          description: "Failed to load polygons data. Redirecting to spatial analysis.",
           variant: "destructive",
         });
         setLocation('/spatial-analysis');
       }
     } else {
-      // No data found, redirect back
-      toast({
-        title: "No Data Selected",
-        description: "Please select a polygon from the spatial analysis page first.",
-        variant: "destructive",
-      });
-      setLocation('/spatial-analysis');
+      // Try single polygon fallback
+      const singleData = localStorage.getItem('selectedPolygonForVerification');
+      if (singleData) {
+        try {
+          const polygonData = JSON.parse(singleData);
+          console.log('Loaded single polygon data for verification:', polygonData);
+          setSelectedPolygon(polygonData);
+          setSelectedPolygons([polygonData]);
+          setIsMultipleVerification(false);
+
+          // Set current date and time as defaults
+          const now = new Date();
+          const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+          setFormData(prev => ({
+            ...prev,
+            updatedDate: localDateTime,
+            updatedTime: now.toTimeString().slice(0, 5),
+            assessedBy: 'Current User',
+            assessment: `Initial verification assessment for plot ${polygonData.plotId}`
+          }));
+        } catch (error) {
+          console.error('Error parsing single polygon data:', error);
+          toast({
+            title: "Data Loading Error",
+            description: "Failed to load polygon data. Redirecting to spatial analysis.",
+            variant: "destructive",
+          });
+          setLocation('/spatial-analysis');
+        }
+      } else {
+        // No data found, redirect back
+        toast({
+          title: "No Data Selected",
+          description: "Please select polygon(s) from the spatial analysis page first.",
+          variant: "destructive",
+        });
+        setLocation('/spatial-analysis');
+      }
     }
   }, [setLocation, toast]);
 
@@ -123,7 +163,7 @@ export default function DataVerification() {
 
   // Initialize map
   useEffect(() => {
-    if (!selectedPolygon || !mapRef.current) return;
+    if ((!selectedPolygon && selectedPolygons.length === 0) || !mapRef.current) return;
 
     const initializeMap = async () => {
       try {
@@ -212,33 +252,70 @@ export default function DataVerification() {
           tiffOverlay.bindTooltip('UAV TIFF Data Overlay', { permanent: false });
         }
 
-        // Add polygon if geometry exists
-        if (selectedPolygon.geometry?.coordinates) {
-          const coordinates = selectedPolygon.geometry.coordinates[0];
-          const leafletCoords = coordinates.map((coord: number[]) => [coord[1], coord[0]]); // Convert to [lat, lng]
-
-          // Create polygon
-          const polygon = L.polygon(leafletCoords, {
-            fillColor: '#FFD700',
-            color: '#FFD700',
-            weight: 3,
-            fillOpacity: 0.6,
-            opacity: 1
-          }).addTo(map);
-
-          // Add center marker
-          const center = polygon.getBounds().getCenter();
-          const centerMarker = L.marker(center, {
-            icon: L.divIcon({
-              html: '<div style="background: #FFD700; border: 2px solid white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"><span style="color: white; font-weight: bold; font-size: 12px;">📍</span></div>',
-              className: 'custom-marker',
-              iconSize: [20, 20],
-              iconAnchor: [10, 10]
-            })
-          }).addTo(map);
-
-          // Fit map to polygon bounds
-          map.fitBounds(polygon.getBounds(), { padding: [50, 50] });
+        // Add polygons - handle both single and multiple
+        const polygonsToRender = selectedPolygons.length > 0 ? selectedPolygons : (selectedPolygon ? [selectedPolygon] : []);
+        
+        if (polygonsToRender.length > 0) {
+          const polygonLayers: any[] = [];
+          const bounds = L.latLngBounds([]);
+          
+          // Color palette for multiple polygons
+          const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF'];
+          
+          polygonsToRender.forEach((polygon, index) => {
+            if (polygon.geometry?.coordinates) {
+              const coordinates = polygon.geometry.coordinates[0];
+              const leafletCoords = coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+              
+              // Use different colors for multiple polygons
+              const color = colors[index % colors.length];
+              
+              // Create polygon
+              const leafletPolygon = L.polygon(leafletCoords, {
+                fillColor: color,
+                color: color,
+                weight: 3,
+                fillOpacity: isMultipleVerification ? 0.4 : 0.6,
+                opacity: 1
+              }).addTo(map);
+              
+              // Add popup with plot information
+              const popupContent = `
+                <div class="p-3 min-w-[200px]">
+                  <h3 class="font-semibold text-lg mb-2">${polygon.plotId}</h3>
+                  <div class="space-y-1 text-sm">
+                    <p><strong>Country:</strong> ${polygon.country}</p>
+                    <p><strong>Area:</strong> ${polygon.area} ha</p>
+                    <p><strong>Risk:</strong> <span class="font-medium text-${polygon.overallRisk === 'HIGH' ? 'red' : polygon.overallRisk === 'MEDIUM' ? 'yellow' : 'green'}-600">${polygon.overallRisk}</span></p>
+                    <p><strong>Status:</strong> <span class="font-medium">${polygon.complianceStatus}</span></p>
+                  </div>
+                </div>
+              `;
+              leafletPolygon.bindPopup(popupContent);
+              
+              // Add center marker for multiple polygons
+              if (isMultipleVerification) {
+                const center = leafletPolygon.getBounds().getCenter();
+                const centerMarker = L.marker(center, {
+                  icon: L.divIcon({
+                    html: `<div style="background: ${color}; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;"><span style="color: white; font-weight: bold; font-size: 10px;">${index + 1}</span></div>`,
+                    className: 'custom-marker',
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                  })
+                }).addTo(map);
+                centerMarker.bindTooltip(polygon.plotId, { permanent: false, direction: 'top' });
+              }
+              
+              polygonLayers.push(leafletPolygon);
+              bounds.extend(leafletPolygon.getBounds());
+            }
+          });
+          
+          // Fit map to all polygon bounds
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [50, 50] });
+          }
         }
 
       } catch (error) {
@@ -253,15 +330,16 @@ export default function DataVerification() {
         mapInstanceRef.current.remove();
       }
     };
-  }, [selectedPolygon, mapType, selectedTiffFile]);
+  }, [selectedPolygon, selectedPolygons, isMultipleVerification, mapType, selectedTiffFile]);
 
   const handleCancel = () => {
     localStorage.removeItem('selectedPolygonForVerification');
+    localStorage.removeItem('selectedPolygonsForVerification');
     setLocation('/spatial-analysis');
   };
 
   const generateVerificationPDF = async () => {
-    if (!verificationContentRef.current || !selectedPolygon) return false;
+    if (!verificationContentRef.current || (selectedPolygons.length === 0 && !selectedPolygon)) return false;
 
     try {
       // Hide UI elements that shouldn't be in PDF
@@ -301,7 +379,9 @@ export default function DataVerification() {
 
       // Generate filename
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-      const filename = `data-verification-${selectedPolygon.plotId}-${timestamp}.pdf`;
+      const filename = isMultipleVerification 
+        ? `data-verification-batch-${selectedPolygons.length}-plots-${timestamp}.pdf`
+        : `data-verification-${selectedPolygon?.plotId || 'unknown'}-${timestamp}.pdf`;
 
       // Download PDF
       pdf.save(filename);
@@ -336,7 +416,9 @@ export default function DataVerification() {
       if (pdfGenerated) {
         toast({
           title: "Verification Confirmed",
-          description: `Plot ${selectedPolygon?.plotId} verification PDF has been generated and downloaded.`,
+          description: isMultipleVerification 
+            ? `Batch verification PDF for ${selectedPolygons.length} plots has been generated and downloaded.`
+            : `Plot ${selectedPolygon?.plotId} verification PDF has been generated and downloaded.`,
           variant: "default",
         });
       } else {
@@ -349,6 +431,7 @@ export default function DataVerification() {
 
       // Clear storage and redirect
       localStorage.removeItem('selectedPolygonForVerification');
+      localStorage.removeItem('selectedPolygonsForVerification');
       setLocation('/spatial-analysis');
 
     } catch (error) {
@@ -368,7 +451,7 @@ export default function DataVerification() {
     }));
   };
 
-  if (!selectedPolygon) {
+  if (!selectedPolygon && selectedPolygons.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -383,10 +466,13 @@ export default function DataVerification() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b p-6 text-center">
         <h1 className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
-          Capture Polygon?
+          {isMultipleVerification ? `Capture ${selectedPolygons.length} Polygons?` : 'Capture Polygon?'}
         </h1>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Please confirm that this is the correct polygon to proceed with core data collection.
+          {isMultipleVerification 
+            ? `Please confirm that these are the correct polygons to proceed with core data collection.`
+            : 'Please confirm that this is the correct polygon to proceed with core data collection.'
+          }
         </p>
       </div>
 
@@ -463,7 +549,7 @@ export default function DataVerification() {
               >
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Detail information
+                    {isMultipleVerification ? `Selected Plots (${selectedPolygons.length})` : 'Detail Information'}
                   </CardTitle>
                   {detailPanelExpanded ? 
                     <ChevronUp className="h-4 w-4" /> : 
@@ -473,29 +559,83 @@ export default function DataVerification() {
               </CardHeader>
 
               {detailPanelExpanded && (
-                <CardContent className="pt-0 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Plot ID</span>
-                    <span className="text-sm font-medium">{selectedPolygon.plotId}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Country</span>
-                    <span className="text-sm font-medium">{selectedPolygon.country}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Area</span>
-                    <span className="text-sm font-medium">{selectedPolygon.area}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Overall Risk</span>
-                    <span className={`text-sm font-medium ${
-                      selectedPolygon.overallRisk === 'HIGH' ? 'text-red-600' :
-                      selectedPolygon.overallRisk === 'MEDIUM' ? 'text-yellow-600' :
-                      'text-green-600'
-                    }`}>
-                      {selectedPolygon.overallRisk}
-                    </span>
-                  </div>
+                <CardContent className="pt-0">
+                  {isMultipleVerification ? (
+                    // Multiple polygons display
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {selectedPolygons.map((polygon, index) => (
+                        <div key={polygon.plotId} className="p-3 border rounded-lg bg-gray-50 dark:bg-gray-700 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                              #{index + 1} {polygon.plotId}
+                            </span>
+                            <Badge variant={polygon.overallRisk === 'HIGH' ? 'destructive' : polygon.overallRisk === 'MEDIUM' ? 'default' : 'secondary'}>
+                              {polygon.overallRisk}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Country:</span>
+                              <span className="ml-1 font-medium">{polygon.country}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Area:</span>
+                              <span className="ml-1 font-medium">{polygon.area} ha</span>
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                              <Badge className="ml-1" variant={polygon.complianceStatus === 'COMPLIANT' ? 'secondary' : 'destructive'}>
+                                {polygon.complianceStatus}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {/* Summary */}
+                      <div className="border-t pt-3 mt-3">
+                        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                          <div>Total Plots: <span className="font-medium">{selectedPolygons.length}</span></div>
+                          <div>High Risk: <span className="font-medium text-red-600">{selectedPolygons.filter(p => p.overallRisk === 'HIGH').length}</span></div>
+                          <div>Medium Risk: <span className="font-medium text-yellow-600">{selectedPolygons.filter(p => p.overallRisk === 'MEDIUM').length}</span></div>
+                          <div>Low Risk: <span className="font-medium text-green-600">{selectedPolygons.filter(p => p.overallRisk === 'LOW').length}</span></div>
+                          <div>Non-Compliant: <span className="font-medium text-red-600">{selectedPolygons.filter(p => p.complianceStatus === 'NON-COMPLIANT').length}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : selectedPolygon ? (
+                    // Single polygon display
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Plot ID</span>
+                        <span className="text-sm font-medium">{selectedPolygon.plotId}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Country</span>
+                        <span className="text-sm font-medium">{selectedPolygon.country}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Area</span>
+                        <span className="text-sm font-medium">{selectedPolygon.area}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Overall Risk</span>
+                        <span className={`text-sm font-medium ${
+                          selectedPolygon.overallRisk === 'HIGH' ? 'text-red-600' :
+                          selectedPolygon.overallRisk === 'MEDIUM' ? 'text-yellow-600' :
+                          'text-green-600'
+                        }`}>
+                          {selectedPolygon.overallRisk}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Compliance</span>
+                        <Badge variant={selectedPolygon.complianceStatus === 'COMPLIANT' ? 'secondary' : 'destructive'}>
+                          {selectedPolygon.complianceStatus}
+                        </Badge>
+                      </div>
+                    </div>
+                  ) : null}
 
                   {/* Show UAV TIFF status when UAV mode is active */}
                   {mapType === 'UAV' && (
