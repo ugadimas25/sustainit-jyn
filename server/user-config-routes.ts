@@ -30,7 +30,7 @@ const router = Router();
 // Get all organizations (system admin only)
 router.get('/organizations', 
   requireAuth,
-  requireSystemAdmin,
+  requirePermission(PERMISSIONS.ORGANIZATION_MANAGEMENT.module, PERMISSIONS.ORGANIZATION_MANAGEMENT.actions.VIEW),
   auditMiddleware('organization'),
   async (req: Request, res: Response) => {
     try {
@@ -46,7 +46,7 @@ router.get('/organizations',
 // Get organization by ID
 router.get('/organizations/:id', 
   requireAuth,
-  requirePermission(PERMISSIONS.ORGANIZATION.module, PERMISSIONS.ORGANIZATION.actions.VIEW),
+  requirePermission(PERMISSIONS.ORGANIZATION_MANAGEMENT.module, PERMISSIONS.ORGANIZATION_MANAGEMENT.actions.VIEW),
   async (req: Request, res: Response) => {
     try {
       const organization = await storage.getOrganization(req.params.id);
@@ -64,7 +64,7 @@ router.get('/organizations/:id',
 // Create organization (system admin only)
 router.post('/organizations', 
   requireAuth,
-  requireSystemAdmin,
+  requirePermission(PERMISSIONS.ORGANIZATION_MANAGEMENT.module, PERMISSIONS.ORGANIZATION_MANAGEMENT.actions.CREATE),
   auditMiddleware('organization'),
   async (req: Request, res: Response) => {
     try {
@@ -86,7 +86,7 @@ router.post('/organizations',
 // Update organization
 router.put('/organizations/:id', 
   requireAuth,
-  requirePermission(PERMISSIONS.ORGANIZATION.module, PERMISSIONS.ORGANIZATION.actions.UPDATE),
+  requirePermission(PERMISSIONS.ORGANIZATION_MANAGEMENT.module, PERMISSIONS.ORGANIZATION_MANAGEMENT.actions.UPDATE),
   auditMiddleware('organization'),
   async (req: Request, res: Response) => {
     try {
@@ -112,7 +112,7 @@ router.put('/organizations/:id',
 // Delete organization (system admin only)
 router.delete('/organizations/:id', 
   requireAuth,
-  requireSystemAdmin,
+  requirePermission(PERMISSIONS.ORGANIZATION_MANAGEMENT.module, PERMISSIONS.ORGANIZATION_MANAGEMENT.actions.DELETE),
   auditMiddleware('organization'),
   async (req: Request, res: Response) => {
     try {
@@ -724,6 +724,113 @@ router.get('/audit-logs/:entityType/:entityId',
     } catch (error) {
       console.error('Error fetching entity audit logs:', error);
       res.status(500).json({ error: 'Failed to fetch entity audit logs' });
+    }
+  }
+);
+
+// ==================
+// ADMIN DASHBOARD ENDPOINTS  
+// ==================
+
+// Get admin dashboard statistics
+router.get('/admin/stats',
+  requireAuth,
+  requireSystemAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const organizationId = req.authenticatedUser?.organizationId;
+      
+      // Get user statistics
+      const users = await storage.getUsersEnhanced();
+      const totalUsers = users.length;
+      const activeUsers = users.filter(u => u.status === 'active').length;
+      const lockedUsers = users.filter(u => u.status === 'locked').length;
+      const unverifiedUsers = users.filter(u => u.status === 'pending').length;
+      
+      // Get role statistics
+      const roles = await storage.getRoles(organizationId);
+      const totalRoles = roles.length;
+      const systemRoles = roles.filter(r => r.type === 'system').length;
+      const customRoles = roles.filter(r => r.type === 'custom').length;
+      
+      // Get other statistics
+      const organizations = await storage.getOrganizations();
+      const permissions = await storage.getPermissions();
+      const auditLogs = await storage.getAuditLogs(organizationId, { limit: 10 });
+      
+      const stats = {
+        totalUsers,
+        activeUsers,
+        lockedUsers,
+        unverifiedUsers,
+        totalRoles,
+        systemRoles,
+        customRoles,
+        totalOrganizations: organizations.length,
+        totalPermissions: permissions.length,
+        recentActivity: auditLogs.length
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ error: 'Failed to fetch admin statistics' });
+    }
+  }
+);
+
+// Get recent users for admin dashboard
+router.get('/admin/recent-users',
+  requireAuth,
+  requireSystemAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const users = await storage.getUsersEnhanced();
+      
+      // Sort by creation date and take the most recent 10
+      const recentUsers = users
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 10)
+        .map(u => ({
+          id: u.id,
+          username: u.username,
+          name: u.name || u.username,
+          email: u.email || '',
+          status: u.status,
+          createdAt: u.createdAt
+        }));
+      
+      res.json(recentUsers);
+    } catch (error) {
+      console.error('Error fetching recent users:', error);
+      res.status(500).json({ error: 'Failed to fetch recent users' });
+    }
+  }
+);
+
+// Get recent audit logs for admin dashboard
+router.get('/admin/recent-audits',
+  requireAuth,
+  requireSystemAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const organizationId = req.authenticatedUser?.organizationId;
+      const auditLogs = await storage.getAuditLogs(organizationId, { limit: 20 });
+      
+      // Transform to match frontend interface
+      const recentAudits = auditLogs.map(log => ({
+        id: log.id,
+        action: log.action,
+        resource: log.entityType,
+        userName: log.actorUserId, // This should ideally be resolved to username
+        timestamp: log.createdAt,
+        details: log.entityName || `${log.action} ${log.entityType}`
+      }));
+      
+      res.json(recentAudits);
+    } catch (error) {
+      console.error('Error fetching recent audits:', error);
+      res.status(500).json({ error: 'Failed to fetch recent audit logs' });
     }
   }
 );

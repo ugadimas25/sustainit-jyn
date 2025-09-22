@@ -318,13 +318,13 @@ export const PERMISSIONS = {
       ASSIGN: 'assign_permissions'
     }
   },
-  ORGANIZATION: {
-    module: 'organization',
+  ORGANIZATION_MANAGEMENT: {
+    module: 'organization_management',
     actions: {
-      VIEW: 'view',
-      UPDATE: 'update',
-      MANAGE_USERS: 'manage_users',
-      MANAGE_SETTINGS: 'manage_settings'
+      VIEW: 'view_organizations',
+      CREATE: 'create_organizations',
+      UPDATE: 'edit_organizations',
+      DELETE: 'delete_organizations'
     }
   },
   DEFORESTATION: {
