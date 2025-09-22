@@ -300,10 +300,12 @@ export default function DataVerification() {
               if (polygon.geometry.type === 'MultiPolygon') {
                 // For MultiPolygon, take the first polygon's outer ring
                 const firstPolygon = polygon.geometry.coordinates[0];
-                latlngs = firstPolygon[0].map((coord: number[]) => [coord[1], coord[0]]);
+                const outerRing = firstPolygon[0] as number[][];
+                latlngs = outerRing.map((coord) => [coord[1], coord[0]]);
               } else if (polygon.geometry.type === 'Polygon') {
                 // For Polygon, take the outer ring
-                latlngs = polygon.geometry.coordinates[0].map((coord: number[]) => [coord[1], coord[0]]);
+                const outerRing = polygon.geometry.coordinates[0] as number[][];
+                latlngs = outerRing.map((coord) => [coord[1], coord[0]]);
               } else {
                 return; // Skip unsupported geometry types
               }
@@ -467,20 +469,14 @@ export default function DataVerification() {
             console.log(`🔄 Updating ${polygon.plotId} status from ${originalStatus} to ${newStatus}`);
             
             try {
-              const response = await apiRequest(`/api/analysis-results/${polygon.plotId}/compliance-status`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  complianceStatus: newStatus,
-                  verificationType: formData.verificationType,
-                  assessedBy: formData.assessedBy,
-                  updatedDate: formData.updatedDate
-                }),
-                headers: {
-                  'Content-Type': 'application/json'
-                }
+              const response = await apiRequest(`/api/analysis-results/${polygon.plotId}/compliance-status`, 'PATCH', {
+                complianceStatus: newStatus,
+                verificationType: formData.verificationType,
+                assessedBy: formData.assessedBy,
+                updatedDate: formData.updatedDate
               });
 
-              if (response.success) {
+              if (response && response.success) {
                 console.log(`✅ Successfully updated ${polygon.plotId} compliance status`);
                 
                 // Update the polygon object with new status
