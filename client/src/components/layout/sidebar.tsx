@@ -80,12 +80,13 @@ export function Sidebar() {
   const [expandedModules, setExpandedModules] = useState<string[]>(['Supply Chain Analysis']);
   const { toast } = useToast();
 
-  // Temporarily bypass authentication for direct access
-  const user = { name: 'Demo User', role: 'admin' };
-  const logoutMutation = { mutate: () => {} };
+  // Use real authentication
+  const auth = useAuth();
+  const user = auth?.user;
+  const logoutMutation = auth?.logoutMutation || { mutate: () => {} };
 
-  // Check if user has admin permissions
-  const isAdmin = user?.role === 'admin' || user?.role === 'system_administrator';
+  // Check if user has admin permissions (check actual user role)
+  const isAdmin = user?.role === 'system_admin' || user?.role === 'organization_admin';
   
   // Combine navigation arrays
   const allNavigation = isAdmin ? [...navigation, ...adminNavigation] : navigation;

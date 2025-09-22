@@ -370,7 +370,7 @@ async function seedUserConfigurationData() {
       ]
     };
 
-    const createdPermissions = {};
+    const createdPermissions: Record<string, any> = {};
     const existingPermissions = await storage.getPermissions();
     
     for (const [module, permissions] of Object.entries(modulePermissions)) {
@@ -384,7 +384,7 @@ async function seedUserConfigurationData() {
             module,
             action: perm.action,
             description: perm.description,
-            resourceType: '*'
+            resource: '*'
           });
           createdPermissions[`${module}.${perm.action}`] = newPerm;
         } else {
@@ -398,12 +398,12 @@ async function seedUserConfigurationData() {
     // 3. Create default roles with appropriate permissions
     const defaultRoles = [
       {
-        name: 'System Administrator',
+        name: 'system_admin',
         description: 'Full system access with all permissions',
         permissions: Object.keys(createdPermissions) // All permissions
       },
       {
-        name: 'Organization Administrator', 
+        name: 'organization_admin', 
         description: 'Organization-level administration',
         permissions: [
           'user_management.view_users', 'user_management.create_users',
@@ -461,7 +461,7 @@ async function seedUserConfigurationData() {
     ];
 
     const existingRoles = await storage.getRoles();
-    const createdRoles = {};
+    const createdRoles: Record<string, any> = {};
 
     for (const roleData of defaultRoles) {
       const existing = existingRoles.find(r => r.name === roleData.name);
@@ -471,7 +471,7 @@ async function seedUserConfigurationData() {
           name: roleData.name,
           description: roleData.description,
           organizationId: systemOrg.id,
-          isSystemRole: roleData.name === 'System Administrator'
+          isSystem: roleData.name === 'system_admin'
         });
         
         // Assign permissions to role
@@ -492,25 +492,24 @@ async function seedUserConfigurationData() {
 
     // 4. Assign System Administrator role to default admin user
     const adminUser = await storage.getUserByUsername("kpneudr");
-    if (adminUser && createdRoles['System Administrator']) {
+    if (adminUser && createdRoles['system_admin']) {
       // Add user to system organization
       const existingUserOrg = await storage.getUserOrganizations(adminUser.id);
       if (existingUserOrg.length === 0) {
         await storage.addUserToOrganization({
           userId: adminUser.id,
-          organizationId: systemOrg.id,
-          role: 'admin'
+          organizationId: systemOrg.id
         });
       }
       
       // Assign system admin role
-      const existingUserRoles = await storage.getUserRoles(adminUser.id);
-      const hasAdminRole = existingUserRoles.some(r => r.roleId === createdRoles['System Administrator'].id);
+      const existingUserRoles = await storage.getUserRoles(adminUser.id, systemOrg.id);
+      const hasAdminRole = existingUserRoles.some(r => r.roleId === createdRoles['system_admin'].id);
       
       if (!hasAdminRole) {
         await storage.assignUserRole({
           userId: adminUser.id,
-          roleId: createdRoles['System Administrator'].id,
+          roleId: createdRoles['system_admin'].id,
           organizationId: systemOrg.id
         });
         console.log("✓ Assigned System Administrator role to default admin user");

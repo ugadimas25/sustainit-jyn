@@ -190,23 +190,29 @@ export default function UserManagement() {
       username: editingUser.username,
       email: editingUser.email,
       name: editingUser.name,
-      role: editingUser.role || "",
+      role: editingUser.role || "none",
       status: editingUser.status,
     } : {
       username: "",
       email: "",
       name: "",
       password: "",
-      role: "",
+      role: "none",
       status: "active",
     },
   });
 
   const onSubmit = async (data: CreateUserData | EditUserData) => {
+    // Normalize role: convert "none" to undefined to omit the field
+    const normalizedData = {
+      ...data,
+      role: data.role === "none" ? undefined : data.role,
+    };
+
     if (editingUser) {
-      updateUserMutation.mutate({ id: editingUser.id, data });
+      updateUserMutation.mutate({ id: editingUser.id, data: normalizedData });
     } else {
-      createUserMutation.mutate(data as CreateUserData);
+      createUserMutation.mutate(normalizedData as CreateUserData);
     }
   };
 
@@ -216,7 +222,7 @@ export default function UserManagement() {
       username: user.username,
       email: user.email,
       name: user.name,
-      role: user.role || "",
+      role: user.role || "none",
       status: user.status,
     });
     setUserDialogOpen(true);
@@ -344,7 +350,7 @@ export default function UserManagement() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">No Role</SelectItem>
+                          <SelectItem value="none">No Role</SelectItem>
                           {roles.map((role) => (
                             <SelectItem key={role.id} value={role.id}>
                               {role.name}
