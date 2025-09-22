@@ -1167,13 +1167,14 @@ export default function DeforestationMonitoring() {
     // Show actual loss area values when available
     if (lossArea !== undefined && lossArea !== null && !isNaN(Number(lossArea))) {
       const areaValue = Number(lossArea);
+      const deforestationThreshold = 0.001; // 1 m² threshold - same as server
 
-      if (areaValue > 0) {
+      if (areaValue > deforestationThreshold) {
         // Show values less than 0.01 ha in yellow, others in red
         if (areaValue < 0.01) {
-          return <Badge className="bg-yellow-100 text-yellow-800">{areaValue.toFixed(3)} ha</Badge>;
+          return <Badge className="bg-yellow-100 text-yellow-800">{areaValue.toFixed(4)} ha</Badge>;
         } else {
-          return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(3)} ha</Badge>;
+          return <Badge className="bg-red-100 text-red-800">{areaValue.toFixed(4)} ha</Badge>;
         }
       } else {
         return <Badge className="bg-green-100 text-green-800">0.000 ha</Badge>;
