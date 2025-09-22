@@ -86,10 +86,7 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
-  });
+  // Note: /api/user endpoint moved to server/routes.ts with role derivation logic
 }
 
 // Middleware to check if user is authenticated
