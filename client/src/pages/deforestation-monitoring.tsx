@@ -1274,6 +1274,24 @@ export default function DeforestationMonitoring() {
     setLocation('/data-verification');
   };
 
+  const handleMultipleVerification = (selectedPolygons: AnalysisResult[]) => {
+    if (selectedPolygons.length === 0) return;
+
+    // Store multiple polygon data for verification
+    localStorage.setItem('selectedPolygonsForVerification', JSON.stringify(selectedPolygons));
+
+    const plotCount = selectedPolygons.length;
+    const plotIds = selectedPolygons.map(p => p.plotId).join(', ');
+    
+    toast({
+      title: "Starting Verification",
+      description: `Redirecting to verification page for ${plotCount} plot${plotCount > 1 ? 's' : ''}: ${plotIds}`,
+    });
+
+    // Navigate to data verification page
+    setLocation('/data-verification');
+  };
+
   const handleEdit = (resultId: string) => {
     const result = analysisResults.find(r => r.plotId === resultId);
     if (!result) return;
@@ -1956,25 +1974,16 @@ export default function DeforestationMonitoring() {
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={() => {
-                        if (selectedResults.length === 1) {
-                          const selectedIndex = selectedResults[0];
-                          const selectedResult = filteredResults[selectedIndex];
-                          if (selectedResult) {
-                            handleVerification(selectedResult.plotId);
-                          }
-                        } else {
-                          toast({
-                            title: "Single Selection Required", 
-                            description: "Please select only one plot to verify.",
-                            variant: "default"
-                          });
+                        if (selectedResults.length >= 1) {
+                          const selectedPolygons = selectedResults.map(index => filteredResults[index]);
+                          handleMultipleVerification(selectedPolygons);
                         }
                       }}
                       className="flex items-center gap-2 cursor-pointer"
-                      disabled={selectedResults.length !== 1}
+                      disabled={selectedResults.length === 0}
                     >
                       <CheckSquare className="h-4 w-4" />
-                      Verify Data (Single)
+                      Verify Data ({selectedResults.length} plot{selectedResults.length > 1 ? 's' : ''})
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       onClick={handleSaveAction}
