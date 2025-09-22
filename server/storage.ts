@@ -2749,7 +2749,10 @@ export class DatabaseStorage implements IStorage {
 
   async checkUserPermission(userId: string, organizationId: string, module: string, action: string, resource?: string): Promise<boolean> {
     try {
+      console.log(`🔍 DEBUG: checkUserPermission called with:`, {userId, organizationId, module, action, resource});
+      
       const effectivePermissions = await this.getUserEffectivePermissions(userId, organizationId);
+      console.log(`🔍 DEBUG: getUserEffectivePermissions returned:`, JSON.stringify(effectivePermissions, null, 2));
       
       // Filter permissions that match the requested module and action
       const matchingPermissions = effectivePermissions.filter(p => 
@@ -2757,15 +2760,19 @@ export class DatabaseStorage implements IStorage {
         p.action === action && 
         (!resource || !p.resource || p.resource === resource)
       );
+      console.log(`🔍 DEBUG: matchingPermissions:`, JSON.stringify(matchingPermissions, null, 2));
 
       // If any deny permission exists, access is denied
       const hasDenyPermission = matchingPermissions.some(p => p.effect === 'deny');
+      console.log(`🔍 DEBUG: hasDenyPermission:`, hasDenyPermission);
       if (hasDenyPermission) {
         return false;
       }
 
       // If any allow permission exists, access is granted
       const hasAllowPermission = matchingPermissions.some(p => p.effect === 'allow');
+      console.log(`🔍 DEBUG: hasAllowPermission:`, hasAllowPermission);
+      console.log(`🔍 DEBUG: checkUserPermission returning:`, hasAllowPermission);
       return hasAllowPermission;
     } catch (error) {
       console.error("Error checking user permission:", error);
