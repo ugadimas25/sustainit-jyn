@@ -288,12 +288,248 @@ async function seedSampleData() {
   }
 }
 
+async function seedUserConfigurationData() {
+  try {
+    console.log("🔧 Seeding User Configuration data...");
+    
+    // 1. Create default system organization
+    const existingOrgs = await storage.getOrganizations();
+    let systemOrg;
+    
+    if (existingOrgs.length === 0) {
+      systemOrg = await storage.createOrganization({
+        name: "KPN System Administration",
+        slug: "kpn-system-admin",
+        description: "Default system administration organization for KPN EUDR Platform",
+        settings: {
+          features: ["user_management", "compliance_monitoring", "supply_chain", "analytics"],
+          branding: { 
+            primaryColor: "#2563eb",
+            logo: null
+          },
+          security: {
+            passwordPolicy: { minLength: 8, requireNumbers: true },
+            sessionTimeout: 3600
+          }
+        },
+        status: "active"
+      });
+      console.log("✓ Created default system organization");
+    } else {
+      systemOrg = existingOrgs[0];
+    }
+
+    // 2. Create system permissions organized by modules
+    const modulePermissions = {
+      'user_management': [
+        { action: 'view_users', description: 'View user accounts' },
+        { action: 'create_users', description: 'Create new user accounts' },
+        { action: 'edit_users', description: 'Edit existing user accounts' },
+        { action: 'delete_users', description: 'Delete user accounts' },
+        { action: 'manage_roles', description: 'Assign/remove user roles' },
+        { action: 'lock_unlock_users', description: 'Lock/unlock user accounts' }
+      ],
+      'organization_management': [
+        { action: 'view_organizations', description: 'View organizations' },
+        { action: 'create_organizations', description: 'Create new organizations' },
+        { action: 'edit_organizations', description: 'Edit organization settings' },
+        { action: 'delete_organizations', description: 'Delete organizations' }
+      ],
+      'role_permission_management': [
+        { action: 'view_roles', description: 'View roles and permissions' },
+        { action: 'create_roles', description: 'Create new roles' },
+        { action: 'edit_roles', description: 'Edit existing roles' },
+        { action: 'delete_roles', description: 'Delete roles' },
+        { action: 'assign_permissions', description: 'Assign permissions to roles' }
+      ],
+      'dashboard_analytics': [
+        { action: 'view_dashboard', description: 'Access main dashboard' },
+        { action: 'view_analytics', description: 'View analytics and reports' },
+        { action: 'export_data', description: 'Export dashboard data' }
+      ],
+      'supply_chain_management': [
+        { action: 'view_suppliers', description: 'View supplier information' },
+        { action: 'create_suppliers', description: 'Add new suppliers' },
+        { action: 'edit_suppliers', description: 'Edit supplier information' },
+        { action: 'delete_suppliers', description: 'Remove suppliers' },
+        { action: 'manage_traceability', description: 'Manage supply chain traceability' }
+      ],
+      'compliance_monitoring': [
+        { action: 'view_compliance', description: 'View compliance status' },
+        { action: 'create_assessments', description: 'Create compliance assessments' },
+        { action: 'edit_assessments', description: 'Edit existing assessments' },
+        { action: 'generate_reports', description: 'Generate compliance reports' },
+        { action: 'view_audit_logs', description: 'Access audit trail' }
+      ],
+      'deforestation_monitoring': [
+        { action: 'view_plots', description: 'View plot information' },
+        { action: 'create_plots', description: 'Add new plots' },
+        { action: 'edit_plots', description: 'Edit plot data' },
+        { action: 'analyze_deforestation', description: 'Run deforestation analysis' },
+        { action: 'view_alerts', description: 'View deforestation alerts' }
+      ]
+    };
+
+    const createdPermissions = {};
+    const existingPermissions = await storage.getPermissions();
+    
+    for (const [module, permissions] of Object.entries(modulePermissions)) {
+      for (const perm of permissions) {
+        const existing = existingPermissions.find(p => 
+          p.module === module && p.action === perm.action
+        );
+        
+        if (!existing) {
+          const newPerm = await storage.createPermission({
+            module,
+            action: perm.action,
+            description: perm.description,
+            resourceType: '*'
+          });
+          createdPermissions[`${module}.${perm.action}`] = newPerm;
+        } else {
+          createdPermissions[`${module}.${perm.action}`] = existing;
+        }
+      }
+    }
+    
+    console.log(`✓ Created/verified ${Object.keys(createdPermissions).length} system permissions`);
+
+    // 3. Create default roles with appropriate permissions
+    const defaultRoles = [
+      {
+        name: 'System Administrator',
+        description: 'Full system access with all permissions',
+        permissions: Object.keys(createdPermissions) // All permissions
+      },
+      {
+        name: 'Organization Administrator', 
+        description: 'Organization-level administration',
+        permissions: [
+          'user_management.view_users', 'user_management.create_users',
+          'user_management.edit_users', 'user_management.manage_roles',
+          'role_permission_management.view_roles', 'role_permission_management.assign_permissions',
+          'dashboard_analytics.view_dashboard', 'dashboard_analytics.view_analytics',
+          'supply_chain_management.view_suppliers', 'supply_chain_management.create_suppliers',
+          'supply_chain_management.edit_suppliers', 'compliance_monitoring.view_compliance',
+          'compliance_monitoring.create_assessments', 'deforestation_monitoring.view_plots',
+          'deforestation_monitoring.create_plots', 'deforestation_monitoring.analyze_deforestation'
+        ]
+      },
+      {
+        name: 'User Manager',
+        description: 'User account management and basic operations',
+        permissions: [
+          'user_management.view_users', 'user_management.create_users',
+          'user_management.edit_users', 'user_management.manage_roles',
+          'dashboard_analytics.view_dashboard', 'supply_chain_management.view_suppliers',
+          'compliance_monitoring.view_compliance', 'deforestation_monitoring.view_plots'
+        ]
+      },
+      {
+        name: 'Supply Chain Manager',
+        description: 'Supply chain and traceability management',
+        permissions: [
+          'dashboard_analytics.view_dashboard', 'dashboard_analytics.view_analytics',
+          'supply_chain_management.view_suppliers', 'supply_chain_management.create_suppliers',
+          'supply_chain_management.edit_suppliers', 'supply_chain_management.manage_traceability',
+          'compliance_monitoring.view_compliance', 'compliance_monitoring.create_assessments',
+          'deforestation_monitoring.view_plots', 'deforestation_monitoring.create_plots',
+          'deforestation_monitoring.analyze_deforestation'
+        ]
+      },
+      {
+        name: 'Compliance Officer',
+        description: 'Compliance monitoring and assessment',
+        permissions: [
+          'dashboard_analytics.view_dashboard', 'dashboard_analytics.view_analytics',
+          'supply_chain_management.view_suppliers', 'compliance_monitoring.view_compliance',
+          'compliance_monitoring.create_assessments', 'compliance_monitoring.edit_assessments',
+          'compliance_monitoring.generate_reports', 'compliance_monitoring.view_audit_logs',
+          'deforestation_monitoring.view_plots', 'deforestation_monitoring.analyze_deforestation',
+          'deforestation_monitoring.view_alerts'
+        ]
+      },
+      {
+        name: 'Regular User',
+        description: 'Basic access with read permissions',
+        permissions: [
+          'dashboard_analytics.view_dashboard', 'supply_chain_management.view_suppliers',
+          'compliance_monitoring.view_compliance', 'deforestation_monitoring.view_plots'
+        ]
+      }
+    ];
+
+    const existingRoles = await storage.getRoles();
+    const createdRoles = {};
+
+    for (const roleData of defaultRoles) {
+      const existing = existingRoles.find(r => r.name === roleData.name);
+      
+      if (!existing) {
+        const newRole = await storage.createRole({
+          name: roleData.name,
+          description: roleData.description,
+          organizationId: systemOrg.id,
+          isSystemRole: roleData.name === 'System Administrator'
+        });
+        
+        // Assign permissions to role
+        const permissionIds = roleData.permissions
+          .map(permKey => createdPermissions[permKey]?.id)
+          .filter(id => id !== undefined);
+        
+        if (permissionIds.length > 0) {
+          await storage.setRolePermissions(newRole.id, permissionIds);
+        }
+        
+        createdRoles[roleData.name] = newRole;
+        console.log(`✓ Created role: ${roleData.name} with ${roleData.permissions.length} permissions`);
+      } else {
+        createdRoles[roleData.name] = existing;
+      }
+    }
+
+    // 4. Assign System Administrator role to default admin user
+    const adminUser = await storage.getUserByUsername("kpneudr");
+    if (adminUser && createdRoles['System Administrator']) {
+      // Add user to system organization
+      const existingUserOrg = await storage.getUserOrganizations(adminUser.id);
+      if (existingUserOrg.length === 0) {
+        await storage.addUserToOrganization({
+          userId: adminUser.id,
+          organizationId: systemOrg.id,
+          role: 'admin'
+        });
+      }
+      
+      // Assign system admin role
+      const existingUserRoles = await storage.getUserRoles(adminUser.id);
+      const hasAdminRole = existingUserRoles.some(r => r.roleId === createdRoles['System Administrator'].id);
+      
+      if (!hasAdminRole) {
+        await storage.assignUserRole({
+          userId: adminUser.id,
+          roleId: createdRoles['System Administrator'].id,
+          organizationId: systemOrg.id
+        });
+        console.log("✓ Assigned System Administrator role to default admin user");
+      }
+    }
+
+    console.log("✓ User Configuration seeding completed successfully");
+  } catch (error) {
+    console.error("Error seeding User Configuration data:", error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   await setupAuth(app);
   await initializeDefaultUser();
   await seedSampleData();
+  await seedUserConfigurationData();
 
   // Voice Assistant Routes
   app.use('/api/voice-assistant', voiceAssistantRouter);
