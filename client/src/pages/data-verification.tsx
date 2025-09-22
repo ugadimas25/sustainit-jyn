@@ -295,9 +295,18 @@ export default function DataVerification() {
             try {
               if (!polygon.geometry?.coordinates) return;
 
-              // Convert coordinates to Leaflet format [lat, lng]
-              const coords = polygon.geometry.coordinates[0][0] || polygon.geometry.coordinates[0];
-              const latlngs = (coords as number[][]).map((coord: number[]) => [coord[1], coord[0]]);
+              // Handle MultiPolygon and Polygon geometries properly
+              let latlngs: number[][];
+              if (polygon.geometry.type === 'MultiPolygon') {
+                // For MultiPolygon, take the first polygon's outer ring
+                const firstPolygon = polygon.geometry.coordinates[0];
+                latlngs = firstPolygon[0].map((coord: number[]) => [coord[1], coord[0]]);
+              } else if (polygon.geometry.type === 'Polygon') {
+                // For Polygon, take the outer ring
+                latlngs = polygon.geometry.coordinates[0].map((coord: number[]) => [coord[1], coord[0]]);
+              } else {
+                return; // Skip unsupported geometry types
+              }
 
               const color = colors[index % colors.length];
               const leafletPolygon = L.polygon(latlngs, {
