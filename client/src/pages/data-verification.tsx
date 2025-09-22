@@ -469,14 +469,16 @@ export default function DataVerification() {
             console.log(`🔄 Updating ${polygon.plotId} status from ${originalStatus} to ${newStatus}`);
             
             try {
-              const response = await apiRequest(`/api/analysis-results/${polygon.plotId}/compliance-status`, 'PATCH', {
+              const response = await apiRequest('PATCH', `/api/analysis-results/${polygon.plotId}/compliance-status`, {
                 complianceStatus: newStatus,
                 verificationType: formData.verificationType,
                 assessedBy: formData.assessedBy,
                 updatedDate: formData.updatedDate
               });
+              
+              const responseData = await response.json();
 
-              if (response && response.success) {
+              if (responseData && responseData.success) {
                 console.log(`✅ Successfully updated ${polygon.plotId} compliance status`);
                 
                 // Update the polygon object with new status
