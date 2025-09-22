@@ -662,9 +662,14 @@ export default function DataVerification() {
         });
       }
 
-      // Clear storage and redirect
+      // Clear storage and set flags for spatial analysis to show results
       localStorage.removeItem('selectedPolygonForVerification');
       localStorage.removeItem('selectedPolygonsForVerification');
+      
+      // Set flags to ensure spatial-analysis shows the results table after verification
+      localStorage.setItem('shouldShowTable', 'true');
+      localStorage.setItem('refreshAfterEdit', 'true');
+      
       setLocation('/spatial-analysis');
 
     } catch (error) {
