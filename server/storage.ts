@@ -38,7 +38,7 @@ import {
   auditLogs, type AuditLog, type InsertAuditLog
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql, inArray } from "drizzle-orm";
+import { eq, desc, and, or, sql, inArray, isNull } from "drizzle-orm";
 import MemoryStore from "memorystore";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
@@ -2691,7 +2691,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(
         eq(userRoles.userId, userId),
         eq(userRoles.organizationId, organizationId),
-        or(eq(userRoles.expiresAt, null), sql`${userRoles.expiresAt} > NOW()`)
+        or(isNull(userRoles.expiresAt), sql`${userRoles.expiresAt} > NOW()`)
       ));
       
       console.log(`🔍 DEBUG: Generated SQL query:`, query.toSQL());
