@@ -301,11 +301,21 @@ export const PERMISSIONS = {
   USER_MANAGEMENT: {
     module: 'user_management',
     actions: {
-      VIEW: 'view',
-      CREATE: 'create',
-      UPDATE: 'update',
-      DELETE: 'delete',
+      VIEW: 'view_users',
+      CREATE: 'create_users',
+      UPDATE: 'edit_users',
+      DELETE: 'delete_users',
       MANAGE_ROLES: 'manage_roles'
+    }
+  },
+  ROLE_PERMISSION_MANAGEMENT: {
+    module: 'role_permission_management',
+    actions: {
+      VIEW: 'view_roles',
+      CREATE: 'create_roles',
+      UPDATE: 'edit_roles',
+      DELETE: 'delete_roles',
+      ASSIGN: 'assign_permissions'
     }
   },
   ORGANIZATION: {

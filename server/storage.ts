@@ -2665,19 +2665,10 @@ export class DatabaseStorage implements IStorage {
   // Permission resolution and checking
   async getUserEffectivePermissions(userId: string, organizationId: string): Promise<{ module: string; action: string; resource?: string; effect: 'allow' | 'deny' }[]> {
     try {
-      console.log(`🔍 DEBUG: getUserEffectivePermissions called with userId: ${userId}, organizationId: ${organizationId}`);
-      
       const effectivePermissions: { module: string; action: string; resource?: string; effect: 'allow' | 'deny' }[] = [];
 
-      // First, check what user roles exist
-      const userRolesOnly = await db.select().from(userRoles).where(and(
-        eq(userRoles.userId, userId),
-        eq(userRoles.organizationId, organizationId)
-      ));
-      console.log(`🔍 DEBUG: userRolesOnly found:`, JSON.stringify(userRolesOnly, null, 2));
-
       // Get permissions from roles
-      const query = db.select({
+      const userRolesData = await db.select({
         roleId: userRoles.roleId,
         permissionId: rolePermissions.permissionId,
         effect: rolePermissions.effect,
@@ -2693,11 +2684,6 @@ export class DatabaseStorage implements IStorage {
         eq(userRoles.organizationId, organizationId),
         or(isNull(userRoles.expiresAt), sql`${userRoles.expiresAt} > NOW()`)
       ));
-      
-      console.log(`🔍 DEBUG: Generated SQL query:`, query.toSQL());
-      
-      const userRolesData = await query;
-      console.log(`🔍 DEBUG: userRolesData query result:`, JSON.stringify(userRolesData, null, 2));
 
       effectivePermissions.push(...userRolesData.map(p => ({
         module: p.module,
@@ -2763,10 +2749,7 @@ export class DatabaseStorage implements IStorage {
 
   async checkUserPermission(userId: string, organizationId: string, module: string, action: string, resource?: string): Promise<boolean> {
     try {
-      console.log(`🔍 DEBUG: checkUserPermission called with:`, {userId, organizationId, module, action, resource});
-      
       const effectivePermissions = await this.getUserEffectivePermissions(userId, organizationId);
-      console.log(`🔍 DEBUG: getUserEffectivePermissions returned:`, JSON.stringify(effectivePermissions, null, 2));
       
       // Filter permissions that match the requested module and action
       const matchingPermissions = effectivePermissions.filter(p => 
@@ -2774,19 +2757,15 @@ export class DatabaseStorage implements IStorage {
         p.action === action && 
         (!resource || !p.resource || p.resource === resource)
       );
-      console.log(`🔍 DEBUG: matchingPermissions:`, JSON.stringify(matchingPermissions, null, 2));
 
       // If any deny permission exists, access is denied
       const hasDenyPermission = matchingPermissions.some(p => p.effect === 'deny');
-      console.log(`🔍 DEBUG: hasDenyPermission:`, hasDenyPermission);
       if (hasDenyPermission) {
         return false;
       }
 
       // If any allow permission exists, access is granted
       const hasAllowPermission = matchingPermissions.some(p => p.effect === 'allow');
-      console.log(`🔍 DEBUG: hasAllowPermission:`, hasAllowPermission);
-      console.log(`🔍 DEBUG: checkUserPermission returning:`, hasAllowPermission);
       return hasAllowPermission;
     } catch (error) {
       console.error("Error checking user permission:", error);

@@ -322,7 +322,7 @@ router.post('/users/:id/unlock',
 // Get roles
 router.get('/roles', 
   requireAuth,
-  requirePermission(PERMISSIONS.USER_MANAGEMENT.module, PERMISSIONS.USER_MANAGEMENT.actions.VIEW),
+  requirePermission(PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.module, PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.actions.VIEW),
   async (req: Request, res: Response) => {
     try {
       const organizationId = req.authenticatedUser?.organizationId;
@@ -338,7 +338,7 @@ router.get('/roles',
 // Get role by ID
 router.get('/roles/:id', 
   requireAuth,
-  requirePermission(PERMISSIONS.USER_MANAGEMENT.module, PERMISSIONS.USER_MANAGEMENT.actions.VIEW),
+  requirePermission(PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.module, PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.actions.VIEW),
   async (req: Request, res: Response) => {
     try {
       const role = await storage.getRole(req.params.id);
@@ -356,7 +356,7 @@ router.get('/roles/:id',
 // Create role
 router.post('/roles', 
   requireAuth,
-  requirePermission(PERMISSIONS.USER_MANAGEMENT.module, PERMISSIONS.USER_MANAGEMENT.actions.MANAGE_ROLES),
+  requirePermission(PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.module, PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.actions.CREATE),
   auditMiddleware('role'),
   async (req: Request, res: Response) => {
     try {
@@ -378,7 +378,7 @@ router.post('/roles',
 // Update role
 router.put('/roles/:id', 
   requireAuth,
-  requirePermission(PERMISSIONS.USER_MANAGEMENT.module, PERMISSIONS.USER_MANAGEMENT.actions.MANAGE_ROLES),
+  requirePermission(PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.module, PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.actions.UPDATE),
   auditMiddleware('role'),
   async (req: Request, res: Response) => {
     try {
@@ -404,7 +404,7 @@ router.put('/roles/:id',
 // Delete role
 router.delete('/roles/:id', 
   requireAuth,
-  requirePermission(PERMISSIONS.USER_MANAGEMENT.module, PERMISSIONS.USER_MANAGEMENT.actions.MANAGE_ROLES),
+  requirePermission(PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.module, PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.actions.DELETE),
   auditMiddleware('role'),
   async (req: Request, res: Response) => {
     try {
@@ -439,7 +439,7 @@ router.delete('/roles/:id',
 // Set role permissions
 router.put('/roles/:id/permissions', 
   requireAuth,
-  requirePermission(PERMISSIONS.USER_MANAGEMENT.module, PERMISSIONS.USER_MANAGEMENT.actions.MANAGE_ROLES),
+  requirePermission(PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.module, PERMISSIONS.ROLE_PERMISSION_MANAGEMENT.actions.ASSIGN),
   auditMiddleware('role'),
   async (req: Request, res: Response) => {
     try {
