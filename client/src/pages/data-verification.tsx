@@ -254,32 +254,48 @@ export default function DataVerification() {
 
         // Add polygons - handle both single and multiple
         const polygonsToRender = selectedPolygons.length > 0 ? selectedPolygons : (selectedPolygon ? [selectedPolygon] : []);
-        
+
         if (polygonsToRender.length > 0) {
-          const polygonLayers: any[] = [];
           const bounds = L.latLngBounds([]);
-          
-          // Color palette for multiple polygons
           const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF'];
-          
+
+          const toLatLng = (c: any) => Array.isArray(c) && c.length >= 2 && isFinite(c[0]) && isFinite(c[1]) ? [c[1], c[0]] : null;
+
           polygonsToRender.forEach((polygon, index) => {
-            if (polygon.geometry?.coordinates) {
-              const coordinates = polygon.geometry.coordinates[0];
-              const leafletCoords = coordinates.map((coord: number[]) => [coord[1], coord[0]]);
-              
-              // Use different colors for multiple polygons
+            try {
+              const geom: any = polygon.geometry;
+              if (!geom?.type || !geom.coordinates) {
+                console.warn(`No geometry for polygon ${polygon.plotId}`);
+                return;
+              }
+
+              let latlngs: any;
+              if (geom.type === 'Polygon') {
+                const outer = (geom.coordinates?.[0] || []).map(toLatLng).filter(Boolean);
+                if (!outer.length) return;
+                latlngs = outer; // single ring
+              } else if (geom.type === 'MultiPolygon') {
+                // Build array of outer rings for each polygon in the multipolygon
+                const outerRings = (geom.coordinates as any[])
+                  .map(poly => (poly?.[0] || []).map(toLatLng).filter(Boolean))
+                  .filter((ring: any[]) => ring.length > 0);
+                if (!outerRings.length) return;
+                // Leaflet accepts MultiPolygon as array of rings; if only one, pass the ring directly
+                latlngs = outerRings.length === 1 ? outerRings[0] : outerRings;
+              } else {
+                console.warn(`Unsupported geometry type for ${polygon.plotId}: ${geom.type}`);
+                return;
+              }
+
               const color = colors[index % colors.length];
-              
-              // Create polygon
-              const leafletPolygon = L.polygon(leafletCoords, {
+              const leafletPolygon = L.polygon(latlngs, {
                 fillColor: color,
                 color: color,
                 weight: 3,
                 fillOpacity: isMultipleVerification ? 0.4 : 0.6,
                 opacity: 1
               }).addTo(map);
-              
-              // Add popup with plot information
+
               const popupContent = `
                 <div class="p-3 min-w-[200px]">
                   <h3 class="font-semibold text-lg mb-2">${polygon.plotId}</h3>
@@ -292,8 +308,7 @@ export default function DataVerification() {
                 </div>
               `;
               leafletPolygon.bindPopup(popupContent);
-              
-              // Add center marker for multiple polygons
+
               if (isMultipleVerification) {
                 const center = leafletPolygon.getBounds().getCenter();
                 const centerMarker = L.marker(center, {
@@ -306,13 +321,13 @@ export default function DataVerification() {
                 }).addTo(map);
                 centerMarker.bindTooltip(polygon.plotId, { permanent: false, direction: 'top' });
               }
-              
-              polygonLayers.push(leafletPolygon);
+
               bounds.extend(leafletPolygon.getBounds());
+            } catch (err) {
+              console.error(`Error rendering polygon ${polygon.plotId}:`, err);
             }
           });
-          
-          // Fit map to all polygon bounds
+
           if (bounds.isValid()) {
             map.fitBounds(bounds, { padding: [50, 50] });
           }

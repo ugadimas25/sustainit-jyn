@@ -53,10 +53,6 @@ localPort = 5000
 externalPort = 80
 exposeLocalhost = true
 
-[[ports]]
-localPort = 41729
-externalPort = 3001
-
 [agent]
 
 [objectStorage]
