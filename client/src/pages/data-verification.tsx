@@ -299,7 +299,7 @@ export default function DataVerification() {
               let latlngs: [number, number][];
               if (polygon.geometry.type === 'MultiPolygon') {
                 // For MultiPolygon, take the first polygon's outer ring
-                const firstPolygon = polygon.geometry.coordinates[0] as number[][];
+                const firstPolygon = polygon.geometry.coordinates[0] as number[][][];
                 const outerRing = firstPolygon[0] as number[][];
                 latlngs = outerRing.map((coord: number[]) => [coord[1], coord[0]] as [number, number]);
               } else if (polygon.geometry.type === 'Polygon') {

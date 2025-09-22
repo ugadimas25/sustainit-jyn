@@ -21,14 +21,182 @@ export const tenureTypeEnum = pgEnum("tenure_type", ["HGU", "HGB", "State Forest
 export const permitTypeEnum = pgEnum("permit_type", ["AMDAL", "UKL-UPL", "SPPL", "None Required"]);
 export const forestStatusEnum = pgEnum("forest_status", ["Ex-Forest Area", "Forest Area", "Non-Forest Area"]);
 
-// Users table for authentication
+// User Configuration Module Enums
+export const userStatusEnum = pgEnum("user_status", ["active", "inactive", "disabled", "pending"]);
+export const organizationStatusEnum = pgEnum("organization_status", ["active", "inactive", "suspended"]);
+export const groupStatusEnum = pgEnum("group_status", ["active", "inactive"]);
+export const permissionEffectEnum = pgEnum("permission_effect", ["allow", "deny"]);
+export const auditActionEnum = pgEnum("audit_action", ["create", "update", "delete", "login", "logout", "access_granted", "access_denied", "permission_changed", "role_assigned", "group_joined", "group_left"]);
+
+// Users table for authentication - Enhanced for RBAC
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").notNull().default("compliance_officer"),
+  role: text("role").notNull().default("compliance_officer"), // Legacy field, kept for backward compatibility
   name: text("name").notNull(),
-  email: text("email"),
+  email: text("email").unique(),
+  status: userStatusEnum("status").default("active").notNull(),
+  emailVerified: boolean("email_verified").default(false),
+  lastLoginAt: timestamp("last_login_at"),
+  failedLoginAttempts: integer("failed_login_attempts").default(0),
+  lockedUntil: timestamp("locked_until"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Organizations table for multi-tenant support
+export const organizations = pgTable("organizations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(), // URL-friendly identifier
+  description: text("description"),
+  status: organizationStatusEnum("status").default("active").notNull(),
+  settings: jsonb("settings").$type<{
+    features: string[];
+    branding?: { logo?: string; primaryColor?: string; };
+    security?: { passwordPolicy?: any; sessionTimeout?: number; };
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// User-Organization relationships for multi-tenant access
+export const userOrganizations = pgTable("user_organizations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  organizationId: varchar("organization_id").references(() => organizations.id).notNull(),
+  status: userStatusEnum("status").default("active").notNull(),
+  isDefault: boolean("is_default").default(false),
+  defaultRoleId: varchar("default_role_id"), // Will reference roles table
+  invitedBy: varchar("invited_by").references(() => users.id),
+  invitedAt: timestamp("invited_at"),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Roles table for RBAC
+export const roles = pgTable("roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar("organization_id").references(() => organizations.id), // NULL for global system roles
+  name: text("name").notNull(),
+  description: text("description"),
+  isSystem: boolean("is_system").default(false).notNull(), // System roles cannot be deleted
+  isDefault: boolean("is_default").default(false), // Default role for new users in org
+  metadata: jsonb("metadata").$type<{
+    color?: string;
+    icon?: string;
+    level?: number;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Permissions catalog for granular access control
+export const permissions = pgTable("permissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  module: text("module").notNull(), // e.g., "deforestation", "users", "reports"
+  resource: text("resource"), // Optional resource type within module
+  action: text("action").notNull(), // read, write, approve, delete, export
+  description: text("description").notNull(),
+  isSystem: boolean("is_system").default(true).notNull(),
+  metadata: jsonb("metadata").$type<{
+    scope?: "global" | "organization" | "group" | "self";
+    conditions?: any;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Role-Permission relationships
+export const rolePermissions = pgTable("role_permissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  roleId: varchar("role_id").references(() => roles.id).notNull(),
+  permissionId: varchar("permission_id").references(() => permissions.id).notNull(),
+  effect: permissionEffectEnum("effect").default("allow").notNull(),
+  conditions: jsonb("conditions"), // Optional conditions for the permission
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Groups table for organizing users
+export const groups = pgTable("groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar("organization_id").references(() => organizations.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  status: groupStatusEnum("status").default("active").notNull(),
+  parentGroupId: varchar("parent_group_id").references((): any => groups.id),
+  metadata: jsonb("metadata").$type<{
+    department?: string;
+    location?: string;
+    manager?: string;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Group membership
+export const groupMembers = pgTable("group_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  groupId: varchar("group_id").references(() => groups.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  role: text("role").default("member"), // member, admin, viewer
+  addedBy: varchar("added_by").references(() => users.id),
+  addedAt: timestamp("added_at").defaultNow().notNull(),
+});
+
+// Group-specific permissions (inheritable by members)
+export const groupPermissions = pgTable("group_permissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  groupId: varchar("group_id").references(() => groups.id).notNull(),
+  permissionId: varchar("permission_id").references(() => permissions.id).notNull(),
+  effect: permissionEffectEnum("effect").default("allow").notNull(),
+  conditions: jsonb("conditions"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Direct user permissions (fine-grained overrides)
+export const userPermissions = pgTable("user_permissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  organizationId: varchar("organization_id").references(() => organizations.id).notNull(),
+  permissionId: varchar("permission_id").references(() => permissions.id).notNull(),
+  effect: permissionEffectEnum("effect").default("allow").notNull(),
+  conditions: jsonb("conditions"),
+  grantedBy: varchar("granted_by").references(() => users.id),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// User-Role assignments
+export const userRoles = pgTable("user_roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  roleId: varchar("role_id").references(() => roles.id).notNull(),
+  organizationId: varchar("organization_id").references(() => organizations.id).notNull(),
+  assignedBy: varchar("assigned_by").references(() => users.id),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Audit logs for compliance and security
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar("organization_id").references(() => organizations.id),
+  actorUserId: varchar("actor_user_id").references(() => users.id),
+  action: auditActionEnum("action").notNull(),
+  entityType: text("entity_type").notNull(), // users, roles, groups, permissions
+  entityId: varchar("entity_id"), // ID of the affected entity
+  entityName: text("entity_name"), // Name/identifier for readability
+  before: jsonb("before"), // State before change
+  after: jsonb("after"), // State after change
+  success: boolean("success").default(true).notNull(),
+  reason: text("reason"), // Optional reason for the action
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  sessionId: text("session_id"),
+  correlationId: varchar("correlation_id"), // For tracking related actions
+  metadata: jsonb("metadata"), // Additional context
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -1618,4 +1786,190 @@ export const exportDataSchema = z.object({
   supplierSummaries: z.array(supplierSummarySchema),
   metrics: dashboardMetricsSchema,
   generatedAt: z.date(),
+});
+
+// =======================
+// USER CONFIGURATION MODULE SCHEMAS
+// =======================
+
+// Organizations
+export const insertOrganizationSchema = createInsertSchema(organizations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const selectOrganizationSchema = createInsertSchema(organizations);
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+export type Organization = typeof organizations.$inferSelect;
+
+// User Organizations
+export const insertUserOrganizationSchema = createInsertSchema(userOrganizations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertUserOrganization = z.infer<typeof insertUserOrganizationSchema>;
+export type UserOrganization = typeof userOrganizations.$inferSelect;
+
+// Roles
+export const insertRoleSchema = createInsertSchema(roles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const selectRoleSchema = createInsertSchema(roles);
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+export type Role = typeof roles.$inferSelect;
+
+// Permissions
+export const insertPermissionSchema = createInsertSchema(permissions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+export type Permission = typeof permissions.$inferSelect;
+
+// Role Permissions
+export const insertRolePermissionSchema = createInsertSchema(rolePermissions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertRolePermission = z.infer<typeof insertRolePermissionSchema>;
+export type RolePermission = typeof rolePermissions.$inferSelect;
+
+// Groups
+export const insertGroupSchema = createInsertSchema(groups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertGroup = z.infer<typeof insertGroupSchema>;
+export type Group = typeof groups.$inferSelect;
+
+// Group Members
+export const insertGroupMemberSchema = createInsertSchema(groupMembers).omit({
+  id: true,
+  addedAt: true,
+});
+export type InsertGroupMember = z.infer<typeof insertGroupMemberSchema>;
+export type GroupMember = typeof groupMembers.$inferSelect;
+
+// Group Permissions
+export const insertGroupPermissionSchema = createInsertSchema(groupPermissions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertGroupPermission = z.infer<typeof insertGroupPermissionSchema>;
+export type GroupPermission = typeof groupPermissions.$inferSelect;
+
+// User Permissions
+export const insertUserPermissionSchema = createInsertSchema(userPermissions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertUserPermission = z.infer<typeof insertUserPermissionSchema>;
+export type UserPermission = typeof userPermissions.$inferSelect;
+
+// User Roles
+export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
+export type UserRole = typeof userRoles.$inferSelect;
+
+// Audit Logs
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type AuditLog = typeof auditLogs.$inferSelect;
+
+// Enhanced Users (updated with new fields)
+export const insertUserSchemaEnhanced = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  failedLoginAttempts: true,
+  lockedUntil: true,
+  lastLoginAt: true,
+});
+export type InsertUserEnhanced = z.infer<typeof insertUserSchemaEnhanced>;
+export type UserEnhanced = typeof users.$inferSelect;
+
+// API Request/Response schemas for User Management
+export const createUserRequestSchema = z.object({
+  username: z.string().min(3).max(50),
+  email: z.string().email(),
+  name: z.string().min(1).max(100),
+  password: z.string().min(8),
+  organizationIds: z.array(z.string()).optional(),
+  roleIds: z.array(z.string()).optional(),
+});
+
+export const updateUserRequestSchema = createUserRequestSchema.partial().omit({ password: true }).extend({
+  status: z.enum(['active', 'inactive', 'disabled', 'pending']).optional(),
+  emailVerified: z.boolean().optional(),
+});
+
+export const createOrganizationRequestSchema = z.object({
+  name: z.string().min(1).max(100),
+  slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
+  description: z.string().optional(),
+  settings: z.object({
+    features: z.array(z.string()).default([]),
+    branding: z.object({
+      logo: z.string().optional(),
+      primaryColor: z.string().optional(),
+    }).optional(),
+    security: z.object({
+      passwordPolicy: z.any().optional(),
+      sessionTimeout: z.number().optional(),
+    }).optional(),
+  }).optional(),
+});
+
+export const createRoleRequestSchema = z.object({
+  name: z.string().min(1).max(50),
+  description: z.string().optional(),
+  organizationId: z.string().optional(),
+  permissionIds: z.array(z.string()).optional(),
+  metadata: z.object({
+    color: z.string().optional(),
+    icon: z.string().optional(),
+    level: z.number().optional(),
+  }).optional(),
+});
+
+export const createGroupRequestSchema = z.object({
+  name: z.string().min(1).max(50),
+  description: z.string().optional(),
+  organizationId: z.string(),
+  parentGroupId: z.string().optional(),
+  userIds: z.array(z.string()).optional(),
+  permissionIds: z.array(z.string()).optional(),
+  metadata: z.object({
+    department: z.string().optional(),
+    location: z.string().optional(),
+    manager: z.string().optional(),
+  }).optional(),
+});
+
+export const permissionCheckRequestSchema = z.object({
+  module: z.string(),
+  action: z.string(),
+  resource: z.string().optional(),
+  organizationId: z.string().optional(),
+});
+
+export const auditLogFilterSchema = z.object({
+  organizationId: z.string().optional(),
+  actorUserId: z.string().optional(),
+  action: z.array(z.enum(['create', 'update', 'delete', 'login', 'logout', 'access_granted', 'access_denied', 'permission_changed', 'role_assigned', 'group_joined', 'group_left'])).optional(),
+  entityType: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  limit: z.number().min(1).max(1000).default(50),
+  offset: z.number().min(0).default(0),
 });
