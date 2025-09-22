@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ChevronUp, ChevronDown, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -38,8 +39,9 @@ export default function DataVerification() {
   const [formData, setFormData] = useState({
     updatedDate: '',
     updatedTime: '',
-    assessment: '',
+    verificationType: '',
     assessedBy: '',
+    finalStatus: '',
     skipConfirmation: false
   });
 
@@ -704,7 +706,7 @@ export default function DataVerification() {
       <div className="bg-white dark:bg-gray-800 border-t p-6">
         <h2 className="text-lg font-semibold mb-4">Data Collection</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="space-y-2">
             <Label htmlFor="updated-date" className="text-sm font-medium">
               Updated date & time
@@ -733,21 +735,23 @@ export default function DataVerification() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assessment" className="text-sm font-medium">
-              Assessment
+            <Label htmlFor="verification-type" className="text-sm font-medium">
+              Verification Type
             </Label>
             <div className="relative">
-              <Input
-                id="assessment"
-                value={formData.assessment}
-                onChange={(e) => handleFormChange('assessment', e.target.value)}
-                placeholder="Name of assessment"
-                data-testid="input-assessment"
-                className="pdf-form-field"
-              />
+              <Select value={formData.verificationType} onValueChange={(value) => handleFormChange('verificationType', value)}>
+                <SelectTrigger className="pdf-form-field" data-testid="select-verification-type">
+                  <SelectValue placeholder="Select verification type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="High-Res Satellite Imagery">High-Res Satellite Imagery</SelectItem>
+                  <SelectItem value="UAV Imagery">UAV Imagery</SelectItem>
+                  <SelectItem value="Ground Truthing">Ground Truthing</SelectItem>
+                </SelectContent>
+              </Select>
               {/* Display value for PDF */}
               <div className="pdf-only absolute inset-0 flex items-center px-3 text-sm bg-white border rounded" style={{display: 'none'}}>
-                {formData.assessment}
+                {formData.verificationType}
               </div>
             </div>
           </div>
@@ -768,6 +772,27 @@ export default function DataVerification() {
               {/* Display value for PDF */}
               <div className="pdf-only absolute inset-0 flex items-center px-3 text-sm bg-white border rounded" style={{display: 'none'}}>
                 {formData.assessedBy}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="final-status" className="text-sm font-medium">
+              Final status
+            </Label>
+            <div className="relative">
+              <Select value={formData.finalStatus} onValueChange={(value) => handleFormChange('finalStatus', value)}>
+                <SelectTrigger className="pdf-form-field" data-testid="select-final-status">
+                  <SelectValue placeholder="Select final status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Compliant">Compliant</SelectItem>
+                  <SelectItem value="Non-Compliant">Non-Compliant</SelectItem>
+                </SelectContent>
+              </Select>
+              {/* Display value for PDF */}
+              <div className="pdf-only absolute inset-0 flex items-center px-3 text-sm bg-white border rounded" style={{display: 'none'}}>
+                {formData.finalStatus}
               </div>
             </div>
           </div>
