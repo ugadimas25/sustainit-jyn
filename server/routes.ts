@@ -1859,7 +1859,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User authentication routes
   app.get("/api/user", async (req, res) => {
     // Force fresh response - no caching
-    res.set('Cache-Control', 'no-store');
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+      'ETag': Math.random().toString() // Force unique response
+    });
     if (req.user) {
       try {
         const { password, ...userWithoutPassword } = req.user as any;
