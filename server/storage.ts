@@ -2677,7 +2677,7 @@ export class DatabaseStorage implements IStorage {
       console.log(`🔍 DEBUG: userRolesOnly found:`, JSON.stringify(userRolesOnly, null, 2));
 
       // Get permissions from roles
-      const userRolesData = await db.select({
+      const query = db.select({
         roleId: userRoles.roleId,
         permissionId: rolePermissions.permissionId,
         effect: rolePermissions.effect,
@@ -2694,6 +2694,9 @@ export class DatabaseStorage implements IStorage {
         or(eq(userRoles.expiresAt, null), sql`${userRoles.expiresAt} > NOW()`)
       ));
       
+      console.log(`🔍 DEBUG: Generated SQL query:`, query.toSQL());
+      
+      const userRolesData = await query;
       console.log(`🔍 DEBUG: userRolesData query result:`, JSON.stringify(userRolesData, null, 2));
 
       effectivePermissions.push(...userRolesData.map(p => ({
