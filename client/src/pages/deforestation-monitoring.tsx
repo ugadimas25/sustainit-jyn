@@ -1690,7 +1690,7 @@ export default function DeforestationMonitoring() {
                 if (e.target.checked) {
                   if (!sbtnLayer) {
                     // SBTN Natural Lands tile service
-                    sbtnLayer = L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
+                    sbtnLayer = L.tileLayer('https://via.placeholder.com/256/008000/FFFFFF.png?text=SBTN+Dummy+Layer', {
                       attribution: '© SBTN - Science Based Targets Network',
                       opacity: 0.7,
                       maxZoom: 18,

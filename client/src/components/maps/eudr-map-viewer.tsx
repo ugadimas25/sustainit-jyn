@@ -1803,7 +1803,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 version: '1.3.0',
                 maxZoom: 18
               }),
-              sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
+              sbtn: L.tileLayer('https://via.placeholder.com/256/008000/FFFFFF.png?text=SBTN+Dummy+Layer', {
                 attribution: '© SBTN - Science Based Targets Network',
                 opacity: 0.7,
                 maxZoom: 18,
@@ -2052,7 +2052,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 });
 
               // Test SBTN service
-              const sbtnTestUrl = \`https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/\${testCoords.z}/\${testCoords.x}/\${testCoords.y}\`;
+              const sbtnTestUrl = \`https://via.placeholder.com/256/008000/FFFFFF.png?text=SBTN+Dummy+Test\`;
               fetch(sbtnTestUrl)
                 .then(response => {
                   if (response.ok || response.status === 404) { // 404 is expected for non-existent tiles

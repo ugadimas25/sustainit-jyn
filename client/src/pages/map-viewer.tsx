@@ -563,12 +563,12 @@ export default function MapViewer() {
             opacity: 0.8,
             version: '1.3.0'
           }),
-          sbtn: L.tileLayer('https://gis-development.koltivaapi.com/data/v1/gee/tiles/sbtn_deforestation/{z}/{x}/{y}', {
+          sbtn: L.tileLayer('https://via.placeholder.com/256/008000/FFFFFF.png?text=SBTN+Dummy+Layer', {
             attribution: '© SBTN',
             opacity: 0.7
           }),
-          spatialLegality: L.tileLayer.wms('https://geoserver.koltivaapi.com/geoserver/Koltiva-Internal/wms', {
-            layers: 'Koltiva-Internal:gis_int_wdpa_ia_strict_nature_reserved',
+          spatialLegality: L.tileLayer('https://via.placeholder.com/256/0066cc/FFFFFF.png?text=Spatial+Legality+Dummy', {
+            // layers: 'Dummy-layer',
             format: 'image/png',
             transparent: true,
             version: '1.1.0',
