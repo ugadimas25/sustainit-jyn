@@ -454,7 +454,64 @@ export default function DataVerification() {
 
   const handleConfirm = async () => {
     try {
-      // Generate PDF first
+      // Update compliance status if Final Status was selected and is different from original
+      if (formData.finalStatus) {
+        const polygonsToUpdate = isMultipleVerification ? selectedPolygons : (selectedPolygon ? [selectedPolygon] : []);
+        
+        for (const polygon of polygonsToUpdate) {
+          const originalStatus = polygon.complianceStatus;
+          const newStatus = formData.finalStatus.toUpperCase().replace('-', '');
+          
+          // Only update if the status has changed
+          if (originalStatus !== newStatus) {
+            console.log(`🔄 Updating ${polygon.plotId} status from ${originalStatus} to ${newStatus}`);
+            
+            try {
+              const response = await apiRequest(`/api/analysis-results/${polygon.plotId}/compliance-status`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                  complianceStatus: newStatus,
+                  verificationType: formData.verificationType,
+                  assessedBy: formData.assessedBy,
+                  updatedDate: formData.updatedDate
+                }),
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+
+              if (response.success) {
+                console.log(`✅ Successfully updated ${polygon.plotId} compliance status`);
+                
+                // Update the polygon object with new status
+                polygon.complianceStatus = newStatus;
+              }
+            } catch (updateError) {
+              console.error(`Failed to update ${polygon.plotId}:`, updateError);
+              toast({
+                title: "Update Warning",
+                description: `Could not update compliance status for ${polygon.plotId}. PDF will still be generated.`,
+                variant: "default",
+              });
+            }
+          }
+        }
+
+        // Update localStorage with the modified polygons for Results Table consistency  
+        const currentResults = JSON.parse(localStorage.getItem('currentAnalysisResults') || '[]');
+        const updatedResults = currentResults.map((result: any) => {
+          const updatedPolygon = polygonsToUpdate.find(p => p.plotId === result.plotId);
+          if (updatedPolygon) {
+            return { ...result, complianceStatus: updatedPolygon.complianceStatus };
+          }
+          return result;
+        });
+        
+        localStorage.setItem('currentAnalysisResults', JSON.stringify(updatedResults));
+        console.log('📊 Updated localStorage analysis results with new compliance status');
+      }
+
+      // Generate PDF after status updates
       const pdfGenerated = await generateVerificationPDF();
 
       if (pdfGenerated) {

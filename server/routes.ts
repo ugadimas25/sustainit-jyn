@@ -3714,6 +3714,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update compliance status after verification
+  app.patch('/api/analysis-results/:plotId/compliance-status', async (req, res) => {
+    try {
+      const { plotId } = req.params;
+      const { complianceStatus, verificationType, assessedBy, updatedDate } = req.body;
+
+      if (!complianceStatus) {
+        return res.status(400).json({ error: 'Compliance status is required' });
+      }
+
+      // Find the analysis result by plotId first
+      const results = await storage.getAnalysisResults();
+      const targetResult = results.find(r => r.plotId === plotId);
+
+      if (!targetResult) {
+        return res.status(404).json({ error: 'Analysis result not found for plotId: ' + plotId });
+      }
+
+      // Update the compliance status and verification details
+      const updates = {
+        complianceStatus,
+        ...(verificationType && { verificationType }),
+        ...(assessedBy && { assessedBy }),
+        ...(updatedDate && { verifiedAt: new Date(updatedDate) })
+      };
+
+      const updatedResult = await storage.updateAnalysisResult(targetResult.id, updates);
+
+      if (!updatedResult) {
+        return res.status(404).json({ error: 'Failed to update analysis result' });
+      }
+
+      console.log(`✅ Updated compliance status for ${plotId} to ${complianceStatus}`);
+
+      res.json({
+        success: true,
+        message: `Updated compliance status for ${plotId} to ${complianceStatus}`,
+        plotId,
+        complianceStatus,
+        updatedResult
+      });
+    } catch (error) {
+      console.error('Error updating compliance status:', error);
+      res.status(500).json({ error: 'Failed to update compliance status' });
+    }
+  });
+
   // Supply Chain Analytics endpoint
   app.get('/api/supply-chain/analytics', isAuthenticated, async (req, res) => {
     try {
