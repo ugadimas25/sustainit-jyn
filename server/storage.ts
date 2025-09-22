@@ -2665,7 +2665,16 @@ export class DatabaseStorage implements IStorage {
   // Permission resolution and checking
   async getUserEffectivePermissions(userId: string, organizationId: string): Promise<{ module: string; action: string; resource?: string; effect: 'allow' | 'deny' }[]> {
     try {
+      console.log(`🔍 DEBUG: getUserEffectivePermissions called with userId: ${userId}, organizationId: ${organizationId}`);
+      
       const effectivePermissions: { module: string; action: string; resource?: string; effect: 'allow' | 'deny' }[] = [];
+
+      // First, check what user roles exist
+      const userRolesOnly = await db.select().from(userRoles).where(and(
+        eq(userRoles.userId, userId),
+        eq(userRoles.organizationId, organizationId)
+      ));
+      console.log(`🔍 DEBUG: userRolesOnly found:`, JSON.stringify(userRolesOnly, null, 2));
 
       // Get permissions from roles
       const userRolesData = await db.select({
@@ -2684,6 +2693,8 @@ export class DatabaseStorage implements IStorage {
         eq(userRoles.organizationId, organizationId),
         or(eq(userRoles.expiresAt, null), sql`${userRoles.expiresAt} > NOW()`)
       ));
+      
+      console.log(`🔍 DEBUG: userRolesData query result:`, JSON.stringify(userRolesData, null, 2));
 
       effectivePermissions.push(...userRolesData.map(p => ({
         module: p.module,
