@@ -167,47 +167,9 @@ export default function DataVerification() {
 
     const initializeMap = async () => {
       try {
-        // Load Leaflet with better error handling
-        let L = (window as any).L;
-        if (!L) {
-          console.log('Loading Leaflet library...');
-          
-          // Load Leaflet CSS first
-          if (!document.querySelector('link[href*="leaflet.css"]')) {
-            const leafletCSS = document.createElement('link');
-            leafletCSS.rel = 'stylesheet';
-            leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-            leafletCSS.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-            leafletCSS.crossOrigin = '';
-            document.head.appendChild(leafletCSS);
-          }
-          
-          // Then load Leaflet JS
-          const leafletScript = document.createElement('script');
-          leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-          leafletScript.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
-          leafletScript.crossOrigin = '';
-          document.head.appendChild(leafletScript);
-
-          await new Promise((resolve, reject) => {
-            leafletScript.onload = () => {
-              console.log('Leaflet library loaded successfully');
-              resolve(true);
-            };
-            leafletScript.onerror = () => {
-              console.error('Failed to load Leaflet library');
-              reject(new Error('Failed to load Leaflet'));
-            };
-            setTimeout(() => reject(new Error('Leaflet loading timeout')), 10000);
-          });
-          
-          L = (window as any).L;
-          if (!L) {
-            throw new Error('Leaflet not available after loading script');
-          }
-        }
-
-        // Clear existing map
+        console.log('🗺️ Initializing map with type:', mapType);
+        
+        // Clear existing map first
         if (mapInstanceRef.current) {
           try {
             mapInstanceRef.current.remove();
@@ -217,153 +179,142 @@ export default function DataVerification() {
           mapInstanceRef.current = null;
         }
 
-        // Clear map container
-        if (mapRef.current) {
-          mapRef.current.innerHTML = '';
+        if (!mapRef.current) {
+          console.error('Map container not available');
+          return;
         }
 
-        // Create map
+        // Clear and prepare map container
+        mapRef.current.innerHTML = '';
+        mapRef.current.style.height = '100%';
+        mapRef.current.style.width = '100%';
+
+        // Check for Leaflet with timeout
+        let L = (window as any).L;
+        let attempts = 0;
+        const maxAttempts = 50;
+
+        while (!L && attempts < maxAttempts) {
+          console.log(`Waiting for Leaflet... attempt ${attempts + 1}/${maxAttempts}`);
+          await new Promise(resolve => setTimeout(resolve, 100));
+          L = (window as any).L;
+          attempts++;
+        }
+
+        if (!L) {
+          console.log('Loading Leaflet dynamically...');
+          
+          // Load CSS
+          if (!document.querySelector('link[href*="leaflet.css"]')) {
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(css);
+          }
+
+          // Load JS
+          const script = document.createElement('script');
+          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          document.head.appendChild(script);
+
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+            setTimeout(() => reject(new Error('Leaflet timeout')), 10000);
+          });
+
+          L = (window as any).L;
+          if (!L) throw new Error('Leaflet failed to load');
+        }
+
+        console.log('✅ Leaflet ready, creating map...');
+
+        // Create map instance
         const map = L.map(mapRef.current, {
-          center: [1.190, 100.187], // Default Indonesia coordinates
-          zoom: 16,
-          zoomControl: true
+          center: [-4.557, 119.982], // Centered on Indonesia polygons
+          zoom: 14,
+          zoomControl: true,
+          attributionControl: true
         });
 
         mapInstanceRef.current = map;
 
-        // Add tile layer based on map type
-        let tileLayer;
-        try {
-          switch (mapType) {
-            case 'Terrain':
-              tileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenTopoMap contributors',
-                maxZoom: 19
-              });
-              break;
-            case 'Satellite':
-              tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '© Esri',
-                maxZoom: 19
-              });
-              break;
-            case 'Silver':
-              tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-              });
-              break;
-            case 'UAV':
-            default:
-              // Use Satellite layer for UAV mode as requested
-              tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '© Esri (Satellite View)',
-                maxZoom: 19
-              });
-              break;
+        // Configure tile layers
+        const tileConfigs = {
+          'Terrain': {
+            url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            options: { attribution: '© OpenTopoMap', maxZoom: 17 }
+          },
+          'Satellite': {
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            options: { attribution: '© Esri', maxZoom: 19 }
+          },
+          'Silver': {
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            options: { attribution: '© OpenStreetMap', maxZoom: 19 }
+          },
+          'UAV': {
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            options: { attribution: '© Esri (UAV View)', maxZoom: 19 }
           }
+        };
 
-          if (tileLayer) {
-            tileLayer.addTo(map);
-          }
-        } catch (tileError) {
-          console.warn('Error adding tile layer:', tileError);
-          // Fallback to OpenStreetMap
-          const fallbackTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
+        const config = tileConfigs[mapType] || tileConfigs['Satellite'];
+        console.log(`🎨 Loading ${mapType} basemap:`, config.url);
+
+        const tileLayer = L.tileLayer(config.url, config.options);
+        tileLayer.addTo(map);
+
+        // Wait for tiles to start loading
+        await new Promise(resolve => {
+          tileLayer.on('loading', () => {
+            console.log(`🌍 ${mapType} tiles loading...`);
+            resolve(true);
           });
-          fallbackTile.addTo(map);
-        }
+          tileLayer.on('load', () => {
+            console.log(`✅ ${mapType} tiles loaded`);
+          });
+          // Fallback timeout
+          setTimeout(resolve, 2000);
+        });
 
-        // Add TIFF overlay for UAV mode
-        if (mapType === 'UAV' && selectedTiffFile) {
-          // For demonstration purposes, we'll show a semi-transparent overlay
-          // In a real implementation, you'd use a TIFF processing library like geotiff.js
-          const tiffOverlay = L.rectangle(
-            [[-1.5, 99.5], [1.5, 101.5]], // Bounds covering the area
-            {
-              color: '#00FF00',
-              weight: 2,
-              fillColor: '#00FF00',
-              fillOpacity: 0.3,
-              opacity: 0.8
-            }
-          );
+        console.log('🏞️ Basemap loaded successfully');
 
-          tiffOverlay.addTo(map);
-          tiffOverlay.bindTooltip('UAV TIFF Data Overlay', { permanent: false });
-        }
-
-        // Add polygons - handle both single and multiple
+        // Add polygons
         const polygonsToRender = selectedPolygons.length > 0 ? selectedPolygons : (selectedPolygon ? [selectedPolygon] : []);
-
+        
         if (polygonsToRender.length > 0) {
+          console.log(`📍 Rendering ${polygonsToRender.length} polygons...`);
+          
           const bounds = L.latLngBounds([]);
           const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF'];
 
-          const toLatLng = (c: any) => Array.isArray(c) && c.length >= 2 && isFinite(c[0]) && isFinite(c[1]) ? [c[1], c[0]] : null;
-
           polygonsToRender.forEach((polygon, index) => {
             try {
-              const geom: any = polygon.geometry;
-              if (!geom?.type || !geom.coordinates) {
-                console.warn(`No geometry for polygon ${polygon.plotId}`);
-                return;
-              }
+              if (!polygon.geometry?.coordinates) return;
 
-              let latlngs: any;
-              if (geom.type === 'Polygon') {
-                const outer = (geom.coordinates?.[0] || []).map(toLatLng).filter(Boolean);
-                if (!outer.length) return;
-                latlngs = outer; // single ring
-              } else if (geom.type === 'MultiPolygon') {
-                // Build array of outer rings for each polygon in the multipolygon
-                const outerRings = (geom.coordinates as any[])
-                  .map(poly => (poly?.[0] || []).map(toLatLng).filter(Boolean))
-                  .filter((ring: any[]) => ring.length > 0);
-                if (!outerRings.length) return;
-                // Leaflet accepts MultiPolygon as array of rings; if only one, pass the ring directly
-                latlngs = outerRings.length === 1 ? outerRings[0] : outerRings;
-              } else {
-                console.warn(`Unsupported geometry type for ${polygon.plotId}: ${geom.type}`);
-                return;
-              }
+              // Convert coordinates to Leaflet format [lat, lng]
+              const coords = polygon.geometry.coordinates[0][0] || polygon.geometry.coordinates[0];
+              const latlngs = (coords as number[][]).map((coord: number[]) => [coord[1], coord[0]]);
 
               const color = colors[index % colors.length];
               const leafletPolygon = L.polygon(latlngs, {
                 fillColor: color,
                 color: color,
-                weight: 3,
-                fillOpacity: isMultipleVerification ? 0.4 : 0.6,
+                weight: 2,
+                fillOpacity: 0.5,
                 opacity: 1
               }).addTo(map);
 
-              const popupContent = `
-                <div class="p-3 min-w-[200px]">
-                  <h3 class="font-semibold text-lg mb-2">${polygon.plotId}</h3>
-                  <div class="space-y-1 text-sm">
-                    <p><strong>Country:</strong> ${polygon.country}</p>
-                    <p><strong>Area:</strong> ${polygon.area} ha</p>
-                    <p><strong>Risk:</strong> <span class="font-medium text-${polygon.overallRisk === 'HIGH' ? 'red' : polygon.overallRisk === 'MEDIUM' ? 'yellow' : 'green'}-600">${polygon.overallRisk}</span></p>
-                    <p><strong>Status:</strong> <span class="font-medium">${polygon.complianceStatus}</span></p>
-                  </div>
+              leafletPolygon.bindPopup(`
+                <div style="padding: 10px; min-width: 200px;">
+                  <h3 style="margin: 0 0 10px 0; font-weight: bold;">${polygon.plotId}</h3>
+                  <p><strong>Country:</strong> ${polygon.country}</p>
+                  <p><strong>Area:</strong> ${polygon.area} ha</p>
+                  <p><strong>Risk:</strong> ${polygon.overallRisk}</p>
+                  <p><strong>Status:</strong> ${polygon.complianceStatus}</p>
                 </div>
-              `;
-              leafletPolygon.bindPopup(popupContent);
-
-              if (isMultipleVerification) {
-                const center = leafletPolygon.getBounds().getCenter();
-                const centerMarker = L.marker(center, {
-                  icon: L.divIcon({
-                    html: `<div style="background: ${color}; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;"><span style="color: white; font-weight: bold; font-size: 10px;">${index + 1}</span></div>`,
-                    className: 'custom-marker',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12]
-                  })
-                }).addTo(map);
-                centerMarker.bindTooltip(polygon.plotId, { permanent: false, direction: 'top' });
-              }
+              `);
 
               bounds.extend(leafletPolygon.getBounds());
             } catch (err) {
@@ -372,20 +323,22 @@ export default function DataVerification() {
           });
 
           if (bounds.isValid()) {
-            map.fitBounds(bounds, { padding: [50, 50] });
+            map.fitBounds(bounds, { padding: [20, 20] });
           }
         }
 
+        console.log('🎉 Map initialization completed successfully');
+
       } catch (error) {
-        console.error('Error initializing verification map:', error);
-        // Show user-friendly error message
+        console.error('❌ Map initialization failed:', error);
         if (mapRef.current) {
           mapRef.current.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f5f5f5; color: #666;">
-              <div style="text-align: center;">
-                <p>Map failed to load</p>
-                <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                  Retry
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; color: #6c757d; font-family: Arial, sans-serif;">
+              <div style="text-align: center; padding: 20px;">
+                <h3 style="margin-bottom: 10px;">Map Loading Failed</h3>
+                <p style="margin-bottom: 15px;">Unable to load the basemap. Please try again.</p>
+                <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
+                  Reload Page
                 </button>
               </div>
             </div>
@@ -394,11 +347,20 @@ export default function DataVerification() {
       }
     };
 
-    initializeMap();
+    // Add delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      initializeMap();
+    }, 100);
 
     return () => {
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.remove();
+        } catch (e) {
+          console.log('Cleanup error:', e);
+        }
+        mapInstanceRef.current = null;
       }
     };
   }, [selectedPolygon, selectedPolygons, isMultipleVerification, mapType, selectedTiffFile]);
