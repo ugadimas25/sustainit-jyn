@@ -388,68 +388,187 @@ export default function DataVerification() {
     if (!verificationContentRef.current || (selectedPolygons.length === 0 && !selectedPolygon)) return false;
 
     try {
-      // Hide UI elements that shouldn't be in PDF
-      const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
-      elementsToHide.forEach(el => (el as HTMLElement).style.display = 'none');
-
-      // Show form values for PDF and hide input fields
-      const formFields = document.querySelectorAll('.pdf-form-field');
-      const pdfOnlyElements = document.querySelectorAll('.pdf-only');
-      
-      formFields.forEach(el => (el as HTMLElement).style.display = 'none');
-      pdfOnlyElements.forEach(el => (el as HTMLElement).style.display = 'flex');
-
-      // Create canvas from the verification content
-      const canvas = await html2canvas(verificationContentRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        width: verificationContentRef.current.scrollWidth,
-        height: verificationContentRef.current.scrollHeight,
-      });
-
-      // Create PDF
+      // Create PDF with professional layout
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4'
       });
 
-      // Calculate dimensions
-      const imgWidth = 297; // A4 landscape width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Define margins and page dimensions
+      const pageWidth = 297; // A4 landscape width
+      const pageHeight = 210; // A4 landscape height
+      const margin = 20;
+      const contentWidth = pageWidth - (margin * 2);
+      
+      // Add KPN PLANTATION Header
+      pdf.setFillColor(0, 102, 51); // Dark green header
+      pdf.rect(0, 0, pageWidth, 40, 'F');
+      
+      // Company logo/title area
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('KPN PLANTATION', margin, 20);
+      
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, 'normal');
+      pdf.text('COMPLIANT VERIFICATION REPORT', margin, 32);
 
-      // Add image to PDF
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+      // Add date/time in header
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric'
+      });
+      const timeStr = now.toLocaleTimeString('id-ID', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      pdf.setFontSize(10);
+      pdf.text(`Generated: ${dateStr} ${timeStr}`, pageWidth - margin - 50, 20);
+
+      // Reset text color for content
+      pdf.setTextColor(0, 0, 0);
+      let currentY = 60;
+
+      // Plot Information Section
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('PLOT VERIFICATION DETAILS', margin, currentY);
+      currentY += 15;
+
+      if (isMultipleVerification) {
+        // Multiple plots summary
+        pdf.setFontSize(12);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(`Total Plots Verified: ${selectedPolygons.length}`, margin, currentY);
+        currentY += 8;
+        
+        const highRiskCount = selectedPolygons.filter(p => p.overallRisk === 'HIGH').length;
+        const mediumRiskCount = selectedPolygons.filter(p => p.overallRisk === 'MEDIUM').length;
+        const lowRiskCount = selectedPolygons.filter(p => p.overallRisk === 'LOW').length;
+        const nonCompliantCount = selectedPolygons.filter(p => p.complianceStatus === 'NON-COMPLIANT').length;
+        
+        pdf.text(`Risk Distribution: High (${highRiskCount}), Medium (${mediumRiskCount}), Low (${lowRiskCount})`, margin, currentY);
+        currentY += 8;
+        pdf.text(`Non-Compliant Plots: ${nonCompliantCount}`, margin, currentY);
+        currentY += 15;
+        
+      } else if (selectedPolygon) {
+        // Single plot details
+        pdf.setFontSize(12);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(`Plot ID: ${selectedPolygon.plotId}`, margin, currentY);
+        currentY += 8;
+        pdf.text(`Country: ${selectedPolygon.country}`, margin, currentY);
+        currentY += 8;
+        pdf.text(`Area: ${selectedPolygon.area} hectares`, margin, currentY);
+        currentY += 8;
+        pdf.text(`Risk Level: ${selectedPolygon.overallRisk}`, margin, currentY);
+        currentY += 8;
+        pdf.text(`Compliance Status: ${selectedPolygon.complianceStatus}`, margin, currentY);
+        currentY += 15;
+      }
+
+      // Form Information Section
+      pdf.setFontSize(16);
+      pdf.setFont(undefined, 'bold');
+      pdf.text('VERIFICATION INFORMATION', margin, currentY);
+      currentY += 15;
+
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, 'normal');
+      
+      // Updated Date & Time
+      if (formData.updatedDate) {
+        const formattedDate = new Date(formData.updatedDate).toLocaleString('id-ID', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        pdf.text(`Updated Date & Time: ${formattedDate}`, margin, currentY);
+      } else {
+        pdf.text(`Updated Date & Time: ${dateStr} ${timeStr}`, margin, currentY);
+      }
+      currentY += 8;
+      
+      // Verification Type
+      if (formData.verificationType) {
+        pdf.text(`Verification Type: ${formData.verificationType}`, margin, currentY);
+        currentY += 8;
+      }
+      
+      // Assessed By
+      if (formData.assessedBy) {
+        pdf.text(`Assessed By: ${formData.assessedBy}`, margin, currentY);
+        currentY += 8;
+      }
+      
+      // Final Status
+      if (formData.finalStatus) {
+        pdf.text(`Final Status: ${formData.finalStatus}`, margin, currentY);
+        currentY += 15;
+      }
+
+      // Map Image Section - capture map area only
+      const mapElement = verificationContentRef.current?.querySelector('.flex-1.relative') as HTMLElement;
+      if (mapElement) {
+        // Hide UI controls temporarily for cleaner map capture
+        const controlsToHide = mapElement.querySelectorAll('.absolute');
+        controlsToHide.forEach(el => (el as HTMLElement).style.visibility = 'hidden');
+
+        try {
+          const mapCanvas = await html2canvas(mapElement, {
+            scale: 1,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            width: mapElement.clientWidth,
+            height: mapElement.clientHeight,
+          });
+
+          // Calculate map image dimensions for PDF
+          const availableHeight = pageHeight - currentY - margin;
+          const mapWidth = contentWidth * 0.6; // Use 60% of content width
+          const mapHeight = (mapCanvas.height * mapWidth) / mapCanvas.width;
+          
+          // Add map image if it fits
+          if (mapHeight <= availableHeight) {
+            pdf.addImage(mapCanvas.toDataURL('image/png'), 'PNG', margin, currentY, mapWidth, mapHeight);
+          }
+
+          // Restore UI controls
+          controlsToHide.forEach(el => (el as HTMLElement).style.visibility = 'visible');
+        } catch (mapError) {
+          console.error('Error capturing map:', mapError);
+          // Restore UI controls on error
+          controlsToHide.forEach(el => (el as HTMLElement).style.visibility = 'visible');
+        }
+      }
+
+      // Footer
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('This document was automatically generated by KPN PLANTATION EUDR Compliance System', 
+               margin, pageHeight - 10);
 
       // Generate filename
       const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
       const filename = isMultipleVerification 
-        ? `data-verification-batch-${selectedPolygons.length}-plots-${timestamp}.pdf`
-        : `data-verification-${selectedPolygon?.plotId || 'unknown'}-${timestamp}.pdf`;
+        ? `KPN-verification-batch-${selectedPolygons.length}-plots-${timestamp}.pdf`
+        : `KPN-verification-${selectedPolygon?.plotId || 'plot'}-${timestamp}.pdf`;
 
       // Download PDF
       pdf.save(filename);
 
-      // Restore UI elements
-      elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
-      formFields.forEach(el => (el as HTMLElement).style.display = '');
-      pdfOnlyElements.forEach(el => (el as HTMLElement).style.display = 'none');
-
       return true;
     } catch (error) {
       console.error('Error generating PDF:', error);
-
-      // Restore UI elements on error
-      const elementsToHide = document.querySelectorAll('[data-hide-in-pdf]');
-      const formFields = document.querySelectorAll('.pdf-form-field');
-      const pdfOnlyElements = document.querySelectorAll('.pdf-only');
-      
-      elementsToHide.forEach(el => (el as HTMLElement).style.display = '');
-      formFields.forEach(el => (el as HTMLElement).style.display = '');
-      pdfOnlyElements.forEach(el => (el as HTMLElement).style.display = 'none');
-
       return false;
     }
   };
