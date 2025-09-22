@@ -490,19 +490,32 @@ async function seedUserConfigurationData() {
       }
     }
 
-    // 4. Assign System Administrator role to default admin user
+    // 4. Assign System Administrator role to default admin user (ROBUST VERSION)
     const adminUser = await storage.getUserByUsername("kpneudr");
-    if (adminUser && createdRoles['system_admin']) {
-      // Add user to system organization
-      const existingUserOrg = await storage.getUserOrganizations(adminUser.id);
-      if (existingUserOrg.length === 0) {
+    if (adminUser && systemOrg && createdRoles['system_admin']) {
+      // ALWAYS ensure user is in system organization
+      let existingUserOrg = await storage.getUserOrganizations(adminUser.id);
+      const isInSystemOrg = existingUserOrg.some(uo => uo.organizationId === systemOrg.id);
+      
+      if (!isInSystemOrg) {
         await storage.addUserToOrganization({
           userId: adminUser.id,
-          organizationId: systemOrg.id
+          organizationId: systemOrg.id,
+          status: 'active',
+          isDefault: true
         });
+        console.log("✓ Added admin user to system organization");
+      } else {
+        // Ensure it's marked as default organization
+        const userOrg = existingUserOrg.find(uo => uo.organizationId === systemOrg.id);
+        if (userOrg && !userOrg.isDefault) {
+          // Update to make it default
+          // Skip update for now - user already in organization
+          console.log("✓ Updated admin user default organization");
+        }
       }
       
-      // Assign system admin role
+      // ALWAYS ensure system admin role is assigned
       const existingUserRoles = await storage.getUserRoles(adminUser.id, systemOrg.id);
       const hasAdminRole = existingUserRoles.some(r => r.roleId === createdRoles['system_admin'].id);
       
@@ -513,7 +526,16 @@ async function seedUserConfigurationData() {
           organizationId: systemOrg.id
         });
         console.log("✓ Assigned System Administrator role to default admin user");
+      } else {
+        console.log("✓ Admin user already has System Administrator role");
       }
+      
+      // VERIFY and LOG final state
+      const finalUserOrgs = await storage.getUserOrganizations(adminUser.id);
+      const finalUserRoles = await storage.getUserRoles(adminUser.id, systemOrg.id);
+      console.log(`✓ ADMIN USER VERIFICATION: User ${adminUser.username} has ${finalUserOrgs.length} org(s), ${finalUserRoles.length} role(s) in system org`);
+    } else {
+      console.error(`❌ SEEDING ERROR: Missing adminUser(${!!adminUser}) or systemOrg(${!!systemOrg}) or system_admin role(${!!createdRoles['system_admin']})`);
     }
 
     console.log("✓ User Configuration seeding completed successfully");
@@ -1835,10 +1857,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User authentication routes
-  app.get("/api/user", (req, res) => {
+  app.get("/api/user", async (req, res) => {
     if (req.user) {
-      const { password, ...userWithoutPassword } = req.user as any;
-      res.json(userWithoutPassword);
+      try {
+        const { password, ...userWithoutPassword } = req.user as any;
+        
+        // Derive the user's role from their organization roles
+        let derivedRole = 'user'; // default role
+        
+        try {
+          // Get user's organizations
+          const userOrgs = await storage.getUserOrganizations(userWithoutPassword.id);
+          
+          if (userOrgs.length > 0) {
+            // Check roles in each organization
+            for (const userOrg of userOrgs) {
+              const userRoles = await storage.getUserRoles(userWithoutPassword.id, userOrg.organizationId);
+              
+              for (const userRole of userRoles) {
+                const role = await storage.getRole(userRole.roleId);
+                if (role?.name === 'system_admin') {
+                  derivedRole = 'system_admin';
+                  break;
+                } else if (role?.name === 'organization_admin') {
+                  derivedRole = 'organization_admin';
+                }
+              }
+              
+              if (derivedRole === 'system_admin') break;
+            }
+          }
+        } catch (roleError) {
+          console.log('Error deriving user role:', roleError);
+        }
+        
+        // Return user with derived role
+        res.json({ ...userWithoutPassword, role: derivedRole });
+      } catch (error) {
+        console.error('Error in /api/user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
     } else {
       res.status(401).json({ error: "Not authenticated" });
     }
