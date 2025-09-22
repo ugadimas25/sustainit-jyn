@@ -167,18 +167,44 @@ export default function DataVerification() {
 
     const initializeMap = async () => {
       try {
-        // Load Leaflet
-        const L = (window as any).L;
+        // Load Leaflet with better error handling
+        let L = (window as any).L;
         if (!L) {
+          console.log('Loading Leaflet library...');
+          
+          // Load Leaflet CSS first
+          if (!document.querySelector('link[href*="leaflet.css"]')) {
+            const leafletCSS = document.createElement('link');
+            leafletCSS.rel = 'stylesheet';
+            leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            leafletCSS.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+            leafletCSS.crossOrigin = '';
+            document.head.appendChild(leafletCSS);
+          }
+          
+          // Then load Leaflet JS
           const leafletScript = document.createElement('script');
           leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
           leafletScript.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
           leafletScript.crossOrigin = '';
           document.head.appendChild(leafletScript);
 
-          await new Promise((resolve) => {
-            leafletScript.onload = resolve;
+          await new Promise((resolve, reject) => {
+            leafletScript.onload = () => {
+              console.log('Leaflet library loaded successfully');
+              resolve(true);
+            };
+            leafletScript.onerror = () => {
+              console.error('Failed to load Leaflet library');
+              reject(new Error('Failed to load Leaflet'));
+            };
+            setTimeout(() => reject(new Error('Leaflet loading timeout')), 10000);
           });
+          
+          L = (window as any).L;
+          if (!L) {
+            throw new Error('Leaflet not available after loading script');
+          }
         }
 
         // Clear existing map
