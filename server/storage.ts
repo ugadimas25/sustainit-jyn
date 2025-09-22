@@ -2009,6 +2009,830 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // =======================
+  // USER CONFIGURATION MODULE IMPLEMENTATIONS
+  // =======================
+
+  // Organization management
+  async getOrganizations(): Promise<Organization[]> {
+    try {
+      return await db.select().from(organizations).orderBy(organizations.name);
+    } catch (error) {
+      console.error("Error getting organizations:", error);
+      throw error;
+    }
+  }
+
+  async getOrganization(id: string): Promise<Organization | undefined> {
+    try {
+      const [org] = await db.select().from(organizations).where(eq(organizations.id, id));
+      return org || undefined;
+    } catch (error) {
+      console.error("Error getting organization:", error);
+      throw error;
+    }
+  }
+
+  async getOrganizationBySlug(slug: string): Promise<Organization | undefined> {
+    try {
+      const [org] = await db.select().from(organizations).where(eq(organizations.slug, slug));
+      return org || undefined;
+    } catch (error) {
+      console.error("Error getting organization by slug:", error);
+      throw error;
+    }
+  }
+
+  async createOrganization(insertOrganization: InsertOrganization): Promise<Organization> {
+    try {
+      const [org] = await db.insert(organizations).values(insertOrganization).returning();
+      return org;
+    } catch (error) {
+      console.error("Error creating organization:", error);
+      throw error;
+    }
+  }
+
+  async updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization | undefined> {
+    try {
+      const [updated] = await db.update(organizations)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(organizations.id, id))
+        .returning();
+      return updated || undefined;
+    } catch (error) {
+      console.error("Error updating organization:", error);
+      throw error;
+    }
+  }
+
+  async deleteOrganization(id: string): Promise<boolean> {
+    try {
+      const result = await db.delete(organizations).where(eq(organizations.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting organization:", error);
+      throw error;
+    }
+  }
+
+  // User-Organization relationships
+  async getUserOrganizations(userId: string): Promise<UserOrganization[]> {
+    try {
+      return await db.select().from(userOrganizations).where(eq(userOrganizations.userId, userId));
+    } catch (error) {
+      console.error("Error getting user organizations:", error);
+      throw error;
+    }
+  }
+
+  async getOrganizationUsers(organizationId: string): Promise<UserOrganization[]> {
+    try {
+      return await db.select().from(userOrganizations).where(eq(userOrganizations.organizationId, organizationId));
+    } catch (error) {
+      console.error("Error getting organization users:", error);
+      throw error;
+    }
+  }
+
+  async addUserToOrganization(insertUserOrganization: InsertUserOrganization): Promise<UserOrganization> {
+    try {
+      const [userOrg] = await db.insert(userOrganizations).values(insertUserOrganization).returning();
+      return userOrg;
+    } catch (error) {
+      console.error("Error adding user to organization:", error);
+      throw error;
+    }
+  }
+
+  async removeUserFromOrganization(userId: string, organizationId: string): Promise<boolean> {
+    try {
+      const result = await db.delete(userOrganizations)
+        .where(and(eq(userOrganizations.userId, userId), eq(userOrganizations.organizationId, organizationId)));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error removing user from organization:", error);
+      throw error;
+    }
+  }
+
+  async setDefaultOrganization(userId: string, organizationId: string): Promise<boolean> {
+    try {
+      // First set all user organizations to non-default
+      await db.update(userOrganizations)
+        .set({ isDefault: false })
+        .where(eq(userOrganizations.userId, userId));
+      
+      // Then set the specified organization as default
+      const result = await db.update(userOrganizations)
+        .set({ isDefault: true })
+        .where(and(eq(userOrganizations.userId, userId), eq(userOrganizations.organizationId, organizationId)));
+      
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error setting default organization:", error);
+      throw error;
+    }
+  }
+
+  // Enhanced User management (with RBAC support)
+  async getUsersEnhanced(): Promise<UserEnhanced[]> {
+    try {
+      return await db.select().from(users).orderBy(users.username);
+    } catch (error) {
+      console.error("Error getting enhanced users:", error);
+      throw error;
+    }
+  }
+
+  async getUserEnhanced(id: string): Promise<UserEnhanced | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      return user || undefined;
+    } catch (error) {
+      console.error("Error getting enhanced user:", error);
+      throw error;
+    }
+  }
+
+  async getUserByEmailEnhanced(email: string): Promise<UserEnhanced | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.email, email));
+      return user || undefined;
+    } catch (error) {
+      console.error("Error getting user by email:", error);
+      throw error;
+    }
+  }
+
+  async createUserEnhanced(insertUser: InsertUserEnhanced): Promise<UserEnhanced> {
+    try {
+      const [user] = await db.insert(users).values(insertUser).returning();
+      return user;
+    } catch (error) {
+      console.error("Error creating enhanced user:", error);
+      throw error;
+    }
+  }
+
+  async updateUserEnhanced(id: string, updates: Partial<UserEnhanced>): Promise<UserEnhanced | undefined> {
+    try {
+      const [updated] = await db.update(users)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(users.id, id))
+        .returning();
+      return updated || undefined;
+    } catch (error) {
+      console.error("Error updating enhanced user:", error);
+      throw error;
+    }
+  }
+
+  async deactivateUser(id: string): Promise<boolean> {
+    try {
+      const result = await db.update(users)
+        .set({ status: 'inactive', updatedAt: new Date() })
+        .where(eq(users.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deactivating user:", error);
+      throw error;
+    }
+  }
+
+  async lockUser(id: string, until?: Date): Promise<boolean> {
+    try {
+      const result = await db.update(users)
+        .set({ 
+          status: 'disabled', 
+          lockedUntil: until,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error locking user:", error);
+      throw error;
+    }
+  }
+
+  async unlockUser(id: string): Promise<boolean> {
+    try {
+      const result = await db.update(users)
+        .set({ 
+          status: 'active', 
+          lockedUntil: null,
+          failedLoginAttempts: 0,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error unlocking user:", error);
+      throw error;
+    }
+  }
+
+  async updateLoginAttempts(userId: string, attempts: number): Promise<void> {
+    try {
+      await db.update(users)
+        .set({ 
+          failedLoginAttempts: attempts,
+          lastLoginAt: attempts === 0 ? new Date() : undefined,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId));
+    } catch (error) {
+      console.error("Error updating login attempts:", error);
+      throw error;
+    }
+  }
+
+  // Role management
+  async getRoles(organizationId?: string): Promise<Role[]> {
+    try {
+      if (organizationId) {
+        return await db.select().from(roles)
+          .where(or(eq(roles.organizationId, organizationId), eq(roles.isSystem, true)))
+          .orderBy(roles.name);
+      }
+      return await db.select().from(roles).orderBy(roles.name);
+    } catch (error) {
+      console.error("Error getting roles:", error);
+      throw error;
+    }
+  }
+
+  async getRole(id: string): Promise<Role | undefined> {
+    try {
+      const [role] = await db.select().from(roles).where(eq(roles.id, id));
+      return role || undefined;
+    } catch (error) {
+      console.error("Error getting role:", error);
+      throw error;
+    }
+  }
+
+  async getRolesByOrganization(organizationId: string): Promise<Role[]> {
+    try {
+      return await db.select().from(roles)
+        .where(or(eq(roles.organizationId, organizationId), eq(roles.isSystem, true)))
+        .orderBy(roles.name);
+    } catch (error) {
+      console.error("Error getting roles by organization:", error);
+      throw error;
+    }
+  }
+
+  async getSystemRoles(): Promise<Role[]> {
+    try {
+      return await db.select().from(roles).where(eq(roles.isSystem, true)).orderBy(roles.name);
+    } catch (error) {
+      console.error("Error getting system roles:", error);
+      throw error;
+    }
+  }
+
+  async createRole(insertRole: InsertRole): Promise<Role> {
+    try {
+      const [role] = await db.insert(roles).values(insertRole).returning();
+      return role;
+    } catch (error) {
+      console.error("Error creating role:", error);
+      throw error;
+    }
+  }
+
+  async updateRole(id: string, updates: Partial<Role>): Promise<Role | undefined> {
+    try {
+      const [updated] = await db.update(roles)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(roles.id, id))
+        .returning();
+      return updated || undefined;
+    } catch (error) {
+      console.error("Error updating role:", error);
+      throw error;
+    }
+  }
+
+  async deleteRole(id: string): Promise<boolean> {
+    try {
+      // First remove all role-permission relationships
+      await db.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
+      
+      const result = await db.delete(roles).where(eq(roles.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting role:", error);
+      throw error;
+    }
+  }
+
+  async setRolePermissions(roleId: string, permissionIds: string[]): Promise<boolean> {
+    try {
+      // Remove existing permissions
+      await db.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
+      
+      // Add new permissions
+      if (permissionIds.length > 0) {
+        const rolePermissionData = permissionIds.map(permissionId => ({
+          roleId,
+          permissionId,
+          effect: 'allow' as const
+        }));
+        await db.insert(rolePermissions).values(rolePermissionData);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error setting role permissions:", error);
+      throw error;
+    }
+  }
+
+  // Permission management
+  async getPermissions(): Promise<Permission[]> {
+    try {
+      return await db.select().from(permissions).orderBy(permissions.module, permissions.action);
+    } catch (error) {
+      console.error("Error getting permissions:", error);
+      throw error;
+    }
+  }
+
+  async getPermission(id: string): Promise<Permission | undefined> {
+    try {
+      const [permission] = await db.select().from(permissions).where(eq(permissions.id, id));
+      return permission || undefined;
+    } catch (error) {
+      console.error("Error getting permission:", error);
+      throw error;
+    }
+  }
+
+  async getPermissionsByModule(module: string): Promise<Permission[]> {
+    try {
+      return await db.select().from(permissions).where(eq(permissions.module, module)).orderBy(permissions.action);
+    } catch (error) {
+      console.error("Error getting permissions by module:", error);
+      throw error;
+    }
+  }
+
+  async createPermission(insertPermission: InsertPermission): Promise<Permission> {
+    try {
+      const [permission] = await db.insert(permissions).values(insertPermission).returning();
+      return permission;
+    } catch (error) {
+      console.error("Error creating permission:", error);
+      throw error;
+    }
+  }
+
+  async updatePermission(id: string, updates: Partial<Permission>): Promise<Permission | undefined> {
+    try {
+      const [updated] = await db.update(permissions)
+        .set(updates)
+        .where(eq(permissions.id, id))
+        .returning();
+      return updated || undefined;
+    } catch (error) {
+      console.error("Error updating permission:", error);
+      throw error;
+    }
+  }
+
+  // Role-Permission relationships
+  async getRolePermissions(roleId: string): Promise<RolePermission[]> {
+    try {
+      return await db.select().from(rolePermissions).where(eq(rolePermissions.roleId, roleId));
+    } catch (error) {
+      console.error("Error getting role permissions:", error);
+      throw error;
+    }
+  }
+
+  async addRolePermission(insertRolePermission: InsertRolePermission): Promise<RolePermission> {
+    try {
+      const [rolePerm] = await db.insert(rolePermissions).values(insertRolePermission).returning();
+      return rolePerm;
+    } catch (error) {
+      console.error("Error adding role permission:", error);
+      throw error;
+    }
+  }
+
+  async removeRolePermission(roleId: string, permissionId: string): Promise<boolean> {
+    try {
+      const result = await db.delete(rolePermissions)
+        .where(and(eq(rolePermissions.roleId, roleId), eq(rolePermissions.permissionId, permissionId)));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error removing role permission:", error);
+      throw error;
+    }
+  }
+
+  // Group management
+  async getGroups(organizationId: string): Promise<Group[]> {
+    try {
+      return await db.select().from(groups).where(eq(groups.organizationId, organizationId)).orderBy(groups.name);
+    } catch (error) {
+      console.error("Error getting groups:", error);
+      throw error;
+    }
+  }
+
+  async getGroup(id: string): Promise<Group | undefined> {
+    try {
+      const [group] = await db.select().from(groups).where(eq(groups.id, id));
+      return group || undefined;
+    } catch (error) {
+      console.error("Error getting group:", error);
+      throw error;
+    }
+  }
+
+  async getGroupsByUser(userId: string): Promise<Group[]> {
+    try {
+      const result = await db.select({
+        id: groups.id,
+        organizationId: groups.organizationId,
+        name: groups.name,
+        description: groups.description,
+        status: groups.status,
+        parentGroupId: groups.parentGroupId,
+        metadata: groups.metadata,
+        createdAt: groups.createdAt,
+        updatedAt: groups.updatedAt
+      })
+      .from(groups)
+      .innerJoin(groupMembers, eq(groups.id, groupMembers.groupId))
+      .where(eq(groupMembers.userId, userId))
+      .orderBy(groups.name);
+      
+      return result;
+    } catch (error) {
+      console.error("Error getting groups by user:", error);
+      throw error;
+    }
+  }
+
+  async createGroup(insertGroup: InsertGroup): Promise<Group> {
+    try {
+      const [group] = await db.insert(groups).values(insertGroup).returning();
+      return group;
+    } catch (error) {
+      console.error("Error creating group:", error);
+      throw error;
+    }
+  }
+
+  async updateGroup(id: string, updates: Partial<Group>): Promise<Group | undefined> {
+    try {
+      const [updated] = await db.update(groups)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(groups.id, id))
+        .returning();
+      return updated || undefined;
+    } catch (error) {
+      console.error("Error updating group:", error);
+      throw error;
+    }
+  }
+
+  async deleteGroup(id: string): Promise<boolean> {
+    try {
+      // Remove group members first
+      await db.delete(groupMembers).where(eq(groupMembers.groupId, id));
+      // Remove group permissions
+      await db.delete(groupPermissions).where(eq(groupPermissions.groupId, id));
+      
+      const result = await db.delete(groups).where(eq(groups.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      throw error;
+    }
+  }
+
+  // Group membership
+  async getGroupMembers(groupId: string): Promise<GroupMember[]> {
+    try {
+      return await db.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
+    } catch (error) {
+      console.error("Error getting group members:", error);
+      throw error;
+    }
+  }
+
+  async getUserGroups(userId: string): Promise<GroupMember[]> {
+    try {
+      return await db.select().from(groupMembers).where(eq(groupMembers.userId, userId));
+    } catch (error) {
+      console.error("Error getting user groups:", error);
+      throw error;
+    }
+  }
+
+  async addGroupMember(insertGroupMember: InsertGroupMember): Promise<GroupMember> {
+    try {
+      const [member] = await db.insert(groupMembers).values(insertGroupMember).returning();
+      return member;
+    } catch (error) {
+      console.error("Error adding group member:", error);
+      throw error;
+    }
+  }
+
+  async removeGroupMember(groupId: string, userId: string): Promise<boolean> {
+    try {
+      const result = await db.delete(groupMembers)
+        .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error removing group member:", error);
+      throw error;
+    }
+  }
+
+  // Group permissions
+  async getGroupPermissions(groupId: string): Promise<GroupPermission[]> {
+    try {
+      return await db.select().from(groupPermissions).where(eq(groupPermissions.groupId, groupId));
+    } catch (error) {
+      console.error("Error getting group permissions:", error);
+      throw error;
+    }
+  }
+
+  async setGroupPermissions(groupId: string, permissionIds: string[]): Promise<boolean> {
+    try {
+      // Remove existing permissions
+      await db.delete(groupPermissions).where(eq(groupPermissions.groupId, groupId));
+      
+      // Add new permissions
+      if (permissionIds.length > 0) {
+        const groupPermissionData = permissionIds.map(permissionId => ({
+          groupId,
+          permissionId,
+          effect: 'allow' as const
+        }));
+        await db.insert(groupPermissions).values(groupPermissionData);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error setting group permissions:", error);
+      throw error;
+    }
+  }
+
+  // User permissions (direct assignments)
+  async getUserPermissions(userId: string, organizationId: string): Promise<UserPermission[]> {
+    try {
+      return await db.select().from(userPermissions)
+        .where(and(eq(userPermissions.userId, userId), eq(userPermissions.organizationId, organizationId)));
+    } catch (error) {
+      console.error("Error getting user permissions:", error);
+      throw error;
+    }
+  }
+
+  async addUserPermission(insertUserPermission: InsertUserPermission): Promise<UserPermission> {
+    try {
+      const [userPerm] = await db.insert(userPermissions).values(insertUserPermission).returning();
+      return userPerm;
+    } catch (error) {
+      console.error("Error adding user permission:", error);
+      throw error;
+    }
+  }
+
+  async removeUserPermission(userId: string, permissionId: string, organizationId: string): Promise<boolean> {
+    try {
+      const result = await db.delete(userPermissions)
+        .where(and(
+          eq(userPermissions.userId, userId),
+          eq(userPermissions.permissionId, permissionId),
+          eq(userPermissions.organizationId, organizationId)
+        ));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error removing user permission:", error);
+      throw error;
+    }
+  }
+
+  // User-Role assignments
+  async getUserRoles(userId: string, organizationId: string): Promise<UserRole[]> {
+    try {
+      return await db.select().from(userRoles)
+        .where(and(eq(userRoles.userId, userId), eq(userRoles.organizationId, organizationId)));
+    } catch (error) {
+      console.error("Error getting user roles:", error);
+      throw error;
+    }
+  }
+
+  async assignUserRole(insertUserRole: InsertUserRole): Promise<UserRole> {
+    try {
+      const [userRole] = await db.insert(userRoles).values(insertUserRole).returning();
+      return userRole;
+    } catch (error) {
+      console.error("Error assigning user role:", error);
+      throw error;
+    }
+  }
+
+  async removeUserRole(userId: string, roleId: string, organizationId: string): Promise<boolean> {
+    try {
+      const result = await db.delete(userRoles)
+        .where(and(
+          eq(userRoles.userId, userId),
+          eq(userRoles.roleId, roleId),
+          eq(userRoles.organizationId, organizationId)
+        ));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error removing user role:", error);
+      throw error;
+    }
+  }
+
+  // Permission resolution and checking
+  async getUserEffectivePermissions(userId: string, organizationId: string): Promise<{ module: string; action: string; resource?: string; effect: 'allow' | 'deny' }[]> {
+    try {
+      const effectivePermissions: { module: string; action: string; resource?: string; effect: 'allow' | 'deny' }[] = [];
+
+      // Get permissions from roles
+      const userRolesData = await db.select({
+        roleId: userRoles.roleId,
+        permissionId: rolePermissions.permissionId,
+        effect: rolePermissions.effect,
+        module: permissions.module,
+        action: permissions.action,
+        resource: permissions.resource
+      })
+      .from(userRoles)
+      .innerJoin(rolePermissions, eq(userRoles.roleId, rolePermissions.roleId))
+      .innerJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
+      .where(and(
+        eq(userRoles.userId, userId),
+        eq(userRoles.organizationId, organizationId),
+        or(eq(userRoles.expiresAt, null), sql`${userRoles.expiresAt} > NOW()`)
+      ));
+
+      effectivePermissions.push(...userRolesData.map(p => ({
+        module: p.module,
+        action: p.action,
+        resource: p.resource || undefined,
+        effect: p.effect
+      })));
+
+      // Get permissions from groups
+      const groupPermissionsData = await db.select({
+        permissionId: groupPermissions.permissionId,
+        effect: groupPermissions.effect,
+        module: permissions.module,
+        action: permissions.action,
+        resource: permissions.resource
+      })
+      .from(groupMembers)
+      .innerJoin(groupPermissions, eq(groupMembers.groupId, groupPermissions.groupId))
+      .innerJoin(permissions, eq(groupPermissions.permissionId, permissions.id))
+      .innerJoin(groups, eq(groupMembers.groupId, groups.id))
+      .where(and(
+        eq(groupMembers.userId, userId),
+        eq(groups.organizationId, organizationId),
+        eq(groups.status, 'active')
+      ));
+
+      effectivePermissions.push(...groupPermissionsData.map(p => ({
+        module: p.module,
+        action: p.action,
+        resource: p.resource || undefined,
+        effect: p.effect
+      })));
+
+      // Get direct user permissions
+      const directPermissions = await db.select({
+        permissionId: userPermissions.permissionId,
+        effect: userPermissions.effect,
+        module: permissions.module,
+        action: permissions.action,
+        resource: permissions.resource
+      })
+      .from(userPermissions)
+      .innerJoin(permissions, eq(userPermissions.permissionId, permissions.id))
+      .where(and(
+        eq(userPermissions.userId, userId),
+        eq(userPermissions.organizationId, organizationId),
+        or(eq(userPermissions.expiresAt, null), sql`${userPermissions.expiresAt} > NOW()`)
+      ));
+
+      effectivePermissions.push(...directPermissions.map(p => ({
+        module: p.module,
+        action: p.action,
+        resource: p.resource || undefined,
+        effect: p.effect
+      })));
+
+      return effectivePermissions;
+    } catch (error) {
+      console.error("Error getting user effective permissions:", error);
+      throw error;
+    }
+  }
+
+  async checkUserPermission(userId: string, organizationId: string, module: string, action: string, resource?: string): Promise<boolean> {
+    try {
+      const effectivePermissions = await this.getUserEffectivePermissions(userId, organizationId);
+      
+      // Filter permissions that match the requested module and action
+      const matchingPermissions = effectivePermissions.filter(p => 
+        p.module === module && 
+        p.action === action && 
+        (!resource || !p.resource || p.resource === resource)
+      );
+
+      // If any deny permission exists, access is denied
+      const hasDenyPermission = matchingPermissions.some(p => p.effect === 'deny');
+      if (hasDenyPermission) {
+        return false;
+      }
+
+      // If any allow permission exists, access is granted
+      const hasAllowPermission = matchingPermissions.some(p => p.effect === 'allow');
+      return hasAllowPermission;
+    } catch (error) {
+      console.error("Error checking user permission:", error);
+      return false; // Fail-safe: deny access on error
+    }
+  }
+
+  // Audit logging
+  async getAuditLogs(organizationId?: string, filters?: any): Promise<AuditLog[]> {
+    try {
+      let query = db.select().from(auditLogs);
+      
+      if (organizationId) {
+        query = query.where(eq(auditLogs.organizationId, organizationId));
+      }
+      
+      // Apply additional filters if provided
+      if (filters?.userId) {
+        query = query.where(eq(auditLogs.actorUserId, filters.userId));
+      }
+      if (filters?.action) {
+        query = query.where(eq(auditLogs.action, filters.action));
+      }
+      if (filters?.entityType) {
+        query = query.where(eq(auditLogs.entityType, filters.entityType));
+      }
+      
+      return await query.orderBy(desc(auditLogs.createdAt)).limit(filters?.limit || 100);
+    } catch (error) {
+      console.error("Error getting audit logs:", error);
+      throw error;
+    }
+  }
+
+  async createAuditLog(insertAuditLog: InsertAuditLog): Promise<AuditLog> {
+    try {
+      const [auditLog] = await db.insert(auditLogs).values(insertAuditLog).returning();
+      return auditLog;
+    } catch (error) {
+      console.error("Error creating audit log:", error);
+      throw error;
+    }
+  }
+
+  async getAuditLogsByUser(userId: string): Promise<AuditLog[]> {
+    try {
+      return await db.select().from(auditLogs)
+        .where(eq(auditLogs.actorUserId, userId))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(50);
+    } catch (error) {
+      console.error("Error getting audit logs by user:", error);
+      throw error;
+    }
+  }
+
+  async getAuditLogsByEntity(entityType: string, entityId: string): Promise<AuditLog[]> {
+    try {
+      return await db.select().from(auditLogs)
+        .where(and(eq(auditLogs.entityType, entityType), eq(auditLogs.entityId, entityId)))
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(20);
+    } catch (error) {
+      console.error("Error getting audit logs by entity:", error);
+      throw error;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
