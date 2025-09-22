@@ -17,7 +17,9 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronRight,
-  Lock
+  Lock,
+  Settings,
+  UserCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -57,14 +59,36 @@ const navigation: NavigationItem[] = [
   { name: 'Due Diligence Report', href: '/due-diligence-report', icon: FileText, testId: 'nav-due-diligence-report' },
 ];
 
+// Admin navigation (only for admin users)
+const adminNavigation: NavigationItem[] = [
+  { 
+    name: 'System Administration', 
+    href: '/admin', 
+    icon: Settings, 
+    testId: 'nav-admin',
+    subModules: [
+      { name: 'Admin Dashboard', href: '/admin/dashboard', icon: BarChart3, step: 1, testId: 'nav-admin-dashboard' },
+      { name: 'User Management', href: '/admin/users', icon: Users, step: 2, testId: 'nav-admin-users' },
+      { name: 'Role Management', href: '/admin/roles', icon: Shield, step: 3, testId: 'nav-admin-roles' },
+      { name: 'Organizations', href: '/admin/organizations', icon: Users, step: 4, testId: 'nav-admin-organizations' },
+    ]
+  },
+];
+
 export function Sidebar() {
   const [location, setLocation] = useLocation();
   const [expandedModules, setExpandedModules] = useState<string[]>(['Supply Chain Analysis']);
   const { toast } = useToast();
 
   // Temporarily bypass authentication for direct access
-  const user = { name: 'Demo User', role: 'compliance_officer' };
+  const user = { name: 'Demo User', role: 'admin' };
   const logoutMutation = { mutate: () => {} };
+
+  // Check if user has admin permissions
+  const isAdmin = user?.role === 'admin' || user?.role === 'system_administrator';
+  
+  // Combine navigation arrays
+  const allNavigation = isAdmin ? [...navigation, ...adminNavigation] : navigation;
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
@@ -192,6 +216,18 @@ export function Sidebar() {
       <div className="flex-1 p-4">
         <div className="space-y-1">
           {navigation.map(renderNavigationItem)}
+          
+          {/* Admin Navigation Section */}
+          {isAdmin && (
+            <>
+              <div className="my-4">
+                <div className="px-4 py-2">
+                  <div className="h-px bg-gray-300 dark:bg-gray-700"></div>
+                </div>
+              </div>
+              {adminNavigation.map(renderNavigationItem)}
+            </>
+          )}
         </div>
       </div>
 

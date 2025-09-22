@@ -22,6 +22,9 @@ import MapViewer from "@/pages/map-viewer";
 import EditPolygon from "@/pages/edit-polygon";
 import DataVerification from "@/pages/data-verification";
 import DueDiligenceReport from "@/pages/due-diligence-report";
+import AdminDashboard from "@/pages/admin/admin-dashboard";
+import UserManagement from "@/pages/admin/user-management";
+import RoleManagement from "@/pages/admin/role-management";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { VoiceAssistantToggle } from "@/components/voice-assistant/VoiceAssistantToggle";
@@ -40,7 +43,12 @@ function Router() {
       <ProtectedRoute path="/risk-assessment" component={() => <RiskAssessment />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
       <ProtectedRoute path="/due-diligence-report" component={() => <DueDiligenceReport />} />
-      <ProtectedRoute path="/due-diligence-report" component={() => <DueDiligenceReport />} />
+      
+      {/* Admin Routes */}
+      <ProtectedRoute path="/admin" component={() => <AdminDashboard />} />
+      <ProtectedRoute path="/admin/dashboard" component={() => <AdminDashboard />} />
+      <ProtectedRoute path="/admin/users" component={() => <UserManagement />} />
+      <ProtectedRoute path="/admin/roles" component={() => <RoleManagement />} />
 
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
