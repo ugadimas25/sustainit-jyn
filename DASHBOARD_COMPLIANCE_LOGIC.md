@@ -27,12 +27,12 @@ GeoJSON Upload → Risk Analysis → Database Storage → Dashboard Aggregation 
 **Location**: `server/routes.ts` - `/api/analyze-plots` endpoint
 
 ```typescript
-// Risk determination logic
-if (gfwLoss === "YES" || jrcLoss === "YES" || sbtnLoss === "YES") {
+// Risk determination logic based on actual loss area values (in hectares)
+if (gfwLossArea > 0.01 || jrcLossArea > 0.01 || sbtnLossArea > 0.01) {
   overallRisk = "HIGH";
   complianceStatus = "NON-COMPLIANT";
-} else if (highRiskDatasets.length > 0) {
-  overallRisk = "MEDIUM"; 
+} else if (gfwLossArea > 0 || jrcLossArea > 0 || sbtnLossArea > 0) {
+  overallRisk = "MEDIUM";
   complianceStatus = "NON-COMPLIANT";
 } else {
   overallRisk = "LOW";

@@ -3565,10 +3565,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`📏 Plot ${plotId}: Calculated area ${area}ha from geometry using PostGIS`);
             }
 
-            // Get risk data and calculate actual loss areas
-            const overallRisk = feature.properties?.overall_compliance?.overall_risk?.toUpperCase() || 'UNKNOWN';
-            const complianceStatus = feature.properties?.overall_compliance?.compliance_status === 'NON_COMPLIANT' ? 'NON-COMPLIANT' : 'COMPLIANT';
-
             // Get loss percentages from API and convert to actual hectares
             const totalAreaHa = parseFloat(feature.properties?.total_area_hectares || area.toString() || '1');
             const gfwLossPercent = parseFloat(feature.properties?.gfw_loss?.gfw_loss_area || '0');
@@ -3579,6 +3575,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const gfwLossArea = gfwLossPercent * totalAreaHa;
             const jrcLossArea = jrcLossPercent * totalAreaHa;
             const sbtnLossArea = sbtnLossPercent * totalAreaHa;
+
+            // Calculate OVERALL RISK based on refined logic
+            let overallRisk = 'LOW';
+            let complianceStatus = 'COMPLIANT';
+            
+            // Check if any loss area > 0.01 hectares
+            if (gfwLossArea > 0.01 || jrcLossArea > 0.01 || sbtnLossArea > 0.01) {
+              overallRisk = 'HIGH';
+              complianceStatus = 'NON-COMPLIANT';
+            } 
+            // Check if any loss area < 0.01 but > 0 (between 0.000 and 0.01)
+            else if (gfwLossArea > 0 || jrcLossArea > 0 || sbtnLossArea > 0) {
+              overallRisk = 'MEDIUM';
+              complianceStatus = 'NON-COMPLIANT';
+            }
+            // If all loss areas = 0.000, keep LOW and COMPLIANT (default values)
 
             const highRiskDatasets = feature.properties?.overall_compliance?.high_risk_datasets || [];
 
