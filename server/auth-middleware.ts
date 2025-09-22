@@ -100,9 +100,16 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
 
     // Get user's default organization if not set
     const userOrgs = await storage.getUserOrganizations(req.user.id);
+    console.log('🔍 DEBUG: User orgs for', req.user.username, ':', JSON.stringify(userOrgs, null, 2));
+    
     const defaultOrg = userOrgs.find(uo => uo.isDefault);
+    console.log('🔍 DEBUG: Default org found:', JSON.stringify(defaultOrg, null, 2));
+    
     if (defaultOrg) {
       req.authenticatedUser.organizationId = defaultOrg.organizationId;
+      console.log('🔍 DEBUG: Set organizationId to:', defaultOrg.organizationId);
+    } else {
+      console.log('🔍 DEBUG: No default org found, organizationId remains undefined');
     }
 
     next();

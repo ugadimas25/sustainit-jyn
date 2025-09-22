@@ -54,7 +54,7 @@ externalPort = 80
 exposeLocalhost = true
 
 [[ports]]
-localPort = 41761
+localPort = 42473
 externalPort = 3001
 
 [agent]
