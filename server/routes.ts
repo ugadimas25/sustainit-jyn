@@ -1858,12 +1858,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // User authentication routes
   app.get("/api/user", async (req, res) => {
+    // Force fresh response - no caching
+    res.set('Cache-Control', 'no-store');
     if (req.user) {
       try {
         const { password, ...userWithoutPassword } = req.user as any;
         
         // Derive the user's role from their organization roles
         let derivedRole = 'user'; // default role
+        console.log(`🔍 DEBUG: Starting role derivation for user ${userWithoutPassword.username}`);
         
         try {
           // Get user's organizations
@@ -1892,7 +1895,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Return user with derived role
-        res.json({ ...userWithoutPassword, role: derivedRole });
+        console.log(`🔍 DEBUG: Final derived role for ${userWithoutPassword.username}: ${derivedRole}`);
+        res.json({ ...userWithoutPassword, role: derivedRole, lastUpdated: new Date().toISOString() });
       } catch (error) {
         console.error('Error in /api/user:', error);
         res.status(500).json({ error: 'Internal server error' });
