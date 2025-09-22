@@ -57,7 +57,7 @@ export const wdpaApi = {
   searchByRegion: async (country: string, province?: string) => {
     const params = new URLSearchParams({ country });
     if (province) params.append('province', province);
-    
+
     const response = await apiRequest('GET', `/api/wdpa/search?${params}`);
     return response.json();
   }
@@ -70,10 +70,10 @@ export const gfwApi = {
   },
 
   getGLADAlerts: async (coordinates: number[][] | number[], startDate?: string, endDate?: string) => {
-    const response = await apiRequest('POST', '/api/gfw/glad-alerts', { 
-      coordinates, 
-      startDate, 
-      endDate 
+    const response = await apiRequest('POST', '/api/gfw/glad-alerts', {
+      coordinates,
+      startDate,
+      endDate
     });
     return response.json();
   }
@@ -81,9 +81,9 @@ export const gfwApi = {
 
 export const verificationApi = {
   comprehensiveVerification: async (plotId: string, coordinates: number[][] | number[]): Promise<ComprehensiveVerificationResult> => {
-    const response = await apiRequest('POST', '/api/plots/comprehensive-verification', { 
-      plotId, 
-      coordinates 
+    const response = await apiRequest('POST', '/api/plots/comprehensive-verification', {
+      plotId,
+      coordinates
     });
     return response.json();
   }

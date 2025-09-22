@@ -1,10 +1,32 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+// Configure CORS for production
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? [process.env.REPLIT_DEV_DOMAIN, process.env.REPL_SLUG] 
+    : true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}));
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+  res.sendStatus(200);
+});
+
+// Increase body size limits for GeoJSON uploads
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
 // Serve attached assets (PDFs, documents, etc.)
 app.use('/attached_assets', express.static('attached_assets'));
@@ -64,11 +86,16 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+
   server.listen({
     port,
-    host: "0.0.0.0",
+    host,
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    if (process.env.NODE_ENV === 'production') {
+      log(`Production server accessible at https://${process.env.REPLIT_DEV_DOMAIN}`);
+    }
   });
 })();

@@ -189,8 +189,12 @@ export default function DeforestationMonitoring() {
       try {
         console.log('🚀 Uploading GeoJSON for EUDR analysis...');
 
-        const response = await fetch('/api/geojson/upload', {
+        // Use the API base URL for production compatibility
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL || ''}/api/geojson/upload`;
+        
+        const response = await fetch(apiUrl, {
           method: 'POST',
+          credentials: 'include', // Include cookies for authentication
           headers: {
             'Content-Type': 'application/json',
           },
@@ -200,15 +204,20 @@ export default function DeforestationMonitoring() {
           }),
         });
 
+        console.log('📡 Response status:', response.status, response.statusText);
+        console.log('📡 Response URL:', response.url);
+
         if (!response.ok) {
           let errorMessage = `Upload failed with status ${response.status}`;
 
           try {
             const errorData = await response.json();
             errorMessage = errorData.error || errorData.details || errorMessage;
+            console.error('❌ Server error details:', errorData);
           } catch (jsonError) {
             // If we can't parse the error response, use the status text
             errorMessage = response.statusText || errorMessage;
+            console.error('❌ Failed to parse error response:', jsonError);
           }
 
           throw new Error(errorMessage);

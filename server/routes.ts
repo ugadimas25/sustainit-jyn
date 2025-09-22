@@ -3226,6 +3226,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // GeoJSON upload and analysis endpoint
   app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
     try {
+      // Add CORS headers for production
+      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      
+      console.log('📥 Received GeoJSON upload request');
+      console.log('📋 Request headers:', Object.keys(req.headers));
+      console.log('📋 Content-Type:', req.headers['content-type']);
+      console.log('📋 Body keys:', Object.keys(req.body || {}));
+      
       const { geojson, geojsonFile, filename, fileName } = req.body;
 
       // Accept both parameter names for flexibility
