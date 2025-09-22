@@ -207,31 +207,48 @@ export default function DataVerification() {
 
         // Add tile layer based on map type
         let tileLayer;
-        switch (mapType) {
-          case 'Terrain':
-            tileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-              attribution: '© OpenTopoMap contributors'
-            });
-            break;
-          case 'Satellite':
-            tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-              attribution: '© Esri'
-            });
-            break;
-          case 'Silver':
-            tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              attribution: '© OpenStreetMap contributors'
-            });
-            break;
-          case 'UAV':
-            // Base satellite layer for UAV mode
-            tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-              attribution: '© Esri (UAV View)'
-            });
-            break;
-        }
+        try {
+          switch (mapType) {
+            case 'Terrain':
+              tileLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenTopoMap contributors',
+                maxZoom: 19
+              });
+              break;
+            case 'Satellite':
+              tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri',
+                maxZoom: 19
+              });
+              break;
+            case 'Silver':
+              tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+              });
+              break;
+            case 'UAV':
+            default:
+              // Use Satellite layer for UAV mode as requested
+              tileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '© Esri (Satellite View)',
+                maxZoom: 19
+              });
+              break;
+          }
 
-        tileLayer.addTo(map);
+          if (tileLayer) {
+            tileLayer.addTo(map);
+          }
+        } catch (tileError) {
+          console.warn('Error adding tile layer:', tileError);
+          // Fallback to OpenStreetMap
+          const fallbackTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+          });
+          fallbackTile.addTo(map);
+        }
 
         // Add TIFF overlay for UAV mode
         if (mapType === 'UAV' && selectedTiffFile) {
@@ -335,6 +352,19 @@ export default function DataVerification() {
 
       } catch (error) {
         console.error('Error initializing verification map:', error);
+        // Show user-friendly error message
+        if (mapRef.current) {
+          mapRef.current.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f5f5f5; color: #666;">
+              <div style="text-align: center;">
+                <p>Map failed to load</p>
+                <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                  Retry
+                </button>
+              </div>
+            </div>
+          `;
+        }
       }
     };
 
