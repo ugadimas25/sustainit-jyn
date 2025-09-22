@@ -1,5 +1,5 @@
 import { 
-  users, type User, type InsertUser,
+  users, type User, type InsertUser, type UserEnhanced, type InsertUserEnhanced,
   commodities, type Commodity, type InsertCommodity,
   parties, type Party, type InsertParty,
   facilities, type Facility, type InsertFacility,
@@ -22,7 +22,20 @@ import {
   eudrAssessments, type EudrAssessment, type InsertEudrAssessment,
   supplierAssessmentProgress, type SupplierAssessmentProgress, type InsertSupplierAssessmentProgress,
   riskAssessments, type RiskAssessment, type InsertRiskAssessment,
-  riskAssessmentItems, type RiskAssessmentItem, type InsertRiskAssessmentItem
+  riskAssessmentItems, type RiskAssessmentItem, type InsertRiskAssessmentItem,
+
+  // User Configuration Module imports
+  organizations, type Organization, type InsertOrganization,
+  userOrganizations, type UserOrganization, type InsertUserOrganization,
+  roles, type Role, type InsertRole,
+  permissions, type Permission, type InsertPermission,
+  rolePermissions, type RolePermission, type InsertRolePermission,
+  groups, type Group, type InsertGroup,
+  groupMembers, type GroupMember, type InsertGroupMember,
+  groupPermissions, type GroupPermission, type InsertGroupPermission,
+  userPermissions, type UserPermission, type InsertUserPermission,
+  userRoles, type UserRole, type InsertUserRole,
+  auditLogs, type AuditLog, type InsertAuditLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql, inArray } from "drizzle-orm";
@@ -250,6 +263,96 @@ export interface IStorage {
 
   // Plot summaries for detailed views and drill-downs
   getPlotSummaries(filters?: import("@shared/schema").DashboardFilters): Promise<import("@shared/schema").PlotSummary[]>;
+
+  // =======================
+  // USER CONFIGURATION MODULE METHODS
+  // =======================
+
+  // Organization management
+  getOrganizations(): Promise<Organization[]>;
+  getOrganization(id: string): Promise<Organization | undefined>;
+  getOrganizationBySlug(slug: string): Promise<Organization | undefined>;
+  createOrganization(insertOrganization: InsertOrganization): Promise<Organization>;
+  updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization | undefined>;
+  deleteOrganization(id: string): Promise<boolean>;
+
+  // User-Organization relationships
+  getUserOrganizations(userId: string): Promise<UserOrganization[]>;
+  getOrganizationUsers(organizationId: string): Promise<UserOrganization[]>;
+  addUserToOrganization(insertUserOrganization: InsertUserOrganization): Promise<UserOrganization>;
+  removeUserFromOrganization(userId: string, organizationId: string): Promise<boolean>;
+  setDefaultOrganization(userId: string, organizationId: string): Promise<boolean>;
+
+  // Enhanced User management (with RBAC support)
+  getUsersEnhanced(): Promise<UserEnhanced[]>;
+  getUserEnhanced(id: string): Promise<UserEnhanced | undefined>;
+  getUserByEmailEnhanced(email: string): Promise<UserEnhanced | undefined>;
+  createUserEnhanced(insertUser: InsertUserEnhanced): Promise<UserEnhanced>;
+  updateUserEnhanced(id: string, updates: Partial<UserEnhanced>): Promise<UserEnhanced | undefined>;
+  deactivateUser(id: string): Promise<boolean>;
+  lockUser(id: string, until?: Date): Promise<boolean>;
+  unlockUser(id: string): Promise<boolean>;
+  updateLoginAttempts(userId: string, attempts: number): Promise<void>;
+
+  // Role management
+  getRoles(organizationId?: string): Promise<Role[]>;
+  getRole(id: string): Promise<Role | undefined>;
+  getRolesByOrganization(organizationId: string): Promise<Role[]>;
+  getSystemRoles(): Promise<Role[]>;
+  createRole(insertRole: InsertRole): Promise<Role>;
+  updateRole(id: string, updates: Partial<Role>): Promise<Role | undefined>;
+  deleteRole(id: string): Promise<boolean>;
+  setRolePermissions(roleId: string, permissionIds: string[]): Promise<boolean>;
+
+  // Permission management
+  getPermissions(): Promise<Permission[]>;
+  getPermission(id: string): Promise<Permission | undefined>;
+  getPermissionsByModule(module: string): Promise<Permission[]>;
+  createPermission(insertPermission: InsertPermission): Promise<Permission>;
+  updatePermission(id: string, updates: Partial<Permission>): Promise<Permission | undefined>;
+
+  // Role-Permission relationships
+  getRolePermissions(roleId: string): Promise<RolePermission[]>;
+  addRolePermission(insertRolePermission: InsertRolePermission): Promise<RolePermission>;
+  removeRolePermission(roleId: string, permissionId: string): Promise<boolean>;
+
+  // Group management
+  getGroups(organizationId: string): Promise<Group[]>;
+  getGroup(id: string): Promise<Group | undefined>;
+  getGroupsByUser(userId: string): Promise<Group[]>;
+  createGroup(insertGroup: InsertGroup): Promise<Group>;
+  updateGroup(id: string, updates: Partial<Group>): Promise<Group | undefined>;
+  deleteGroup(id: string): Promise<boolean>;
+
+  // Group membership
+  getGroupMembers(groupId: string): Promise<GroupMember[]>;
+  getUserGroups(userId: string): Promise<GroupMember[]>;
+  addGroupMember(insertGroupMember: InsertGroupMember): Promise<GroupMember>;
+  removeGroupMember(groupId: string, userId: string): Promise<boolean>;
+
+  // Group permissions
+  getGroupPermissions(groupId: string): Promise<GroupPermission[]>;
+  setGroupPermissions(groupId: string, permissionIds: string[]): Promise<boolean>;
+
+  // User permissions (direct assignments)
+  getUserPermissions(userId: string, organizationId: string): Promise<UserPermission[]>;
+  addUserPermission(insertUserPermission: InsertUserPermission): Promise<UserPermission>;
+  removeUserPermission(userId: string, permissionId: string, organizationId: string): Promise<boolean>;
+
+  // User-Role assignments
+  getUserRoles(userId: string, organizationId: string): Promise<UserRole[]>;
+  assignUserRole(insertUserRole: InsertUserRole): Promise<UserRole>;
+  removeUserRole(userId: string, roleId: string, organizationId: string): Promise<boolean>;
+
+  // Permission resolution and checking
+  getUserEffectivePermissions(userId: string, organizationId: string): Promise<{ module: string; action: string; resource?: string; effect: 'allow' | 'deny' }[]>;
+  checkUserPermission(userId: string, organizationId: string, module: string, action: string, resource?: string): Promise<boolean>;
+
+  // Audit logging
+  getAuditLogs(organizationId?: string, filters?: any): Promise<AuditLog[]>;
+  createAuditLog(insertAuditLog: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogsByUser(userId: string): Promise<AuditLog[]>;
+  getAuditLogsByEntity(entityType: string, entityId: string): Promise<AuditLog[]>;
 }
 
 // Database implementation of IStorage
