@@ -300,11 +300,11 @@ export default function DataVerification() {
               if (polygon.geometry.type === 'MultiPolygon') {
                 // For MultiPolygon, take the first polygon's outer ring
                 const firstPolygon = polygon.geometry.coordinates[0];
-                const outerRing = firstPolygon[0] as number[][];
+                const outerRing = firstPolygon[0] as [number, number][];
                 latlngs = outerRing.map((coord) => [coord[1], coord[0]]);
               } else if (polygon.geometry.type === 'Polygon') {
                 // For Polygon, take the outer ring
-                const outerRing = polygon.geometry.coordinates[0] as number[][];
+                const outerRing = polygon.geometry.coordinates[0] as [number, number][];
                 latlngs = outerRing.map((coord) => [coord[1], coord[0]]);
               } else {
                 return; // Skip unsupported geometry types
@@ -408,11 +408,11 @@ export default function DataVerification() {
       // Company logo/title area
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(24);
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('KPN PLANTATION', margin, 20);
       
       pdf.setFontSize(16);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
       pdf.text('COMPLIANT VERIFICATION REPORT', margin, 32);
 
       // Add date/time in header
@@ -436,14 +436,14 @@ export default function DataVerification() {
 
       // Plot Information Section
       pdf.setFontSize(16);
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('PLOT VERIFICATION DETAILS', margin, currentY);
       currentY += 15;
 
       if (isMultipleVerification) {
         // Multiple plots summary
         pdf.setFontSize(12);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         pdf.text(`Total Plots Verified: ${selectedPolygons.length}`, margin, currentY);
         currentY += 8;
         
@@ -460,7 +460,7 @@ export default function DataVerification() {
       } else if (selectedPolygon) {
         // Single plot details
         pdf.setFontSize(12);
-        pdf.setFont(undefined, 'normal');
+        pdf.setFont('helvetica', 'normal');
         pdf.text(`Plot ID: ${selectedPolygon.plotId}`, margin, currentY);
         currentY += 8;
         pdf.text(`Country: ${selectedPolygon.country}`, margin, currentY);
@@ -475,12 +475,12 @@ export default function DataVerification() {
 
       // Form Information Section
       pdf.setFontSize(16);
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text('VERIFICATION INFORMATION', margin, currentY);
       currentY += 15;
 
       pdf.setFontSize(12);
-      pdf.setFont(undefined, 'normal');
+      pdf.setFont('helvetica', 'normal');
       
       // Updated Date & Time
       if (formData.updatedDate) {
@@ -515,7 +515,7 @@ export default function DataVerification() {
         currentY += 15;
       }
 
-      // Map Image Section - capture map area only
+      // Map Image Section - capture map area and place it on the right side
       const mapElement = verificationContentRef.current?.querySelector('.flex-1.relative') as HTMLElement;
       if (mapElement) {
         // Hide UI controls temporarily for cleaner map capture
@@ -524,7 +524,7 @@ export default function DataVerification() {
 
         try {
           const mapCanvas = await html2canvas(mapElement, {
-            scale: 1,
+            scale: 1.5,
             useCORS: true,
             allowTaint: false,
             backgroundColor: '#ffffff',
@@ -532,15 +532,30 @@ export default function DataVerification() {
             height: mapElement.clientHeight,
           });
 
-          // Calculate map image dimensions for PDF
-          const availableHeight = pageHeight - currentY - margin;
-          const mapWidth = contentWidth * 0.6; // Use 60% of content width
-          const mapHeight = (mapCanvas.height * mapWidth) / mapCanvas.width;
+          // Two-column layout: information on left, map on right
+          const leftColumnWidth = contentWidth * 0.48; // 48% for text
+          const rightColumnWidth = contentWidth * 0.48; // 48% for map  
+          const columnGap = contentWidth * 0.04; // 4% gap between columns
+          const mapX = margin + leftColumnWidth + columnGap;
           
-          // Add map image if it fits
-          if (mapHeight <= availableHeight) {
-            pdf.addImage(mapCanvas.toDataURL('image/png'), 'PNG', margin, currentY, mapWidth, mapHeight);
+          // Calculate map dimensions to fit in right column
+          const maxMapHeight = pageHeight - 80 - margin; // Reserve space for header and footer
+          const mapWidth = rightColumnWidth;
+          let mapHeight = (mapCanvas.height * mapWidth) / mapCanvas.width;
+          
+          // If map is too tall, scale it down
+          if (mapHeight > maxMapHeight) {
+            mapHeight = maxMapHeight;
           }
+          
+          // Position map at top right starting from header area
+          const mapY = 80; // Start after header
+          pdf.addImage(mapCanvas.toDataURL('image/png'), 'PNG', mapX, mapY, mapWidth, mapHeight);
+          
+          // Add map title above the map
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('POLYGON LOCATION MAP', mapX, mapY - 5);
 
           // Restore UI controls
           controlsToHide.forEach(el => (el as HTMLElement).style.visibility = 'visible');
