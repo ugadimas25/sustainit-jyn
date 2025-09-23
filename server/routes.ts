@@ -2262,6 +2262,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate FIXED 4-page DDS PDF document with correct format
+  app.get('/api/generate-fixed-dds-pdf', isAuthenticated, async (req, res) => {
+    try {
+      const { generateFixedDDSPDF } = await import('./pdf-generator-fixed.js');
+      const pdfBuffer = generateFixedDDSPDF({});
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="dds-fixed-4-page.pdf"');
+      res.send(Buffer.from(pdfBuffer));
+    } catch (error) {
+      console.error('Error generating FIXED DDS PDF:', error);
+      res.status(500).json({ error: 'Failed to generate FIXED DDS PDF' });
+    }
+  });
+
   // Generate dummy DDS PDF document
   app.get('/api/generate-dummy-dds-pdf', isAuthenticated, async (req, res) => {
     try {
@@ -2417,18 +2432,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
       doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
 
-      // Page 2 - Methodology with Embedded Images
+      // PAGE 2 - EUDR Compliance Decision Tree (Halaman 2 ikuti EUDR Compliance Decision Tree GAMBAR TERLAMPIR)
       doc.addPage();
-      doc.setFontSize(14);
+      doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.text('PAGE 2 - METHODOLOGY', 105, 20, { align: 'center' });
+      doc.text('EUDR Compliance Decision Tree', 105, 20, { align: 'center' });
 
       // Header for page 2
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.rect(10, 30, 190, 15);
       doc.text('Page 2 of 4', 15, 38);
-      doc.text('Methodology & Verification Process', 80, 38);
+      doc.text('EUDR Compliance Verification - Art. 2.40', 75, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
 
       yPos = 55;
