@@ -277,13 +277,16 @@ export default function DataCollection() {
       // Reset form
       setEstateForm({
         namaSupplier: '', namaGroup: '', aktaPendirian: '', aktaPerubahan: '', izinBerusaha: '',
-        tipeSertifikat: '', nomorSertifikat: '', lembagaSertifikasi: '', ruangLingkupSertifikasi: '',
-        masaBerlakuSertifikat: '', linkDokumen: '', alamatKantor: '', alamatKebun: '', koordinatKebun: '',
-        koordinatKantor: '', jenisSupplier: '', jenisKebun: '', totalProduksiTBSTahun: '', tanggalPengisianKuisioner: '',
+        alamatKantor: '', alamatKebun: '', koordinatKebun: '', koordinatKantor: '', 
+        jenisSupplier: '', totalProduksiTBSTahun: '', tanggalPengisianKuisioner: '',
         namaPenanggungJawab: '', jabatanPenanggungJawab: '', emailPenanggungJawab: '', nomorTeleponPenanggungJawab: '',
         namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', nomorTeleponTimInternal: '',
         
-        memilikiKebijakanPerlindunganHutan: false, memilikiKebijakanPerlindunganGambut: false
+        // Reset dynamic arrays
+        daftarKebun: [{
+          no: 1, namaKebun: '', alamat: '', luas: 0, longitude: '', latitude: '', polygon: '', 
+          legalitasLahan: '', tahunTanam: ''
+        }]
       });
     },
   });
@@ -299,8 +302,13 @@ export default function DataCollection() {
       // Reset form
       setSmallholdersForm({
         nomorDO: '', pemegangDO: '', alamatPemegangDO: '', lokasiUsaha: '', aktaPendirianUsaha: '',
-        nib: '', npwp: '', ktp: '', jenisUsaha: '',
-        pemasokTBS: [{ no: 1, namaPetani: '', alamatTempatTinggal: '', lokasiKebun: '', luas: 0, legalitasLahan: '', tahunTanam: '', stdb: '', sppl: '', nomorObjekPajakPBB: '', longitude: '', latitude: '' }]
+        nib: '', npwp: '', ktp: '', 
+        luasLahanTertanamPetaniSupplier: 0, volumeTBS: 0,
+        daftarPetaniPemasok: [{ 
+          no: 1, namaPetani: '', alamatTempatTinggal: '', lokasiKebun: '', luas: 0, 
+          legalitasLahan: '', tahunTanam: '', stdb: '', sppl: '', nomorObjekPajakPBB: '', 
+          longitude: '', latitude: '', polygon: ''
+        }]
       });
     },
   });
@@ -389,10 +397,10 @@ export default function DataCollection() {
   const addPemasok = () => {
     setSmallholdersForm(prev => ({
       ...prev,
-      pemasokTBS: [
-        ...prev.pemasokTBS,
+      daftarPetaniPemasok: [
+        ...prev.daftarPetaniPemasok,
         {
-          no: prev.pemasokTBS.length + 1,
+          no: prev.daftarPetaniPemasok.length + 1,
           namaPetani: '',
           alamatTempatTinggal: '',
           lokasiKebun: '',
@@ -403,7 +411,8 @@ export default function DataCollection() {
           sppl: '',
           nomorObjekPajakPBB: '',
           longitude: '',
-          latitude: ''
+          latitude: '',
+          polygon: ''
         }
       ]
     }));
@@ -413,7 +422,7 @@ export default function DataCollection() {
   const removePemasok = (index: number) => {
     setSmallholdersForm(prev => ({
       ...prev,
-      pemasokTBS: prev.pemasokTBS.filter((_, i) => i !== index).map((pemasok, i) => ({ ...pemasok, no: i + 1 }))
+      daftarPetaniPemasok: prev.daftarPetaniPemasok.filter((_, i) => i !== index).map((pemasok, i) => ({ ...pemasok, no: i + 1 }))
     }));
   };
 
