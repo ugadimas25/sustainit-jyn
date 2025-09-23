@@ -21,15 +21,9 @@ export default function DataCollection() {
     // Bagian 1 - Informasi Umum
     namaSupplier: '',
     namaGroup: '',
-    aktaPendirian: '', // document URL
-    aktaPerubahan: '', // document URL
-    izinBerusaha: '', // NIB
-    tipeSertifikat: '', // ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3
-    nomorSertifikat: '',
-    lembagaSertifikasi: '',
-    ruangLingkupSertifikasi: '',
-    masaBerlakuSertifikat: '',
-    linkDokumen: '',
+    aktaPendirianPerusahaan: '', // document URL
+    aktaPerubahan: '', // document URL (Jika Ada)
+    izinBerusaha: '', // Nomor Induk Berusaha
     
     // Alamat
     alamatKantor: '',
@@ -39,11 +33,15 @@ export default function DataCollection() {
     koordinatKebun: '',
     koordinatKantor: '',
     
-    // Jenis supplier
-    jenisSupplier: '', // KKPA/Sister Company/Pihak Ketiga
-    jenisKebun: '', // New field: Kebun Sendiri/Kebun Satu Manajemen Pengelolaan/Third-Partied
-    totalProduksiTBSTahun: '',
-    tanggalPengisianKuisioner: '',
+    // Jenis supplier dengan opsi yang tepat dari dokumen
+    jenisSupplier: '', // Kebun plasma yang dikelola penuh oleh perusahaan (KKPA), Kebun dalam satu grup manajemen (sister company), Kebun pihak ketiga (PT/ CV/ Koperasi)
+    totalProduksiTBSTahun: '', // kurun 1 tahun terakhir
+    
+    // Tim Internal yang bertanggung jawab mengawasi implementasi kebijakan keberlanjutan perusahan
+    namaTimInternal: '',
+    jabatanTimInternal: '',
+    emailTimInternal: '',
+    nomorTeleponTimInternal: '',
     
     // Penanggung Jawab
     namaPenanggungJawab: '',
@@ -51,42 +49,55 @@ export default function DataCollection() {
     emailPenanggungJawab: '',
     nomorTeleponPenanggungJawab: '',
     
-    // Tim Internal
-    namaTimInternal: '',
-    jabatanTimInternal: '',
-    emailTimInternal: '',
-    nomorTeleponTimInternal: '',
+    // Tanda Tangan
+    tandaTangan: '',
+    tempatTanggal: '',
     
-    // Note: Daftar Kebun moved to Spatial Analysis step
-    
-    // Bagian 3 - Perlindungan Hutan dan Gambut
-    memilikiKebijakanPerlindunganHutan: false,
-    memilikiKebijakanPerlindunganGambut: false
+    // Bagian 2 - Sumber TBS (Daftar Kebun)
+    daftarKebun: [{
+      no: 1,
+      namaKebun: '',
+      alamat: '',
+      koordinatLongitude: '',
+      koordinatLatitude: '',
+      polygonKebun: '',
+      luasLahan: '', // Ha
+      tahunTanam: '',
+      jenisBibit: '',
+      produksiTBS1TahunTerakhir: ''
+    }]
   });
 
   const [smallholdersForm, setSmallholdersForm] = useState({
+    // Form Kemampuan Telusur (Traceability) TBS Luar
     nomorDO: '',
     pemegangDO: '',
     alamatPemegangDO: '',
-    lokasiUsaha: '',
-    aktaPendirianUsaha: '', // document URL
+    lokasiUsaha: '', // Lokasi Ramp / Alamat Terdaftar CV / Koperasi / Usaha Individu
+    
+    // Legalitas Pemegang DO
+    aktaPendirianUsaha: '', // document URL - Jika Berbadan Hukum
     nib: '',
     npwp: '',
-    ktp: '', // document URL
-    jenisUsaha: '', // New field: Unit Usaha Kecil Menengah/Small Medium Enterprise
-    pemasokTBS: [{
+    
+    luasLahanTertanamPetaniSupplier: '',
+    volumeTBS: '',
+    
+    // Daftar Petani Pemasok TBS
+    daftarPetaniPemasokTBS: [{
       no: 1,
       namaPetani: '',
       alamatTempatTinggal: '',
       lokasiKebun: '',
-      luas: 0, // Ha
-      legalitasLahan: '', // document URL
-      tahunTanam: '',
+      luas: '', // Ha
+      // Legalitas Lahan
       stdb: '', // document URL
       sppl: '', // document URL
       nomorObjekPajakPBB: '',
       longitude: '',
       latitude: '',
+      polygon: '',
+      tahunTanam: ''
     }]
   });
 
@@ -196,14 +207,13 @@ export default function DataCollection() {
       });
       // Reset form
       setEstateForm({
-        namaSupplier: '', namaGroup: '', aktaPendirian: '', aktaPerubahan: '', izinBerusaha: '',
-        tipeSertifikat: '', nomorSertifikat: '', lembagaSertifikasi: '', ruangLingkupSertifikasi: '',
-        masaBerlakuSertifikat: '', linkDokumen: '', alamatKantor: '', alamatKebun: '', koordinatKebun: '',
-        koordinatKantor: '', jenisSupplier: '', jenisKebun: '', totalProduksiTBSTahun: '', tanggalPengisianKuisioner: '',
-        namaPenanggungJawab: '', jabatanPenanggungJawab: '', emailPenanggungJawab: '', nomorTeleponPenanggungJawab: '',
-        namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', nomorTeleponTimInternal: '',
-        
-        memilikiKebijakanPerlindunganHutan: false, memilikiKebijakanPerlindunganGambut: false
+        namaSupplier: '', namaGroup: '', aktaPendirianPerusahaan: '', aktaPerubahan: '', izinBerusaha: '',
+        alamatKantor: '', alamatKebun: '', koordinatKebun: '', koordinatKantor: '', jenisSupplier: '', 
+        totalProduksiTBSTahun: '', namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', 
+        nomorTeleponTimInternal: '', namaPenanggungJawab: '', jabatanPenanggungJawab: '', emailPenanggungJawab: '', 
+        nomorTelefonPenanggungJawab: '', tandaTangan: '', tempatTanggal: '', 
+        daftarKebun: [{ no: 1, namaKebun: '', alamat: '', koordinatLongitude: '', koordinatLatitude: '', 
+        polygonKebun: '', luasLahan: '', tahunTanam: '', jenisBibit: '', produksiTBS1TahunTerakhir: '' }]
       });
     },
   });
@@ -219,8 +229,8 @@ export default function DataCollection() {
       // Reset form
       setSmallholdersForm({
         nomorDO: '', pemegangDO: '', alamatPemegangDO: '', lokasiUsaha: '', aktaPendirianUsaha: '',
-        nib: '', npwp: '', ktp: '', jenisUsaha: '',
-        pemasokTBS: [{ no: 1, namaPetani: '', alamatTempatTinggal: '', lokasiKebun: '', luas: 0, legalitasLahan: '', tahunTanam: '', stdb: '', sppl: '', nomorObjekPajakPBB: '', longitude: '', latitude: '' }]
+        nib: '', npwp: '', luasLahanTertanamPetaniSupplier: '', volumeTBS: '',
+        daftarPetaniPemasokTBS: [{ no: 1, namaPetani: '', alamatTempatTinggal: '', lokasiKebun: '', luas: '', stdb: '', sppl: '', nomorObjekPajakPBB: '', longitude: '', latitude: '', polygon: '', tahunTanam: '' }]
       });
     },
   });
@@ -309,21 +319,21 @@ export default function DataCollection() {
   const addPemasok = () => {
     setSmallholdersForm(prev => ({
       ...prev,
-      pemasokTBS: [
-        ...prev.pemasokTBS,
+      daftarPetaniPemasokTBS: [
+        ...prev.daftarPetaniPemasokTBS,
         {
-          no: prev.pemasokTBS.length + 1,
+          no: prev.daftarPetaniPemasokTBS.length + 1,
           namaPetani: '',
           alamatTempatTinggal: '',
           lokasiKebun: '',
-          luas: 0,
-          legalitasLahan: '',
-          tahunTanam: '',
+          luas: '',
           stdb: '',
           sppl: '',
           nomorObjekPajakPBB: '',
           longitude: '',
-          latitude: ''
+          latitude: '',
+          polygon: '',
+          tahunTanam: ''
         }
       ]
     }));
@@ -333,7 +343,7 @@ export default function DataCollection() {
   const removePemasok = (index: number) => {
     setSmallholdersForm(prev => ({
       ...prev,
-      pemasokTBS: prev.pemasokTBS.filter((_, i) => i !== index).map((pemasok, i) => ({ ...pemasok, no: i + 1 }))
+      daftarPetaniPemasokTBS: prev.daftarPetaniPemasokTBS.filter((_, i) => i !== index).map((pemasok, i) => ({ ...pemasok, no: i + 1 }))
     }));
   };
 
@@ -503,11 +513,9 @@ export default function DataCollection() {
                         <Label>Akta Pendirian</Label>
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
-                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
-                          allowedFileTypes={['.pdf', '.doc', '.docx']}
-                          maxFileSize={10 * 1024 * 1024}
+                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianPerusahaan', 'estate')}
                         />
-                        {estateForm.aktaPendirian && (
+                        {estateForm.aktaPendirianPerusahaan && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
                             <span>Dokumen telah diunggah</span>
@@ -520,8 +528,6 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
-                          allowedFileTypes={['.pdf', '.doc', '.docx']}
-                          maxFileSize={10 * 1024 * 1024}
                         />
                         {estateForm.aktaPerubahan && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
@@ -534,16 +540,211 @@ export default function DataCollection() {
                   </div>
                 </div>
 
-                {/* Note: Daftar Kebun moved to Step 2 - Spatial Analysis */}
-                <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 text-blue-800">
-                      <Satellite className="w-5 h-5" />
-                      <h4 className="font-medium">Plot/Kebun Mapping</h4>
+                {/* Bagian 2 – Sumber TBS */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Sumber TBS</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">No</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Nama Kebun</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Alamat</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Koordinat *</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Luas Lahan (Ha)</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Tahun Tanam</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Jenis Bibit</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Produksi TBS 1 Tahun Terakhir</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Actions</th>
+                          </tr>
+                          <tr className="bg-gray-50">
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-1 py-1 text-xs font-medium">
+                              <div className="grid grid-cols-3 gap-1">
+                                <span>Longitude</span>
+                                <span>Latitude</span>
+                                <span>Polygon Kebun</span>
+                              </div>
+                            </th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {estateForm.daftarKebun.map((kebun, index) => (
+                            <tr key={index}>
+                              <td className="border border-gray-300 px-2 py-2 text-center">
+                                <span className="text-sm">{kebun.no}</span>
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={kebun.namaKebun}
+                                  onChange={(e) => {
+                                    const newDaftarKebun = [...estateForm.daftarKebun];
+                                    newDaftarKebun[index].namaKebun = e.target.value;
+                                    setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                  }}
+                                  placeholder="Nama kebun"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Textarea
+                                  value={kebun.alamat}
+                                  onChange={(e) => {
+                                    const newDaftarKebun = [...estateForm.daftarKebun];
+                                    newDaftarKebun[index].alamat = e.target.value;
+                                    setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                  }}
+                                  placeholder="Alamat"
+                                  className="text-sm min-h-[60px]"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-1 py-2">
+                                <div className="grid grid-cols-3 gap-1">
+                                  <Input
+                                    value={kebun.koordinatLongitude}
+                                    onChange={(e) => {
+                                      const newDaftarKebun = [...estateForm.daftarKebun];
+                                      newDaftarKebun[index].koordinatLongitude = e.target.value;
+                                      setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                    }}
+                                    placeholder="Long"
+                                    className="text-xs"
+                                  />
+                                  <Input
+                                    value={kebun.koordinatLatitude}
+                                    onChange={(e) => {
+                                      const newDaftarKebun = [...estateForm.daftarKebun];
+                                      newDaftarKebun[index].koordinatLatitude = e.target.value;
+                                      setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                    }}
+                                    placeholder="Lat"
+                                    className="text-xs"
+                                  />
+                                  <Input
+                                    value={kebun.polygonKebun}
+                                    onChange={(e) => {
+                                      const newDaftarKebun = [...estateForm.daftarKebun];
+                                      newDaftarKebun[index].polygonKebun = e.target.value;
+                                      setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                    }}
+                                    placeholder="Polygon"
+                                    className="text-xs"
+                                  />
+                                </div>
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={kebun.luasLahan}
+                                  onChange={(e) => {
+                                    const newDaftarKebun = [...estateForm.daftarKebun];
+                                    newDaftarKebun[index].luasLahan = e.target.value;
+                                    setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                  }}
+                                  placeholder="Luas (Ha)"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={kebun.tahunTanam}
+                                  onChange={(e) => {
+                                    const newDaftarKebun = [...estateForm.daftarKebun];
+                                    newDaftarKebun[index].tahunTanam = e.target.value;
+                                    setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                  }}
+                                  placeholder="Tahun tanam"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={kebun.jenisBibit}
+                                  onChange={(e) => {
+                                    const newDaftarKebun = [...estateForm.daftarKebun];
+                                    newDaftarKebun[index].jenisBibit = e.target.value;
+                                    setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                  }}
+                                  placeholder="Jenis bibit"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={kebun.produksiTBS1TahunTerakhir}
+                                  onChange={(e) => {
+                                    const newDaftarKebun = [...estateForm.daftarKebun];
+                                    newDaftarKebun[index].produksiTBS1TahunTerakhir = e.target.value;
+                                    setEstateForm(prev => ({ ...prev, daftarKebun: newDaftarKebun }));
+                                  }}
+                                  placeholder="Produksi TBS"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                {estateForm.daftarKebun.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newDaftarKebun = estateForm.daftarKebun.filter((_, i) => i !== index);
+                                      // Re-number the remaining items
+                                      const renumberedKebun = newDaftarKebun.map((item, i) => ({ ...item, no: i + 1 }));
+                                      setEstateForm(prev => ({ ...prev, daftarKebun: renumberedKebun }));
+                                    }}
+                                    className="text-xs"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                    <p className="text-blue-700 text-sm mt-2">
-                      Informasi daftar kebun dan plot akan dikelola di <strong>Step 2 - Spatial Analysis</strong> melalui upload GeoJSON file untuk akurasi koordinat yang lebih baik.
-                    </p>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setEstateForm(prev => ({
+                          ...prev,
+                          daftarKebun: [
+                            ...prev.daftarKebun,
+                            {
+                              no: prev.daftarKebun.length + 1,
+                              namaKebun: '',
+                              alamat: '',
+                              koordinatLongitude: '',
+                              koordinatLatitude: '',
+                              polygonKebun: '',
+                              luasLahan: '',
+                              tahunTanam: '',
+                              jenisBibit: '',
+                              produksiTBS1TahunTerakhir: ''
+                            }
+                          ]
+                        }));
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Tambah Kebun
+                    </Button>
+
+                    <div className="text-sm text-gray-600 mt-2">
+                      <strong>Keterangan:</strong> *) Jika lebih &gt; 4Ha data Polygon (SHP/GeoJSON)
+                    </div>
                   </div>
                 </div>
 
@@ -560,20 +761,18 @@ export default function DataCollection() {
         {supplierType === 'smallholders' && (
           <Card>
             <CardHeader>
-              <CardTitle>Formulir Pengumpulan Data Smallholders</CardTitle>
+              <CardTitle>Form Kemampuan Telusur (Traceability) TBS Luar</CardTitle>
               <CardDescription>
-                (Kemampuan Telusur TBS Luar)
+                (Unit Usaha Kecil Menengah/Small Medium Enterprise)
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSmallholdersSubmit} className="space-y-8">
-                {/* Bagian 1 - Informasi DO */}
+                {/* Basic Information Fields */}
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 1 – Informasi DO</h3>
-                  
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="nomorDO">Nomor DO</Label>
+                      <Label htmlFor="nomorDO">1. Nomor DO</Label>
                       <Input
                         id="nomorDO"
                         data-testid="input-nomor-do-smallholders"
@@ -584,25 +783,7 @@ export default function DataCollection() {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="jenisUsaha">Jenis Usaha</Label>
-                      <Select
-                        value={smallholdersForm.jenisUsaha}
-                        onValueChange={(value) => setSmallholdersForm(prev => ({ ...prev, jenisUsaha: value }))}
-                      >
-                        <SelectTrigger data-testid="select-jenis-usaha-smallholders">
-                          <SelectValue placeholder="Pilih jenis usaha..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="unit-usaha-kecil-menengah">Unit Usaha Kecil Menengah</SelectItem>
-                          <SelectItem value="small-medium-enterprise">Small Medium Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="pemegangDO">Pemegang DO</Label>
+                      <Label htmlFor="pemegangDO">2. Pemegang DO</Label>
                       <Input
                         id="pemegangDO"
                         data-testid="input-pemegang-do-smallholders"
@@ -611,9 +792,11 @@ export default function DataCollection() {
                         placeholder="Masukkan pemegang DO"
                       />
                     </div>
-                    
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="alamatPemegangDO">Alamat Pemegang DO</Label>
+                      <Label htmlFor="alamatPemegangDO">3. Alamat Pemegang DO</Label>
                       <Textarea
                         id="alamatPemegangDO"
                         data-testid="input-alamat-pemegang-do-smallholders"
@@ -622,35 +805,77 @@ export default function DataCollection() {
                         placeholder="Masukkan alamat pemegang DO"
                       />
                     </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="lokasiUsaha">4. Lokasi Usaha</Label>
+                      <Textarea
+                        id="lokasiUsaha"
+                        data-testid="input-lokasi-usaha-smallholders"
+                        value={smallholdersForm.lokasiUsaha}
+                        onChange={(e) => setSmallholdersForm(prev => ({ ...prev, lokasiUsaha: e.target.value }))}
+                        placeholder="( Lokasi Ramp / Alamat Terdaftar CV / Koperasi / Usaha Individu  )"
+                      />
+                    </div>
+                  </div>
+
+                  <h4 className="text-md font-medium mt-6">5. Legalitas Pemegang DO</h4>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="nib">NIB</Label>
+                      <Input
+                        id="nib"
+                        data-testid="input-nib-smallholders"
+                        value={smallholdersForm.nib}
+                        onChange={(e) => setSmallholdersForm(prev => ({ ...prev, nib: e.target.value }))}
+                        placeholder="Masukkan NIB"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="npwp">NPWP</Label>
+                      <Input
+                        id="npwp"
+                        data-testid="input-npwp-smallholders"
+                        value={smallholdersForm.npwp}
+                        onChange={(e) => setSmallholdersForm(prev => ({ ...prev, npwp: e.target.value }))}
+                        placeholder="Masukkan NPWP"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="luasLahanTertanamPetaniSupplier">6. Luas Lahan Tertanam Petani Supplier</Label>
+                      <Input
+                        id="luasLahanTertanamPetaniSupplier"
+                        data-testid="input-luas-lahan-tertanam-smallholders"
+                        value={smallholdersForm.luasLahanTertanamPetaniSupplier}
+                        onChange={(e) => setSmallholdersForm(prev => ({ ...prev, luasLahanTertanamPetaniSupplier: e.target.value }))}
+                        placeholder="Masukkan luas lahan tertanam"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="volumeTBS">7. Volume TBS</Label>
+                      <Input
+                        id="volumeTBS"
+                        data-testid="input-volume-tbs-smallholders"
+                        value={smallholdersForm.volumeTBS}
+                        onChange={(e) => setSmallholdersForm(prev => ({ ...prev, volumeTBS: e.target.value }))}
+                        placeholder="Masukkan volume TBS"
+                      />
+                    </div>
                   </div>
 
                   {/* Document Upload Section */}
                   <div className="space-y-4">
-                    <h4 className="text-md font-medium">Dokumen Pendukung</h4>
-                    <div className="grid grid-cols-2 gap-6">
+                    <h4 className="text-md font-medium">Dokumen Legalitas</h4>
+                    <div className="grid grid-cols-1 gap-6">
                       <div className="space-y-2">
-                        <Label>KTP</Label>
-                        <ObjectUploader
-                          onGetUploadParameters={handleGetUploadParameters}
-                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'ktp', 'smallholders')}
-                          allowedFileTypes={['.pdf', '.jpg', '.jpeg', '.png']}
-                          maxFileSize={5 * 1024 * 1024}
-                        />
-                        {smallholdersForm.ktp && (
-                          <div className="flex items-center gap-2 text-sm text-green-600">
-                            <FileText size={16} />
-                            <span>Dokumen telah diunggah</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Akta Pendirian Usaha</Label>
+                        <Label>Akta Pendirian Usaha ( Jika Berbadan Hukum)</Label>
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'smallholders')}
-                          allowedFileTypes={['.pdf', '.doc', '.docx']}
-                          maxFileSize={10 * 1024 * 1024}
                         />
                         {smallholdersForm.aktaPendirianUsaha && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
@@ -663,59 +888,209 @@ export default function DataCollection() {
                   </div>
                 </div>
 
-                {/* Bagian 2 - Daftar Pemasok TBS */}
+                {/* 6. Daftar Petani Pemasok TBS */}
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Daftar Pemasok TBS</h3>
-                    <Button type="button" onClick={addPemasok} size="sm" data-testid="button-add-pemasok">
-                      <Plus size={16} className="mr-1" />
-                      Tambah Pemasok
-                    </Button>
-                  </div>
+                  <h3 className="text-lg font-semibold border-b pb-2">6. Daftar Petani Pemasok TBS</h3>
                   
-                  {smallholdersForm.pemasokTBS.map((pemasok, index) => (
-                    <Card key={index} className="p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium">Pemasok #{pemasok.no}</h4>
-                        {smallholdersForm.pemasokTBS.length > 1 && (
-                          <Button type="button" variant="destructive" size="sm" onClick={() => removePemasok(index)} data-testid={`button-remove-pemasok-${index}`}>
-                            <Trash2 size={16} />
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`namaPetani-${index}`}>Nama Petani</Label>
-                          <Input
-                            id={`namaPetani-${index}`}
-                            value={pemasok.namaPetani}
-                            onChange={(e) => {
-                              const newPemasok = [...smallholdersForm.pemasokTBS];
-                              newPemasok[index].namaPetani = e.target.value;
-                              setSmallholdersForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
-                            }}
-                            placeholder="Masukkan nama petani"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`luas-${index}`}>Luas (Ha)</Label>
-                          <Input
-                            id={`luas-${index}`}
-                            type="number"
-                            value={pemasok.luas}
-                            onChange={(e) => {
-                              const newPemasok = [...smallholdersForm.pemasokTBS];
-                              newPemasok[index].luas = parseFloat(e.target.value) || 0;
-                              setSmallholdersForm(prev => ({ ...prev, pemasokTBS: newPemasok }));
-                            }}
-                            placeholder="Masukkan luas lahan"
-                          />
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">No.</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Nama Petani</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Alamat Tempat Tinggal</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Lokasi Kebun</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Luas (Ha)</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Legalitas Lahan</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Tahun Tanam</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Koordinat</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Actions</th>
+                          </tr>
+                          <tr className="bg-gray-50">
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-1 py-1 text-xs font-medium">
+                              <div className="grid grid-cols-3 gap-1">
+                                <span>STDB</span>
+                                <span>SPPL</span>
+                                <span>Nomor Objek Pajak PBB</span>
+                              </div>
+                            </th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                            <th className="border border-gray-300 px-1 py-1 text-xs font-medium">
+                              <div className="grid grid-cols-3 gap-1">
+                                <span>Longitude</span>
+                                <span>Latitude</span>
+                                <span>Polygon</span>
+                              </div>
+                            </th>
+                            <th className="border border-gray-300 px-2 py-1 text-xs font-medium"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {smallholdersForm.daftarPetaniPemasokTBS.map((petani, index) => (
+                            <tr key={index}>
+                              <td className="border border-gray-300 px-2 py-2 text-center">
+                                <span className="text-sm">{petani.no}</span>
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={petani.namaPetani}
+                                  onChange={(e) => {
+                                    const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                    newDaftarPetani[index].namaPetani = e.target.value;
+                                    setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                  }}
+                                  placeholder="Nama petani"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Textarea
+                                  value={petani.alamatTempatTinggal}
+                                  onChange={(e) => {
+                                    const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                    newDaftarPetani[index].alamatTempatTinggal = e.target.value;
+                                    setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                  }}
+                                  placeholder="Alamat tempat tinggal"
+                                  className="text-sm min-h-[60px]"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Textarea
+                                  value={petani.lokasiKebun}
+                                  onChange={(e) => {
+                                    const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                    newDaftarPetani[index].lokasiKebun = e.target.value;
+                                    setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                  }}
+                                  placeholder="Lokasi kebun"
+                                  className="text-sm min-h-[60px]"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={petani.luas}
+                                  onChange={(e) => {
+                                    const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                    newDaftarPetani[index].luas = e.target.value;
+                                    setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                  }}
+                                  placeholder="Luas (Ha)"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-1 py-2">
+                                <div className="grid grid-cols-3 gap-1">
+                                  <Input
+                                    value={petani.stdb}
+                                    onChange={(e) => {
+                                      const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                      newDaftarPetani[index].stdb = e.target.value;
+                                      setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                    }}
+                                    placeholder="STDB"
+                                    className="text-xs"
+                                  />
+                                  <Input
+                                    value={petani.sppl}
+                                    onChange={(e) => {
+                                      const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                      newDaftarPetani[index].sppl = e.target.value;
+                                      setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                    }}
+                                    placeholder="SPPL"
+                                    className="text-xs"
+                                  />
+                                  <Input
+                                    value={petani.nomorObjekPajakPBB}
+                                    onChange={(e) => {
+                                      const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                      newDaftarPetani[index].nomorObjekPajakPBB = e.target.value;
+                                      setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                    }}
+                                    placeholder="No Pajak PBB"
+                                    className="text-xs"
+                                  />
+                                </div>
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={petani.tahunTanam}
+                                  onChange={(e) => {
+                                    const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                    newDaftarPetani[index].tahunTanam = e.target.value;
+                                    setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                  }}
+                                  placeholder="Tahun tanam"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-1 py-2">
+                                <div className="grid grid-cols-3 gap-1">
+                                  <Input
+                                    value={petani.longitude}
+                                    onChange={(e) => {
+                                      const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                      newDaftarPetani[index].longitude = e.target.value;
+                                      setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                    }}
+                                    placeholder="Long"
+                                    className="text-xs"
+                                  />
+                                  <Input
+                                    value={petani.latitude}
+                                    onChange={(e) => {
+                                      const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                      newDaftarPetani[index].latitude = e.target.value;
+                                      setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                    }}
+                                    placeholder="Lat"
+                                    className="text-xs"
+                                  />
+                                  <Input
+                                    value={petani.polygon}
+                                    onChange={(e) => {
+                                      const newDaftarPetani = [...smallholdersForm.daftarPetaniPemasokTBS];
+                                      newDaftarPetani[index].polygon = e.target.value;
+                                      setSmallholdersForm(prev => ({ ...prev, daftarPetaniPemasokTBS: newDaftarPetani }));
+                                    }}
+                                    placeholder="Polygon"
+                                    className="text-xs"
+                                  />
+                                </div>
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2 text-center">
+                                {smallholdersForm.daftarPetaniPemasokTBS.length > 1 && (
+                                  <Button 
+                                    type="button" 
+                                    variant="destructive" 
+                                    size="sm" 
+                                    onClick={() => removePemasok(index)} 
+                                    data-testid={`button-remove-pemasok-${index}`}
+                                  >
+                                    <Trash2 size={16} />
+                                  </Button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button type="button" onClick={addPemasok} variant="outline" data-testid="button-add-pemasok">
+                        <Plus size={16} className="mr-2" />
+                        Tambah Petani Pemasok
+                      </Button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-end">
