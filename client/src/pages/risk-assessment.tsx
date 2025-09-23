@@ -20,16 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 
 // Risk Assessment form schema based on Excel methodology
 const riskAssessmentSchema = z.object({
-  supplierId: z.string().min(1, 'Supplier ID is required'),
   supplierName: z.string().min(1, 'Supplier name is required'),
-  assessmentType: z.string().default('combined'),
-  excelTemplateUrl: z.string().optional(),
-  overallScore: z.number().optional(),
-  overallRiskLevel: z.enum(['very_low', 'low', 'medium', 'high', 'very_high']).optional(),
-  spatialScore: z.number().optional(),
-  nonSpatialScore: z.number().optional(),
-  recommendedActions: z.array(z.string()).optional().default([]),
-  assessedBy: z.string().optional(),
+  assessmentPeriod: z.string().optional(),
   notes: z.string().optional()
 });
 
@@ -65,16 +57,8 @@ export default function RiskAssessment() {
   const form = useForm<RiskAssessmentData>({
     resolver: zodResolver(riskAssessmentSchema),
     defaultValues: {
-      supplierId: '',
       supplierName: '',
-      assessmentType: 'combined',
-      excelTemplateUrl: '',
-      overallScore: 0,
-      overallRiskLevel: 'medium',
-      spatialScore: 0,
-      nonSpatialScore: 0,
-      recommendedActions: [],
-      assessedBy: '',
+      assessmentPeriod: new Date().getFullYear().toString() + '-Q1',
       notes: ''
     }
   });
@@ -94,13 +78,15 @@ export default function RiskAssessment() {
   // Create new risk assessment mutation
   const createAssessmentMutation = useMutation({
     mutationFn: async (data: RiskAssessmentData) => {
-      return await apiRequest('/api/risk-assessments', 'POST', {
-        ...data,
-        status: 'Draft',
-        assessedBy: data.assessedBy || 'KPN Compliance Administrator' // TODO: Get from user context
+      return await apiRequest('POST', '/api/risk-assessments', {
+        body: JSON.stringify({
+          ...data,
+          status: 'Draft',
+          assessorName: 'KPN Compliance Administrator' // TODO: Get from user context
+        })
       });
     },
-    onSuccess: async (data: any) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments'] });
       setSelectedAssessmentId(data.id);
       
@@ -134,7 +120,9 @@ export default function RiskAssessment() {
   // Update risk item mutation
   const updateItemMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<RiskItemData> }) => {
-      return await apiRequest(`/api/risk-assessment-items/${id}`, 'PUT', updates);
+      return await apiRequest('PUT', `/api/risk-assessment-items/${id}`, {
+        body: JSON.stringify(updates)
+      });
     },
     onSuccess: () => {
       if (selectedAssessmentId) {

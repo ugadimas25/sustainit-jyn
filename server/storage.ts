@@ -1453,7 +1453,7 @@ export class DatabaseStorage implements IStorage {
 
   // Risk Assessment methods implementation
   async getRiskAssessments(): Promise<RiskAssessment[]> {
-    return await db.select().from(riskAssessments).orderBy(desc(riskAssessments.createdAt));
+    return await db.select().from(riskAssessments).orderBy(desc(riskAssessments.assessmentDate));
   }
 
   async getRiskAssessment(id: string): Promise<RiskAssessment | undefined> {
@@ -1462,7 +1462,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRiskAssessmentBySupplier(supplierId: string): Promise<RiskAssessment[]> {
-    return await db.select().from(riskAssessments).where(eq(riskAssessments.supplierId, supplierId)).orderBy(desc(riskAssessments.createdAt));
+    return await db.select().from(riskAssessments).where(eq(riskAssessments.supplierId, supplierId)).orderBy(desc(riskAssessments.assessmentDate));
   }
 
   async createRiskAssessment(insertRiskAssessment: InsertRiskAssessment): Promise<RiskAssessment> {

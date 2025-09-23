@@ -977,7 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Legacy support routes
   // Suppliers endpoints for workflow
-  app.get("/api/suppliers", async (req, res) => {
+  app.get("/api/suppliers", isAuthenticated, async (req, res) => {
     try {
       const suppliers = await storage.getSuppliers();
       res.json(suppliers);
@@ -1204,12 +1204,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/supplier-step-access/:supplierName/:step", async (req, res) => {
+  app.get("/api/supplier-step-access/:supplierName/:step", isAuthenticated, async (req, res) => {
     try {
       const { supplierName, step } = req.params;
       const stepNumber = parseInt(step, 10);
-      if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 4) {
-        return res.status(400).json({ error: "Step must be a number between 1 and 4" });
+      if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 3) {
+        return res.status(400).json({ error: "Step must be a number between 1 and 3" });
       }
 
       const hasAccess = await storage.checkSupplierStepAccess(decodeURIComponent(supplierName), stepNumber);

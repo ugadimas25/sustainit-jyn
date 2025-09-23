@@ -99,29 +99,20 @@ export function useSupplierStepAccess(step: number) {
   return useQuery({
     queryKey: ['/api/supplier-step-access', currentSupplier, step],
     queryFn: async () => {
-      // Use first available supplier if none selected but suppliers exist
-      let supplierToUse = currentSupplier;
-      
-      if (!supplierToUse) {
-        try {
-          const suppliersResponse = await fetch('/api/suppliers');
-          const suppliersData = await suppliersResponse.json();
-          supplierToUse = suppliersData?.[0] || 'PT Permata Hijau Estate';
-        } catch (error) {
-          supplierToUse = 'PT Permata Hijau Estate';
-        }
+      if (!currentSupplier) {
+        return { hasAccess: step === 1 || step === 2 }; // Allow Data Collection and Spatial Analysis without supplier
       }
       
-      const response = await fetch(`/api/supplier-step-access/${encodeURIComponent(supplierToUse)}/${step}`, {
+      const response = await fetch(`/api/supplier-step-access/${encodeURIComponent(currentSupplier)}/${step}`, {
         credentials: 'include'
       });
       if (!response.ok) {
         console.warn(`Step access check failed with status ${response.status}`);
-        return { hasAccess: true, error: `HTTP ${response.status}` }; // Allow all steps if API fails
+        return { hasAccess: step === 1 || step === 2, error: `HTTP ${response.status}` }; // Allow steps 1 and 2 on error
       }
       return response.json();
     },
-    enabled: true, // Always check for all steps
+    enabled: !!currentSupplier || step === 1 || step === 2, // Always check for steps 1 and 2, others need supplier
     staleTime: 30 * 1000, // 30 seconds
   });
 }

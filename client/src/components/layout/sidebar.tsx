@@ -277,29 +277,38 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
   const handleClick = () => {
     if (isLoading) return;
 
-    // Show warning for steps 3 and 4 if data collection isn't completed
-    if ((subModule.step === 3 || subModule.step === 4) && !hasAccess) {
-      const currentStepName = subModule.step === 3 ? "Legality Compliance" : "Risk Assessment";
-      
-      toast({
-        title: "Peringatan",
-        description: `Anda belum menyelesaikan Data Collection form, apakah mau langsung melanjutkan ke ${currentStepName}?`,
-        variant: "default"
-      });
+    // Spatial Analysis (step 2) is always available
+    if (subModule.step === 2) {
+      onNavigate(subModule.step, () => setLocation(subModule.href));
+      return;
     }
-    
-    // Always allow navigation to all steps
+
+    if (!hasAccess) {
+      let requiredStep = "";
+      if (subModule.step === 3) requiredStep = "Data Collection and Spatial Analysis";
+      if (subModule.step === 4) requiredStep = "Data Collection, Spatial Analysis, and Legality Compliance";
+
+      toast({
+        title: "Step Locked",
+        description: `Please complete ${requiredStep} first before accessing ${subModule.name}.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     onNavigate(subModule.step, () => setLocation(subModule.href));
   };
 
   return (
     <button
       onClick={handleClick}
-      disabled={isLoading}
+      disabled={isLoading || (!isAccessible && subModule.step !== 2)}
       className={`w-full text-left px-4 py-2 rounded-lg flex items-center transition-colors duration-200 text-sm ${
         isActive 
           ? 'bg-forest-light text-forest font-medium' 
-          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+          : (isAccessible || subModule.step === 2)
+          ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+          : 'text-gray-400 cursor-not-allowed'
       }`}
       data-testid={subModule.testId}
     >
@@ -307,6 +316,8 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
         <div className="flex items-center">
           {isLoading ? (
             <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+          ) : (!isAccessible && subModule.step !== 2) ? (
+            <Lock className="w-4 h-4 opacity-50" />
           ) : (
             <subModule.icon className="w-4 h-4" />
           )}
@@ -315,11 +326,11 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
         <span className={`text-xs px-2 py-1 rounded-full ${
           isActive 
             ? 'bg-forest text-white' 
-            : !hasAccess && (subModule.step === 3 || subModule.step === 4)
-            ? 'bg-amber-100 text-amber-700'
-            : 'bg-gray-200 text-gray-700'
+            : (isAccessible || subModule.step === 2)
+            ? 'bg-gray-200 text-gray-700'
+            : 'bg-gray-100 text-gray-400'
         }`}>
-          {isLoading ? '...' : (!hasAccess && (subModule.step === 3 || subModule.step === 4)) ? 'Warning' : 'Available'}
+          {isLoading ? '...' : (hasAccess || subModule.step === 2) ? 'Available' : 'Locked'}
         </span>
       </div>
     </button>
