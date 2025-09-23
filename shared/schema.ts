@@ -1973,3 +1973,72 @@ export const auditLogFilterSchema = z.object({
   limit: z.number().min(1).max(1000).default(50),
   offset: z.number().min(0).default(0),
 });
+
+// Legal Compliance Module
+export const complianceStatusEnum = pgEnum("compliance_status", ["ada", "tidak", "sesuai", "tidak_sesuai", "ya", "tidak", "pending", "under_review"]);
+
+// Legal Compliance main record
+export const legalCompliance = pgTable("legal_compliance", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  supplierId: varchar("supplier_id").notNull(),
+  supplierName: text("supplier_name").notNull(),
+  namaGroup: text("nama_group"),
+  aktaPendirian: text("akta_pendirian"), // document URL
+  aktaPerubahan: text("akta_perubahan"), // document URL
+  izinBerusaha: text("izin_berusaha"), // NIB
+  alamatKantor: text("alamat_kantor"),
+  alamatKebun: text("alamat_kebun"),
+  koordinatKebun: text("koordinat_kebun"),
+  koordinatKantor: text("koordinat_kantor"),
+  jenisSupplierKKPA: boolean("jenis_supplier_kkpa").default(false),
+  jenisSupplierSisterCompany: boolean("jenis_supplier_sister_company").default(false),
+  jenisSupplierPihakKetiga: boolean("jenis_supplier_pihak_ketiga").default(false),
+  namaTimInternal: text("nama_tim_internal"),
+  jabatanTimInternal: text("jabatan_tim_internal"),
+  emailTimInternal: text("email_tim_internal"),
+  nomorTeleponTimInternal: text("nomor_telefon_tim_internal"),
+  namaPenanggungJawab: text("nama_penanggung_jawab"),
+  jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
+  emailPenanggungJawab: text("email_penanggung_jawab"),
+  nomorTelefonPenanggungJawab: text("nomor_telefon_penanggung_jawab"),
+  tandaTangan: text("tanda_tangan"), // document URL
+  status: assessmentStatusEnum("status").default("Draft").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Legal Compliance Items (for each section 3.1 to 3.13)
+export const legalComplianceItems = pgTable("legal_compliance_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  complianceId: varchar("compliance_id").references(() => legalCompliance.id).notNull(),
+  sectionNumber: text("section_number").notNull(), // e.g., "3.1", "3.2", etc.
+  itemNumber: text("item_number"), // e.g., "1", "2", "a", "b" for sub-items
+  title: text("title").notNull(), // e.g., "Izin Pencadangan Lahan"
+  description: text("description"), // Additional context
+  status: complianceStatusEnum("status").notNull(),
+  keterangan: text("keterangan"), // Remarks/explanation
+  evidenceUrls: text("evidence_urls").array(), // Array of document URLs
+  isRequired: boolean("is_required").default(true),
+  weight: integer("weight").default(1), // For scoring
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Zod schemas for Legal Compliance
+export const insertLegalComplianceSchema = createInsertSchema(legalCompliance).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLegalComplianceItemSchema = createInsertSchema(legalComplianceItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Export types for Legal Compliance
+export type LegalCompliance = typeof legalCompliance.$inferSelect;
+export type LegalComplianceInsert = z.infer<typeof insertLegalComplianceSchema>;
+export type LegalComplianceItem = typeof legalComplianceItems.$inferSelect;
+export type LegalComplianceItemInsert = z.infer<typeof insertLegalComplianceItemSchema>;
