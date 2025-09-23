@@ -42,7 +42,7 @@ const samplePlotData: PlotData[] = [
   {
     id: "plot_001",
     plotNumber: "KPN-001",
-    supplierName: "PT Sinar Mas Agro",
+    supplierName: "PT THIP Agro",
     businessUnit: "Plantation North",
     village: "Desa Makmur",
     district: "Riau Tengah",
@@ -57,7 +57,7 @@ const samplePlotData: PlotData[] = [
   {
     id: "plot_002",
     plotNumber: "KPN-002",
-    supplierName: "PT Wilmar International",
+    supplierName: "PT BSU International",
     businessUnit: "Plantation South",
     village: "Desa Sejahtera",
     district: "Jambi Selatan",
@@ -72,7 +72,7 @@ const samplePlotData: PlotData[] = [
   {
     id: "plot_003",
     plotNumber: "KPN-003",
-    supplierName: "PT Astra Agro Lestari",
+    supplierName: "PT THIP Estate",
     businessUnit: "Plantation Central",
     village: "Desa Berkah",
     district: "Sumatra Utara",
@@ -87,7 +87,7 @@ const samplePlotData: PlotData[] = [
   {
     id: "plot_004",
     plotNumber: "KPN-004",
-    supplierName: "PT Golden Agri Resources",
+    supplierName: "KPN 01 Resources",
     businessUnit: "Smallholder Program",
     village: "Desa Harapan",
     district: "Kalimantan Barat",
@@ -102,7 +102,7 @@ const samplePlotData: PlotData[] = [
   {
     id: "plot_005",
     plotNumber: "KPN-005",
-    supplierName: "PT Musim Mas Group",
+    supplierName: "KPN 02 Group",
     businessUnit: "Estate Management",
     village: "Desa Maju",
     district: "Riau Selatan",

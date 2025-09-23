@@ -36,7 +36,7 @@ const SAMPLE_SUPPLIERS = {
   external: [
     { id: 'ext-1', name: 'PT THIP 05', location: 'Jakarta', type: 'Large Supplier' },
     { id: 'ext-2', name: 'PT BSU 04', location: 'Singapore', type: 'International' },
-    { id: 'ext-3', name: 'Wilmar Trading', location: 'Kuala Lumpur', type: 'Regional Trader' },
+    { id: 'ext-3', name: 'PT THIP Trading', location: 'Kuala Lumpur', type: 'Regional Trader' },
   ],
   shf: [
     { id: 'shf-1', name: 'Farmers Cooperative A', location: 'West Riau', members: '250 farmers' },
@@ -437,13 +437,13 @@ export default function SupplyChainSimple() {
     // Mock GPS coordinates for each supplier with realistic Indonesian palm oil locations
     const supplierGPSData = {
       'estate': [
-        { id: 1, name: 'PT Astra Agro Lestari', lat: -2.5489, lng: 111.2183, tier: 1 }, // Central Kalimantan
+        { id: 1, name: 'PT THIP Estate', lat: -2.5489, lng: 111.2183, tier: 1 }, // Central Kalimantan
         { id: 2, name: 'PT BSU 05', lat: -1.2379, lng: 116.8444, tier: 1 }, // East Kalimantan
         { id: 3, name: 'PT THIP 06', lat: -0.5014, lng: 117.1436, tier: 1 }, // East Kalimantan
       ],
       'mill': [
         { id: 4, name: 'Sawit Sumbermas Mill', lat: -2.2885, lng: 111.6644, tier: 2 }, // Central Kalimantan
-        { id: 5, name: 'Astra Agro Mill Complex', lat: -1.5537, lng: 117.1436, tier: 2 }, // East Kalimantan
+        { id: 5, name: 'PT BSU Mill Complex', lat: -1.5537, lng: 117.1436, tier: 2 }, // East Kalimantan
       ],
       'shf': [
         { id: 6, name: 'Kelompok Tani Makmur', lat: -2.6444, lng: 111.5183, tier: 2 }, // Central Kalimantan
