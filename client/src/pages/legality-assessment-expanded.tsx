@@ -652,7 +652,7 @@ export default function LegalityAssessmentExpanded() {
       const response = await apiRequest('/api/objects/upload', 'POST');
       return {
         method: 'PUT' as const,
-        url: response.uploadURL,
+        url: response.uploadURL || response.url || '',
       };
     } catch (error) {
       console.error('Error getting upload parameters:', error);
@@ -1640,7 +1640,7 @@ export default function LegalityAssessmentExpanded() {
                                     onGetUploadParameters={handleGetUploadParameters}
                                     onComplete={(result) => {
                                       const newKebun = [...millForm.kebunInti];
-                                      newKebun[index].dokumenLegalitasLahan = result.successful[0]?.uploadURL || '';
+                                      newKebun[index].dokumenLegalitasLahan = result.successful?.[0]?.uploadURL || '';
                                       setMillForm(prev => ({ ...prev, kebunInti: newKebun }));
                                     }}
                                     buttonClassName="w-full"
@@ -1846,7 +1846,7 @@ export default function LegalityAssessmentExpanded() {
                                     onGetUploadParameters={handleGetUploadParameters}
                                     onComplete={(result) => {
                                       const newKebun = [...millForm.kebunSepupu];
-                                      newKebun[index].dokumenLegalitasLahan = result.successful[0]?.uploadURL || '';
+                                      newKebun[index].dokumenLegalitasLahan = result.successful?.[0]?.uploadURL || '';
                                       setMillForm(prev => ({ ...prev, kebunSepupu: newKebun }));
                                     }}
                                     buttonClassName="w-full"
@@ -2052,7 +2052,7 @@ export default function LegalityAssessmentExpanded() {
                                     onGetUploadParameters={handleGetUploadParameters}
                                     onComplete={(result) => {
                                       const newKebun = [...millForm.thirdPartied];
-                                      newKebun[index].dokumenLegalitasLahan = result.successful[0]?.uploadURL || '';
+                                      newKebun[index].dokumenLegalitasLahan = result.successful?.[0]?.uploadURL || '';
                                       setMillForm(prev => ({ ...prev, thirdPartied: newKebun }));
                                     }}
                                     buttonClassName="w-full"
@@ -2744,7 +2744,7 @@ export default function LegalityAssessmentExpanded() {
                               id="kapasitasOlah"
                               data-testid="input-kapasitas-olah-kcp"
                               value={kcpForm.kapasitasOlah}
-                              onChange={(e) => setKcpForm(prev => ({ ...prev, kapasitasOlah: e.target.value }))}
+                              onChange={(e) => setKcpForm(prev => ({ ...prev, kapasitasOlah: Number(e.target.value) || 0 }))}
                               placeholder="Masukkan kapasitas olah"
                             />
                           </div>
