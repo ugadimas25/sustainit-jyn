@@ -54,12 +54,12 @@ externalPort = 80
 exposeLocalhost = true
 
 [[ports]]
-localPort = 40061
-externalPort = 3001
+localPort = 34901
+externalPort = 3002
 
 [[ports]]
-localPort = 44679
-externalPort = 3002
+localPort = 40061
+externalPort = 3001
 
 [agent]
 

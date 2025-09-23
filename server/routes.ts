@@ -50,6 +50,7 @@ import {
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { openaiService } from "./lib/openai-service";
+import { WDPAService } from "./lib/wdpa-service";
 import { z } from "zod";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
@@ -3913,6 +3914,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sbtnLossArea: `${sbtnLossArea.toFixed(4)}ha`
             });
 
+            // Perform WDPA protected area analysis
+            let wdpaStatus = 'UNKNOWN';
+            let peatlandStatus = 'UNKNOWN';
+            
+            try {
+              // Initialize WDPA service
+              const wdpaService = new WDPAService();
+              
+              // Extract coordinates for analysis - use centroid for polygons
+              let analysisCoords: [number, number];
+              if (feature.geometry?.type === 'Polygon' && feature.geometry.coordinates?.[0]) {
+                // Calculate centroid of polygon
+                const coords = feature.geometry.coordinates[0];
+                const lons = coords.map((coord: number[]) => coord[0]);
+                const lats = coords.map((coord: number[]) => coord[1]);
+                const centroidLon = lons.reduce((a: number, b: number) => a + b, 0) / lons.length;
+                const centroidLat = lats.reduce((a: number, b: number) => a + b, 0) / lats.length;
+                analysisCoords = [centroidLon, centroidLat];
+              } else if (feature.properties?.['.Long'] && feature.properties?.['.Lat']) {
+                analysisCoords = [parseFloat(feature.properties['.Long']), parseFloat(feature.properties['.Lat'])];
+              } else {
+                // Use a default coordinate if no geometry available (fallback)
+                analysisCoords = [101.4967, -0.5021]; // Central Indonesia
+              }
+              
+              // Check WDPA protected area overlap
+              const wdpaResult = await wdpaService.checkProtectedAreaOverlap(analysisCoords);
+              wdpaStatus = wdpaResult.isInProtectedArea ? 'PROTECTED' : 'NOT_PROTECTED';
+              
+              // Check peatland status using database query
+              if (country === 'Indonesia' || country === 'indonesia') {
+                try {
+                  const peatlandQuery = await db.execute(sql`
+                    SELECT kubah__gbt 
+                    FROM peatland_idn 
+                    WHERE ST_Contains(geom, ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}))
+                    LIMIT 1
+                  `);
+                  
+                  if (peatlandQuery.rows.length > 0) {
+                    peatlandStatus = 'PEATLAND';
+                  } else {
+                    peatlandStatus = 'NOT_PEATLAND';
+                  }
+                } catch (peatlandError) {
+                  console.warn(`⚠️ Peatland check failed for plot ${plotId}:`, peatlandError);
+                  // Keep default 'UNKNOWN' for peatland if database query fails
+                }
+              } else {
+                // For non-Indonesia countries, assume not peatland
+                peatlandStatus = 'NOT_PEATLAND';
+              }
+              
+              console.log(`🔍 Plot ${plotId} spatial analysis: WDPA=${wdpaStatus}, Peatland=${peatlandStatus}`);
+              
+            } catch (spatialError) {
+              console.warn(`⚠️ Spatial analysis failed for plot ${plotId}:`, spatialError);
+              // Keep default 'UNKNOWN' values if analysis fails
+            }
+
             // Create analysis result with comprehensive Indonesian metadata
             const analysisResult = {
               plotId,
@@ -3926,7 +3987,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               gfwLossArea: gfwLossArea.toString(),
               jrcLossArea: jrcLossArea.toString(),
               sbtnLossArea: sbtnLossArea.toString(),
-              peatlandOverlap: 'UNKNOWN', // Default value for peatland analysis
+              wdpaStatus: wdpaStatus,
+              peatlandStatus: peatlandStatus,
               highRiskDatasets,
               uploadSession: uploadSession,
               geometry: feature.geometry,
