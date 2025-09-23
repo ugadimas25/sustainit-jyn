@@ -115,7 +115,7 @@ async function seedSampleData() {
     const parties = await storage.getParties();
     if (parties.length === 0) {
       const growerParty = await storage.createParty({
-        name: "Riau Growers Cooperative",
+        name: "PT THIP Growers",
         type: "grower",
         address: "Riau Province, Indonesia",
         country: "Indonesia",
@@ -123,7 +123,7 @@ async function seedSampleData() {
       });
 
       const millParty = await storage.createParty({
-        name: "Central Palm Mill",
+        name: "PT BSU Mill",
         type: "mill",
         address: "Central Sumatra, Indonesia",
         country: "Indonesia",
@@ -135,7 +135,7 @@ async function seedSampleData() {
     const ddsReports = await storage.getDdsReports();
     if (ddsReports.length === 0) {
       const ddsReport1 = await storage.createDdsReport({
-        operatorLegalName: "PT TH Indo Plantations",
+        operatorLegalName: "PT THIP",
         operatorAddress: "Jl. Jenderal Sudirman No. 45, Jakarta 12930, Indonesia",
         eoriNumber: "ID123456789000",
         hsCode: "151110",
@@ -155,7 +155,7 @@ async function seedSampleData() {
       });
 
       const ddsReport2 = await storage.createDdsReport({
-        operatorLegalName: "KPN Upstream",
+        operatorLegalName: "KPN 01",
         operatorAddress: "Jl. MH Thamrin No. 28, Jakarta 10350, Indonesia",
         eoriNumber: "ID987654321000",
         hsCode: "151110",
@@ -177,7 +177,7 @@ async function seedSampleData() {
       });
 
       const ddsReport3 = await storage.createDdsReport({
-        operatorLegalName: "KPN Downstream",
+        operatorLegalName: "KPN 02",
         operatorAddress: "Kawasan Industri Pulogadung, Jakarta 13260, Indonesia",
         eoriNumber: "ID456789123000",
         hsCode: "151190",
@@ -205,8 +205,8 @@ async function seedSampleData() {
     const suppliers = await storage.getSuppliers();
     if (suppliers.length === 0) {
       await storage.createSupplier({
-        name: "PT Perkebunan Nusantara III",
-        companyName: "PT Perkebunan Nusantara III (Persero)",
+        name: "PT THIP 02",
+        companyName: "PT THIP 02",
         businessType: "Estate",
         supplierType: "Estate",
         contactPerson: "Budi Santoso",
@@ -220,8 +220,8 @@ async function seedSampleData() {
       });
 
       await storage.createSupplier({
-        name: "PT Astra Agro Lestari",
-        companyName: "PT Astra Agro Lestari Tbk",
+        name: "PT THIP 01",
+        companyName: "PT THIP 01",
         businessType: "Estate",
         supplierType: "Estate",
         contactPerson: "Sari Indrawati",
@@ -235,8 +235,8 @@ async function seedSampleData() {
       });
 
       await storage.createSupplier({
-        name: "PT Sampoerna Agro",
-        companyName: "PT Sampoerna Agro Tbk",
+        name: "PT BSU 01",
+        companyName: "PT BSU 01",
         businessType: "Estate",
         supplierType: "Estate",
         contactPerson: "Ahmad Wijaya",
@@ -250,8 +250,8 @@ async function seedSampleData() {
       });
 
       await storage.createSupplier({
-        name: "PT Golden Agri-Resources",
-        companyName: "PT Golden Agri-Resources Tbk",
+        name: "KPN 03",
+        companyName: "KPN 03",
         businessType: "Estate",
         supplierType: "Estate",
         contactPerson: "Dewi Lestari",
@@ -265,8 +265,8 @@ async function seedSampleData() {
       });
 
       await storage.createSupplier({
-        name: "PT Salim Ivomas Pratama",
-        companyName: "PT Salim Ivomas Pratama Tbk",
+        name: "PT BSU 02",
+        companyName: "PT BSU 02",
         businessType: "Estate",
         supplierType: "Estate",
         contactPerson: "Rina Maharani",
