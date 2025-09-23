@@ -398,7 +398,14 @@ export default function UserManagement() {
                     disabled={createUserMutation.isPending || updateUserMutation.isPending}
                     data-testid="button-save"
                   >
-                    {editingUser ? 'Update User' : 'Create User'}
+                    {createUserMutation.isPending || updateUserMutation.isPending ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mr-2" />
+                        {editingUser ? 'Updating...' : 'Creating...'}
+                      </>
+                    ) : (
+                      editingUser ? 'Update User' : 'Create User'
+                    )}
                   </Button>
                 </DialogFooter>
               </form>
@@ -420,8 +427,18 @@ export default function UserManagement() {
         </CardHeader>
         <CardContent>
           {usersLoading ? (
-            <div className="text-center py-8" data-testid="loading-users">
-              Loading users...
+            <div className="space-y-4" data-testid="loading-users">
+              {/* Skeleton loading */}
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center space-x-4 p-4 border rounded">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                    <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+                  </div>
+                  <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              ))}
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-8" data-testid="no-users">
