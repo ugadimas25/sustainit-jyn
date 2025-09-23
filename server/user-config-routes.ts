@@ -51,7 +51,7 @@ router.get('/organizations/:id',
     try {
       const organization = await storage.getOrganization(req.params.id);
       if (!organization) {
-        return res.status(404).json({ error: 'Organization not found' });
+        return res.status(404).json({ error: 'Organization not found. Please check the organization ID and try again.' });
       }
       res.json(organization);
     } catch (error) {
@@ -75,10 +75,16 @@ router.post('/organizations',
       res.status(201).json(organization);
     } catch (error) {
       if (error instanceof ZodError) {
-        return res.status(400).json({ error: 'Invalid data', details: error.errors });
+        return res.status(400).json({ 
+          error: 'Please check your input and try again', 
+          details: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        });
       }
       console.error('Error creating organization:', error);
-      res.status(500).json({ error: 'Failed to create organization' });
+      res.status(500).json({ error: 'Unable to create organization. Please try again later.' });
     }
   }
 );
@@ -94,7 +100,7 @@ router.put('/organizations/:id',
       const oldOrg = await storage.getOrganization(id);
       
       if (!oldOrg) {
-        return res.status(404).json({ error: 'Organization not found' });
+        return res.status(404).json({ error: 'Organization not found. Please check the organization ID and try again.' });
       }
 
       const updates = req.body;
@@ -104,7 +110,7 @@ router.put('/organizations/:id',
       res.json(organization);
     } catch (error) {
       console.error('Error updating organization:', error);
-      res.status(500).json({ error: 'Failed to update organization' });
+      res.status(500).json({ error: 'Unable to update organization. Please try again later.' });
     }
   }
 );
@@ -120,7 +126,7 @@ router.delete('/organizations/:id',
       const organization = await storage.getOrganization(id);
       
       if (!organization) {
-        return res.status(404).json({ error: 'Organization not found' });
+        return res.status(404).json({ error: 'Organization not found. Please check the organization ID and try again.' });
       }
 
       const success = await storage.deleteOrganization(id);
@@ -190,10 +196,16 @@ router.post('/users',
       res.status(201).json(user);
     } catch (error) {
       if (error instanceof ZodError) {
-        return res.status(400).json({ error: 'Invalid data', details: error.errors });
+        return res.status(400).json({ 
+          error: 'Please check your input and try again', 
+          details: error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        });
       }
       console.error('Error creating user:', error);
-      res.status(500).json({ error: 'Failed to create user' });
+      res.status(500).json({ error: 'Unable to create user account. Please try again later.' });
     }
   }
 );
@@ -744,14 +756,14 @@ router.get('/admin/stats',
       const users = await storage.getUsersEnhanced();
       const totalUsers = users.length;
       const activeUsers = users.filter(u => u.status === 'active').length;
-      const lockedUsers = users.filter(u => u.status === 'locked').length;
+      const lockedUsers = users.filter(u => u.status === 'inactive').length;
       const unverifiedUsers = users.filter(u => u.status === 'pending').length;
       
       // Get role statistics
       const roles = await storage.getRoles(organizationId);
       const totalRoles = roles.length;
-      const systemRoles = roles.filter(r => r.type === 'system').length;
-      const customRoles = roles.filter(r => r.type === 'custom').length;
+      const systemRoles = roles.filter(r => r.isSystem === true).length;
+      const customRoles = roles.filter(r => r.isSystem === false).length;
       
       // Get other statistics
       const organizations = await storage.getOrganizations();
