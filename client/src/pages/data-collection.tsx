@@ -141,7 +141,27 @@ export default function DataCollection() {
     namaTimInternal: '',
     jabatanTimInternal: '',
     emailTimInternal: '',
-    nomorTeleponTimInternal: ''
+    nomorTelefonTimInternal: '',
+    
+    // Additional fields for new structure
+    jenisSupplierKKPA: false,
+    jenisSupplierSisterCompany: false,
+    jenisSupplierPihakKetiga: false,
+    tandaTangan: '',
+    
+    // Kebun arrays
+    kebunInti: [{
+      namaSupplier: '',
+      alamat: '',
+      luasPlotLahan: 0,
+      longitude: '',
+      latitude: '',
+      polygonKebun: '',
+      persenPasokanKeMill: 0,
+      volumeTBSPasokan: '',
+      dokumenLegalitasLahan: '',
+      tahunTanam: ''
+    }]
   });
 
   const [kcpForm, setKcpForm] = useState({
@@ -170,7 +190,31 @@ export default function DataCollection() {
     namaTimInternal: '',
     jabatanTimInternal: '',
     emailTimInternal: '',
-    nomorTeleponTimInternal: ''
+    nomorTeleponTimInternal: '',
+    
+    // Additional fields
+    tandaTangan: '',
+    
+    // Arrays
+    daftarTangki: [{
+      idTangki: '',
+      kategori: '',
+      produk: '',
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      kapasitas: 0
+    }],
+    
+    sumberProduk: [{
+      millId: '',
+      namaPKS: '',
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      produk: '',
+      volume: 0
+    }]
   });
 
   const [bulkingForm, setBulkingForm] = useState({
@@ -196,7 +240,29 @@ export default function DataCollection() {
     namaTimInternal: '',
     jabatanTimInternal: '',
     emailTimInternal: '',
-    nomorTeleponTimInternal: ''
+    nomorTeleponTimInternal: '',
+    
+    // Additional fields
+    tandaTangan: '',
+    
+    // Arrays
+    daftarTangki: [{
+      tankId: '',
+      produk: '',
+      kapasitas: 0,
+      longitude: '',
+      latitude: ''
+    }],
+    
+    sumberProduk: [{
+      millId: '',
+      namaPKS: '',
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      produk: '',
+      volume: 0
+    }]
   });
 
   // Mutations for creating data collections
