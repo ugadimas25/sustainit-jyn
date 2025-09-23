@@ -34,8 +34,8 @@ const SAMPLE_SUPPLIERS = {
     { id: 'mill-3', name: 'Jambi Oil Mill', location: 'Jambi City', capacity: '600 MT/day' },
   ],
   external: [
-    { id: 'ext-1', name: 'PT Sinar Mas', location: 'Jakarta', type: 'Large Supplier' },
-    { id: 'ext-2', name: 'Golden Agri Resources', location: 'Singapore', type: 'International' },
+    { id: 'ext-1', name: 'PT THIP 05', location: 'Jakarta', type: 'Large Supplier' },
+    { id: 'ext-2', name: 'PT BSU 04', location: 'Singapore', type: 'International' },
     { id: 'ext-3', name: 'Wilmar Trading', location: 'Kuala Lumpur', type: 'Regional Trader' },
   ],
   shf: [
@@ -433,8 +433,8 @@ export default function SupplyChainSimple() {
     const supplierGPSData = {
       'estate': [
         { id: 1, name: 'PT Astra Agro Lestari', lat: -2.5489, lng: 111.2183, tier: 1 }, // Central Kalimantan
-        { id: 2, name: 'PT Sampoerna Agro', lat: -1.2379, lng: 116.8444, tier: 1 }, // East Kalimantan
-        { id: 3, name: 'PT Golden Agri-Resources', lat: -0.5014, lng: 117.1436, tier: 1 }, // East Kalimantan
+        { id: 2, name: 'PT BSU 05', lat: -1.2379, lng: 116.8444, tier: 1 }, // East Kalimantan
+        { id: 3, name: 'PT THIP 06', lat: -0.5014, lng: 117.1436, tier: 1 }, // East Kalimantan
       ],
       'mill': [
         { id: 4, name: 'Sawit Sumbermas Mill', lat: -2.2885, lng: 111.6644, tier: 2 }, // Central Kalimantan
@@ -445,7 +445,7 @@ export default function SupplyChainSimple() {
         { id: 7, name: 'Koperasi Sawit Bersama', lat: -1.1879, lng: 116.7944, tier: 2 }, // East Kalimantan
       ],
       'business': [
-        { id: 8, name: 'PT Sinar Mas Trading', lat: -6.2088, lng: 106.8456, tier: 3 }, // Jakarta
+        { id: 8, name: 'PT THIP 07', lat: -6.2088, lng: 106.8456, tier: 3 }, // Jakarta
         { id: 9, name: 'PT Indo Food Agri', lat: -6.1751, lng: 106.8650, tier: 3 }, // Jakarta
       ],
       'bulking': [

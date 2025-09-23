@@ -37,7 +37,7 @@ function TraceabilityConfigSelector({ onSelect, onCancel }: { onSelect: (config:
           { id: 'mill-1', name: 'Central Palm Mill', category: 'mills', location: 'Medan', details: '1000 MT/day' }
         ],
         2: [
-          { id: 'ext-1', name: 'PT Sinar Mas', category: 'external', location: 'Jakarta', details: 'Large Supplier' },
+          { id: 'ext-1', name: 'PT THIP 03', category: 'external', location: 'Jakarta', details: 'Large Supplier' },
           { id: 'shf-1', name: 'Farmers Cooperative A', category: 'shf', location: 'West Riau', details: '250 farmers' }
         ],
         3: [
@@ -2085,7 +2085,7 @@ export default function DueDiligenceReport() {
                             <td className="p-2 font-mono text-sm">DDS-2024-001</td>
                             <td className="p-2">2024-09-15</td>
                             <td className="p-2">Crude Palm Oil (CPO)</td>
-                            <td className="p-2">PT Sawit Mas Indonesia</td>
+                            <td className="p-2">PT BSU 03</td>
                             <td className="p-2">
                               <Badge className="bg-green-100 text-green-800">
                                 <div className="flex items-center gap-1">
@@ -2110,7 +2110,7 @@ export default function DueDiligenceReport() {
                             <td className="p-2 font-mono text-sm">DDS-2024-002</td>
                             <td className="p-2">2024-09-12</td>
                             <td className="p-2">Refined Palm Oil</td>
-                            <td className="p-2">KPN Corporation Berhad</td>
+                            <td className="p-2">KPN 04</td>
                             <td className="p-2">
                               <Badge className="bg-blue-100 text-blue-800">
                                 <div className="flex items-center gap-1">
@@ -2135,7 +2135,7 @@ export default function DueDiligenceReport() {
                             <td className="p-2 font-mono text-sm">DDS-2024-003</td>
                             <td className="p-2">2024-09-10</td>
                             <td className="p-2">Palm Kernel Oil</td>
-                            <td className="p-2">Golden Agri Resources Ltd</td>
+                            <td className="p-2">PT THIP 04</td>
                             <td className="p-2">
                               <Badge className="bg-green-100 text-green-800">
                                 <div className="flex items-center gap-1">
@@ -2552,7 +2552,7 @@ export default function DueDiligenceReport() {
                 <CardContent>
                   <div className="grid md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <strong>Company:</strong> KPN Corporation Berhad<br/>
+                      <strong>Company:</strong> KPN 05<br/>
                       <strong>Activity:</strong> Import<br/>
                       <strong>Product:</strong> Crude Palm Oil (CPO)<br/>
                       <strong>Net Mass:</strong> 2,150 KG<br/>
