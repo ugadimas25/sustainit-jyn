@@ -412,8 +412,8 @@ export default function LegalityAssessmentExpanded() {
   const dummyEstateData = [
     {
       id: 'estate-001',
-      namaSupplier: 'PT Sawit Makmur Jaya',
-      namaGroup: 'Grup Perkebunan Nusantara',
+      namaSupplier: 'PT THIP 01',
+      namaGroup: 'KPN 01',
       izinBerusaha: 'NIB-1234567890',
       tipeSertifikat: 'RSPO',
       nomorSertifikat: 'RSPO-2024-001',
@@ -425,8 +425,8 @@ export default function LegalityAssessmentExpanded() {
     },
     {
       id: 'estate-002', 
-      namaSupplier: 'CV Kebun Sejahtera',
-      namaGroup: 'Grup Mandiri Perkebunan',
+      namaSupplier: 'PT BSU 01',
+      namaGroup: 'KPN 02',
       izinBerusaha: 'NIB-2345678901',
       tipeSertifikat: 'ISPO',
       nomorSertifikat: 'ISPO-2024-002',
@@ -442,7 +442,7 @@ export default function LegalityAssessmentExpanded() {
     {
       id: 'mill-001',
       namaPabrik: 'PKS Riau Makmur',
-      namaGroup: 'Grup Perkebunan Nusantara',
+      namaGroup: 'KPN 01',
       izinBerusaha: 'NIB-3456789012',
       tipeSertifikat: 'RSPO',
       nomorSertifikat: 'RSPO-PKS-001',
@@ -486,7 +486,7 @@ export default function LegalityAssessmentExpanded() {
     {
       id: 'kcp-001',
       namaKCP: 'KCP Riau Central',
-      namaGroup: 'Grup Perkebunan Nusantara',
+      namaGroup: 'KPN 01',
       kapasitasOlahMTHari: 150,
       sistemPencatatan: 'ERP Terintegrasi',
       status: 'completed',
@@ -495,7 +495,7 @@ export default function LegalityAssessmentExpanded() {
     {
       id: 'kcp-002',
       namaKCP: 'KCP Sumatra Barat',
-      namaGroup: 'Grup Mandiri Perkebunan',
+      namaGroup: 'KPN 02',
       kapasitasOlahMTHari: 120,
       sistemPencatatan: 'Manual System',
       status: 'completed', 
@@ -507,7 +507,7 @@ export default function LegalityAssessmentExpanded() {
     {
       id: 'bulk-001',
       namaFasilitasBulking: 'Terminal Bulk Dumai',
-      namaGroup: 'Grup Perkebunan Nusantara',
+      namaGroup: 'KPN 01',
       kapasitasTotal: 50000,
       sistemPencatatan: 'Digital Warehouse Management',
       status: 'completed',
@@ -516,7 +516,7 @@ export default function LegalityAssessmentExpanded() {
     {
       id: 'bulk-002',
       namaFasilitasBulking: 'Storage Facility Belawan',
-      namaGroup: 'Grup Mandiri Perkebunan',
+      namaGroup: 'KPN 02',
       kapasitasTotal: 35000,
       sistemPencatatan: 'Semi-Digital System', 
       status: 'draft',
