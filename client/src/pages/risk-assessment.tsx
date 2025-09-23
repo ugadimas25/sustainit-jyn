@@ -86,7 +86,7 @@ export default function RiskAssessment() {
         })
       });
     },
-    onSuccess: async (data) => {
+    onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments'] });
       setSelectedAssessmentId(data.id);
       

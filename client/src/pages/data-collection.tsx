@@ -229,6 +229,9 @@ export default function DataCollection() {
     masaBerlakuSertifikat: '',
     alamatKantor: '',
     alamatBulking: '',
+    alamatFasilitas: '',
+    koordinatKantor: '',
+    koordinatFasilitas: '',
     modelChainOfCustody: '',
     kapasitasTotal: 0,
     sistemPencatatan: '',
@@ -367,7 +370,7 @@ export default function DataCollection() {
   ) => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
-      const uploadURL = uploadedFile.response?.url || uploadedFile.uploadURL || '';
+      const uploadURL = (uploadedFile as any).response?.url || (uploadedFile as any).uploadURL || '';
       const objectPath = uploadURL.includes('/uploads/') ? 
         `/objects/uploads/${uploadURL.split('/uploads/')[1]}` : 
         `/objects/uploads/${uploadedFile.id || 'unknown'}`;

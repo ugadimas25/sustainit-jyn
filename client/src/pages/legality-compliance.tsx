@@ -746,10 +746,9 @@ export default function LegalityCompliance() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="font-medium">Nama Supplier :</Label>
-                        <AutocompleteInput
+                        <Input
                           value={supplierComplianceForm.namaSupplier}
-                          onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaSupplier: value }))}
-                          suggestions={getSupplierSuggestions()}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, namaSupplier: e.target.value }))}
                           placeholder="Pilih dari data yang tersedia atau ketik manual"
                           data-testid="input-nama-supplier"
                         />
@@ -761,10 +760,9 @@ export default function LegalityCompliance() {
                       </div>
                       <div className="space-y-2">
                         <Label className="font-medium">Nama Group / Parent Company Name :</Label>
-                        <AutocompleteInput
+                        <Input
                           value={supplierComplianceForm.namaGroup}
-                          onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaGroup: value }))}
-                          suggestions={getSupplierSuggestions()}
+                          onChange={(e) => setSupplierComplianceForm(prev => ({ ...prev, namaGroup: e.target.value }))}
                           placeholder="Pilih dari data yang tersedia atau ketik manual"
                           data-testid="input-nama-group"
                         />
