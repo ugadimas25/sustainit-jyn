@@ -2250,7 +2250,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate actual PDF file
-      const pdfBuffer = generateCleanDDSPDF(report);
+      const { generateFixedDDSPDF } = await import('./pdf-generator-fixed.js');
+      const pdfBuffer = generateFixedDDSPDF(report);
 
       // For demo purposes, we'll return the PDF directly
       res.setHeader('Content-Type', 'application/pdf');
@@ -2838,7 +2839,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate PDF for download
-      const pdfBuffer = generateCleanDDSPDF(report);
+      const { generateFixedDDSPDF } = await import('./pdf-generator-fixed.js');
+      const pdfBuffer = generateFixedDDSPDF(report);
 
       // Set response headers for file download
       const filename = `dds-report-${report.id}-${new Date().toISOString().split('T')[0]}.pdf`;
@@ -3331,20 +3333,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to remove Z-coordinates (3D) from GeoJSON coordinates
-  function removeZValues(coordinates: any): any {
-    if (!coordinates || !Array.isArray(coordinates)) {
-      return coordinates;
-    }
-
-    if (typeof coordinates[0] === 'number') {
-      // This is a coordinate pair/triple, return only [x, y]
-      return coordinates.slice(0, 2);
-    }
-
-    // This is an array of coordinates, recursively process each
-    return coordinates.map(removeZValues);
-  }
 
   // Helper function to get country from coordinates using adm_boundary_lv0
   async function getCountryFromCoordinates(lat: number, lng: number): Promise<string> {
@@ -4379,7 +4367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           amendmentAct: mill.aktaPerubahan || undefined,
           certificationType: mill.tipeSertifikat || undefined,
           certificateNumber: mill.nomorSertifikat || undefined,
-          supplierType: mill|| undefined,
+          supplierType: mill.jenisSupplier || undefined,
           responsiblePersonName: mill.namaPenanggungJawab || undefined,
           responsiblePersonPosition: mill.jabatanPenanggungJawab || undefined,
           responsiblePersonEmail: mill.emailPenanggungJawab || undefined,
@@ -4969,6 +4957,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       lat: totalLat / coordinates.length,
       lng: totalLng / coordinates.length
     };
+  }
+
+  // Helper function to calculate polygon area from coordinates (in square meters)
+  function calculatePolygonArea(coordinates: number[][]): number {
+    if (!coordinates || coordinates.length < 3) {
+      return 0;
+    }
+
+    let area = 0;
+    const n = coordinates.length;
+
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      area += coordinates[i][0] * coordinates[j][1];
+      area -= coordinates[j][0] * coordinates[i][1];
+    }
+
+    area = Math.abs(area) / 2;
+    
+    // Convert from square degrees to square meters (approximate)
+    const earthRadius = 6371000; // meters
+    const latRadians = coordinates[0][1] * Math.PI / 180;
+    const metersPerDegree = earthRadius * Math.PI / 180 * Math.cos(latRadians);
+    
+    return area * metersPerDegree * metersPerDegree;
   }
 
   // Helper function to remove z-values from coordinates (API external tidak bisa terima z-values)
