@@ -50,6 +50,7 @@ export interface IStorage {
   // User management
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserWithPasswordByUsername(username: string): Promise<User | undefined>;
   createUser(insertUser: InsertUser): Promise<User>;
 
   // Commodity management
@@ -378,11 +379,43 @@ export class DatabaseStorage implements IStorage {
 
   // User management
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await db.select({
+      id: users.id,
+      username: users.username,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      status: users.status,
+      emailVerified: users.emailVerified,
+      lastLoginAt: users.lastLoginAt,
+      failedLoginAttempts: users.failedLoginAttempts,
+      lockedUntil: users.lockedUntil,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    }).from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select({
+      id: users.id,
+      username: users.username,
+      email: users.email,
+      name: users.name,
+      role: users.role,
+      status: users.status,
+      emailVerified: users.emailVerified,
+      lastLoginAt: users.lastLoginAt,
+      failedLoginAttempts: users.failedLoginAttempts,
+      lockedUntil: users.lockedUntil,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    }).from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  // Auth-only method that includes password for login verification
+  async getUserWithPasswordByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
@@ -391,7 +424,20 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .insert(users)
       .values(insertUser)
-      .returning();
+      .returning({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        status: users.status,
+        emailVerified: users.emailVerified,
+        lastLoginAt: users.lastLoginAt,
+        failedLoginAttempts: users.failedLoginAttempts,
+        lockedUntil: users.lockedUntil,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      });
     return user;
   }
 
@@ -2139,7 +2185,20 @@ export class DatabaseStorage implements IStorage {
   // Enhanced User management (with RBAC support)
   async getUsersEnhanced(): Promise<UserEnhanced[]> {
     try {
-      return await db.select().from(users).orderBy(users.username);
+      return await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        status: users.status,
+        emailVerified: users.emailVerified,
+        lastLoginAt: users.lastLoginAt,
+        failedLoginAttempts: users.failedLoginAttempts,
+        lockedUntil: users.lockedUntil,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      }).from(users).orderBy(users.username);
     } catch (error) {
       console.error("Error getting enhanced users:", error);
       throw error;
@@ -2148,7 +2207,20 @@ export class DatabaseStorage implements IStorage {
 
   async getUserEnhanced(id: string): Promise<UserEnhanced | undefined> {
     try {
-      const [user] = await db.select().from(users).where(eq(users.id, id));
+      const [user] = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        status: users.status,
+        emailVerified: users.emailVerified,
+        lastLoginAt: users.lastLoginAt,
+        failedLoginAttempts: users.failedLoginAttempts,
+        lockedUntil: users.lockedUntil,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      }).from(users).where(eq(users.id, id));
       return user || undefined;
     } catch (error) {
       console.error("Error getting enhanced user:", error);
@@ -2158,7 +2230,20 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByEmailEnhanced(email: string): Promise<UserEnhanced | undefined> {
     try {
-      const [user] = await db.select().from(users).where(eq(users.email, email));
+      const [user] = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        status: users.status,
+        emailVerified: users.emailVerified,
+        lastLoginAt: users.lastLoginAt,
+        failedLoginAttempts: users.failedLoginAttempts,
+        lockedUntil: users.lockedUntil,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      }).from(users).where(eq(users.email, email));
       return user || undefined;
     } catch (error) {
       console.error("Error getting user by email:", error);
@@ -2168,7 +2253,20 @@ export class DatabaseStorage implements IStorage {
 
   async createUserEnhanced(insertUser: InsertUserEnhanced): Promise<UserEnhanced> {
     try {
-      const [user] = await db.insert(users).values(insertUser).returning();
+      const [user] = await db.insert(users).values(insertUser).returning({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        status: users.status,
+        emailVerified: users.emailVerified,
+        lastLoginAt: users.lastLoginAt,
+        failedLoginAttempts: users.failedLoginAttempts,
+        lockedUntil: users.lockedUntil,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      });
       return user;
     } catch (error) {
       console.error("Error creating enhanced user:", error);
@@ -2181,7 +2279,20 @@ export class DatabaseStorage implements IStorage {
       const [updated] = await db.update(users)
         .set({ ...updates, updatedAt: new Date() })
         .where(eq(users.id, id))
-        .returning();
+        .returning({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          status: users.status,
+          emailVerified: users.emailVerified,
+          lastLoginAt: users.lastLoginAt,
+          failedLoginAttempts: users.failedLoginAttempts,
+          lockedUntil: users.lockedUntil,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt
+        });
       return updated || undefined;
     } catch (error) {
       console.error("Error updating enhanced user:", error);
