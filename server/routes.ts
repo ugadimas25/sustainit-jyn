@@ -977,7 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Legacy support routes
   // Suppliers endpoints for workflow
-  app.get("/api/suppliers", isAuthenticated, async (req, res) => {
+  app.get("/api/suppliers", async (req, res) => {
     try {
       const suppliers = await storage.getSuppliers();
       res.json(suppliers);
@@ -1204,7 +1204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/supplier-step-access/:supplierName/:step", isAuthenticated, async (req, res) => {
+  app.get("/api/supplier-step-access/:supplierName/:step", async (req, res) => {
     try {
       const { supplierName, step } = req.params;
       const stepNumber = parseInt(step, 10);

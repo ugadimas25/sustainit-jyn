@@ -24,12 +24,6 @@ export default function DataCollection() {
     aktaPendirian: '', // document URL
     aktaPerubahan: '', // document URL
     izinBerusaha: '', // NIB
-    tipeSertifikat: '', // ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3
-    nomorSertifikat: '',
-    lembagaSertifikasi: '',
-    ruangLingkupSertifikasi: '',
-    masaBerlakuSertifikat: '',
-    linkDokumen: '',
     
     // Alamat
     alamatKantor: '',
@@ -40,28 +34,38 @@ export default function DataCollection() {
     koordinatKantor: '',
     
     // Jenis supplier
-    jenisSupplier: '', // KKPA/Sister Company/Pihak Ketiga
-    jenisKebun: '', // New field: Kebun Sendiri/Kebun Satu Manajemen Pengelolaan/Third-Partied
+    jenisSupplier: '', // KKPA/Sister Company/Pihak Ketiga (checkboxes)
     totalProduksiTBSTahun: '',
-    tanggalPengisianKuisioner: '',
+    
+    // Tim Internal yang bertanggung jawab mengawasi implementasi kebijakan keberlanjutan perusahaan
+    namaTimInternal: '',
+    jabatanTimInternal: '',
+    emailTimInternal: '',
+    nomorTelefonTimInternal: '',
     
     // Penanggung Jawab
     namaPenanggungJawab: '',
     jabatanPenanggungJawab: '',
     emailPenanggungJawab: '',
-    nomorTeleponPenanggungJawab: '',
+    nomorTelefonPenanggungJawab: '',
     
-    // Tim Internal
-    namaTimInternal: '',
-    jabatanTimInternal: '',
-    emailTimInternal: '',
-    nomorTeleponTimInternal: '',
+    // Tanda Tangan
+    tandaTangan: '',
+    tanggalPengisianKuisioner: '',
     
-    // Note: Daftar Kebun moved to Spatial Analysis step
-    
-    // Bagian 3 - Perlindungan Hutan dan Gambut
-    memilikiKebijakanPerlindunganHutan: false,
-    memilikiKebijakanPerlindunganGambut: false
+    // Bagian 2 - Sumber TBS (Daftar Kebun)
+    daftarKebun: [{
+      no: 1,
+      namaKebun: '',
+      alamat: '',
+      longitude: '',
+      latitude: '',
+      polygonKebun: '',
+      luasLahan: 0, // Ha
+      tahunTanam: '',
+      jenisBibit: '',
+      produksiTBS1Tahun: ''
+    }]
   });
 
   const [smallholdersForm, setSmallholdersForm] = useState({
@@ -279,7 +283,7 @@ export default function DataCollection() {
   ) => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
-      const uploadURL = uploadedFile.response?.uploadURL || uploadedFile.uploadURL || '';
+      const uploadURL = uploadedFile.response?.url || uploadedFile.uploadURL || '';
       const objectPath = uploadURL.includes('/uploads/') ? 
         `/objects/uploads/${uploadURL.split('/uploads/')[1]}` : 
         `/objects/uploads/${uploadedFile.id || 'unknown'}`;
@@ -504,9 +508,10 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
-                          allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
-                        />
+                        >
+                          Upload File
+                        </ObjectUploader>
                         {estateForm.aktaPendirian && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -520,9 +525,10 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
-                          allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
-                        />
+                        >
+                          Upload File
+                        </ObjectUploader>
                         {estateForm.aktaPerubahan && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -633,9 +639,10 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'ktp', 'smallholders')}
-                          allowedFileTypes={['.pdf', '.jpg', '.jpeg', '.png']}
                           maxFileSize={5 * 1024 * 1024}
-                        />
+                        >
+                          Upload File
+                        </ObjectUploader>
                         {smallholdersForm.ktp && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -649,9 +656,10 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'smallholders')}
-                          allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
-                        />
+                        >
+                          Upload File
+                        </ObjectUploader>
                         {smallholdersForm.aktaPendirianUsaha && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
