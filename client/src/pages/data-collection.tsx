@@ -503,7 +503,7 @@ export default function DataCollection() {
                         <Label>Akta Pendirian</Label>
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
+                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
                           allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
                         />
@@ -519,7 +519,7 @@ export default function DataCollection() {
                         <Label>Akta Perubahan</Label>
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
+                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
                           allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
                         />
@@ -632,7 +632,7 @@ export default function DataCollection() {
                         <Label>KTP</Label>
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'ktp', 'smallholders')}
+                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'ktp', 'smallholders')}
                           allowedFileTypes={['.pdf', '.jpg', '.jpeg', '.png']}
                           maxFileSize={5 * 1024 * 1024}
                         />
@@ -648,7 +648,7 @@ export default function DataCollection() {
                         <Label>Akta Pendirian Usaha</Label>
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'smallholders')}
+                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'smallholders')}
                           allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
                         />
