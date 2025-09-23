@@ -1239,7 +1239,7 @@ export const insertMillSchema = createInsertSchema(mills);
 export const insertAnalysisResultSchema = createInsertSchema(analysisResults);
 export const insertDdsReportSchema = createInsertSchema(ddsReports);
 // Enhanced Zod schemas with mandatory field validation for the 5 form types
-export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection, {
+export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection).extend({
   namaSupplier: z.string().min(1, "Supplier name is required"),
   totalProduksiTBS: z.string().min(1, "Total TBS production is required"),
   namaPenanggungJawab: z.string().min(1, "Responsible person name is required"),
@@ -1252,14 +1252,12 @@ export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCol
   nomorTelefonTimInternal: z.string().min(1, "Internal team phone is required")
 });
 
-export const insertSmallholderDataCollectionSchema = createInsertSchema(traceabilityDataCollection, {
+export const insertSmallholderDataCollectionSchema = createInsertSchema(traceabilityDataCollection).extend({
   nomorDO: z.string().min(1, "DO number is required"),
-  pemegangDO: z.string().min(1, "DO holder name is required"),
-  alamatPemegangDO: z.string().min(1, "DO holder address is required"),
-  lokasiUsaha: z.string().min(1, "Business location is required")
+  pemegangDO: z.string().min(1, "DO holder name is required")
 });
 
-export const insertMillDataCollectionSchema = createInsertSchema(millDataCollection, {
+export const insertMillDataCollectionSchema = createInsertSchema(millDataCollection).extend({
   namaPabrik: z.string().min(1, "Mill name is required"),
   kuantitasCPOPK: z.string().min(1, "CPO/PK quantity is required"),
   tanggalPengisianKuisioner: z.string().min(1, "Questionnaire date is required"),
@@ -1273,9 +1271,8 @@ export const insertMillDataCollectionSchema = createInsertSchema(millDataCollect
   nomorTelefonTimInternal: z.string().min(1, "Internal team phone is required")
 });
 
-export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollection, {
+export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollection).extend({
   namaKCP: z.string().min(1, "KCP name is required"),
-  kapasitasOlahMTHari: z.number().positive("Processing capacity must be positive"),
   sistemPencatatan: z.string().min(1, "Recording system is required"),
   namaPenanggungJawab: z.string().min(1, "Responsible person name is required"),
   jabatanPenanggungJawab: z.string().min(1, "Responsible person position is required"),
@@ -1287,10 +1284,9 @@ export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollectio
   nomorTelefonTimInternal: z.string().min(1, "Internal team phone is required")
 });
 
-export const insertBulkingDataCollectionSchema = createInsertSchema(bulkingDataCollection, {
+export const insertBulkingDataCollectionSchema = createInsertSchema(bulkingDataCollection).extend({
   namaFasilitasBulking: z.string().min(1, "Bulking facility name is required"),
   sistemPencatatan: z.string().min(1, "Recording system is required"),
-  tanggalPengisianKuisioner: z.date().refine(val => val !== null, "Questionnaire date is required"),
   namaPenanggungJawab: z.string().min(1, "Responsible person name is required"),
   jabatanPenanggungJawab: z.string().min(1, "Responsible person position is required"),
   emailPenanggungJawab: z.string().email("Valid email is required"),
