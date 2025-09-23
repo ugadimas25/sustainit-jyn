@@ -106,6 +106,10 @@ export default function DataCollection() {
     umlId: '',
     namaPabrik: '',
     namaGroup: '',
+    alamatKantor: '',
+    alamatPabrik: '',
+    koordinatPabrik: '',
+    koordinatKantor: '',
     aktaPendirian: '', // document URL
     aktaPerubahan: '', // document URL
     izinBerusaha: '', // NIB
@@ -115,15 +119,7 @@ export default function DataCollection() {
     ruangLingkupSertifikasi: '',
     masaBerlakuSertifikat: '',
     
-    // Alamat
-    alamatKantor: '',
-    alamatPabrik: '',
-    
-    // Koordinat
-    koordinatPabrik: '',
-    koordinatKantor: '',
-    
-    // Jenis supplier
+    // Bagian 2 - Data Internal  
     jenisSupplier: '', // KKPA/Sister Company/Pihak Ketiga
     kuantitasCPOPK: '', // M/T
     tanggalPengisianKuisioner: '',
@@ -138,7 +134,19 @@ export default function DataCollection() {
     namaTimInternal: '',
     jabatanTimInternal: '',
     emailTimInternal: '',
-    nomorTeleponTimInternal: ''
+    nomorTeleponTimInternal: '',
+    
+    // Bagian 3 - Asal TBS
+    asalTBS: [{
+      no: 1,
+      namaEstateKebun: '',
+      alamat: '',
+      koordinat: '',
+      luasLahan: '',
+      jenisSupplierTBS: '', // Estate Sendiri / Pihak Ketiga / Smallholder
+      volumeTBS: '', // Ton/bulan
+      persentase: ''
+    }]
   });
 
   const [kcpForm, setKcpForm] = useState({
@@ -243,6 +251,15 @@ export default function DataCollection() {
         title: "Data Mill berhasil disimpan",
         description: "Data Mill telah berhasil disimpan ke sistem.",
       });
+      // Reset form
+      setMillForm({
+        umlId: '', namaPabrik: '', namaGroup: '', alamatKantor: '', alamatPabrik: '', koordinatPabrik: '', koordinatKantor: '',
+        aktaPendirian: '', aktaPerubahan: '', izinBerusaha: '', tipeSertifikat: '', nomorSertifikat: '', lembagaSertifikasi: '', ruangLingkupSertifikasi: '', masaBerlakuSertifikat: '',
+        jenisSupplier: '', kuantitasCPOPK: '', tanggalPengisianKuisioner: '',
+        namaPenanggungJawab: '', jabatanPenanggungJawab: '', emailPenanggungJawab: '', nomorTeleponPenanggungJawab: '',
+        namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', nomorTeleponTimInternal: '',
+        asalTBS: [{ no: 1, namaEstateKebun: '', alamat: '', koordinat: '', luasLahan: '', jenisSupplierTBS: '', volumeTBS: '', persentase: '' }]
+      });
     },
   });
 
@@ -344,6 +361,34 @@ export default function DataCollection() {
     setSmallholdersForm(prev => ({
       ...prev,
       daftarPetaniPemasokTBS: prev.daftarPetaniPemasokTBS.filter((_, i) => i !== index).map((pemasok, i) => ({ ...pemasok, no: i + 1 }))
+    }));
+  };
+
+  // Add AsalTBS function for Mill form
+  const addAsalTBS = () => {
+    setMillForm(prev => ({
+      ...prev,
+      asalTBS: [
+        ...prev.asalTBS,
+        {
+          no: prev.asalTBS.length + 1,
+          namaEstateKebun: '',
+          alamat: '',
+          koordinat: '',
+          luasLahan: '',
+          jenisSupplierTBS: '',
+          volumeTBS: '',
+          persentase: ''
+        }
+      ]
+    }));
+  };
+
+  // Remove AsalTBS function for Mill form
+  const removeAsalTBS = (index: number) => {
+    setMillForm(prev => ({
+      ...prev,
+      asalTBS: prev.asalTBS.filter((_, i) => i !== index).map((asal, i) => ({ ...asal, no: i + 1 }))
     }));
   };
 
@@ -1106,40 +1151,497 @@ export default function DataCollection() {
         {supplierType === 'mill' && (
           <Card>
             <CardHeader>
-              <CardTitle>Formulir Pengumpulan Data Mill</CardTitle>
+              <CardTitle>Form Kemampuan Telusur (Traceability) Pabrik Kelapa Sawit</CardTitle>
               <CardDescription>
-                (Pabrik Kelapa Sawit)
+                Formulir Pengumpulan Data Pabrik Kelapa Sawit
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleMillSubmit} className="space-y-8">
-                {/* Basic Mill Information */}
+                {/* Bagian 1 - Informasi Umum */}
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold border-b pb-2">Informasi Dasar Mill</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 1 – Informasi Umum</h3>
                   
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="namaPabrik">Nama Pabrik <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
+                      <Label htmlFor="umlId">UML ID</Label>
+                      <Input
+                        id="umlId"
+                        data-testid="input-uml-id-mill"
+                        value={millForm.umlId}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, umlId: e.target.value }))}
+                        placeholder="Masukkan UML ID"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="namaPabrik">Nama Pabrik</Label>
                       <Input
                         id="namaPabrik"
                         data-testid="input-nama-pabrik-mill"
                         value={millForm.namaPabrik}
                         onChange={(e) => setMillForm(prev => ({ ...prev, namaPabrik: e.target.value }))}
                         placeholder="Masukkan nama pabrik"
-                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaGroup">Nama Group</Label>
+                      <Input
+                        id="namaGroup"
+                        data-testid="input-nama-group-mill"
+                        value={millForm.namaGroup}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, namaGroup: e.target.value }))}
+                        placeholder="Masukkan nama group"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="kuantitasCPOPK">Kuantitas CPO/PK <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
+                      <Label htmlFor="alamatKantor">Alamat Kantor</Label>
+                      <Textarea
+                        id="alamatKantor"
+                        data-testid="input-alamat-kantor-mill"
+                        value={millForm.alamatKantor}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
+                        placeholder="Masukkan alamat kantor"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="alamatPabrik">Alamat Pabrik</Label>
+                      <Textarea
+                        id="alamatPabrik"
+                        data-testid="input-alamat-pabrik-mill"
+                        value={millForm.alamatPabrik}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, alamatPabrik: e.target.value }))}
+                        placeholder="Masukkan alamat pabrik"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="koordinatPabrik">Koordinat Pabrik</Label>
+                      <Input
+                        id="koordinatPabrik"
+                        data-testid="input-koordinat-pabrik-mill"
+                        value={millForm.koordinatPabrik}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, koordinatPabrik: e.target.value }))}
+                        placeholder="Masukkan koordinat pabrik"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="koordinatKantor">Koordinat Kantor</Label>
+                      <Input
+                        id="koordinatKantor"
+                        data-testid="input-koordinat-kantor-mill"
+                        value={millForm.koordinatKantor}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, koordinatKantor: e.target.value }))}
+                        placeholder="Masukkan koordinat kantor"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="izinBerusaha">Izin Berusaha (NIB)</Label>
+                      <Input
+                        id="izinBerusaha"
+                        data-testid="input-izin-berusaha-mill"
+                        value={millForm.izinBerusaha}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, izinBerusaha: e.target.value }))}
+                        placeholder="Masukkan NIB"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Document Upload Section */}
+                  <div className="space-y-4">
+                    <h4 className="text-md font-medium">Dokumen Legalitas</h4>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label>Akta Pendirian</Label>
+                        <ObjectUploader
+                          onGetUploadParameters={handleGetUploadParameters}
+                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirian', 'mill')}
+                        />
+                        {millForm.aktaPendirian && (
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <FileText size={16} />
+                            <span>Dokumen telah diunggah</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Akta Perubahan</Label>
+                        <ObjectUploader
+                          onGetUploadParameters={handleGetUploadParameters}
+                          onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'mill')}
+                        />
+                        {millForm.aktaPerubahan && (
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <FileText size={16} />
+                            <span>Dokumen telah diunggah</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Certification Section */}
+                  <h4 className="text-md font-medium">Informasi Sertifikasi</h4>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="tipeSertifikat">Tipe Sertifikat</Label>
+                      <Input
+                        id="tipeSertifikat"
+                        data-testid="input-tipe-sertifikat-mill"
+                        value={millForm.tipeSertifikat}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, tipeSertifikat: e.target.value }))}
+                        placeholder="ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorSertifikat">Nomor Sertifikat</Label>
+                      <Input
+                        id="nomorSertifikat"
+                        data-testid="input-nomor-sertifikat-mill"
+                        value={millForm.nomorSertifikat}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, nomorSertifikat: e.target.value }))}
+                        placeholder="Masukkan nomor sertifikat"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="lembagaSertifikasi">Lembaga Sertifikasi</Label>
+                      <Input
+                        id="lembagaSertifikasi"
+                        data-testid="input-lembaga-sertifikasi-mill"
+                        value={millForm.lembagaSertifikasi}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, lembagaSertifikasi: e.target.value }))}
+                        placeholder="Masukkan lembaga sertifikasi"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="ruangLingkupSertifikasi">Ruang Lingkup Sertifikasi</Label>
+                      <Input
+                        id="ruangLingkupSertifikasi"
+                        data-testid="input-ruang-lingkup-sertifikasi-mill"
+                        value={millForm.ruangLingkupSertifikasi}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, ruangLingkupSertifikasi: e.target.value }))}
+                        placeholder="Masukkan ruang lingkup sertifikasi"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="masaBerlakuSertifikat">Masa Berlaku Sertifikat</Label>
+                      <Input
+                        id="masaBerlakuSertifikat"
+                        data-testid="input-masa-berlaku-sertifikat-mill"
+                        value={millForm.masaBerlakuSertifikat}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, masaBerlakuSertifikat: e.target.value }))}
+                        placeholder="Masukkan masa berlaku sertifikat"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bagian 2 - Data Internal */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Data Internal</h3>
+                  
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="jenisSupplier">Jenis Supplier</Label>
+                      <Select
+                        value={millForm.jenisSupplier}
+                        onValueChange={(value) => setMillForm(prev => ({ ...prev, jenisSupplier: value }))}
+                      >
+                        <SelectTrigger data-testid="select-jenis-supplier-mill">
+                          <SelectValue placeholder="Pilih jenis supplier..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="kkpa">KKPA</SelectItem>
+                          <SelectItem value="sister-company">Sister Company</SelectItem>
+                          <SelectItem value="pihak-ketiga">Pihak Ketiga</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="kuantitasCPOPK">Kuantitas CPO/PK (M/T)</Label>
                       <Input
                         id="kuantitasCPOPK"
                         data-testid="input-kuantitas-cpo-pk-mill"
                         value={millForm.kuantitasCPOPK}
                         onChange={(e) => setMillForm(prev => ({ ...prev, kuantitasCPOPK: e.target.value }))}
                         placeholder="Masukkan kuantitas dalam M/T"
-                        required
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="tanggalPengisianKuisioner">Tanggal Pengisian Kuisioner</Label>
+                      <Input
+                        id="tanggalPengisianKuisioner"
+                        data-testid="input-tanggal-pengisian-mill"
+                        type="date"
+                        value={millForm.tanggalPengisianKuisioner}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, tanggalPengisianKuisioner: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <h4 className="text-md font-medium">Penanggung Jawab</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaPenanggungJawab">Nama Penanggung Jawab</Label>
+                      <Input
+                        id="namaPenanggungJawab"
+                        data-testid="input-nama-penanggung-jawab-mill"
+                        value={millForm.namaPenanggungJawab}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, namaPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan nama penanggung jawab"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="jabatanPenanggungJawab">Jabatan Penanggung Jawab</Label>
+                      <Input
+                        id="jabatanPenanggungJawab"
+                        data-testid="input-jabatan-penanggung-jawab-mill"
+                        value={millForm.jabatanPenanggungJawab}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, jabatanPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan jabatan penanggung jawab"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="emailPenanggungJawab">Email Penanggung Jawab</Label>
+                      <Input
+                        id="emailPenanggungJawab"
+                        data-testid="input-email-penanggung-jawab-mill"
+                        type="email"
+                        value={millForm.emailPenanggungJawab}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, emailPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan email penanggung jawab"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorTeleponPenanggungJawab">Nomor Telepon Penanggung Jawab</Label>
+                      <Input
+                        id="nomorTeleponPenanggungJawab"
+                        data-testid="input-nomor-telepon-penanggung-jawab-mill"
+                        value={millForm.nomorTeleponPenanggungJawab}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, nomorTeleponPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan nomor telepon penanggung jawab"
+                      />
+                    </div>
+                  </div>
+
+                  <h4 className="text-md font-medium">Tim Internal</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaTimInternal">Nama Tim Internal</Label>
+                      <Input
+                        id="namaTimInternal"
+                        data-testid="input-nama-tim-internal-mill"
+                        value={millForm.namaTimInternal}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, namaTimInternal: e.target.value }))}
+                        placeholder="Masukkan nama tim internal"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="jabatanTimInternal">Jabatan Tim Internal</Label>
+                      <Input
+                        id="jabatanTimInternal"
+                        data-testid="input-jabatan-tim-internal-mill"
+                        value={millForm.jabatanTimInternal}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, jabatanTimInternal: e.target.value }))}
+                        placeholder="Masukkan jabatan tim internal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="emailTimInternal">Email Tim Internal</Label>
+                      <Input
+                        id="emailTimInternal"
+                        data-testid="input-email-tim-internal-mill"
+                        type="email"
+                        value={millForm.emailTimInternal}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, emailTimInternal: e.target.value }))}
+                        placeholder="Masukkan email tim internal"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorTeleponTimInternal">Nomor Telepon Tim Internal</Label>
+                      <Input
+                        id="nomorTeleponTimInternal"
+                        data-testid="input-nomor-telepon-tim-internal-mill"
+                        value={millForm.nomorTeleponTimInternal}
+                        onChange={(e) => setMillForm(prev => ({ ...prev, nomorTeleponTimInternal: e.target.value }))}
+                        placeholder="Masukkan nomor telepon tim internal"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bagian 3 - Asal TBS */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 3 – Asal TBS</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">No.</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Nama Estate/Kebun</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Alamat</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Koordinat</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Luas Lahan (Ha)</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Jenis Supplier TBS</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Volume TBS (Ton/bulan)</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Persentase (%)</th>
+                            <th className="border border-gray-300 px-2 py-2 text-xs font-medium">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {millForm.asalTBS.map((asal, index) => (
+                            <tr key={index}>
+                              <td className="border border-gray-300 px-2 py-2 text-center">
+                                <span className="text-sm">{asal.no}</span>
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={asal.namaEstateKebun}
+                                  onChange={(e) => {
+                                    const newAsalTBS = [...millForm.asalTBS];
+                                    newAsalTBS[index].namaEstateKebun = e.target.value;
+                                    setMillForm(prev => ({ ...prev, asalTBS: newAsalTBS }));
+                                  }}
+                                  placeholder="Nama estate/kebun"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Textarea
+                                  value={asal.alamat}
+                                  onChange={(e) => {
+                                    const newAsalTBS = [...millForm.asalTBS];
+                                    newAsalTBS[index].alamat = e.target.value;
+                                    setMillForm(prev => ({ ...prev, asalTBS: newAsalTBS }));
+                                  }}
+                                  placeholder="Alamat"
+                                  className="text-sm min-h-[60px]"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={asal.koordinat}
+                                  onChange={(e) => {
+                                    const newAsalTBS = [...millForm.asalTBS];
+                                    newAsalTBS[index].koordinat = e.target.value;
+                                    setMillForm(prev => ({ ...prev, asalTBS: newAsalTBS }));
+                                  }}
+                                  placeholder="Koordinat"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={asal.luasLahan}
+                                  onChange={(e) => {
+                                    const newAsalTBS = [...millForm.asalTBS];
+                                    newAsalTBS[index].luasLahan = e.target.value;
+                                    setMillForm(prev => ({ ...prev, asalTBS: newAsalTBS }));
+                                  }}
+                                  placeholder="Luas (Ha)"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Select
+                                  value={asal.jenisSupplierTBS}
+                                  onValueChange={(value) => {
+                                    const newAsalTBS = [...millForm.asalTBS];
+                                    newAsalTBS[index].jenisSupplierTBS = value;
+                                    setMillForm(prev => ({ ...prev, asalTBS: newAsalTBS }));
+                                  }}
+                                >
+                                  <SelectTrigger className="text-sm">
+                                    <SelectValue placeholder="Pilih..." />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="estate-sendiri">Estate Sendiri</SelectItem>
+                                    <SelectItem value="pihak-ketiga">Pihak Ketiga</SelectItem>
+                                    <SelectItem value="smallholder">Smallholder</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={asal.volumeTBS}
+                                  onChange={(e) => {
+                                    const newAsalTBS = [...millForm.asalTBS];
+                                    newAsalTBS[index].volumeTBS = e.target.value;
+                                    setMillForm(prev => ({ ...prev, asalTBS: newAsalTBS }));
+                                  }}
+                                  placeholder="Volume TBS"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2">
+                                <Input
+                                  value={asal.persentase}
+                                  onChange={(e) => {
+                                    const newAsalTBS = [...millForm.asalTBS];
+                                    newAsalTBS[index].persentase = e.target.value;
+                                    setMillForm(prev => ({ ...prev, asalTBS: newAsalTBS }));
+                                  }}
+                                  placeholder="Persentase"
+                                  className="text-sm"
+                                />
+                              </td>
+                              <td className="border border-gray-300 px-2 py-2 text-center">
+                                {millForm.asalTBS.length > 1 && (
+                                  <Button 
+                                    type="button" 
+                                    variant="destructive" 
+                                    size="sm" 
+                                    onClick={() => removeAsalTBS(index)} 
+                                    data-testid={`button-remove-asal-tbs-${index}`}
+                                  >
+                                    <Trash2 size={16} />
+                                  </Button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    <div className="flex justify-center">
+                      <Button type="button" onClick={addAsalTBS} variant="outline" data-testid="button-add-asal-tbs">
+                        <Plus size={16} className="mr-2" />
+                        Tambah Asal TBS
+                      </Button>
                     </div>
                   </div>
                 </div>
