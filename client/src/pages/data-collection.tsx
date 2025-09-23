@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { ObjectUploader } from '@/components/ObjectUploader';
-import { FileText, Upload, Satellite } from 'lucide-react';
+import { FileText, Upload, Satellite, Plus, Trash2 } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
 
 export default function DataCollection() {
@@ -264,7 +264,7 @@ export default function DataCollection() {
       const response = await apiRequest('/api/objects/upload', 'POST');
       return {
         method: 'PUT' as const,
-        url: response.uploadURL,
+        url: response.url || response.uploadURL,
       };
     } catch (error) {
       console.error('Error getting upload parameters:', error);
@@ -502,8 +502,8 @@ export default function DataCollection() {
                       <div className="space-y-2">
                         <Label>Akta Pendirian</Label>
                         <ObjectUploader
-                          getUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
+                          onGetUploadParameters={handleGetUploadParameters}
+                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirian', 'estate')}
                           allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
                         />
@@ -518,8 +518,8 @@ export default function DataCollection() {
                       <div className="space-y-2">
                         <Label>Akta Perubahan</Label>
                         <ObjectUploader
-                          getUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
+                          onGetUploadParameters={handleGetUploadParameters}
+                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
                           allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
                         />
@@ -631,8 +631,8 @@ export default function DataCollection() {
                       <div className="space-y-2">
                         <Label>KTP</Label>
                         <ObjectUploader
-                          getUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result) => handleDocumentUploadComplete(result, 'ktp', 'smallholders')}
+                          onGetUploadParameters={handleGetUploadParameters}
+                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'ktp', 'smallholders')}
                           allowedFileTypes={['.pdf', '.jpg', '.jpeg', '.png']}
                           maxFileSize={5 * 1024 * 1024}
                         />
@@ -647,8 +647,8 @@ export default function DataCollection() {
                       <div className="space-y-2">
                         <Label>Akta Pendirian Usaha</Label>
                         <ObjectUploader
-                          getUploadParameters={handleGetUploadParameters}
-                          onUploadComplete={(result) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'smallholders')}
+                          onGetUploadParameters={handleGetUploadParameters}
+                          onUploadComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'smallholders')}
                           allowedFileTypes={['.pdf', '.doc', '.docx']}
                           maxFileSize={10 * 1024 * 1024}
                         />
