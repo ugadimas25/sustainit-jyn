@@ -271,6 +271,35 @@ export default function DataCollection() {
         title: "Data KCP berhasil disimpan",
         description: "Data KCP telah berhasil disimpan ke sistem.",
       });
+      // Reset form
+      setKcpForm({
+        ublFacilityId: '',
+        namaKCP: '',
+        namaGroup: '',
+        izinBerusaha: '',
+        tipeSertifikat: '',
+        nomorSertifikat: '',
+        lembagaSertifikasi: '',
+        ruangLingkupSertifikasi: '',
+        masaBerlakuSertifikat: '',
+        alamatKantor: '',
+        alamatKCP: '',
+        koordinatKantor: '',
+        koordinatKCP: '',
+        modelChainOfCustody: '',
+        kapasitasOlahMTHari: 0,
+        kapasitasOlah: 0,
+        sistemPencatatan: '',
+        tanggalPengisianKuisioner: '',
+        namaPenanggungJawab: '',
+        jabatanPenanggungJawab: '',
+        emailPenanggungJawab: '',
+        nomorTeleponPenanggungJawab: '',
+        namaTimInternal: '',
+        jabatanTimInternal: '',
+        emailTimInternal: '',
+        nomorTeleponTimInternal: ''
+      });
     },
   });
 
@@ -1659,39 +1688,349 @@ export default function DataCollection() {
         {supplierType === 'kcp' && (
           <Card>
             <CardHeader>
-              <CardTitle>Formulir Pengumpulan Data KCP</CardTitle>
+              <CardTitle>Form Kemampuan Telusur (Traceability) KCP</CardTitle>
               <CardDescription>
-                (Kernel Crushing Plant)
+                Formulir Pengumpulan Data Kernel Crushing Plant
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleKcpSubmit} className="space-y-8">
-                {/* Basic KCP Information */}
+                {/* Bagian 1 - Informasi Umum */}
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold border-b pb-2">Informasi Dasar KCP</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 1 – Informasi Umum</h3>
                   
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="namaKCP">Nama KCP <span className="text-xs text-red-600 font-medium">WAJIB</span></Label>
+                      <Label htmlFor="ublFacilityId">UBL Facility ID</Label>
+                      <Input
+                        id="ublFacilityId"
+                        data-testid="input-ubl-facility-id-kcp"
+                        value={kcpForm.ublFacilityId}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, ublFacilityId: e.target.value }))}
+                        placeholder="Masukkan UBL Facility ID"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="namaKCP">Nama KCP</Label>
                       <Input
                         id="namaKCP"
                         data-testid="input-nama-kcp"
                         value={kcpForm.namaKCP}
                         onChange={(e) => setKcpForm(prev => ({ ...prev, namaKCP: e.target.value }))}
                         placeholder="Masukkan nama KCP"
-                        required
                       />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaGroup">Nama Group</Label>
+                      <Input
+                        id="namaGroup"
+                        data-testid="input-nama-group-kcp"
+                        value={kcpForm.namaGroup}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, namaGroup: e.target.value }))}
+                        placeholder="Masukkan nama group"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="alamatKantor">Alamat Kantor</Label>
+                      <Textarea
+                        id="alamatKantor"
+                        data-testid="input-alamat-kantor-kcp"
+                        value={kcpForm.alamatKantor}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
+                        placeholder="Masukkan alamat kantor"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="alamatKCP">Alamat KCP</Label>
+                      <Textarea
+                        id="alamatKCP"
+                        data-testid="input-alamat-kcp"
+                        value={kcpForm.alamatKCP}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, alamatKCP: e.target.value }))}
+                        placeholder="Masukkan alamat KCP"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="koordinatKantor">Koordinat Kantor</Label>
+                      <Input
+                        id="koordinatKantor"
+                        data-testid="input-koordinat-kantor-kcp"
+                        value={kcpForm.koordinatKantor}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, koordinatKantor: e.target.value }))}
+                        placeholder="Masukkan koordinat kantor"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="koordinatKCP">Koordinat KCP</Label>
+                      <Input
+                        id="koordinatKCP"
+                        data-testid="input-koordinat-kcp"
+                        value={kcpForm.koordinatKCP}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, koordinatKCP: e.target.value }))}
+                        placeholder="Masukkan koordinat KCP"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="izinBerusaha">Izin Berusaha (NIB)</Label>
+                      <Input
+                        id="izinBerusaha"
+                        data-testid="input-izin-berusaha-kcp"
+                        value={kcpForm.izinBerusaha}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, izinBerusaha: e.target.value }))}
+                        placeholder="Masukkan NIB"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Certification Section */}
+                  <h4 className="text-md font-medium">Informasi Sertifikasi</h4>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="tipeSertifikat">Tipe Sertifikat</Label>
+                      <Input
+                        id="tipeSertifikat"
+                        data-testid="input-tipe-sertifikat-kcp"
+                        value={kcpForm.tipeSertifikat}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, tipeSertifikat: e.target.value }))}
+                        placeholder="ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorSertifikat">Nomor Sertifikat</Label>
+                      <Input
+                        id="nomorSertifikat"
+                        data-testid="input-nomor-sertifikat-kcp"
+                        value={kcpForm.nomorSertifikat}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, nomorSertifikat: e.target.value }))}
+                        placeholder="Masukkan nomor sertifikat"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="lembagaSertifikasi">Lembaga Sertifikasi</Label>
+                      <Input
+                        id="lembagaSertifikasi"
+                        data-testid="input-lembaga-sertifikasi-kcp"
+                        value={kcpForm.lembagaSertifikasi}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, lembagaSertifikasi: e.target.value }))}
+                        placeholder="Masukkan lembaga sertifikasi"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="ruangLingkupSertifikasi">Ruang Lingkup Sertifikasi</Label>
+                      <Input
+                        id="ruangLingkupSertifikasi"
+                        data-testid="input-ruang-lingkup-sertifikasi-kcp"
+                        value={kcpForm.ruangLingkupSertifikasi}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, ruangLingkupSertifikasi: e.target.value }))}
+                        placeholder="Masukkan ruang lingkup sertifikasi"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="masaBerlakuSertifikat">Masa Berlaku Sertifikat</Label>
+                      <Input
+                        id="masaBerlakuSertifikat"
+                        data-testid="input-masa-berlaku-sertifikat-kcp"
+                        value={kcpForm.masaBerlakuSertifikat}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, masaBerlakuSertifikat: e.target.value }))}
+                        placeholder="Masukkan masa berlaku sertifikat"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bagian 2 - Data Internal */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Data Internal</h3>
+                  
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="modelChainOfCustody">Model Chain of Custody</Label>
+                      <Select
+                        value={kcpForm.modelChainOfCustody}
+                        onValueChange={(value) => setKcpForm(prev => ({ ...prev, modelChainOfCustody: value }))}
+                      >
+                        <SelectTrigger data-testid="select-model-chain-custody-kcp">
+                          <SelectValue placeholder="Pilih model chain of custody..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="segregasi">Segregasi</SelectItem>
+                          <SelectItem value="mass-balance">Mass Balance</SelectItem>
+                          <SelectItem value="book-claim">Book & Claim</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="kapasitasOlahMTHari">Kapasitas Olah (MT/Hari)</Label>
                       <Input
                         id="kapasitasOlahMTHari"
+                        data-testid="input-kapasitas-olah-mt-hari-kcp"
                         type="number"
-                        data-testid="input-kapasitas-olah-kcp"
                         value={kcpForm.kapasitasOlahMTHari}
                         onChange={(e) => setKcpForm(prev => ({ ...prev, kapasitasOlahMTHari: parseFloat(e.target.value) || 0 }))}
-                        placeholder="Masukkan kapasitas"
+                        placeholder="Masukkan kapasitas olah"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="kapasitasOlah">Kapasitas Olah (MT/Bulan)</Label>
+                      <Input
+                        id="kapasitasOlah"
+                        data-testid="input-kapasitas-olah-kcp"
+                        type="number"
+                        value={kcpForm.kapasitasOlah}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, kapasitasOlah: parseFloat(e.target.value) || 0 }))}
+                        placeholder="Masukkan kapasitas olah bulanan"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="sistemPencatatan">Sistem Pencatatan</Label>
+                      <Select
+                        value={kcpForm.sistemPencatatan}
+                        onValueChange={(value) => setKcpForm(prev => ({ ...prev, sistemPencatatan: value }))}
+                      >
+                        <SelectTrigger data-testid="select-sistem-pencatatan-kcp">
+                          <SelectValue placeholder="Pilih sistem pencatatan..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="digital">Digital</SelectItem>
+                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="kombinasi">Kombinasi</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="tanggalPengisianKuisioner">Tanggal Pengisian Kuisioner</Label>
+                      <Input
+                        id="tanggalPengisianKuisioner"
+                        data-testid="input-tanggal-pengisian-kcp"
+                        type="date"
+                        value={kcpForm.tanggalPengisianKuisioner}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, tanggalPengisianKuisioner: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <h4 className="text-md font-medium">Penanggung Jawab</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaPenanggungJawab">Nama Penanggung Jawab</Label>
+                      <Input
+                        id="namaPenanggungJawab"
+                        data-testid="input-nama-penanggung-jawab-kcp"
+                        value={kcpForm.namaPenanggungJawab}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, namaPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan nama penanggung jawab"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="jabatanPenanggungJawab">Jabatan Penanggung Jawab</Label>
+                      <Input
+                        id="jabatanPenanggungJawab"
+                        data-testid="input-jabatan-penanggung-jawab-kcp"
+                        value={kcpForm.jabatanPenanggungJawab}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, jabatanPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan jabatan penanggung jawab"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="emailPenanggungJawab">Email Penanggung Jawab</Label>
+                      <Input
+                        id="emailPenanggungJawab"
+                        data-testid="input-email-penanggung-jawab-kcp"
+                        type="email"
+                        value={kcpForm.emailPenanggungJawab}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, emailPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan email penanggung jawab"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorTeleponPenanggungJawab">Nomor Telepon Penanggung Jawab</Label>
+                      <Input
+                        id="nomorTeleponPenanggungJawab"
+                        data-testid="input-nomor-telepon-penanggung-jawab-kcp"
+                        value={kcpForm.nomorTeleponPenanggungJawab}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, nomorTeleponPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan nomor telepon penanggung jawab"
+                      />
+                    </div>
+                  </div>
+
+                  <h4 className="text-md font-medium">Tim Internal</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaTimInternal">Nama Tim Internal</Label>
+                      <Input
+                        id="namaTimInternal"
+                        data-testid="input-nama-tim-internal-kcp"
+                        value={kcpForm.namaTimInternal}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, namaTimInternal: e.target.value }))}
+                        placeholder="Masukkan nama tim internal"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="jabatanTimInternal">Jabatan Tim Internal</Label>
+                      <Input
+                        id="jabatanTimInternal"
+                        data-testid="input-jabatan-tim-internal-kcp"
+                        value={kcpForm.jabatanTimInternal}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, jabatanTimInternal: e.target.value }))}
+                        placeholder="Masukkan jabatan tim internal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="emailTimInternal">Email Tim Internal</Label>
+                      <Input
+                        id="emailTimInternal"
+                        data-testid="input-email-tim-internal-kcp"
+                        type="email"
+                        value={kcpForm.emailTimInternal}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, emailTimInternal: e.target.value }))}
+                        placeholder="Masukkan email tim internal"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorTeleponTimInternal">Nomor Telepon Tim Internal</Label>
+                      <Input
+                        id="nomorTeleponTimInternal"
+                        data-testid="input-nomor-telepon-tim-internal-kcp"
+                        value={kcpForm.nomorTeleponTimInternal}
+                        onChange={(e) => setKcpForm(prev => ({ ...prev, nomorTeleponTimInternal: e.target.value }))}
+                        placeholder="Masukkan nomor telepon tim internal"
                       />
                     </div>
                   </div>
