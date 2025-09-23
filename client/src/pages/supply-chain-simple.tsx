@@ -172,10 +172,15 @@ export default function SupplyChainSimple() {
       console.log('Saving tier assignments:', tierAssignments);
       
       // Save to API
-      await apiRequest('/api/supply-chain/tiers', {
+      const response = await fetch('/api/supply-chain/tiers', {
         method: 'POST',
-        data: tierAssignments
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tierAssignments)
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save tier assignments');
+      }
       
       alert('Supply chain configuration saved successfully!');
     } catch (error) {
