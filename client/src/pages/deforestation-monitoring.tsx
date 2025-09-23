@@ -803,6 +803,98 @@ export default function DeforestationMonitoring() {
     URL.revokeObjectURL(url);
   };
 
+  const exportToCSV = () => {
+    // Determine which data to export: selected results or all filtered results
+    const dataToExport = selectedResults.length > 0 
+      ? selectedResults.map(index => filteredResults[index])
+      : filteredResults;
+
+    if (dataToExport.length === 0) {
+      toast({
+        title: "No Data to Export",
+        description: "No spatial analysis results available for export.",
+        variant: "default"
+      });
+      return;
+    }
+
+    // CSV Headers
+    const headers = [
+      'Plot ID',
+      'Country',
+      'Area (HA)',
+      'Overall Risk',
+      'Compliance Status',
+      'GFW Loss',
+      'JRC Loss', 
+      'SBTN Loss',
+      'GFW Loss Area (HA)',
+      'JRC Loss Area (HA)',
+      'SBTN Loss Area (HA)',
+      'WDPA Status',
+      'Peatland Status',
+      'High Risk Datasets',
+      'Analysis Date',
+      'Supply Chain Reference'
+    ];
+
+    // Convert data to CSV rows
+    const csvRows = dataToExport.map(result => [
+      result.plotId || '',
+      result.country || '',
+      (result.area || 0).toFixed(2),
+      result.overallRisk || 'UNKNOWN',
+      result.complianceStatus || 'UNKNOWN',
+      result.gfwLoss || 'UNKNOWN',
+      result.jrcLoss || 'UNKNOWN',
+      result.sbtnLoss || 'UNKNOWN',
+      (result.gfwLossArea || 0).toFixed(4),
+      (result.jrcLossArea || 0).toFixed(4),
+      (result.sbtnLossArea || 0).toFixed(4),
+      result.wdpaStatus || 'UNKNOWN',
+      result.peatlandStatus || 'UNKNOWN',
+      Array.isArray(result.highRiskDatasets) ? result.highRiskDatasets.join('; ') : '',
+      new Date().toISOString().split('T')[0],
+      'See Supply Chain Analysis for historical spatial check records'
+    ]);
+
+    // Create CSV content with UTF-8 BOM for Excel compatibility
+    const csvContent = [
+      '\uFEFF', // UTF-8 BOM
+      headers.join(','),
+      ...csvRows.map(row => row.map(field => {
+        // Escape fields containing commas, quotes, or newlines
+        if (typeof field === 'string' && (field.includes(',') || field.includes('"') || field.includes('\n'))) {
+          return `"${field.replace(/"/g, '""')}"`;
+        }
+        return field;
+      }).join(','))
+    ].join('\n');
+
+    // Generate filename with timestamp and row count
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T');
+    const dateStr = timestamp[0];
+    const timeStr = timestamp[1].split('-')[0] + timestamp[1].split('-')[1];
+    const rowCount = selectedResults.length > 0 ? `selected${selectedResults.length}` : `all${dataToExport.length}`;
+    const filename = `eudr_spatial_analysis_${dateStr}_${timeStr}_${rowCount}.csv`;
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "CSV Export Complete",
+      description: `Exported ${dataToExport.length} spatial analysis records to ${filename}. Historical spatial check records can be found in Supply Chain Analysis.`,
+    });
+  };
+
   const analyzeFile = async () => {
     if (!uploadedFile || !uploadedFile.content) return;
 
@@ -1987,6 +2079,15 @@ export default function DeforestationMonitoring() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                <Button 
+                  onClick={exportToCSV}
+                  variant="outline"
+                  className="flex items-center gap-2 border-green-600 text-green-600 hover:bg-green-50"
+                  data-testid="button-export-csv"
+                >
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
                 <Button 
                   onClick={handleQuickPreview}
                   variant="outline"
