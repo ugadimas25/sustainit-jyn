@@ -70,7 +70,6 @@ const adminNavigation: NavigationItem[] = [
       { name: 'Admin Dashboard', href: '/admin/dashboard', icon: BarChart3, step: 1, testId: 'nav-admin-dashboard' },
       { name: 'User Management', href: '/admin/users', icon: Users, step: 2, testId: 'nav-admin-users' },
       { name: 'Role Management', href: '/admin/roles', icon: Shield, step: 3, testId: 'nav-admin-roles' },
-      { name: 'Organizations', href: '/admin/organizations', icon: Users, step: 4, testId: 'nav-admin-organizations' },
     ]
   },
 ];
@@ -86,7 +85,7 @@ export function Sidebar() {
   const logoutMutation = auth?.logoutMutation || { mutate: () => {} };
 
   // Check if user has admin permissions (check actual user role)
-  const isAdmin = user?.role === 'system_admin' || user?.role === 'organization_admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'system_admin' || user?.role === 'organization_admin';
   
   // Combine navigation arrays
   const allNavigation = isAdmin ? [...navigation, ...adminNavigation] : navigation;
