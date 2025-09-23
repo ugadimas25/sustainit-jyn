@@ -1238,11 +1238,71 @@ export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments
 export const insertMillSchema = createInsertSchema(mills);
 export const insertAnalysisResultSchema = createInsertSchema(analysisResults);
 export const insertDdsReportSchema = createInsertSchema(ddsReports);
-export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection);
-export const insertMillDataCollectionSchema = createInsertSchema(millDataCollection);
-export const insertTraceabilityDataCollectionSchema = createInsertSchema(traceabilityDataCollection);
-export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollection);
-export const insertBulkingDataCollectionSchema = createInsertSchema(bulkingDataCollection);
+// Enhanced Zod schemas with mandatory field validation for the 5 form types
+export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection, {
+  namaSupplier: z.string().min(1, "Supplier name is required"),
+  totalProduksiTBS: z.string().min(1, "Total TBS production is required"),
+  namaPenanggungJawab: z.string().min(1, "Responsible person name is required"),
+  jabatanPenanggungJawab: z.string().min(1, "Responsible person position is required"),
+  emailPenanggungJawab: z.string().email("Valid email is required"),
+  nomorTelefonPenanggungJawab: z.string().min(1, "Phone number is required"),
+  namaTimInternal: z.string().min(1, "Internal team name is required"),
+  jabatanTimInternal: z.string().min(1, "Internal team position is required"),
+  emailTimInternal: z.string().email("Valid internal team email is required"),
+  nomorTelefonTimInternal: z.string().min(1, "Internal team phone is required")
+});
+
+export const insertSmallholderDataCollectionSchema = createInsertSchema(traceabilityDataCollection, {
+  nomorDO: z.string().min(1, "DO number is required"),
+  pemegangDO: z.string().min(1, "DO holder name is required"),
+  alamatPemegangDO: z.string().min(1, "DO holder address is required"),
+  lokasiUsaha: z.string().min(1, "Business location is required")
+});
+
+export const insertMillDataCollectionSchema = createInsertSchema(millDataCollection, {
+  namaPabrik: z.string().min(1, "Mill name is required"),
+  kuantitasCPOPK: z.string().min(1, "CPO/PK quantity is required"),
+  tanggalPengisianKuisioner: z.string().min(1, "Questionnaire date is required"),
+  namaPenanggungJawab: z.string().min(1, "Responsible person name is required"),
+  jabatanPenanggungJawab: z.string().min(1, "Responsible person position is required"),
+  emailPenanggungJawab: z.string().email("Valid email is required"),
+  nomorTelefonPenanggungJawab: z.string().min(1, "Phone number is required"),
+  namaTimInternal: z.string().min(1, "Internal team name is required"),
+  jabatanTimInternal: z.string().min(1, "Internal team position is required"),
+  emailTimInternal: z.string().email("Valid internal team email is required"),
+  nomorTelefonTimInternal: z.string().min(1, "Internal team phone is required")
+});
+
+export const insertKcpDataCollectionSchema = createInsertSchema(kcpDataCollection, {
+  namaKCP: z.string().min(1, "KCP name is required"),
+  kapasitasOlahMTHari: z.number().positive("Processing capacity must be positive"),
+  sistemPencatatan: z.string().min(1, "Recording system is required"),
+  namaPenanggungJawab: z.string().min(1, "Responsible person name is required"),
+  jabatanPenanggungJawab: z.string().min(1, "Responsible person position is required"),
+  emailPenanggungJawab: z.string().email("Valid email is required"),
+  nomorTelefonPenanggungJawab: z.string().min(1, "Phone number is required"),
+  namaTimInternal: z.string().min(1, "Internal team name is required"),
+  jabatanTimInternal: z.string().min(1, "Internal team position is required"),
+  emailTimInternal: z.string().email("Valid internal team email is required"),
+  nomorTelefonTimInternal: z.string().min(1, "Internal team phone is required")
+});
+
+export const insertBulkingDataCollectionSchema = createInsertSchema(bulkingDataCollection, {
+  namaFasilitasBulking: z.string().min(1, "Bulking facility name is required"),
+  sistemPencatatan: z.string().min(1, "Recording system is required"),
+  tanggalPengisianKuisioner: z.date().refine(val => val !== null, "Questionnaire date is required"),
+  namaPenanggungJawab: z.string().min(1, "Responsible person name is required"),
+  jabatanPenanggungJawab: z.string().min(1, "Responsible person position is required"),
+  emailPenanggungJawab: z.string().email("Valid email is required"),
+  nomorTelefonPenanggungJawab: z.string().min(1, "Phone number is required"),
+  namaTimInternal: z.string().min(1, "Internal team name is required"),
+  jabatanTimInternal: z.string().min(1, "Internal team position is required"),
+  emailTimInternal: z.string().email("Valid internal team email is required"),
+  nomorTelefonTimInternal: z.string().min(1, "Internal team phone is required")
+});
+
+// Legacy schemas for backward compatibility
+export const insertTraceabilityDataCollectionSchema = insertSmallholderDataCollectionSchema;
 
 // Administrative Boundaries Level 0 (Country Boundaries) table
 export const admBoundaryLv0 = pgTable("adm_boundary_lv0", {
@@ -1267,16 +1327,25 @@ export type WorkflowShipment = typeof workflowShipments.$inferSelect;
 export type InsertWorkflowShipment = z.infer<typeof insertWorkflowShipmentSchema>;
 export type DdsReport = typeof ddsReports.$inferSelect;
 export type InsertDdsReport = z.infer<typeof insertDdsReportSchema>;
+// Enhanced TypeScript types for the 5 form models
 export type EstateDataCollection = typeof estateDataCollection.$inferSelect;
-export type InsertEstateDataCollection = typeof estateDataCollection.$inferInsert;
+export type InsertEstateDataCollection = z.infer<typeof insertEstateDataCollectionSchema>;
+
+export type SmallholderDataCollection = typeof traceabilityDataCollection.$inferSelect;
+export type InsertSmallholderDataCollection = z.infer<typeof insertSmallholderDataCollectionSchema>;
+
 export type MillDataCollection = typeof millDataCollection.$inferSelect;
-export type InsertMillDataCollection = typeof millDataCollection.$inferInsert;
-export type TraceabilityDataCollection = typeof traceabilityDataCollection.$inferSelect;
-export type InsertTraceabilityDataCollection = typeof traceabilityDataCollection.$inferInsert;
+export type InsertMillDataCollection = z.infer<typeof insertMillDataCollectionSchema>;
+
 export type KcpDataCollection = typeof kcpDataCollection.$inferSelect;
-export type InsertKcpDataCollection = typeof kcpDataCollection.$inferInsert;
+export type InsertKcpDataCollection = z.infer<typeof insertKcpDataCollectionSchema>;
+
 export type BulkingDataCollection = typeof bulkingDataCollection.$inferSelect;
-export type InsertBulkingDataCollection = typeof bulkingDataCollection.$inferInsert;
+export type InsertBulkingDataCollection = z.infer<typeof insertBulkingDataCollectionSchema>;
+
+// Legacy types for backward compatibility
+export type TraceabilityDataCollection = SmallholderDataCollection;
+export type InsertTraceabilityDataCollection = InsertSmallholderDataCollection;
 export type AdmBoundaryLv0 = typeof admBoundaryLv0.$inferSelect;
 export type InsertAdmBoundaryLv0 = typeof admBoundaryLv0.$inferInsert;
 
