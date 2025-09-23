@@ -78,8 +78,7 @@ export default function RiskAssessment() {
   // Create new risk assessment mutation
   const createAssessmentMutation = useMutation({
     mutationFn: async (data: RiskAssessmentData) => {
-      return await apiRequest('/api/risk-assessments', {
-        method: 'POST',
+      return await apiRequest('POST', '/api/risk-assessments', {
         body: JSON.stringify({
           ...data,
           status: 'Draft',
@@ -93,9 +92,7 @@ export default function RiskAssessment() {
       
       // Initialize Excel-based risk template
       try {
-        const templateResponse = await apiRequest(`/api/risk-assessments/${data.id}/init-excel-template`, {
-          method: 'POST'
-        });
+        const templateResponse = await apiRequest('POST', `/api/risk-assessments/${data.id}/init-excel-template`);
         
         if (templateResponse.scoring) {
           setScoring(templateResponse.scoring);
@@ -123,8 +120,7 @@ export default function RiskAssessment() {
   // Update risk item mutation
   const updateItemMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<RiskItemData> }) => {
-      return await apiRequest(`/api/risk-assessment-items/${id}`, {
-        method: 'PUT',
+      return await apiRequest('PUT', `/api/risk-assessment-items/${id}`, {
         body: JSON.stringify(updates)
       });
     },
@@ -141,7 +137,7 @@ export default function RiskAssessment() {
     if (!selectedAssessmentId) return;
     
     try {
-      const scoringResponse = await apiRequest(`/api/risk-assessments/${selectedAssessmentId}/score`);
+      const scoringResponse = await apiRequest('GET', `/api/risk-assessments/${selectedAssessmentId}/score`);
       setScoring(scoringResponse);
     } catch (error) {
       console.error('Failed to recalculate scoring:', error);
@@ -455,7 +451,6 @@ export default function RiskAssessment() {
                                       updates: {
                                         riskLevel: value as any,
                                         riskValue: newRiskValue,
-                                        calculatedRisk,
                                         normalizedScore,
                                         finalScore
                                       }

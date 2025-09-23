@@ -116,14 +116,6 @@ export default function DeforestationMonitoring() {
       }
       return response.json();
     },
-    onError: (err) => {
-      console.error("Error fetching suppliers:", err);
-      toast({
-        title: "Failed to Load Suppliers",
-        description: "Could not retrieve supplier list. Please try again later.",
-        variant: "destructive",
-      });
-    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -828,7 +820,7 @@ export default function DeforestationMonitoring() {
     }, 800);
 
     uploadMutation.mutate({
-      geojsonFile: uploadedFile.content,
+      geojsonFile: typeof uploadedFile.content === 'string' ? uploadedFile.content : '',
       fileName: uploadedFile.name
     });
   };
@@ -1132,9 +1124,9 @@ export default function DeforestationMonitoring() {
     }
   };
 
-  const uniqueCountries = [...new Set(analysisResults.map(r => r.country))];
-  const uniqueRisks = [...new Set(analysisResults.map(r => r.overallRisk))].filter(r => r !== 'UNKNOWN');
-  const uniqueCompliance = [...new Set(analysisResults.map(r => r.complianceStatus))].filter(r => r !== 'UNKNOWN');
+  const uniqueCountries = Array.from(new Set(analysisResults.map(r => r.country)));
+  const uniqueRisks = Array.from(new Set(analysisResults.map(r => r.overallRisk))).filter(r => r !== 'UNKNOWN');
+  const uniqueCompliance = Array.from(new Set(analysisResults.map(r => r.complianceStatus))).filter(r => r !== 'UNKNOWN');
 
   const totalPages = Math.ceil(filteredResults.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -2079,7 +2071,7 @@ export default function DeforestationMonitoring() {
                             if (checked) {
                               // Select all items on current page using their indices
                               const currentPageIndices = currentPageData.map((_, idx) => startIndex + idx);
-                              setSelectedResults(prev => [...new Set([...prev, ...currentPageIndices])]);
+                              setSelectedResults(prev => Array.from(new Set([...prev, ...currentPageIndices])));
                             } else {
                               // Deselect all items on current page using their indices
                               const currentPageIndices = currentPageData.map((_, idx) => startIndex + idx);
