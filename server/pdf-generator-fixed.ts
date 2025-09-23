@@ -47,13 +47,13 @@ export function generateFixedDDSPDF(reportData: any) {
     doc.setFont('helvetica', 'bold');
     doc.text('Name:', 15, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('KPN Corporation Berhad', 40, yPos);
+    doc.text('PT THIP', 40, yPos);
 
     yPos += 10;
     doc.setFont('helvetica', 'bold');
     doc.text('Address:', 15, yPos);
     doc.setFont('helvetica', 'normal');
-    const address = 'Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia';
+    const address = 'Jl. Sudirman No. 123, Jakarta 12345, Indonesia';
     const addressLines = doc.splitTextToSize(address, 140);
     doc.text(addressLines, 45, yPos);
     yPos += addressLines.length * 5;
@@ -62,7 +62,7 @@ export function generateFixedDDSPDF(reportData: any) {
     doc.setFont('helvetica', 'bold');
     doc.text('Country:', 15, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('Malaysia', 45, yPos);
+    doc.text('Indonesia', 45, yPos);
 
     // Commodity Section
     yPos += 20;
@@ -95,7 +95,7 @@ export function generateFixedDDSPDF(reportData: any) {
     doc.setFont('helvetica', 'bold');
     doc.text('Producer Name:', 10, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('Riau Cooperative Growers', 60, yPos);
+    doc.text('PT BSU Growers', 60, yPos);
 
     yPos += 8;
     doc.setFont('helvetica', 'bold');
