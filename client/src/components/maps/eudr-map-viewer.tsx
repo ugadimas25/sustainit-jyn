@@ -1541,16 +1541,24 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
             // WDPA layer control with improved implementation - using event delegation for better reliability
             function setupWDPALayer() {
+              console.log('🔧 Attempting to setup WDPA layer...');
+              console.log('🔍 Looking for element with ID: wdpaLayer');
+              
               const wdpaCheckbox = document.getElementById('wdpaLayer');
+              console.log('🔍 WDPA checkbox found:', !!wdpaCheckbox, wdpaCheckbox);
+              
               if (!wdpaCheckbox) {
                 console.error('❌ WDPA layer checkbox not found in DOM!');
+                console.log('🔍 Available checkboxes:', Array.from(document.querySelectorAll('input[type="checkbox"]')).map(el => ({ id: el.id, classes: el.className })));
+                console.log('🔍 All elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
                 return;
               }
 
+              console.log('✅ WDPA checkbox found, setting up event listener...');
               // Remove any existing event listeners to prevent duplicates
               wdpaCheckbox.removeEventListener('change', handleWDPAChange);
               wdpaCheckbox.addEventListener('change', handleWDPAChange);
-              console.log('✅ WDPA checkbox event listener registered');
+              console.log('✅ WDPA checkbox event listener registered successfully');
             }
 
             function handleWDPAChange(e) {
@@ -1664,10 +1672,16 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
             // Peatland layer control - using function-based approach for better reliability
             function setupPeatlandLayer() {
+              console.log('🔧 Attempting to setup Peatland layer...');
+              console.log('🔍 Looking for element with ID: peatlandLayer');
+              
               const peatlandCheckbox = document.getElementById('peatlandLayer');
+              console.log('🔍 Peatland checkbox found:', !!peatlandCheckbox, peatlandCheckbox);
+              
               if (!peatlandCheckbox) {
                 console.error('❌ Peatland layer checkbox not found in DOM!');
-                console.log('🔍 Available element IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+                console.log('🔍 Available checkboxes:', Array.from(document.querySelectorAll('input[type="checkbox"]')).map(el => ({ id: el.id, classes: el.className })));
+                console.log('🔍 All elements with IDs:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
                 return;
               }
 
@@ -1676,7 +1690,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               // Remove any existing event listeners to prevent duplicates
               peatlandCheckbox.removeEventListener('change', handlePeatlandChange);
               peatlandCheckbox.addEventListener('change', handlePeatlandChange);
-              console.log('✅ Peatland checkbox event listener registered');
+              console.log('✅ Peatland checkbox event listener registered successfully');
             }
 
             function handlePeatlandChange(e) {
