@@ -5097,16 +5097,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log('🔍 Using PostGIS query with bounding box:', bbox.substring(0, 100) + '...');
 
-        // Query WDPA data from PostGIS database
+        // Query WDPA data from PostGIS database using actual table columns
         const result = await db.execute(sql`
           SELECT 
             COALESCE(name, 'Unknown Protected Area') as name,
             COALESCE(category, 'Unknown') as category,
             COALESCE(category, 'Unknown') as designation,
-            COALESCE(iucn_category, 'Unknown') as iucn_category,
-            COALESCE(area_hectares, 0) as area_hectares,
-            COALESCE(status_wdpa, 'Unknown') as status_wdpa,
-            COALESCE(governance_type, 'Unknown') as governance_type,
+            COALESCE(areatype, 'Unknown') as iucn_category,
+            COALESCE(acquisitio, 0) as area_hectares,
+            COALESCE(subloc, 'Unknown') as status_wdpa,
+            COALESCE(country, 'Unknown') as governance_type,
             ST_AsGeoJSON(ST_Simplify(geom, 0.001)) as geometry
           FROM wdpa_idn 
           WHERE geom IS NOT NULL
@@ -5115,7 +5115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             geom, 
             ST_GeomFromText(${bbox}, 4326)
           )
-          ORDER BY COALESCE(area_hectares, 0) DESC
+          ORDER BY COALESCE(acquisitio, 0) DESC
           LIMIT 500
         `);
 
