@@ -732,78 +732,83 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               return Promise.resolve(wdpaTileLayer);
             }
 
-            // Alternative function to load WDPA as GeoJSON for detailed features
+            // Function to create WDPA layer from PostGIS database
             function createWDPAGeoJSONLayer() {
-              console.log('Loading WDPA GeoJSON layer...');
+              console.log('🏞️ Loading WDPA protected areas layer from database...');
               
-              // Get a wider bounding box to capture more features
+              // Get current map bounds - use Indonesia bounds if current view is too wide
               const bounds = map.getBounds();
-              const expandedBounds = bounds.pad(1.0); // Expand bounds by 100% to get more features
-              const bbox = \`\${expandedBounds.getWest()},\${expandedBounds.getSouth()},\${expandedBounds.getEast()},\${expandedBounds.getNorth()}\`;
+              let queryBounds = bounds;
               
-              // Enhanced query using correct field name 'iucn_cat' and get ALL categories
-              const query = new URLSearchParams({
-                where: "1=1", // Get all features - no filtering by category
-                outFields: 'wdpaid,name,desig,desig_eng,iucn_cat,status,gov_type,mang_auth,rep_area,iso3', // Specific fields we need
-                geometry: bbox,
-                geometryType: 'esriGeometryEnvelope',
-                spatialRel: 'esriSpatialRelIntersects',
-                f: 'geojson',
-                returnGeometry: 'true',
-                maxRecordCount: 5000, // Increase limit significantly
-                orderByFields: 'iucn_cat,rep_area DESC' // Order by category then by area
+              // If bounds are too wide (covering more than Indonesia), use Indonesia bounds
+              const indonesiaBounds = {
+                west: 95,
+                south: -11,
+                east: 141,
+                north: 6
+              };
+              
+              if (bounds.getWest() < 90 || bounds.getEast() > 145 || 
+                  bounds.getSouth() < -15 || bounds.getNorth() > 10) {
+                console.log('🇮🇩 Using Indonesia bounds for WDPA query');
+                queryBounds = L.latLngBounds([indonesiaBounds.south, indonesiaBounds.west], 
+                                           [indonesiaBounds.north, indonesiaBounds.east]);
+              }
+              
+              console.log('🔍 Requesting WDPA data for bounds:', {
+                west: queryBounds.getWest(),
+                south: queryBounds.getSouth(),
+                east: queryBounds.getEast(),
+                north: queryBounds.getNorth()
               });
-
-              const url = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${query}\`;
               
-              console.log('WDPA query URL:', url);
-              console.log('Query bbox:', bbox);
-
-              return fetch(url)
-                .then(response => {
-                  console.log('WDPA response status:', response.status);
-                  if (!response.ok) {
-                    throw new Error(\`HTTP error! status: \${response.status}\`);
+              // Fetch WDPA data from server endpoint with enhanced error handling
+              return fetch('/api/wdpa-data', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  bounds: {
+                    west: queryBounds.getWest(),
+                    south: queryBounds.getSouth(),
+                    east: queryBounds.getEast(),
+                    north: queryBounds.getNorth()
                   }
-                  return response.json();
                 })
-                .then(data => {
-                  console.log('WDPA data received:', data);
-                  
-                  if (!data.features || data.features.length === 0) {
-                    console.warn('No WDPA features found in current map bounds - trying global query');
-                    
-                    // If no features found in bounds, try a global query for a sample
-                    const globalQuery = new URLSearchParams({
-                      where: '1=1',
-                      outFields: 'wdpaid,name,desig_eng,iucn_cat,status,gov_type,mang_auth,rep_area,iso3',
-                      f: 'geojson',
-                      returnGeometry: 'true',
-                      maxRecordCount: 500,
-                      orderByFields: 'rep_area DESC' // Get largest areas first
-                    });
-                    
-                    const globalUrl = \`https://services5.arcgis.com/Mj0hjvkNtV7NRhA7/ArcGIS/rest/services/WDPA_v0/FeatureServer/1/query?\${globalQuery}\`;
-                    console.log('Trying global WDPA query:', globalUrl);
-                    
-                    return fetch(globalUrl).then(resp => resp.json());
-                  }
+              })
+              .then(response => {
+                console.log('🏞️ WDPA API response status:', response.status, response.statusText);
+                if (!response.ok) {
+                  const errorText = response.statusText || 'Unknown error';
+                  console.error(\`❌ WDPA API error: \${response.status} - \${errorText}\`);
+                  throw new Error(\`HTTP error! status: \${response.status} - \${errorText}\`);
+                }
+                return response.json();
+              })
+              .then(data => {
+                console.log('🏞️ WDPA data received:', data);
+                console.log('📊 Features count:', data.features?.length || 0);
+                
+                if (!data || !data.features) {
+                  console.warn('⚠️ Invalid WDPA data structure - missing features array');
+                  throw new Error('Invalid WDPA data structure');
+                }
+                
+                if (data.features.length === 0) {
+                  console.warn('⚠️ No WDPA features found in current map bounds');
+                  // Don't fallback immediately, return empty layer first
+                }
 
-                  console.log(\`Found \${data.features.length} WDPA features\`);
-                  
-                  // Enhanced category analysis
-                  const categoryStats = {};
-                  const uniqueCategories = new Set();
-                  
-                  data.features.forEach(feature => {
-                    const cat = feature.properties.iucn_cat || 'Not Assigned';
-                    const cleanCat = cat.toString().trim() || 'Empty';
-                    uniqueCategories.add(cleanCat);
-                    categoryStats[cleanCat] = (categoryStats[cleanCat] || 0) + 1;
-                  });
-                  
-                  console.log('IUCN Categories found:', Array.from(uniqueCategories));
-                  console.log('Category distribution:', categoryStats);
+                console.log(\`✅ Processing \${data.features.length} WDPA features from API\`);
+                
+                // Group features by category for logging
+                const categories = data.features.reduce((acc, feature) => {
+                  const category = feature.properties.category || 'Unknown';
+                  acc[category] = (acc[category] || 0) + 1;
+                  return acc;
+                }, {});
+                console.log('🏞️ WDPA categories distribution:', categories);
                   
                   const layer = L.geoJSON(data, {
                     style: function(feature) {
@@ -823,29 +828,27 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                     },
                     onEachFeature: function(feature, layer) {
                       const props = feature.properties;
-                      const name = props.name || 'Unknown';
-                      const designation = props.desig_eng || 'Unknown';
-                      const iucnCategory = props.iucn_cat || 'Not Assigned';
-                      const status = props.status || 'Unknown';
-                      const wdpaId = props.wdpaid || 'N/A';
-                      const govType = props.gov_type || 'Unknown';
-                      const managementAuth = props.mang_auth || 'Unknown';
-                      const area = props.rep_area || 'Unknown';
+                      const name = props.name || 'Unknown Protected Area';
+                      const designation = props.designation || 'Unknown';
+                      const iucnCategory = props.iucn_category || 'Unknown';
+                      const status = props.status_wdpa || 'Unknown';
+                      const category = props.category || 'Unknown';
+                      const govType = props.governance_type || 'Unknown';
+                      const area = props.area_hectares || 'Unknown';
                       
                       const popupContent = \`
                         <div style="min-width: 300px; font-family: Arial, sans-serif;">
-                          <h4 style="margin: 0 0 10px 0; color: #264653; font-size: 16px; font-weight: bold; border-bottom: 2px solid #264653; padding-bottom: 5px;">\${name}</h4>
+                          <h4 style="margin: 0 0 10px 0; color: #264653; font-size: 16px; font-weight: bold; border-bottom: 2px solid #264653; padding-bottom: 5px;">🏞️ \${name}</h4>
                           <div style="font-size: 13px; line-height: 1.4;">
-                            <div style="margin-bottom: 5px;"><strong>WDPA ID:</strong> \${wdpaId}</div>
+                            <div style="margin-bottom: 5px;"><strong>Category:</strong> \${category}</div>
                             <div style="margin-bottom: 5px;"><strong>Designation:</strong> \${designation}</div>
                             <div style="margin-bottom: 5px;"><strong>IUCN Category:</strong> 
                               <span style="background: #d2b48c; color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold;">\${iucnCategory}</span>
                             </div>
                             <div style="margin-bottom: 5px;"><strong>Status:</strong> \${status}</div>
                             <div style="margin-bottom: 5px;"><strong>Governance:</strong> \${govType}</div>
-                            <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} ha</div>
-                            <div style="margin-bottom: 5px;"><strong>Management:</strong> \${managementAuth}</div>
-                            <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #264653; font-size: 11px;">
+                            <div style="margin-bottom: 5px;"><strong>Area:</strong> \${area} hectares</div>
+                            <div style="margin-top: 10px; padding: 5px; background: #f0f8f0; border-left: 4px solid #d2b48c; font-size: 11px;">
                               <strong>Protection Level:</strong> \${getProtectionLevel(iucnCategory)}
                             </div>
                           </div>
