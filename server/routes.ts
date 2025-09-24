@@ -3943,24 +3943,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const wdpaResult = await wdpaService.checkProtectedAreaOverlap(analysisCoords);
               wdpaStatus = wdpaResult.isInProtectedArea ? 'PROTECTED' : 'NOT_PROTECTED';
               
-              // Check peatland status using database query
+              // Check peatland intersection area using database query
+              let peatlandArea = 0; // Initialize peatland intersection area in hectares
               if (country === 'Indonesia' || country === 'indonesia') {
                 try {
-                  const peatlandQuery = await db.execute(sql`
-                    SELECT kubah__gbt 
-                    FROM peatland_idn 
-                    WHERE ST_Contains(geom, ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}))
-                    LIMIT 1
-                  `);
+                  // Calculate intersection area with peatland_idn polygons using proper geometry handling
+                  let peatlandQuery;
+                  
+                  if (feature.geometry?.type === 'Polygon' || feature.geometry?.type === 'MultiPolygon') {
+                    // Use full geometry for polygon features with accurate geographic area calculation
+                    const geometryJson = JSON.stringify(feature.geometry);
+                    peatlandQuery = await db.execute(sql`
+                      WITH plot_geom AS (
+                        SELECT ST_SetSRID(ST_GeomFromGeoJSON(${geometryJson}), 4326) as geom
+                      )
+                      SELECT 
+                        COALESCE(SUM(ST_Area(ST_Intersection(p.geom, plot_geom.geom)::geography)), 0) / 10000 as intersection_area_ha
+                      FROM peatland_idn p, plot_geom
+                      WHERE ST_Intersects(ST_Transform(p.geom, 4326), plot_geom.geom)
+                    `);
+                  } else {
+                    // Fallback: create 100m buffer around centroid point for non-polygon features  
+                    peatlandQuery = await db.execute(sql`
+                      WITH plot_geom AS (
+                        SELECT ST_Buffer(ST_SetSRID(ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}), 4326)::geography, 100)::geometry as geom
+                      )
+                      SELECT 
+                        COALESCE(SUM(ST_Area(ST_Intersection(p.geom, plot_geom.geom)::geography)), 0) / 10000 as intersection_area_ha
+                      FROM peatland_idn p, plot_geom
+                      WHERE ST_Intersects(ST_Transform(p.geom, 4326), plot_geom.geom)
+                    `);
+                  }
                   
                   if (peatlandQuery.rows.length > 0) {
-                    peatlandStatus = 'PEATLAND';
+                    peatlandArea = parseFloat(peatlandQuery.rows[0].intersection_area_ha) || 0;
+                    // Use explicit threshold to handle very small intersections
+                    if (peatlandArea >= 0.0001) { // Minimum 0.0001 hectares (1 square meter)
+                      peatlandStatus = `${peatlandArea.toFixed(4)} ha`;
+                      console.log(`🏞️ Plot ${plotId} peatland intersection: ${peatlandArea.toFixed(4)} hectares`);
+                    } else {
+                      peatlandStatus = 'NOT_PEATLAND';
+                    }
                   } else {
                     peatlandStatus = 'NOT_PEATLAND';
                   }
                 } catch (peatlandError) {
-                  console.warn(`⚠️ Peatland check failed for plot ${plotId}:`, peatlandError);
-                  // Keep default 'UNKNOWN' for peatland if database query fails
+                  console.warn(`⚠️ Peatland intersection calculation failed for plot ${plotId}:`, peatlandError);
+                  // Fallback to simple point check if intersection calculation fails
+                  try {
+                    const fallbackQuery = await db.execute(sql`
+                      SELECT kubah__gbt 
+                      FROM peatland_idn 
+                      WHERE ST_Contains(geom, ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}))
+                      LIMIT 1
+                    `);
+                    peatlandStatus = fallbackQuery.rows.length > 0 ? 'PEATLAND' : 'NOT_PEATLAND';
+                  } catch (fallbackError) {
+                    console.warn(`⚠️ Peatland fallback check also failed for plot ${plotId}:`, fallbackError);
+                    // Keep default 'UNKNOWN' for peatland if all queries fail
+                  }
                 }
               } else {
                 // For non-Indonesia countries, assume not peatland
