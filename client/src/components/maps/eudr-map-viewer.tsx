@@ -1656,8 +1656,11 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }
             }
 
-            // Setup WDPA layer control
-            setupWDPALayer();
+            // Setup WDPA layer control with timing delay to ensure DOM is ready
+            setTimeout(() => {
+              console.log('🔧 Setting up WDPA layer control after DOM render...');
+              setupWDPALayer();
+            }, 100);
 
             // Peatland layer control - using function-based approach for better reliability
             function setupPeatlandLayer() {
@@ -1786,8 +1789,11 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }
             }
 
-            // Setup Peatland layer control
-            setupPeatlandLayer();
+            // Setup Peatland layer control with timing delay to ensure DOM is ready
+            setTimeout(() => {
+              console.log('🔧 Setting up Peatland layer control after DOM render...');
+              setupPeatlandLayer();
+            }, 150);
 
             // Enhanced Deforestation Layers with Improved URLs and Error Handling
             const enhancedDeforestationLayers = {
