@@ -100,7 +100,7 @@ export function useSupplierStepAccess(step: number) {
     queryKey: ['/api/supplier-step-access', currentSupplier, step],
     queryFn: async () => {
       if (!currentSupplier) {
-        return { hasAccess: step === 1 || step === 2 }; // Allow Data Collection and Spatial Analysis without supplier
+        return { hasAccess: true }; // Allow all steps without supplier
       }
       
       const response = await fetch(`/api/supplier-step-access/${encodeURIComponent(currentSupplier)}/${step}`, {
@@ -108,7 +108,7 @@ export function useSupplierStepAccess(step: number) {
       });
       if (!response.ok) {
         console.warn(`Step access check failed with status ${response.status}`);
-        return { hasAccess: step === 1 || step === 2, error: `HTTP ${response.status}` }; // Allow steps 1 and 2 on error
+        return { hasAccess: true, error: `HTTP ${response.status}` }; // Allow all steps on error
       }
       return response.json();
     },

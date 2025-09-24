@@ -302,7 +302,7 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
   return (
     <button
       onClick={handleClick}
-      disabled={isLoading || (!isAccessible && subModule.step !== 2)}
+      disabled={false}
       className={`w-full text-left px-4 py-2 rounded-lg flex items-center transition-colors duration-200 text-sm ${
         isActive 
           ? 'bg-forest-light text-forest font-medium' 

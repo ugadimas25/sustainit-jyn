@@ -237,20 +237,18 @@ export default function LegalityCompliance() {
     laporanP2K3: '',
     laporanP2K3Keterangan: '',
     
-    // 3.11 Perpajakan dan Antikorupsi
-    kebijakanPerpajakan: '',
-    kebijakanPerpajakanKeterangan: '',
-    sopKodeEtikBisnis: '',
-    sopKodeEtikBisnisKeterangan: '',
+    // 3.11 Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai - Anti-corruption Section
     komitmenAntikorupsi: '',
     kebijakanAntikorupsi: '',
     kebijakanAntikorupsiKeterangan: '',
+    sopKodeEtikBisnis: '',
+    sopKodeEtikBisnisKeterangan: '',
     sopKodeEtik: '',
     sopKodeEtikKeterangan: '',
     saluranPengaduan: '',
     saluranPengaduanKeterangan: '',
     
-    // 3.12 Bukti Pajak dan Ekspor
+    // 3.12 Bukti Terdaftar Pajak dan pemenuhan persyaratan eksport
     suratTerdaftarPajak: '',
     suratTerdaftarPajakKeterangan: '',
     suratTerdaftarPajakStatus: '',
@@ -281,7 +279,7 @@ export default function LegalityCompliance() {
       landRights: ['historisPerolehanTanah', 'izinPencadangan', 'persetujuanPKKPR', 'izinUsahaPerkebunan', 'skHGU'],
       environmental: ['izinLingkungan', 'izinRintekTPS', 'izinLimbahCair', 'persetujuanAndalalin', 'daftarPestisida'],
       implementation: ['buktiPelaksanaan', 'laporanRKLRPL', 'laporanPestisida'],
-      forestry: ['areaSesuaiPeruntukan', 'skPelepasanHutan', 'dokumenInstansiRelevant'],
+      forestry: ['areaSesuaiPeruntukan', 'skPelepasanHutan', 'dokumenInstansiRelevan'],
       thirdParty: ['kebijakanHakPihakKetiga', 'kebijakanPerusahaan', 'sopGRTT'],
       cooperation: ['mouKerjaSama', 'skCPCL', 'laporanRealisasiPlasma'],
       information: ['suratMasukPermintaan', 'suratKeluarPermintaan', 'suratMasukKeluhan'],
