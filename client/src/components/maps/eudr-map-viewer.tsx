@@ -1273,6 +1273,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             // Analysis results from React (contains actual polygon geometries)
             const analysisResults = ${JSON.stringify(analysisResults)};
 
+            // Send debug message before polygon processing
+            try {
+              window.parent.postMessage({
+                type: 'iframe-debug',
+                message: 'Starting polygon processing for ' + analysisResults.length + ' plots'
+              }, '*');
+            } catch(e) {}
+
             // Add polygons for each plot using actual geometry data
             const polygons = [];
             const bounds = [];
@@ -1527,6 +1535,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 group.addLayer(tempLayer);
               });
               map.fitBounds(group.getBounds().pad(0.1));
+              
+              // Send map fitting success message to parent
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'Map fitted to bounds with ' + bounds.length + ' polygon areas'
+                }, '*');
+              } catch(e) {}
             }
 
             // Base layer control
@@ -2110,6 +2126,24 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   message: 'All layer controls setup completed!'
                 }, '*');
               } catch(e) {}
+              
+              // Test if layer controls are actually attached by trying to find them
+              setTimeout(() => {
+                const controlsStatus = {
+                  wdpa: !!document.getElementById('wdpaLayer'),
+                  peatland: !!document.getElementById('peatlandLayer'),
+                  gfw: !!document.getElementById('gfwLayer'),
+                  jrc: !!document.getElementById('jrcLayer'),
+                  sbtn: !!document.getElementById('sbtnLayer')
+                };
+                
+                try {
+                  window.parent.postMessage({
+                    type: 'iframe-debug',
+                    message: 'Layer controls found: ' + JSON.stringify(controlsStatus)
+                  }, '*');
+                } catch(e) {}
+              }, 100);
             }, 200);
 
             // Pre-load and test deforestation layers for immediate availability
