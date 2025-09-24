@@ -4078,6 +4078,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Keep default 'UNKNOWN' values if analysis fails
             }
 
+            // Apply WDPA compliance logic: if WDPA is protected and currently compliant, mark as non-compliant
+            if (wdpaStatus !== 'NOT_PROTECTED' && complianceStatus === 'COMPLIANT') {
+              complianceStatus = 'NON-COMPLIANT';
+              console.log(`🏞️ Plot ${plotId} marked NON-COMPLIANT due to WDPA protected area intersection: ${wdpaStatus}`);
+            }
+
             // Create analysis result with comprehensive Indonesian metadata
             const analysisResult = {
               plotId,

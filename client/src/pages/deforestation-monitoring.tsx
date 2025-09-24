@@ -1285,9 +1285,17 @@ export default function DeforestationMonitoring() {
   };
 
   const getWdpaBadge = (status: string) => {
+    // Handle area values in hectares (e.g., "302.4565 ha")
+    if (status && status.includes(' ha')) {
+      const areaValue = parseFloat(status.replace(' ha', ''));
+      if (!isNaN(areaValue) && areaValue > 0) {
+        return <Badge className="bg-amber-100 text-amber-800">{status}</Badge>;
+      }
+    }
+    
     switch (status) {
       case 'PROTECTED':
-        return <Badge className="bg-blue-100 text-blue-800">PROTECTED</Badge>;
+        return <Badge className="bg-amber-100 text-amber-800">PROTECTED</Badge>;
       case 'NOT_PROTECTED':
         return <Badge className="bg-gray-100 text-gray-800">NOT_PROTECTED</Badge>;
       default:
