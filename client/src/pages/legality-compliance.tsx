@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { ObjectUploader } from '@/components/ObjectUploader';
 import { Badge } from '@/components/ui/badge';
-import { FileText, ChevronDown, Shield } from 'lucide-react';
+import { FileText, ChevronDown, Shield, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import jsPDF from 'jspdf';
@@ -24,6 +24,11 @@ export default function LegalityCompliance() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  
+  // Supplier validation state
+  const [supplierSearchTerm, setSupplierSearchTerm] = useState('');
+  const [supplierFound, setSupplierFound] = useState<boolean | null>(null);
+  const [canProceedWithAssessment, setCanProceedWithAssessment] = useState(false);
   
   // Progress tracking
   const [complianceProgress, setComplianceProgress] = useState({
@@ -42,6 +47,44 @@ export default function LegalityCompliance() {
       taxation: 0
     }
   });
+
+  // Fetch available suppliers for validation
+  const { data: availableSuppliers = [], isLoading: loadingSuppliers } = useQuery({
+    queryKey: ['/api/suppliers'],
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+  
+  // Check if supplier exists in the system
+  const validateSupplier = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      setSupplierFound(null);
+      setCanProceedWithAssessment(false);
+      return;
+    }
+    
+    const found = Array.isArray(availableSuppliers) && availableSuppliers.some((supplier: any) => 
+      supplier.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.supplierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.namaSupplier?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setSupplierFound(found);
+    setCanProceedWithAssessment(found);
+    
+    if (found) {
+      toast({
+        title: "Supplier Found",
+        description: "Your entity is registered in the system. You can proceed with the compliance assessment.",
+        variant: "default"
+      });
+    } else {
+      toast({
+        title: "Supplier Not Found",
+        description: "Your entity is not found in the system. Please complete data collection first.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Supplier compliance form state
   const [supplierComplianceForm, setSupplierComplianceForm] = useState({
@@ -649,6 +692,80 @@ export default function LegalityCompliance() {
             Sistem penilaian kepatuhan hukum supplier untuk memastikan compliance dengan regulasi EUDR
           </p>
         </div>
+        
+        {/* Supplier Validation Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-600" />
+              Validasi Supplier
+            </CardTitle>
+            <CardDescription>
+              Silakan masukkan nama entity/supplier Anda untuk memverifikasi ketersediaan data dalam sistem
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="supplier-search">Nama Entity/Supplier</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="supplier-search"
+                    placeholder="Masukkan nama entity/supplier Anda..."
+                    value={supplierSearchTerm}
+                    onChange={(e) => setSupplierSearchTerm(e.target.value)}
+                    className={supplierFound === true ? 'border-green-500' : supplierFound === false ? 'border-red-500' : ''}
+                    data-testid="input-supplier-search"
+                  />
+                  <Button 
+                    onClick={() => validateSupplier(supplierSearchTerm)}
+                    disabled={!supplierSearchTerm.trim() || loadingSuppliers}
+                    data-testid="button-validate-supplier"
+                  >
+                    {loadingSuppliers ? 'Loading...' : 'Validasi'}
+                  </Button>
+                </div>
+              </div>
+              
+              {supplierFound === true && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div className="text-sm">
+                    <span className="font-medium text-green-800">Entity ditemukan!</span>
+                    <p className="text-green-700">Anda dapat melanjutkan proses penilaian legalitas.</p>
+                  </div>
+                </div>
+              )}
+              
+              {supplierFound === false && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  <div className="text-sm">
+                    <span className="font-medium text-red-800">Entity tidak ditemukan!</span>
+                    <p className="text-red-700">Silakan selesaikan proses pengumpulan data terlebih dahulu sebelum melakukan penilaian legalitas.</p>
+                    <Button 
+                      onClick={() => setLocation('/data-collection')}
+                      variant="link"
+                      className="p-0 h-auto text-red-600 underline"
+                      data-testid="link-data-collection"
+                    >
+                      Ke Pengumpulan Data
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {supplierFound === null && supplierSearchTerm && (
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <div className="text-sm text-blue-800">
+                    Klik "Validasi" untuk memeriksa ketersediaan entity Anda dalam sistem.
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full">

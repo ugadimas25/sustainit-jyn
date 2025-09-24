@@ -109,6 +109,11 @@ export default function RiskAssessment() {
   const [totalScore, setTotalScore] = useState<number>(0);
   const [riskClassification, setRiskClassification] = useState<'rendah' | 'sedang' | 'tinggi'>('tinggi');
   const { toast } = useToast();
+  
+  // Supplier validation state
+  const [supplierSearchTerm, setSupplierSearchTerm] = useState('');
+  const [supplierFound, setSupplierFound] = useState<boolean | null>(null);
+  const [canProceedWithAssessment, setCanProceedWithAssessment] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(riskAssessmentSchema),
@@ -118,6 +123,44 @@ export default function RiskAssessment() {
       assessorName: 'KPN Compliance Administrator'
     }
   });
+
+  // Fetch available suppliers for validation
+  const { data: availableSuppliers = [], isLoading: loadingSuppliers } = useQuery({
+    queryKey: ['/api/suppliers'],
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+  
+  // Check if supplier exists in the system
+  const validateSupplier = (searchTerm: string) => {
+    if (!searchTerm.trim()) {
+      setSupplierFound(null);
+      setCanProceedWithAssessment(false);
+      return;
+    }
+    
+    const found = Array.isArray(availableSuppliers) && availableSuppliers.some((supplier: any) => 
+      supplier.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.supplierName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.namaSupplier?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setSupplierFound(found);
+    setCanProceedWithAssessment(found);
+    
+    if (found) {
+      toast({
+        title: "Supplier Found",
+        description: "Your entity is registered in the system. You can proceed with the risk assessment.",
+        variant: "default"
+      });
+    } else {
+      toast({
+        title: "Supplier Not Found",
+        description: "Your entity is not found in the system. Please complete data collection first.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Calculate total score and risk classification according to Form 06.1 methodology
   const calculateRiskAssessment = () => {
@@ -283,9 +326,83 @@ export default function RiskAssessment() {
             </div>
           </div>
         </div>
+        
+        {/* Supplier Validation Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-600" />
+              Validasi Supplier
+            </CardTitle>
+            <CardDescription>
+              Silakan masukkan nama entity/supplier Anda untuk memverifikasi ketersediaan data dalam sistem sebelum melakukan risk assessment
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="supplier-search-risk">Nama Entity/Supplier</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="supplier-search-risk"
+                    placeholder="Masukkan nama entity/supplier Anda..."
+                    value={supplierSearchTerm}
+                    onChange={(e) => setSupplierSearchTerm(e.target.value)}
+                    className={supplierFound === true ? 'border-green-500' : supplierFound === false ? 'border-red-500' : ''}
+                    data-testid="input-supplier-search-risk"
+                  />
+                  <Button 
+                    onClick={() => validateSupplier(supplierSearchTerm)}
+                    disabled={!supplierSearchTerm.trim() || loadingSuppliers}
+                    data-testid="button-validate-supplier-risk"
+                  >
+                    {loadingSuppliers ? 'Loading...' : 'Validasi'}
+                  </Button>
+                </div>
+              </div>
+              
+              {supplierFound === true && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div className="text-sm">
+                    <span className="font-medium text-green-800">Entity ditemukan!</span>
+                    <p className="text-green-700">Anda dapat melanjutkan proses risk assessment.</p>
+                  </div>
+                </div>
+              )}
+              
+              {supplierFound === false && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                  <div className="text-sm">
+                    <span className="font-medium text-red-800">Entity tidak ditemukan!</span>
+                    <p className="text-red-700">Silakan selesaikan proses pengumpulan data terlebih dahulu sebelum melakukan risk assessment.</p>
+                    <Button 
+                      onClick={() => setLocation('/data-collection')}
+                      variant="link"
+                      className="p-0 h-auto text-red-600 underline"
+                      data-testid="link-data-collection-risk"
+                    >
+                      Ke Pengumpulan Data
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {supplierFound === null && supplierSearchTerm && (
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <div className="text-sm text-blue-800">
+                    Klik "Validasi" untuk memeriksa ketersediaan entity Anda dalam sistem.
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Supplier Information Form */}
-        <Card className="mb-6">
+        <Card className={`mb-6 ${!canProceedWithAssessment ? 'opacity-50 pointer-events-none' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-blue-600" />
@@ -339,18 +456,25 @@ export default function RiskAssessment() {
                 <Button 
                   type="submit" 
                   className="w-full"
+                  disabled={!canProceedWithAssessment}
                   data-testid="button-submit-assessment"
                 >
                   Simpan Assessment Risiko
                   <Calculator className="w-4 h-4 ml-2" />
                 </Button>
+                
+                {!canProceedWithAssessment && (
+                  <div className="text-center text-sm text-gray-500 mt-2">
+                    Silakan validasi nama supplier Anda terlebih dahulu untuk melanjutkan risk assessment.
+                  </div>
+                )}
               </form>
             </Form>
           </CardContent>
         </Card>
 
         {/* Spatial Risk Assessment Table */}
-        <Card>
+        <Card className={!canProceedWithAssessment ? 'opacity-50 pointer-events-none' : ''}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-green-600" />
