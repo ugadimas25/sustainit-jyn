@@ -1297,20 +1297,21 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 }, '*');
               } catch(e) {}
 
-              // Check if geometry data is available
-              if (!result.geometry || !result.geometry.coordinates || !result.geometry.coordinates[0]) {
-                console.warn('No valid geometry data for plot:', result.plotId, 'geometry:', result.geometry);
-                plotsWithoutGeometry++;
-                
-                try {
-                  window.parent.postMessage({
-                    type: 'iframe-debug',
-                    message: 'Plot ' + result.plotId + ' SKIPPED - no valid geometry'
-                  }, '*');
-                } catch(e) {}
+              try {
+                // Check if geometry data is available
+                if (!result.geometry || !result.geometry.coordinates || !result.geometry.coordinates[0]) {
+                  console.warn('No valid geometry data for plot:', result.plotId, 'geometry:', result.geometry);
+                  plotsWithoutGeometry++;
+                  
+                  try {
+                    window.parent.postMessage({
+                      type: 'iframe-debug',
+                      message: 'Plot ' + result.plotId + ' SKIPPED - no valid geometry'
+                    }, '*');
+                  } catch(e) {}
 
-                // Add a fallback marker for plots without geometry (place them in Indonesia center)
-                const fallbackMarker = L.circleMarker([-2.5, 118], {
+                  // Add a fallback marker for plots without geometry (place them in Indonesia center)
+                  const fallbackMarker = L.circleMarker([-2.5, 118], {
                   radius: 12,
                   fillColor: '#ff6b35',
                   color: '#fff',
@@ -1360,6 +1361,9 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
               const isHighRisk = result.overallRisk === 'HIGH';
               const color = isHighRisk ? '#dc2626' : '#10b981';
+              
+              // Declare polygon and centerMarker variables outside try block
+              let polygon, centerMarker;
 
               try {
                 // Convert coordinates for Leaflet (handle complex polygon structures)
@@ -1392,7 +1396,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 }
 
                 // Create polygon with styling
-                const polygon = L.polygon(coordinates, {
+                polygon = L.polygon(coordinates, {
                   fillColor: color,
                   color: isHighRisk ? '#dc2626' : '#10b981',
                   weight: 2,
@@ -1415,7 +1419,7 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
               // Add center marker for better visibility
               const center = polygon.getBounds().getCenter();
-              const centerMarker = L.circleMarker(center, {
+              centerMarker = L.circleMarker(center, {
                 radius: 8,
                 fillColor: color,
                 color: '#fff',
@@ -1545,6 +1549,19 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   message: 'Plot ' + result.plotId + ' polygon added to map (' + (isHighRisk ? 'HIGH' : 'LOW') + ' risk)'
                 }, '*');
               } catch(e) {}
+              
+              } catch(polygonError) {
+                // Handle any errors in polygon creation
+                console.error('Error creating polygon for plot', result.plotId, ':', polygonError);
+                plotsWithoutGeometry++;
+                
+                try {
+                  window.parent.postMessage({
+                    type: 'iframe-debug',
+                    message: 'Plot ' + result.plotId + ' FAILED - polygon creation error: ' + polygonError.message
+                  }, '*');
+                } catch(e) {}
+              }
             });
 
             // Log polygon rendering summary
