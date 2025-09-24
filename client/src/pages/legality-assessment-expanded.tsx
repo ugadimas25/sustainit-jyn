@@ -335,8 +335,8 @@ export default function LegalityAssessmentExpanded() {
     kesesuaianPeruntukanKeterangan: '',
     skPelepasan: false,
     skPelepasanKeterangan: '',
-    dokumenInstansiRelevan: false,
-    dokumenInstansiRelevanKeterangan: '',
+    dokumenInstansiRelevant: false,
+    dokumenInstansiRelevantKeterangan: '',
     kebijakanHakPihakKetiga: '',
     kebijakanHakPihakKetigaKeterangan: '',
     kebijakanPerusahaan: false,
@@ -4453,7 +4453,7 @@ export default function LegalityAssessmentExpanded() {
                           {[
                             { key: 'kesesuaianPeruntukan', label: 'Apakah area yang diusahakan sesuai dengan peruntukannya' },
                             { key: 'skPelepasan', label: 'SK Pelepasan/Tukar Menukar Kawasan Hutan (Jika Kawasan berasal dari kawasan hutan negara)' },
-                            { key: 'dokumenInstansiRelevan', label: 'Dokumen yang dikeluarkan oleh Instansi relevan menunjukan kesesuain ruang area tanam (PKKPR, Risalah Panitia B, Tinjauan Teknis dari Kehutanan)' }
+                            { key: 'dokumenInstansiRelevant', label: 'Dokumen yang dikeluarkan oleh Instansi relevan menunjukan kesesuain ruang area tanam (PKKPR, Risalah Panitia B, Tinjauan Teknis dari Kehutanan)' }
                           ].map((item) => (
                             <Card key={item.key} className="bg-amber-50">
                               <CardContent className="p-4">
