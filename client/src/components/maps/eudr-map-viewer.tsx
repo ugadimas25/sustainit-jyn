@@ -1664,11 +1664,6 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }
             }
 
-            // Setup WDPA layer control with timing delay to ensure DOM is ready
-            setTimeout(() => {
-              console.log('🔧 Setting up WDPA layer control after DOM render...');
-              setupWDPALayer();
-            }, 100);
 
             // Peatland layer control - using function-based approach for better reliability
             function setupPeatlandLayer() {
@@ -1803,11 +1798,6 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }
             }
 
-            // Setup Peatland layer control with timing delay to ensure DOM is ready
-            setTimeout(() => {
-              console.log('🔧 Setting up Peatland layer control after DOM render...');
-              setupPeatlandLayer();
-            }, 150);
 
             // Enhanced Deforestation Layers with Improved URLs and Error Handling
             const enhancedDeforestationLayers = {
@@ -2037,8 +2027,21 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               setTimeout(() => notification.remove(), 3000);
             }
 
-            // Setup deforestation layer controls with enhanced functionality
-            setupDeforestationLayers();
+            // Setup all layer controls with enhanced functionality and proper timing
+            setTimeout(() => {
+              console.log('🔧 Setting up all layer controls after DOM ready...');
+              
+              // Setup deforestation layers first
+              console.log('🌳 Setting up deforestation layer controls...');
+              setupDeforestationLayers();
+              
+              // Setup WDPA and Peatland layers
+              console.log('🏞️ Setting up WDPA and Peatland layer controls...');
+              setupWDPALayer();
+              setupPeatlandLayer();
+              
+              console.log('✅ All layer control setup completed');
+            }, 200);
 
             // Pre-load and test deforestation layers for immediate availability
             setTimeout(() => {
