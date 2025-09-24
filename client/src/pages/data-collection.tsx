@@ -219,7 +219,7 @@ export default function DataCollection() {
         alamatKantor: '', alamatKebun: '', koordinatKebun: '', koordinatKantor: '', jenisSupplier: '', 
         totalProduksiTBSTahun: '', namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', 
         nomorTeleponTimInternal: '', namaPenanggungJawab: '', jabatanPenanggungJawab: '', emailPenanggungJawab: '', 
-        nomorTelefonPenanggungJawab: '', tandaTangan: '', tempatTanggal: '', 
+        nomorTeleponPenanggungJawab: '', tandaTangan: '', tempatTanggal: '', 
         daftarKebun: [{ no: 1, namaKebun: '', alamat: '', koordinatLongitude: '', koordinatLatitude: '', 
         polygonKebun: '', luasLahan: '', tahunTanam: '', jenisBibit: '', produksiTBS1TahunTerakhir: '' }]
       });
@@ -310,6 +310,32 @@ export default function DataCollection() {
       toast({
         title: "Data Bulking berhasil disimpan",
         description: "Data Bulking telah berhasil disimpan ke sistem.",
+      });
+      // Reset form
+      setBulkingForm({
+        ublFacilityId: '',
+        namaFasilitasBulking: '',
+        namaGroup: '',
+        izinBerusaha: '',
+        tipeSertifikat: '',
+        nomorSertifikat: '',
+        lembagaSertifikasi: '',
+        ruangLingkupSertifikasi: '',
+        masaBerlakuSertifikat: '',
+        alamatKantor: '',
+        alamatBulking: '',
+        modelChainOfCustody: '',
+        kapasitasTotal: 0,
+        sistemPencatatan: '',
+        tanggalPengisianKuisioner: '',
+        namaPenanggungJawab: '',
+        jabatanPenanggungJawab: '',
+        emailPenanggungJawab: '',
+        nomorTeleponPenanggungJawab: '',
+        namaTimInternal: '',
+        jabatanTimInternal: '',
+        emailTimInternal: '',
+        nomorTeleponTimInternal: ''
       });
     },
   });
@@ -588,7 +614,9 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianPerusahaan', 'estate')}
-                        />
+                        >
+                          <span>Upload Akta Pendirian</span>
+                        </ObjectUploader>
                         {estateForm.aktaPendirianPerusahaan && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -602,7 +630,9 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'estate')}
-                        />
+                        >
+                          <span>Upload Akta Perubahan</span>
+                        </ObjectUploader>
                         {estateForm.aktaPerubahan && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -950,7 +980,9 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirianUsaha', 'smallholders')}
-                        />
+                        >
+                          <span>Upload Akta Pendirian</span>
+                        </ObjectUploader>
                         {smallholdersForm.aktaPendirianUsaha && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -1296,7 +1328,9 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPendirian', 'mill')}
-                        />
+                        >
+                          <span>Upload Akta Pendirian</span>
+                        </ObjectUploader>
                         {millForm.aktaPendirian && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -1310,7 +1344,9 @@ export default function DataCollection() {
                         <ObjectUploader
                           onGetUploadParameters={handleGetUploadParameters}
                           onComplete={(result: any) => handleDocumentUploadComplete(result, 'aktaPerubahan', 'mill')}
-                        />
+                        >
+                          <span>Upload Akta Perubahan</span>
+                        </ObjectUploader>
                         {millForm.aktaPerubahan && (
                           <div className="flex items-center gap-2 text-sm text-green-600">
                             <FileText size={16} />
@@ -2049,18 +2085,29 @@ export default function DataCollection() {
         {supplierType === 'bulking' && (
           <Card>
             <CardHeader>
-              <CardTitle>Formulir Pengumpulan Data Bulking</CardTitle>
+              <CardTitle>Form Kemampuan Telusur (Traceability) Fasilitas Bulking</CardTitle>
               <CardDescription>
-                (Fasilitas Bulking/Storage)
+                Formulir Pengumpulan Data Fasilitas Bulking/Storage
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleBulkingSubmit} className="space-y-8">
-                {/* Basic Bulking Information */}
+                {/* Bagian 1 - Informasi Umum */}
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold border-b pb-2">Informasi Dasar Bulking</h3>
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 1 – Informasi Umum</h3>
                   
                   <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="ublFacilityId">UBL Facility ID</Label>
+                      <Input
+                        id="ublFacilityId"
+                        data-testid="input-ubl-facility-id-bulking"
+                        value={bulkingForm.ublFacilityId}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, ublFacilityId: e.target.value }))}
+                        placeholder="Masukkan UBL Facility ID"
+                      />
+                    </div>
+                    
                     <div className="space-y-2">
                       <Label htmlFor="namaFasilitasBulking">Nama Fasilitas Bulking</Label>
                       <Input
@@ -2068,19 +2115,283 @@ export default function DataCollection() {
                         data-testid="input-nama-fasilitas-bulking"
                         value={bulkingForm.namaFasilitasBulking}
                         onChange={(e) => setBulkingForm(prev => ({ ...prev, namaFasilitasBulking: e.target.value }))}
-                        placeholder="Masukkan nama fasilitas"
+                        placeholder="Masukkan nama fasilitas bulking"
                       />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaGroup">Nama Group</Label>
+                      <Input
+                        id="namaGroup"
+                        data-testid="input-nama-group-bulking"
+                        value={bulkingForm.namaGroup}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, namaGroup: e.target.value }))}
+                        placeholder="Masukkan nama group"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="alamatKantor">Alamat Kantor</Label>
+                      <Textarea
+                        id="alamatKantor"
+                        data-testid="input-alamat-kantor-bulking"
+                        value={bulkingForm.alamatKantor}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, alamatKantor: e.target.value }))}
+                        placeholder="Masukkan alamat kantor"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="alamatBulking">Alamat Fasilitas Bulking</Label>
+                      <Textarea
+                        id="alamatBulking"
+                        data-testid="input-alamat-bulking"
+                        value={bulkingForm.alamatBulking}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, alamatBulking: e.target.value }))}
+                        placeholder="Masukkan alamat fasilitas bulking"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="izinBerusaha">Izin Berusaha (NIB)</Label>
+                      <Input
+                        id="izinBerusaha"
+                        data-testid="input-izin-berusaha-bulking"
+                        value={bulkingForm.izinBerusaha}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, izinBerusaha: e.target.value }))}
+                        placeholder="Masukkan NIB"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Certification Section */}
+                  <h4 className="text-md font-medium">Informasi Sertifikasi</h4>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="tipeSertifikat">Tipe Sertifikat</Label>
+                      <Input
+                        id="tipeSertifikat"
+                        data-testid="input-tipe-sertifikat-bulking"
+                        value={bulkingForm.tipeSertifikat}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, tipeSertifikat: e.target.value }))}
+                        placeholder="ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorSertifikat">Nomor Sertifikat</Label>
+                      <Input
+                        id="nomorSertifikat"
+                        data-testid="input-nomor-sertifikat-bulking"
+                        value={bulkingForm.nomorSertifikat}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, nomorSertifikat: e.target.value }))}
+                        placeholder="Masukkan nomor sertifikat"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="lembagaSertifikasi">Lembaga Sertifikasi</Label>
+                      <Input
+                        id="lembagaSertifikasi"
+                        data-testid="input-lembaga-sertifikasi-bulking"
+                        value={bulkingForm.lembagaSertifikasi}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, lembagaSertifikasi: e.target.value }))}
+                        placeholder="Masukkan lembaga sertifikasi"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="ruangLingkupSertifikasi">Ruang Lingkup Sertifikasi</Label>
+                      <Input
+                        id="ruangLingkupSertifikasi"
+                        data-testid="input-ruang-lingkup-sertifikasi-bulking"
+                        value={bulkingForm.ruangLingkupSertifikasi}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, ruangLingkupSertifikasi: e.target.value }))}
+                        placeholder="Masukkan ruang lingkup sertifikasi"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="masaBerlakuSertifikat">Masa Berlaku Sertifikat</Label>
+                      <Input
+                        id="masaBerlakuSertifikat"
+                        data-testid="input-masa-berlaku-sertifikat-bulking"
+                        value={bulkingForm.masaBerlakuSertifikat}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, masaBerlakuSertifikat: e.target.value }))}
+                        placeholder="Masukkan masa berlaku sertifikat"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bagian 2 - Data Internal */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold border-b pb-2">Bagian 2 – Data Internal</h3>
+                  
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="modelChainOfCustody">Model Chain of Custody</Label>
+                      <Select
+                        value={bulkingForm.modelChainOfCustody}
+                        onValueChange={(value) => setBulkingForm(prev => ({ ...prev, modelChainOfCustody: value }))}
+                      >
+                        <SelectTrigger data-testid="select-model-chain-custody-bulking">
+                          <SelectValue placeholder="Pilih model chain of custody..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="segregasi">Segregasi</SelectItem>
+                          <SelectItem value="mass-balance">Mass Balance</SelectItem>
+                          <SelectItem value="book-claim">Book & Claim</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="kapasitasTotal">Kapasitas Total (MT)</Label>
                       <Input
                         id="kapasitasTotal"
-                        type="number"
                         data-testid="input-kapasitas-total-bulking"
+                        type="number"
                         value={bulkingForm.kapasitasTotal}
                         onChange={(e) => setBulkingForm(prev => ({ ...prev, kapasitasTotal: parseFloat(e.target.value) || 0 }))}
                         placeholder="Masukkan kapasitas total"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="sistemPencatatan">Sistem Pencatatan</Label>
+                      <Select
+                        value={bulkingForm.sistemPencatatan}
+                        onValueChange={(value) => setBulkingForm(prev => ({ ...prev, sistemPencatatan: value }))}
+                      >
+                        <SelectTrigger data-testid="select-sistem-pencatatan-bulking">
+                          <SelectValue placeholder="Pilih sistem pencatatan..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="digital">Digital</SelectItem>
+                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="kombinasi">Kombinasi</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="tanggalPengisianKuisioner">Tanggal Pengisian Kuisioner</Label>
+                      <Input
+                        id="tanggalPengisianKuisioner"
+                        data-testid="input-tanggal-pengisian-bulking"
+                        type="date"
+                        value={bulkingForm.tanggalPengisianKuisioner}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, tanggalPengisianKuisioner: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <h4 className="text-md font-medium">Penanggung Jawab</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaPenanggungJawab">Nama Penanggung Jawab</Label>
+                      <Input
+                        id="namaPenanggungJawab"
+                        data-testid="input-nama-penanggung-jawab-bulking"
+                        value={bulkingForm.namaPenanggungJawab}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, namaPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan nama penanggung jawab"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="jabatanPenanggungJawab">Jabatan Penanggung Jawab</Label>
+                      <Input
+                        id="jabatanPenanggungJawab"
+                        data-testid="input-jabatan-penanggung-jawab-bulking"
+                        value={bulkingForm.jabatanPenanggungJawab}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, jabatanPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan jabatan penanggung jawab"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="emailPenanggungJawab">Email Penanggung Jawab</Label>
+                      <Input
+                        id="emailPenanggungJawab"
+                        data-testid="input-email-penanggung-jawab-bulking"
+                        type="email"
+                        value={bulkingForm.emailPenanggungJawab}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, emailPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan email penanggung jawab"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorTeleponPenanggungJawab">Nomor Telepon Penanggung Jawab</Label>
+                      <Input
+                        id="nomorTelefonPenanggungJawab"
+                        data-testid="input-nomor-telepon-penanggung-jawab-bulking"
+                        value={bulkingForm.nomorTeleponPenanggungJawab}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, nomorTeleponPenanggungJawab: e.target.value }))}
+                        placeholder="Masukkan nomor telepon penanggung jawab"
+                      />
+                    </div>
+                  </div>
+
+                  <h4 className="text-md font-medium">Tim Internal</h4>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="namaTimInternal">Nama Tim Internal</Label>
+                      <Input
+                        id="namaTimInternal"
+                        data-testid="input-nama-tim-internal-bulking"
+                        value={bulkingForm.namaTimInternal}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, namaTimInternal: e.target.value }))}
+                        placeholder="Masukkan nama tim internal"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="jabatanTimInternal">Jabatan Tim Internal</Label>
+                      <Input
+                        id="jabatanTimInternal"
+                        data-testid="input-jabatan-tim-internal-bulking"
+                        value={bulkingForm.jabatanTimInternal}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, jabatanTimInternal: e.target.value }))}
+                        placeholder="Masukkan jabatan tim internal"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="emailTimInternal">Email Tim Internal</Label>
+                      <Input
+                        id="emailTimInternal"
+                        data-testid="input-email-tim-internal-bulking"
+                        type="email"
+                        value={bulkingForm.emailTimInternal}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, emailTimInternal: e.target.value }))}
+                        placeholder="Masukkan email tim internal"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="nomorTeleponTimInternal">Nomor Telepon Tim Internal</Label>
+                      <Input
+                        id="nomorTeleponTimInternal"
+                        data-testid="input-nomor-telepon-tim-internal-bulking"
+                        value={bulkingForm.nomorTeleponTimInternal}
+                        onChange={(e) => setBulkingForm(prev => ({ ...prev, nomorTeleponTimInternal: e.target.value }))}
+                        placeholder="Masukkan nomor telepon tim internal"
                       />
                     </div>
                   </div>
