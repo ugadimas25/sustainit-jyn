@@ -271,7 +271,7 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
   const { data: accessData, isLoading } = useSupplierStepAccess(subModule.step);
   const { toast } = useToast();
 
-  const hasAccess = accessData?.hasAccess ?? (subModule.step === 1 || subModule.step === 2); // Default to allow steps 1 and 2
+  const hasAccess = accessData?.hasAccess ?? (subModule.step === 1 || subModule.step === 2 || subModule.step === 3 || subModule.step === 4); // Default to allow all steps
   const isAccessible = !isLoading && hasAccess;
 
   const handleClick = () => {
