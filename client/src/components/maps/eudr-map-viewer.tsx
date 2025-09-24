@@ -1288,11 +1288,26 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             let plotsWithGeometry = 0;
             let plotsWithoutGeometry = 0;
 
-            analysisResults.forEach(result => {
+            analysisResults.forEach((result, index) => {
+              try {
+                // Send debug for each plot processing
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'Processing plot ' + (index + 1) + ' of ' + analysisResults.length + ' (ID: ' + result.plotId + ')'
+                }, '*');
+              } catch(e) {}
+
               // Check if geometry data is available
               if (!result.geometry || !result.geometry.coordinates || !result.geometry.coordinates[0]) {
                 console.warn('No valid geometry data for plot:', result.plotId, 'geometry:', result.geometry);
                 plotsWithoutGeometry++;
+                
+                try {
+                  window.parent.postMessage({
+                    type: 'iframe-debug',
+                    message: 'Plot ' + result.plotId + ' SKIPPED - no valid geometry'
+                  }, '*');
+                } catch(e) {}
 
                 // Add a fallback marker for plots without geometry (place them in Indonesia center)
                 const fallbackMarker = L.circleMarker([-2.5, 118], {
