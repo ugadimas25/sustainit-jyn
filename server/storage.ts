@@ -1243,7 +1243,10 @@ export class DatabaseStorage implements IStorage {
     try {
       const dataToInsert = {
         ...insertAnalysisResult,
-        peatlandOverlap: insertAnalysisResult.peatlandOverlap || 'UNKNOWN',
+        // Map peatlandStatus from server to database fields
+        peatlandOverlap: insertAnalysisResult.peatlandStatus || 'UNKNOWN',
+        peatlandArea: insertAnalysisResult.peatlandStatus?.includes(' ha') ? 
+          parseFloat(insertAnalysisResult.peatlandStatus.replace(' ha', '')) : 0,
         updatedAt: new Date()
       };
 

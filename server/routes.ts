@@ -4079,7 +4079,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/analysis-results', async (req, res) => {
     try {
       const results = await storage.getAnalysisResults();
-      res.json(results);
+      // Map database fields to frontend expected fields
+      const formattedResults = results.map(result => ({
+        ...result,
+        // Map peatlandOverlap back to peatlandStatus for frontend compatibility
+        peatlandStatus: result.peatlandOverlap || 'UNKNOWN',
+        // Map wdpaStatus if needed (database may have different field name)
+        wdpaStatus: result.wdpaStatus || 'UNKNOWN'
+      }));
+      res.json(formattedResults);
     } catch (error) {
       console.error('Error fetching analysis results:', error);
       res.status(500).json({ error: 'Failed to fetch analysis results' });

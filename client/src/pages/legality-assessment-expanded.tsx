@@ -395,8 +395,8 @@ export default function LegalityAssessmentExpanded() {
     laporanRealisasiPlasma: false,
     laporanRealisasiPlasmaKeterangan: '',
     // Section 3.11 - Taxation, Anti-corruption, Trade and Customs
-    kebijakanPerpajakanAntikorupsi: false,
-    kebijakanPerpajakanAntikorupsiKeterangan: '',
+    kebijakan: false,
+    kebijakanKeterangan: '',
     sopKodeEtikBisnis: false,
     sopKodeEtikBisnisKeterangan: '',
     saluranPengaduanPublik: false,
@@ -4959,7 +4959,7 @@ export default function LegalityAssessmentExpanded() {
                           <h4 className="text-lg font-semibold border-b pb-2">3.11 Jelaskan Komitmen Perusahaan Terhadap Kebijakan Terkait Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai</h4>
                           
                           {[
-                            { key: 'kebijakanPerpajakanAntikorupsi', label: 'a. Kebijakan' },
+                            { key: 'kebijakan', label: 'a. Kebijakan' },
                             { key: 'sopKodeEtikBisnis', label: 'b. SOP/Mekanisme yang berhubungan dengan Kode etik bisnis (Penanganan Laporan Terkait dengan Kode Etik Bisnis seperti: Korupsi, Kolusi)' },
                             { key: 'saluranPengaduanPublik', label: 'c. Saluran Pengaduan yang dapat diakses Publik' }
                           ].map((item) => (
