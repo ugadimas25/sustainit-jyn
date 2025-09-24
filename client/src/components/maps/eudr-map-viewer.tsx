@@ -673,6 +673,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             
             // Initialize map
             const map = L.map('map').setView([0, 0], 2);
+            
+            // Send debug message to parent after map initialization
+            try {
+              window.parent.postMessage({
+                type: 'iframe-debug',
+                message: 'Map initialized successfully'
+              }, '*');
+            } catch(e) {}
 
             // Base layers
             const baseLayers = {
