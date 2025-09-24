@@ -3939,9 +3939,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 analysisCoords = [101.4967, -0.5021]; // Central Indonesia
               }
               
-              // Check WDPA protected area overlap
-              const wdpaResult = await wdpaService.checkProtectedAreaOverlap(analysisCoords);
-              wdpaStatus = wdpaResult.isInProtectedArea ? 'PROTECTED' : 'NOT_PROTECTED';
+              // Check WDPA protected area intersection area using database query
+              let wdpaArea = 0; // Initialize WDPA intersection area in hectares
+              if (country === 'Indonesia' || country === 'indonesia') {
+                try {
+                  // Calculate intersection area with wdpa_idn polygons using proper geometry handling
+                  let wdpaQuery;
+                  
+                  if (feature.geometry?.type === 'Polygon' || feature.geometry?.type === 'MultiPolygon') {
+                    // Use full geometry for polygon features with accurate geographic area calculation
+                    wdpaQuery = await db.execute(sql`
+                      WITH plot_geom AS (
+                        SELECT ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(feature.geometry)}), 4326)::geography AS geom
+                      )
+                      SELECT 
+                        COALESCE(SUM(ST_Area(ST_Intersection(ST_Transform(w.geom, 4326)::geography, plot_geom.geom))), 0) / 10000 AS intersection_area_ha,
+                        array_agg(DISTINCT w.name) as wdpa_names,
+                        array_agg(DISTINCT w.category) as wdpa_categories
+                      FROM wdpa_idn w, plot_geom
+                      WHERE ST_Intersects(ST_Transform(w.geom, 4326)::geography, plot_geom.geom)
+                    `);
+                  } else {
+                    // Fallback for point geometries - use buffer around point
+                    wdpaQuery = await db.execute(sql`
+                      WITH plot_geom AS (
+                        SELECT ST_Buffer(ST_SetSRID(ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}), 4326)::geography, 100) AS geom
+                      )
+                      SELECT 
+                        COALESCE(SUM(ST_Area(ST_Intersection(ST_Transform(w.geom, 4326)::geography, plot_geom.geom))), 0) / 10000 AS intersection_area_ha,
+                        array_agg(DISTINCT w.name) as wdpa_names,
+                        array_agg(DISTINCT w.category) as wdpa_categories
+                      FROM wdpa_idn w, plot_geom
+                      WHERE ST_Intersects(ST_Transform(w.geom, 4326)::geography, plot_geom.geom)
+                    `);
+                  }
+                  
+                  // Now wdpaQuery always returns one row due to aggregation
+                  wdpaArea = parseFloat(wdpaQuery.rows[0].intersection_area_ha) || 0;
+                  // Use explicit threshold to handle very small intersections
+                  if (wdpaArea >= 0.0001) { // Minimum 0.0001 hectares (1 square meter)
+                    wdpaStatus = `${wdpaArea.toFixed(4)} ha`;
+                    const wdpaNames = wdpaQuery.rows[0].wdpa_names?.filter(name => name) || [];
+                    const wdpaCategories = wdpaQuery.rows[0].wdpa_categories?.filter(cat => cat) || [];
+                    console.log(`🏞️ Plot ${plotId} WDPA intersection: ${wdpaArea.toFixed(4)} hectares with ${wdpaNames.length} protected areas (Categories: ${wdpaCategories.join(', ')})`);
+                  } else {
+                    wdpaStatus = 'NOT_PROTECTED';
+                  }
+                } catch (wdpaError) {
+                  console.warn(`⚠️ WDPA intersection calculation failed for plot ${plotId}:`, wdpaError);
+                  // Fallback to simple point check if intersection calculation fails
+                  try {
+                    const fallbackQuery = await db.execute(sql`
+                      SELECT name, category 
+                      FROM wdpa_idn 
+                      WHERE ST_Contains(ST_Transform(geom, 4326)::geography, ST_SetSRID(ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}), 4326)::geography)
+                      LIMIT 1
+                    `);
+                    wdpaStatus = fallbackQuery.rows.length > 0 ? 'PROTECTED' : 'NOT_PROTECTED';
+                  } catch (fallbackError) {
+                    console.warn(`⚠️ WDPA fallback check also failed for plot ${plotId}:`, fallbackError);
+                    // Keep default 'UNKNOWN' for WDPA if all queries fail
+                  }
+                }
+              } else {
+                // For non-Indonesia countries, assume not in protected area
+                wdpaStatus = 'NOT_PROTECTED';
+              }
               
               // Check peatland intersection area using database query
               let peatlandArea = 0; // Initialize peatland intersection area in hectares
@@ -4084,8 +4147,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...result,
         // Map peatlandOverlap back to peatlandStatus for frontend compatibility
         peatlandStatus: result.peatlandOverlap || 'UNKNOWN',
-        // Map wdpaStatus if needed (database may have different field name)
-        wdpaStatus: result.wdpaStatus || 'UNKNOWN'
+        // Map wdpaOverlap back to wdpaStatus for frontend compatibility
+        wdpaStatus: result.wdpaOverlap || 'UNKNOWN'
       }));
       res.json(formattedResults);
     } catch (error) {

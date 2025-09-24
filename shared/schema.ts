@@ -219,6 +219,9 @@ export const analysisResults = pgTable("analysis_results", {
   // Peatland analysis results
   peatlandOverlap: text("peatland_overlap"), // "No overlap" or area in hectares
   peatlandArea: decimal("peatland_area", { precision: 12, scale: 4 }).default("0"),
+  // WDPA protected area analysis results
+  wdpaOverlap: text("wdpa_overlap"), // "No overlap" or area in hectares
+  wdpaArea: decimal("wdpa_area", { precision: 12, scale: 4 }).default("0"),
   geometry: jsonb("geometry"), // Store the original GeoJSON geometry
   uploadSession: text("upload_session"), // Track which upload session this belongs to
   supplierId: varchar("supplier_id").references(() => suppliers.id), // Link to supplier

@@ -1247,6 +1247,10 @@ export class DatabaseStorage implements IStorage {
         peatlandOverlap: insertAnalysisResult.peatlandStatus || 'UNKNOWN',
         peatlandArea: insertAnalysisResult.peatlandStatus?.includes(' ha') ? 
           parseFloat(insertAnalysisResult.peatlandStatus.replace(' ha', '')) : 0,
+        // Map wdpaStatus from server to database fields
+        wdpaOverlap: insertAnalysisResult.wdpaStatus || 'UNKNOWN',
+        wdpaArea: insertAnalysisResult.wdpaStatus?.includes(' ha') ? 
+          parseFloat(insertAnalysisResult.wdpaStatus.replace(' ha', '')) : 0,
         updatedAt: new Date()
       };
 
