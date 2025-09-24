@@ -5101,12 +5101,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const result = await db.execute(sql`
           SELECT 
             COALESCE(name, 'Unknown Protected Area') as name,
-            COALESCE(category, 'Unknown') as category,
-            COALESCE(category, 'Unknown') as designation,
-            COALESCE(areatype, 'Unknown') as iucn_category,
-            COALESCE(acquisitio, 0) as area_hectares,
-            COALESCE(subloc, 'Unknown') as status_wdpa,
-            COALESCE(country, 'Unknown') as governance_type,
+            COALESCE(category, 'Unknown') as iucn_category,
+            COALESCE(areatype, 'Unknown') as designation,
             ST_AsGeoJSON(ST_Simplify(geom, 0.001)) as geometry
           FROM wdpa_idn 
           WHERE geom IS NOT NULL
@@ -5115,7 +5111,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             geom, 
             ST_GeomFromText(${bbox}, 4326)
           )
-          ORDER BY COALESCE(acquisitio, 0) DESC
           LIMIT 500
         `);
 
@@ -5140,12 +5135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             type: 'Feature',
             properties: {
               name: row.name || 'Unknown Protected Area',
-              category: row.category || 'Unknown',
-              designation: row.designation || 'Unknown',
               iucn_category: row.iucn_category || 'Unknown',
-              area_hectares: parseFloat(row.area_hectares?.toString() || '0'),
-              status_wdpa: row.status_wdpa || 'Unknown',
-              governance_type: row.governance_type || 'Unknown'
+              designation: row.designation || 'Unknown'
             },
             geometry: geometry
           };
