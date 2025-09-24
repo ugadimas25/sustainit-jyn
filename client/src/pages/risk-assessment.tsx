@@ -113,7 +113,7 @@ export default function RiskAssessment() {
   // Supplier validation state
   const [supplierSearchTerm, setSupplierSearchTerm] = useState('');
   const [supplierFound, setSupplierFound] = useState<boolean | null>(null);
-  const [canProceedWithAssessment, setCanProceedWithAssessment] = useState(false);
+  const [canProceedWithAssessment, setCanProceedWithAssessment] = useState(true);
 
   const form = useForm({
     resolver: zodResolver(riskAssessmentSchema),
@@ -134,7 +134,7 @@ export default function RiskAssessment() {
   const validateSupplier = (searchTerm: string) => {
     if (!searchTerm.trim()) {
       setSupplierFound(null);
-      setCanProceedWithAssessment(false);
+      setCanProceedWithAssessment(true);
       return;
     }
     
@@ -145,6 +145,7 @@ export default function RiskAssessment() {
     );
     
     setSupplierFound(found);
+    // Only block if supplier is explicitly searched but not found
     setCanProceedWithAssessment(found);
     
     if (found) {
@@ -402,7 +403,7 @@ export default function RiskAssessment() {
         </Card>
 
         {/* Supplier Information Form */}
-        <Card className={`mb-6 ${!canProceedWithAssessment ? 'opacity-50 pointer-events-none' : ''}`}>
+        <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-blue-600" />
@@ -474,7 +475,7 @@ export default function RiskAssessment() {
         </Card>
 
         {/* Spatial Risk Assessment Table */}
-        <Card className={!canProceedWithAssessment ? 'opacity-50 pointer-events-none' : ''}>
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-green-600" />

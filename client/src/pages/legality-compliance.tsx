@@ -28,7 +28,7 @@ export default function LegalityCompliance() {
   // Supplier validation state
   const [supplierSearchTerm, setSupplierSearchTerm] = useState('');
   const [supplierFound, setSupplierFound] = useState<boolean | null>(null);
-  const [canProceedWithAssessment, setCanProceedWithAssessment] = useState(false);
+  const [canProceedWithAssessment, setCanProceedWithAssessment] = useState(true);
   
   // Progress tracking
   const [complianceProgress, setComplianceProgress] = useState({
@@ -58,7 +58,7 @@ export default function LegalityCompliance() {
   const validateSupplier = (searchTerm: string) => {
     if (!searchTerm.trim()) {
       setSupplierFound(null);
-      setCanProceedWithAssessment(false);
+      setCanProceedWithAssessment(true);
       return;
     }
     
@@ -69,6 +69,7 @@ export default function LegalityCompliance() {
     );
     
     setSupplierFound(found);
+    // Only block if supplier is explicitly searched but not found
     setCanProceedWithAssessment(found);
     
     if (found) {
