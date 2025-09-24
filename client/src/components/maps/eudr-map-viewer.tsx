@@ -1557,8 +1557,24 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               console.log('🔧 Attempting to setup WDPA layer...');
               console.log('🔍 Looking for element with ID: wdpaLayer');
               
+              // Send debug message to parent
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'Setup WDPA Layer called'
+                }, '*');
+              } catch(e) {}
+              
               const wdpaCheckbox = document.getElementById('wdpaLayer');
               console.log('🔍 WDPA checkbox found:', !!wdpaCheckbox, wdpaCheckbox);
+              
+              // Send debug message to parent about checkbox state
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'WDPA checkbox found: ' + (!!wdpaCheckbox)
+                }, '*');
+              } catch(e) {}
               
               if (!wdpaCheckbox) {
                 console.error('❌ WDPA layer checkbox not found in DOM!');
@@ -1683,8 +1699,24 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               console.log('🔧 Attempting to setup Peatland layer...');
               console.log('🔍 Looking for element with ID: peatlandLayer');
               
+              // Send debug message to parent
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'Setup Peatland Layer called'
+                }, '*');
+              } catch(e) {}
+              
               const peatlandCheckbox = document.getElementById('peatlandLayer');
               console.log('🔍 Peatland checkbox found:', !!peatlandCheckbox, peatlandCheckbox);
+              
+              // Send debug message to parent about checkbox state
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'Peatland checkbox found: ' + (!!peatlandCheckbox)
+                }, '*');
+              } catch(e) {}
               
               if (!peatlandCheckbox) {
                 console.error('❌ Peatland layer checkbox not found in DOM!');
