@@ -1404,6 +1404,9 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                   fillOpacity: 0.4,
                   className: isHighRisk ? 'high-risk-polygon' : 'low-risk-polygon'
                 }).addTo(map);
+                
+                // Bring polygon to front so it's not covered by other layers
+                polygon.bringToFront();
 
                 // Validate that polygon was created successfully
                 if (!polygon.getBounds || !polygon.getBounds().isValid()) {
@@ -2271,62 +2274,8 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               }
             }, 2000);
             
-            // Auto-load Indonesian Peatland layer for immediate visibility
-            console.log('🏞️ Auto-loading Indonesian Peatland layer for immediate visibility...');
-            setTimeout(() => {
-              try {
-                // First try API data, then fallback to mock
-                createPeatlandLayer().then(apiLayer => {
-                  if (apiLayer && apiLayer.getLayers && apiLayer.getLayers().length > 0) {
-                    peatlandLayer = apiLayer;
-                    apiLayer.addTo(map);
-                    console.log('✅ Indonesian Peatland layer auto-loaded from API');
-                    
-                    // Check the checkbox to reflect the layer state
-                    const checkbox = document.getElementById('peatlandLayer');
-                    if (checkbox) checkbox.checked = true;
-                    
-                    // Force map refresh
-                    map.invalidateSize();
-                    
-                    // Show notification
-                    const autoLoadMsg = document.createElement('div');
-                    autoLoadMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                    autoLoadMsg.innerHTML = '🏞️ Indonesian Peatland layer loaded automatically';
-                    document.body.appendChild(autoLoadMsg);
-                    setTimeout(() => autoLoadMsg.remove(), 4000);
-                  } else {
-                    throw new Error('No features from API');
-                  }
-                }).catch(error => {
-                  console.log('⚠️ API failed for auto-load, using mock data:', error.message);
-                  
-                  // Fallback to mock data
-                  const mockLayer = createMockPeatlandLayer();
-                  if (mockLayer) {
-                    peatlandLayer = mockLayer;
-                    mockLayer.addTo(map);
-                    console.log('✅ Indonesian Peatland layer auto-loaded with mock data');
-                    
-                    // Check the checkbox to reflect the layer state
-                    const checkbox = document.getElementById('peatlandLayer');
-                    if (checkbox) checkbox.checked = true;
-                    
-                    // Force map refresh
-                    map.invalidateSize();
-                    
-                    // Show notification
-                    const autoLoadMsg = document.createElement('div');
-                    autoLoadMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: rgba(16, 185, 129, 0.9); color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
-                    autoLoadMsg.innerHTML = '🏞️ Indonesian Peatland layer loaded automatically (demo)';
-                    document.body.appendChild(autoLoadMsg);
-                    setTimeout(() => autoLoadMsg.remove(), 4000);
-                  }
-                });
-              } catch (error) {
-                console.error('❌ Failed to auto-load peatland layer:', error);
-              }
-            }, 1000);
+            // Indonesian Peatland layer will be loaded when checkbox is toggled
+            console.log('🏞️ Indonesian Peatland layer ready for manual activation via checkbox');
             
             // Test WDPA GFW service availability
             console.log('🔍 Testing WDPA GFW vector tiles service availability...');

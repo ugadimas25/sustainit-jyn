@@ -5102,7 +5102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           SELECT 
             COALESCE(name, 'Unknown Protected Area') as name,
             COALESCE(category, 'Unknown') as category,
-            COALESCE(designation, 'Unknown') as designation,
+            COALESCE(category, 'Unknown') as designation,
             COALESCE(iucn_category, 'Unknown') as iucn_category,
             COALESCE(area_hectares, 0) as area_hectares,
             COALESCE(status_wdpa, 'Unknown') as status_wdpa,
