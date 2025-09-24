@@ -58,7 +58,8 @@ const SPATIAL_RISK_TEMPLATE: SpatialRiskItem[] = [
     linkSumber: [
       'https://storage.googleapis.com/earthenginepartners-hansen/GFC-2024-v1.12/download.html',
       'http://glad-forest-alert.appspot.com/',
-      'https://data.jrc.ec.europa.eu/dataset/10d1b337-b7d1-4938-a048-686c8185b290'
+      'https://data.jrc.ec.europa.eu/dataset/10d1b337-b7d1-4938-a048-686c8185b290',
+      'https://kpn.co.id/konsesi-maps'
     ]
   },
   {
@@ -73,7 +74,9 @@ const SPATIAL_RISK_TEMPLATE: SpatialRiskItem[] = [
     sumber: ['Peta WDPA', 'Peta Kawasan Hutan Indonesia', 'Dokumen Perizinan Lahan (HGU,SHM,dll)', 'Peta Konsesi Perusahaan'],
     linkSumber: [
       'https://www.protectedplanet.net/en/thematic-areas/wdpa?tab=WDPA',
-      'https://geoportal.menlhk.go.id/portal/apps/webappviewer/index.html?id=2ee8bdda1d714899955fccbe7fdf8468&utm_'
+      'https://geoportal.menlhk.go.id/portal/apps/webappviewer/index.html?id=2ee8bdda1d714899955fccbe7fdf8468',
+      'https://kpn.co.id/legalitas-lahan',
+      'https://kpn.co.id/konsesi-maps'
     ]
   },
   {
@@ -86,7 +89,11 @@ const SPATIAL_RISK_TEMPLATE: SpatialRiskItem[] = [
     risiko: 10,
     mitigasi: 'Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses pengurusan SK TMAT.',
     sumber: ['Peta Areal Gambut', 'Dokumen SK TMAT', 'Peta Konsesi Perusahaan'],
-    linkSumber: ['https://brgm.go.id/']
+    linkSumber: [
+      'https://brgm.go.id/',
+      'https://kpn.co.id/sk-tmat-docs',
+      'https://kpn.co.id/konsesi-maps'
+    ]
   }
 ];
 
@@ -127,7 +134,7 @@ export default function RiskAssessment() {
     let classification: 'rendah' | 'sedang' | 'tinggi';
     if (scorePercentage >= 67) {
       classification = 'rendah';
-    } else if (scorePercentage > 61) {
+    } else if (scorePercentage >= 61 && scorePercentage < 67) {
       classification = 'sedang';
     } else {
       classification = 'tinggi';
@@ -154,6 +161,7 @@ export default function RiskAssessment() {
       const riskValueMap = { 'tinggi': 1, 'sedang': 2, 'rendah': 3 } as const;
       updatedItems[index].nilaiRisiko = riskValueMap[value as keyof typeof riskValueMap] as 1 | 2 | 3;
       updatedItems[index].risiko = updatedItems[index].bobot * updatedItems[index].nilaiRisiko;
+      updatedItems[index].mitigasi = getMitigasiText(updatedItems[index].itemAnalisa, value as any);
     }
     
     setSpatialRiskItems(updatedItems);
@@ -190,13 +198,35 @@ export default function RiskAssessment() {
     });
   };
 
+  // Get mitigation text for each risk level
+  const getMitigasiText = (itemAnalisa: string, tipeRisiko: 'tinggi' | 'sedang' | 'rendah') => {
+    const mitigasiMap: Record<string, Record<string, string>> = {
+      'Deforestasi': {
+        'tinggi': 'Dikeluarkan dari Rantai Pasok',
+        'sedang': 'Melakukan monitoring berkala dan sosialisasi kebijakan NDPE',
+        'rendah': 'Tetap melakukan monitoring berkala sesuai prosedur standar'
+      },
+      'Legalitas Lahan': {
+        'tinggi': '1. Dikeluarkan dari Rantai Pasok\n2. Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses legalitas lahan. Jika legalitas lahan selesai, supplier dapat dimasukan ke dalam rantai pasok',
+        'sedang': 'Melakukan pendampingan intensif dan monitoring proses legalitas',
+        'rendah': 'Monitoring berkala untuk memastikan kepatuhan berkelanjutan'
+      },
+      'Kawasan Gambut': {
+        'tinggi': 'Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses pengurusan SK TMAT.',
+        'sedang': 'Monitoring proses bimbingan teknis dan pendampingan SK TMAT',
+        'rendah': 'Monitoring berkala untuk memastikan kepatuhan SK TMAT'
+      }
+    };
+    return mitigasiMap[itemAnalisa]?.[tipeRisiko] || '';
+  };
+
   // Get parameter text for each risk level
   const getParameterText = (itemAnalisa: string, tipeRisiko: 'tinggi' | 'sedang' | 'rendah') => {
     const parameterMap: Record<string, Record<string, string>> = {
       'Deforestasi': {
         'tinggi': 'Ditemukan adanya Pembukaan Lahan Setelah Desember 2020',
-        'sedang': 'Ada Indikasi Deforestasi di Sekitar Area dan PKS Terima TBS',
-        'rendah': 'Sumber TBS Berasal dari Kebun yang di kembangkan sebelum Desember 2020'
+        'sedang': 'Ada Indikasi Deforestasi di Sekitar Area dan PKS Terima TBS Luar',
+        'rendah': 'Sumber TBS Berasal dari Kebun yang dikembangkan sebelum Desember 2020'
       },
       'Legalitas Lahan': {
         'tinggi': '1. Tidak memiliki Izin Lahan\n2. Tumpang Tindih dengan Area dilindungi tingkat Global/Nasional',
@@ -339,9 +369,9 @@ export default function RiskAssessment() {
                     <TableHead className="w-32">Item Analisa</TableHead>
                     <TableHead className="w-24">Tipe Risiko</TableHead>
                     <TableHead className="w-96">Parameter</TableHead>
-                    <TableHead className="w-20">Nilai Risiko</TableHead>
                     <TableHead className="w-20">Bobot (A)</TableHead>
-                    <TableHead className="w-20">Risiko (B)</TableHead>
+                    <TableHead className="w-20">Nilai Risiko (B)</TableHead>
+                    <TableHead className="w-20">NR (A×B)</TableHead>
                     <TableHead className="w-96">Mitigasi</TableHead>
                     <TableHead className="w-32">Sumber</TableHead>
                     <TableHead className="w-32">Link Sumber</TableHead>
@@ -376,15 +406,17 @@ export default function RiskAssessment() {
                           {getParameterText(item.itemAnalisa, item.tipeRisiko)}
                         </div>
                       </TableCell>
+                      <TableCell className="text-center font-bold">{item.bobot}</TableCell>
                       <TableCell className="text-center font-bold">
                         <Badge className={getRiskBadgeColor(item.tipeRisiko)}>
                           {item.nilaiRisiko}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-center font-bold">{item.bobot}</TableCell>
                       <TableCell className="text-center font-bold">{item.risiko}</TableCell>
                       <TableCell className="max-w-md">
-                        <div className="text-sm whitespace-pre-wrap">{item.mitigasi}</div>
+                        <div className="text-sm whitespace-pre-wrap">
+                          {getMitigasiText(item.itemAnalisa, item.tipeRisiko)}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-xs space-y-1">
@@ -438,7 +470,7 @@ export default function RiskAssessment() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Tinggi:</span>
-                      <Badge className="bg-red-100 text-red-800">≤60</Badge>
+                      <Badge className="bg-red-100 text-red-800">≤60%</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -453,7 +485,8 @@ export default function RiskAssessment() {
                     <div className="text-sm font-mono bg-gray-50 p-3 rounded">
                       <div>NR = Bobot A × Nilai Risiko B</div>
                       <div>Total NR = Σ(Bobot A × Nilai Risiko B)</div>
-                      <div>Score = Total NR / Total Bobot × 100</div>
+                      <div>Score = ((4 - (Total NR / Total Bobot)) / 3) × 100</div>
+                      <div className="text-xs text-gray-600 mt-1">*Formula adjusted for inverse scoring (1=tinggi, 3=rendah)</div>
                     </div>
                     
                     <div className="border-t pt-4">
@@ -472,10 +505,6 @@ export default function RiskAssessment() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
-  );
-}
       </div>
     </div>
   );
