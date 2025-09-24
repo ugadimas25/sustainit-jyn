@@ -658,6 +658,9 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
           <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
           <script>
+            console.log('🚀🚀🚀 EUDR Map Viewer iframe script started - VERSION 2.0');
+            console.log('🔧 DEBUG: Starting iframe script execution');
+            
             // Initialize map
             const map = L.map('map').setView([0, 0], 2);
 
