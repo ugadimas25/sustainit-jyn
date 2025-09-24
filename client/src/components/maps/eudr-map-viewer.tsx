@@ -1517,6 +1517,10 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 });
               });
 
+              // Add polygon and center marker to map
+              polygon.addTo(map);
+              centerMarker.addTo(map);
+
               // Add pulsing animation to center marker
               const animation = isHighRisk ? 'pulse-red 2s infinite' : 'pulse-green 2s infinite';
               setTimeout(() => {
@@ -1533,6 +1537,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               });
 
               bounds.push(polygon.getBounds());
+              
+              // Send debug message for polygon addition
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'Plot ' + result.plotId + ' polygon added to map (' + (isHighRisk ? 'HIGH' : 'LOW') + ' risk)'
+                }, '*');
+              } catch(e) {}
             });
 
             // Log polygon rendering summary
