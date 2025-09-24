@@ -10,155 +10,162 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { ArrowLeft, Shield, AlertTriangle, CheckCircle, FileText, Calculator, MapPin, FileCheck, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Shield, AlertTriangle, CheckCircle, FileText, Calculator, MapPin, FileCheck, Plus, Trash2, ExternalLink } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-// Risk Assessment form schema based on Excel methodology
+// Risk assessment data based on KPNPLT-SST-xxxx.06.1 methodology
+interface SpatialRiskItem {
+  no: number;
+  itemAnalisa: string;
+  tipeRisiko: 'tinggi' | 'sedang' | 'rendah';
+  parameter: string;
+  nilaiRisiko: 1 | 2 | 3;
+  bobot: number;
+  risiko: number;
+  mitigasi: string;
+  sumber: string[];
+  linkSumber: string[];
+  score?: number;
+}
+
+interface RiskAssessmentFormData {
+  supplierName: string;
+  assessmentDate: string;
+  assessorName: string;
+  spatialRiskItems: SpatialRiskItem[];
+  totalScore: number;
+  riskClassification: 'rendah' | 'sedang' | 'tinggi';
+}
+
+// Predefined spatial risk items as per Form 06.1 specification
+const SPATIAL_RISK_TEMPLATE: SpatialRiskItem[] = [
+  {
+    no: 1,
+    itemAnalisa: 'Deforestasi',
+    tipeRisiko: 'tinggi',
+    parameter: 'Ditemukan adanya Pembukaan Lahan Setelah Desember 2020',
+    nilaiRisiko: 1,
+    bobot: 45,
+    risiko: 45,
+    mitigasi: 'Dikeluarkan dari Rantai Pasok',
+    sumber: ['Hansen Alert', 'Glad Alert', 'JRC Natural Forest', 'Peta Konsesi Perusahaan'],
+    linkSumber: [
+      'https://storage.googleapis.com/earthenginepartners-hansen/GFC-2024-v1.12/download.html',
+      'http://glad-forest-alert.appspot.com/',
+      'https://data.jrc.ec.europa.eu/dataset/10d1b337-b7d1-4938-a048-686c8185b290'
+    ]
+  },
+  {
+    no: 2,
+    itemAnalisa: 'Legalitas Lahan',
+    tipeRisiko: 'tinggi',
+    parameter: '1. Tidak memiliki Izin Lahan\n2. Tumpang Tindih dengan Area dilindungi tingkat Global/Nasional',
+    nilaiRisiko: 1,
+    bobot: 35,
+    risiko: 35,
+    mitigasi: '1. Dikeluarkan dari Rantai Pasok\n2. Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses legalitas lahan. Jika legalitas lahan selesai, supplier dapat dimasukan ke dalam rantai pasok',
+    sumber: ['Peta WDPA', 'Peta Kawasan Hutan Indonesia', 'Dokumen Perizinan Lahan (HGU,SHM,dll)', 'Peta Konsesi Perusahaan'],
+    linkSumber: [
+      'https://www.protectedplanet.net/en/thematic-areas/wdpa?tab=WDPA',
+      'https://geoportal.menlhk.go.id/portal/apps/webappviewer/index.html?id=2ee8bdda1d714899955fccbe7fdf8468&utm_'
+    ]
+  },
+  {
+    no: 3,
+    itemAnalisa: 'Kawasan Gambut',
+    tipeRisiko: 'tinggi',
+    parameter: 'Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan Belum Memiliki SK TMAT',
+    nilaiRisiko: 1,
+    bobot: 10,
+    risiko: 10,
+    mitigasi: 'Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses pengurusan SK TMAT.',
+    sumber: ['Peta Areal Gambut', 'Dokumen SK TMAT', 'Peta Konsesi Perusahaan'],
+    linkSumber: ['https://brgm.go.id/']
+  }
+];
+
 const riskAssessmentSchema = z.object({
   supplierName: z.string().min(1, 'Supplier name is required'),
-  assessmentPeriod: z.string().optional(),
-  notes: z.string().optional()
+  assessmentDate: z.string(),
+  assessorName: z.string().optional()
 });
-
-// Risk Item schema for individual risk factors
-const riskItemSchema = z.object({
-  itemName: z.string(),
-  riskLevel: z.enum(['tinggi', 'sedang', 'rendah']),
-  parameter: z.string(),
-  riskValue: z.number().min(1).max(3),
-  weight: z.number().min(0).max(100),
-  mitigationDescription: z.string().optional(),
-  mitigationRequired: z.boolean().default(false)
-});
-
-type RiskAssessmentData = z.infer<typeof riskAssessmentSchema>;
-type RiskItemData = z.infer<typeof riskItemSchema>;
-
-interface RiskScoring {
-  overallScore: number;
-  riskClassification: string;
-  spatialRiskScore?: number;
-  nonSpatialRiskScore?: number;
-}
 
 export default function RiskAssessment() {
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState('spatial');
-  const [selectedAssessmentId, setSelectedAssessmentId] = useState<string | null>(null);
-  const [scoring, setScoring] = useState<RiskScoring>({ overallScore: 0, riskClassification: 'high' });
-  const queryClient = useQueryClient();
+  const [spatialRiskItems, setSpatialRiskItems] = useState<SpatialRiskItem[]>([...SPATIAL_RISK_TEMPLATE]);
+  const [totalScore, setTotalScore] = useState<number>(0);
+  const [riskClassification, setRiskClassification] = useState<'rendah' | 'sedang' | 'tinggi'>('tinggi');
   const { toast } = useToast();
 
-  const form = useForm<RiskAssessmentData>({
+  const form = useForm({
     resolver: zodResolver(riskAssessmentSchema),
     defaultValues: {
       supplierName: '',
-      assessmentPeriod: new Date().getFullYear().toString() + '-Q1',
-      notes: ''
+      assessmentDate: new Date().toISOString().split('T')[0],
+      assessorName: 'KPN Compliance Administrator'
     }
   });
 
-  // Fetch existing risk assessments
-  const { data: assessments = [], isLoading: loadingAssessments } = useQuery({
-    queryKey: ['/api/risk-assessments'],
-    enabled: true
-  });
-
-  // Fetch assessment items if an assessment is selected
-  const { data: assessmentItems = [], isLoading: loadingItems } = useQuery({
-    queryKey: ['/api/risk-assessments', selectedAssessmentId, 'items'],
-    enabled: !!selectedAssessmentId
-  });
-
-  // Create new risk assessment mutation
-  const createAssessmentMutation = useMutation({
-    mutationFn: async (data: RiskAssessmentData) => {
-      return await apiRequest('POST', '/api/risk-assessments', {
-        body: JSON.stringify({
-          ...data,
-          status: 'Draft',
-          assessorName: 'KPN Compliance Administrator' // TODO: Get from user context
-        })
-      });
-    },
-    onSuccess: async (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments'] });
-      setSelectedAssessmentId(data.id);
-      
-      // Initialize Excel-based risk template
-      try {
-        const templateResponse = await apiRequest('POST', `/api/risk-assessments/${data.id}/init-excel-template`);
-        
-        if (templateResponse.scoring) {
-          setScoring(templateResponse.scoring);
-        }
-        
-        queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments', data.id, 'items'] });
-        
-        toast({
-          title: "Assessment Created",
-          description: "Risk assessment created with Excel-based template",
-        });
-      } catch (error) {
-        console.error('Failed to initialize template:', error);
-      }
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to create risk assessment",
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Update risk item mutation
-  const updateItemMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<RiskItemData> }) => {
-      return await apiRequest('PUT', `/api/risk-assessment-items/${id}`, {
-        body: JSON.stringify(updates)
-      });
-    },
-    onSuccess: () => {
-      if (selectedAssessmentId) {
-        queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments', selectedAssessmentId, 'items'] });
-        recalculateScoring();
-      }
-    }
-  });
-
-  // Recalculate scoring when items change
-  const recalculateScoring = async () => {
-    if (!selectedAssessmentId) return;
+  // Calculate total score and risk classification according to Form 06.1 methodology
+  const calculateRiskAssessment = () => {
+    // Formula: Score = Σ(Bobot A × Nilai Risiko B) / Total Bobot × 100
+    const totalNR = spatialRiskItems.reduce((sum, item) => sum + (item.bobot * item.nilaiRisiko), 0);
+    const totalBobot = spatialRiskItems.reduce((sum, item) => sum + item.bobot, 0);
+    const calculatedScore = totalBobot > 0 ? (totalNR / totalBobot) : 0;
     
-    try {
-      const scoringResponse = await apiRequest('GET', `/api/risk-assessments/${selectedAssessmentId}/score`);
-      setScoring(scoringResponse);
-    } catch (error) {
-      console.error('Failed to recalculate scoring:', error);
+    // Since lower risk value = higher risk level, we need to invert the percentage for display
+    // Convert to percentage where higher percentage = better (lower risk)
+    const scorePercentage = ((4 - calculatedScore) / 3) * 100;
+    
+    // Determine risk classification based on exact thresholds from Form 06.1
+    let classification: 'rendah' | 'sedang' | 'tinggi';
+    if (scorePercentage >= 67) {
+      classification = 'rendah';
+    } else if (scorePercentage > 61) {
+      classification = 'sedang';
+    } else {
+      classification = 'tinggi';
     }
+    
+    setTotalScore(Math.round(scorePercentage));
+    setRiskClassification(classification);
+    
+    return { scorePercentage: Math.round(scorePercentage), classification };
   };
 
-  // Handle form submission
-  const onSubmit = (data: RiskAssessmentData) => {
-    createAssessmentMutation.mutate(data);
+  // Calculate risk when items change
+  useEffect(() => {
+    calculateRiskAssessment();
+  }, [spatialRiskItems]);
+
+  // Update risk item
+  const updateRiskItem = (index: number, field: keyof SpatialRiskItem, value: any) => {
+    const updatedItems = [...spatialRiskItems];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    
+    // Update risk calculation when risk level changes
+    if (field === 'tipeRisiko') {
+      const riskValueMap = { 'tinggi': 1, 'sedang': 2, 'rendah': 3 } as const;
+      updatedItems[index].nilaiRisiko = riskValueMap[value as keyof typeof riskValueMap] as 1 | 2 | 3;
+      updatedItems[index].risiko = updatedItems[index].bobot * updatedItems[index].nilaiRisiko;
+    }
+    
+    setSpatialRiskItems(updatedItems);
   };
 
   // Get risk level badge color
   const getRiskBadgeColor = (level: string) => {
     switch (level.toLowerCase()) {
-      case 'low':
       case 'rendah':
         return 'bg-green-100 text-green-800 border-green-300';
-      case 'medium':
       case 'sedang':
         return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'high':
       case 'tinggi':
         return 'bg-red-100 text-red-800 border-red-300';
       default:
@@ -166,22 +173,44 @@ export default function RiskAssessment() {
     }
   };
 
-  // Get risk level display text
-  const getRiskDisplayText = (level: string) => {
-    const mappings: Record<string, string> = {
-      'tinggi': 'High',
-      'sedang': 'Medium', 
-      'rendah': 'Low',
-      'high': 'High',
-      'medium': 'Medium',
-      'low': 'Low'
+  // Handle form submission
+  const onSubmit = (data: any) => {
+    const formData: RiskAssessmentFormData = {
+      supplierName: data.supplierName,
+      assessmentDate: data.assessmentDate,
+      assessorName: data.assessorName || 'KPN Compliance Administrator',
+      spatialRiskItems,
+      totalScore,
+      riskClassification
     };
-    return mappings[level.toLowerCase()] || level;
+
+    toast({
+      title: "Risk Assessment Completed",
+      description: `Assessment untuk ${data.supplierName} berhasil disimpan dengan skor ${totalScore}% (${riskClassification.toUpperCase()})`,
+    });
   };
 
-  // Filter items by category
-  const spatialItems = assessmentItems.filter((item: any) => item.category === 'spatial');
-  const nonSpatialItems = assessmentItems.filter((item: any) => item.category === 'non_spatial');
+  // Get parameter text for each risk level
+  const getParameterText = (itemAnalisa: string, tipeRisiko: 'tinggi' | 'sedang' | 'rendah') => {
+    const parameterMap: Record<string, Record<string, string>> = {
+      'Deforestasi': {
+        'tinggi': 'Ditemukan adanya Pembukaan Lahan Setelah Desember 2020',
+        'sedang': 'Ada Indikasi Deforestasi di Sekitar Area dan PKS Terima TBS',
+        'rendah': 'Sumber TBS Berasal dari Kebun yang di kembangkan sebelum Desember 2020'
+      },
+      'Legalitas Lahan': {
+        'tinggi': '1. Tidak memiliki Izin Lahan\n2. Tumpang Tindih dengan Area dilindungi tingkat Global/Nasional',
+        'sedang': '1. Memiliki Izin\n2. Tidak ada indikasi Tumpang Tindih dengan Area dilindungi tingkat Global\n3. Ada indikasi tumpang tindih dengan kawasan hutan tingkat nasional namun dapat dibuktikan, hak atas lahan lebih dulu terbit dibanding penetapan status kawasan hutan',
+        'rendah': '1. Memiliki Izin\n2. Berada di Kawasan APL'
+      },
+      'Kawasan Gambut': {
+        'tinggi': 'Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan Belum Memiliki SK TMAT',
+        'sedang': 'Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan sedang proses bimbingan teknis dari kementerian terkait dalam rangka penerbitan SK TMAT',
+        'rendah': '1. Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan Memiliki SK TMAT\n2. Plot Sumber TBS tidak overlap dengan peta indikatif gambut'
+      }
+    };
+    return parameterMap[itemAnalisa]?.[tipeRisiko] || '';
+  };
 
   return (
     <div className="min-h-screen bg-neutral-bg">
@@ -190,25 +219,29 @@ export default function RiskAssessment() {
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900" data-testid="text-page-title">
-                Risk Assessment - Excel Methodology
+              <h1 className="text-2xl font-bold text-gray-900" data-testid="text-page-title">
+                KPNPLT-SST-xxxx.06.1
               </h1>
-              <p className="text-gray-600 mt-2">
-                Comprehensive supplier risk evaluation based on KPNPLT-SST methodology
+              <h2 className="text-xl font-semibold text-gray-800 mt-2">
+                FORM METODE PERHITUNGAN TINGKAT RISIKO DAN MITIGASINYA
+              </h2>
+              <p className="text-gray-600 mt-1">
+                I. ANALISA RISIKO SPASIAL
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Pemeriksaan ini dilaksanakan sebelum perjanjian kerja sama dengan pemasok diberlakukan
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {selectedAssessmentId && (
-                <div className="text-right">
-                  <div className="text-sm text-gray-600">Overall Risk Score</div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getRiskBadgeColor(scoring.riskClassification)}>
-                      {getRiskDisplayText(scoring.riskClassification)}
-                    </Badge>
-                    <span className="text-lg font-bold">{scoring.overallScore.toFixed(1)}%</span>
-                  </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-600">Overall Risk Score</div>
+                <div className="flex items-center gap-2">
+                  <Badge className={getRiskBadgeColor(riskClassification)}>
+                    {riskClassification.toUpperCase()}
+                  </Badge>
+                  <span className="text-lg font-bold">{totalScore}%</span>
                 </div>
-              )}
+              </div>
               <Button 
                 onClick={() => setLocation('/supply-chain-workflow')}
                 variant="outline"
@@ -221,354 +254,228 @@ export default function RiskAssessment() {
           </div>
         </div>
 
-        {!selectedAssessmentId ? (
-          /* Create New Assessment */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-blue-600" />
-                  Create Risk Assessment
-                </CardTitle>
-                <CardDescription>
-                  Start a new comprehensive risk assessment using Excel methodology
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="supplierName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Supplier Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter supplier name" {...field} data-testid="input-supplier-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="assessmentPeriod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Assessment Period</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 2024-Q1" {...field} data-testid="input-assessment-period" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notes (Optional)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Assessment notes and remarks" {...field} data-testid="textarea-notes" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button 
-                      type="submit" 
-                      className="w-full"
-                      disabled={createAssessmentMutation.isPending}
-                      data-testid="button-create-assessment"
-                    >
-                      {createAssessmentMutation.isPending ? 'Creating...' : 'Create Assessment'}
-                      <Shield className="w-4 h-4 ml-2" />
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
-
-            {/* Existing Assessments */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-green-600" />
-                  Existing Assessments
-                </CardTitle>
-                <CardDescription>
-                  Continue working on previous risk assessments
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {loadingAssessments ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-gray-600 mt-2">Loading assessments...</p>
-                  </div>
-                ) : assessments.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No assessments found</p>
-                    <p className="text-sm text-gray-500">Create your first risk assessment to get started</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {assessments.slice(0, 5).map((assessment: any) => (
-                      <div 
-                        key={assessment.id} 
-                        className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => setSelectedAssessmentId(assessment.id)}
-                        data-testid={`card-assessment-${assessment.id}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-medium">{assessment.supplierName}</h3>
-                            <p className="text-sm text-gray-600">{assessment.assessmentPeriod}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={getRiskBadgeColor(assessment.riskClassification || 'high')}>
-                              {getRiskDisplayText(assessment.riskClassification || 'High')}
-                            </Badge>
-                            {assessment.overallScore && (
-                              <span className="text-sm font-medium">{Number(assessment.overallScore).toFixed(1)}%</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          /* Assessment Detail View */
-          <div className="space-y-6">
-            {/* Risk Assessment Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between">
-                <TabsList className="grid w-fit grid-cols-2">
-                  <TabsTrigger value="spatial" data-testid="tab-spatial">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Spatial Risk Analysis
-                  </TabsTrigger>
-                  <TabsTrigger value="non-spatial" data-testid="tab-non-spatial">
-                    <FileCheck className="w-4 h-4 mr-2" />
-                    Non-Spatial Risk Analysis
-                  </TabsTrigger>
-                </TabsList>
-                
-                <div className="flex items-center gap-4">
-                  <Button 
-                    onClick={() => setSelectedAssessmentId(null)}
-                    variant="outline"
-                    data-testid="button-back-assessments"
-                  >
-                    ← Back to Assessments
-                  </Button>
+        {/* Supplier Information Form */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-600" />
+              Informasi Supplier
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="supplierName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nama Supplier</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Masukkan nama supplier" {...field} data-testid="input-supplier-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="assessmentDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tanggal Assessment</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} data-testid="input-assessment-date" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="assessorName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nama Assessor</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nama assessor" {...field} data-testid="input-assessor-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              </div>
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  data-testid="button-submit-assessment"
+                >
+                  Simpan Assessment Risiko
+                  <Calculator className="w-4 h-4 ml-2" />
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
 
-              {/* Spatial Risk Analysis Tab */}
-              <TabsContent value="spatial">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-blue-600" />
-                      Spatial Risk Analysis (Section I)
-                    </CardTitle>
-                    <CardDescription>
-                      Geographic and environmental risk assessment based on Excel methodology
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {loadingItems ? (
-                      <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="text-gray-600 mt-2">Loading risk items...</p>
-                      </div>
-                    ) : spatialItems.length === 0 ? (
-                      <div className="text-center py-8">
-                        <Calculator className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">No spatial risk items found</p>
-                        <p className="text-sm text-gray-500">Risk items should be automatically created</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        {spatialItems.map((item: any) => (
-                          <div key={item.id} className="border rounded-lg p-6 bg-white" data-testid={`item-${item.id}`}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                              {/* Risk Item Info */}
-                              <div>
-                                <Label className="text-sm font-semibold text-gray-700">Risk Item</Label>
-                                <p className="font-medium text-lg">{item.itemName}</p>
-                                <Badge className={getRiskBadgeColor(item.riskLevel)}>
-                                  {getRiskDisplayText(item.riskLevel)}
-                                </Badge>
-                              </div>
-
-                              {/* Risk Parameter */}
-                              <div>
-                                <Label className="text-sm font-semibold text-gray-700">Parameter</Label>
-                                <p className="text-sm text-gray-600">{item.parameter}</p>
-                              </div>
-
-                              {/* Scoring */}
-                              <div>
-                                <Label className="text-sm font-semibold text-gray-700">Scoring</Label>
-                                <div className="space-y-1">
-                                  <p className="text-sm"><strong>Risk Value:</strong> {item.riskValue}</p>
-                                  <p className="text-sm"><strong>Weight:</strong> {Number(item.weight).toFixed(0)}%</p>
-                                  <p className="text-sm"><strong>Score:</strong> {Number(item.finalScore * 100).toFixed(1)}%</p>
-                                </div>
-                              </div>
-
-                              {/* Risk Level Selector */}
-                              <div>
-                                <Label className="text-sm font-semibold text-gray-700">Update Risk Level</Label>
-                                <Select 
-                                  value={item.riskLevel} 
-                                  onValueChange={(value) => {
-                                    const riskValueMap: Record<string, number> = {
-                                      'tinggi': 1,
-                                      'sedang': 2,
-                                      'rendah': 3
-                                    };
-                                    
-                                    const newRiskValue = riskValueMap[value];
-                                    const weight = Number(item.weight);
-                                    const calculatedRisk = weight * newRiskValue;
-                                    const normalizedScore = calculatedRisk / 300; // Max possible score
-                                    const finalScore = normalizedScore;
-                                    
-                                    updateItemMutation.mutate({
-                                      id: item.id,
-                                      updates: {
-                                        riskLevel: value as any,
-                                        riskValue: newRiskValue,
-                                        normalizedScore,
-                                        finalScore
-                                      }
-                                    });
-                                  }}
-                                  data-testid={`select-risk-level-${item.id}`}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="tinggi">High Risk</SelectItem>
-                                    <SelectItem value="sedang">Medium Risk</SelectItem>
-                                    <SelectItem value="rendah">Low Risk</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
+        {/* Spatial Risk Assessment Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-green-600" />
+              I. ANALISA RISIKO SPASIAL
+            </CardTitle>
+            <CardDescription>
+              Form metode perhitungan tingkat risiko dan mitigasinya
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">No</TableHead>
+                    <TableHead className="w-32">Item Analisa</TableHead>
+                    <TableHead className="w-24">Tipe Risiko</TableHead>
+                    <TableHead className="w-96">Parameter</TableHead>
+                    <TableHead className="w-20">Nilai Risiko</TableHead>
+                    <TableHead className="w-20">Bobot (A)</TableHead>
+                    <TableHead className="w-20">Risiko (B)</TableHead>
+                    <TableHead className="w-96">Mitigasi</TableHead>
+                    <TableHead className="w-32">Sumber</TableHead>
+                    <TableHead className="w-32">Link Sumber</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {spatialRiskItems.map((item, index) => (
+                    <TableRow key={index} className="border-b">
+                      <TableCell className="font-medium">{item.no}</TableCell>
+                      <TableCell className="font-semibold">{item.itemAnalisa}</TableCell>
+                      <TableCell>
+                        <Select 
+                          value={item.tipeRisiko} 
+                          onValueChange={(value) => {
+                            updateRiskItem(index, 'tipeRisiko', value);
+                            updateRiskItem(index, 'parameter', getParameterText(item.itemAnalisa, value as any));
+                          }}
+                          data-testid={`select-risk-type-${index}`}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="tinggi">Tinggi</SelectItem>
+                            <SelectItem value="sedang">Sedang</SelectItem>
+                            <SelectItem value="rendah">Rendah</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="max-w-md">
+                        <div className="text-sm whitespace-pre-wrap">
+                          {getParameterText(item.itemAnalisa, item.tipeRisiko)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center font-bold">
+                        <Badge className={getRiskBadgeColor(item.tipeRisiko)}>
+                          {item.nilaiRisiko}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center font-bold">{item.bobot}</TableCell>
+                      <TableCell className="text-center font-bold">{item.risiko}</TableCell>
+                      <TableCell className="max-w-md">
+                        <div className="text-sm whitespace-pre-wrap">{item.mitigasi}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-xs space-y-1">
+                          {item.sumber.map((source, idx) => (
+                            <div key={idx} className="flex items-center gap-1">
+                              <span>{idx + 1}.</span>
+                              <span>{source}</span>
                             </div>
-
-                            {/* Mitigation */}
-                            {item.mitigationDescription && (
-                              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <Label className="text-sm font-semibold text-blue-900">Mitigation Strategy</Label>
-                                <p className="text-sm text-blue-800 mt-1">{item.mitigationDescription}</p>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Non-Spatial Risk Analysis Tab */}
-              <TabsContent value="non-spatial">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileCheck className="w-5 h-5 text-green-600" />
-                      Non-Spatial Risk Analysis
-                    </CardTitle>
-                    <CardDescription>
-                      Legal, certification, and operational risk assessment
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {nonSpatialItems.length === 0 ? (
-                      <div className="text-center py-8">
-                        <FileCheck className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">Non-spatial risk analysis coming soon</p>
-                        <p className="text-sm text-gray-500">Focus on spatial risk analysis for now</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-6">
-                        {nonSpatialItems.map((item: any) => (
-                          <div key={item.id} className="border rounded-lg p-6 bg-white">
-                            {/* Similar structure to spatial items */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                              <div>
-                                <Label className="text-sm font-semibold text-gray-700">Risk Item</Label>
-                                <p className="font-medium text-lg">{item.itemName}</p>
-                              </div>
-                              <div>
-                                <Label className="text-sm font-semibold text-gray-700">Risk Level</Label>
-                                <Badge className={getRiskBadgeColor(item.riskLevel)}>
-                                  {getRiskDisplayText(item.riskLevel)}
-                                </Badge>
-                              </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-xs space-y-1">
+                          {item.linkSumber.map((link, idx) => (
+                            <div key={idx} className="flex items-center gap-1">
+                              <span>{idx + 1}.</span>
+                              <a 
+                                href={link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 truncate max-w-xs"
+                              >
+                                <ExternalLink className="w-3 h-3 inline mr-1" />
+                                Link
+                              </a>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                          ))}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-            {/* Risk Score Summary */}
-            {selectedAssessmentId && (
+            {/* Risk Classification and Calculation */}
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calculator className="w-5 h-5 text-purple-600" />
-                    Risk Assessment Summary
-                  </CardTitle>
-                  <CardDescription>
-                    Overall risk classification based on Excel methodology
-                  </CardDescription>
+                  <CardTitle className="text-lg">Klasifikasi Tingkat Risiko</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-600">{scoring.overallScore.toFixed(1)}%</div>
-                      <div className="text-sm text-gray-600">Overall Score</div>
-                      <Progress value={scoring.overallScore} className="mt-2" />
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span>Rendah:</span>
+                      <Badge className="bg-green-100 text-green-800">≥67%</Badge>
                     </div>
-                    
-                    <div className="text-center">
-                      <Badge className={`${getRiskBadgeColor(scoring.riskClassification)} text-lg px-4 py-2`}>
-                        {getRiskDisplayText(scoring.riskClassification)}
-                      </Badge>
-                      <div className="text-sm text-gray-600 mt-2">Risk Classification</div>
+                    <div className="flex justify-between items-center">
+                      <span>Sedang:</span>
+                      <Badge className="bg-yellow-100 text-yellow-800">61&lt;x&lt;67</Badge>
                     </div>
-                    
-                    <div className="text-center">
-                      <div className="text-sm text-gray-600">
-                        <div><strong>Threshold:</strong></div>
-                        <div>Low: ≥67% | Medium: 61-67% | High: &lt;61%</div>
-                      </div>
+                    <div className="flex justify-between items-center">
+                      <span>Tinggi:</span>
+                      <Badge className="bg-red-100 text-red-800">≤60</Badge>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            )}
-          </div>
-        )}
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Perhitungan Risiko</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="text-sm font-mono bg-gray-50 p-3 rounded">
+                      <div>NR = Bobot A × Nilai Risiko B</div>
+                      <div>Total NR = Σ(Bobot A × Nilai Risiko B)</div>
+                      <div>Score = Total NR / Total Bobot × 100</div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-blue-600">{totalScore}%</div>
+                        <div className="text-sm text-gray-600">Total Score</div>
+                        <Badge className={`${getRiskBadgeColor(riskClassification)} text-lg px-4 py-2 mt-2`}>
+                          {riskClassification.toUpperCase()}
+                        </Badge>
+                      </div>
+                      <Progress value={totalScore} className="mt-4" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
       </div>
     </div>
   );
