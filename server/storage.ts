@@ -1992,28 +1992,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createPlot(plotData: any): Promise<any> {
-    try {
-      const [created] = await db.insert(plots).values(plotData).returning();
-      return created;
-    } catch (error) {
-      console.error("Error creating plot:", error);
-      throw error;
-    }
-  }
-
-  async updatePlot(id: string, updates: any): Promise<any> {
-    try {
-      const [updated] = await db.update(plots)
-        .set(updates)
-        .where(eq(plots.id, id))
-        .returning();
-      return updated;
-    } catch (error) {
-      console.error("Error updating plot:", error);
-      throw error;
-    }
-  }
 
   async getSupplier(id: string): Promise<any> {
     try {
