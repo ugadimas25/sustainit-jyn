@@ -1,16 +1,31 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { ObjectUploader } from '@/components/ObjectUploader';
 import { FileText, Upload, Satellite, Plus, Trash2 } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
+import { 
+  insertEstateDataCollectionSchema, 
+  insertSmallholderDataCollectionSchema,
+  insertMillDataCollectionSchema,
+  insertKcpDataCollectionSchema,
+  insertBulkingDataCollectionSchema,
+  type InsertEstateDataCollection,
+  type InsertSmallholderDataCollection,
+  type InsertMillDataCollection,
+  type InsertKcpDataCollection,
+  type InsertBulkingDataCollection
+} from '@shared/schema';
 
 export default function DataCollection() {
   const [supplierType, setSupplierType] = useState('');
@@ -33,7 +48,8 @@ export default function DataCollection() {
     koordinatKebun: '',
     koordinatKantor: '',
     
-    // Jenis supplier dengan opsi yang tepat dari dokumen
+    // Jenis kebun dan supplier
+    jenisKebun: '', // Jenis kebun dari form
     jenisSupplier: '', // Kebun plasma yang dikelola penuh oleh perusahaan (KKPA), Kebun dalam satu grup manajemen (sister company), Kebun pihak ketiga (PT/ CV/ Koperasi)
     totalProduksiTBSTahun: '', // kurun 1 tahun terakhir
     
@@ -216,7 +232,7 @@ export default function DataCollection() {
       // Reset form
       setEstateForm({
         namaSupplier: '', namaGroup: '', aktaPendirianPerusahaan: '', aktaPerubahan: '', izinBerusaha: '',
-        alamatKantor: '', alamatKebun: '', koordinatKebun: '', koordinatKantor: '', jenisSupplier: '', 
+        alamatKantor: '', alamatKebun: '', koordinatKebun: '', koordinatKantor: '', jenisKebun: '', jenisSupplier: '', 
         totalProduksiTBSTahun: '', namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', 
         nomorTeleponTimInternal: '', namaPenanggungJawab: '', jabatanPenanggungJawab: '', emailPenanggungJawab: '', 
         nomorTeleponPenanggungJawab: '', tandaTangan: '', tempatTanggal: '', 
@@ -343,7 +359,7 @@ export default function DataCollection() {
   // Document upload functionality
   const handleGetUploadParameters = async () => {
     try {
-      const response = await apiRequest('/api/objects/upload', 'POST');
+      const response = await apiRequest('/api/objects/upload', 'POST') as any;
       return {
         method: 'PUT' as const,
         url: response.url || response.uploadURL,
