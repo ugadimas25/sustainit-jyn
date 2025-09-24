@@ -18,39 +18,22 @@ import { z } from 'zod';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-// Enhanced Risk Assessment form schema based on Indonesian methodology
+// Risk Assessment form schema based on Excel methodology
 const riskAssessmentSchema = z.object({
   supplierName: z.string().min(1, 'Supplier name is required'),
-  supplierType: z.enum(['estate', 'mill', 'trader', 'smallholder']).optional(),
-  assessmentPeriod: z.string().min(1, 'Assessment period is required'),
-  assessor: z.string().min(1, 'Assessor name is required'),
-  reviewDate: z.string().optional(),
-  notes: z.string().optional(),
-  riskTolerance: z.enum(['low', 'medium', 'high']).default('medium')
+  assessmentPeriod: z.string().optional(),
+  notes: z.string().optional()
 });
 
-// Enhanced Risk Item schema for comprehensive risk factors
+// Risk Item schema for individual risk factors
 const riskItemSchema = z.object({
   itemName: z.string(),
-  category: z.enum(['spatial', 'legal', 'operational', 'financial', 'environmental', 'social']),
-  subcategory: z.string().optional(),
   riskLevel: z.enum(['tinggi', 'sedang', 'rendah']),
-  probability: z.number().min(1).max(5), // 1-5 scale for probability
-  impact: z.number().min(1).max(5), // 1-5 scale for impact
   parameter: z.string(),
-  riskValue: z.number().min(1).max(25), // probability * impact
+  riskValue: z.number().min(1).max(3),
   weight: z.number().min(0).max(100),
-  inherentRisk: z.number().min(1).max(25),
-  controlEffectiveness: z.number().min(1).max(5), // Control effectiveness rating
-  residualRisk: z.number().min(1).max(25),
   mitigationDescription: z.string().optional(),
-  mitigationActions: z.array(z.string()).default([]),
-  actionOwner: z.string().optional(),
-  targetDate: z.string().optional(),
-  mitigationStatus: z.enum(['not_started', 'in_progress', 'completed', 'overdue']).default('not_started'),
-  mitigationRequired: z.boolean().default(false),
-  regulatoryRequirement: z.string().optional(),
-  evidenceRequired: z.array(z.string()).default([])
+  mitigationRequired: z.boolean().default(false)
 });
 
 type RiskAssessmentData = z.infer<typeof riskAssessmentSchema>;
@@ -60,17 +43,7 @@ interface RiskScoring {
   overallScore: number;
   riskClassification: string;
   spatialRiskScore?: number;
-  legalRiskScore?: number;
-  operationalRiskScore?: number;
-  financialRiskScore?: number;
-  environmentalRiskScore?: number;
-  socialRiskScore?: number;
-  inherentRiskScore?: number;
-  residualRiskScore?: number;
-  riskTrend?: 'increasing' | 'stable' | 'decreasing';
-  controlMaturity?: number;
-  actionItemsCount?: number;
-  criticalIssuesCount?: number;
+  nonSpatialRiskScore?: number;
 }
 
 export default function RiskAssessment() {
