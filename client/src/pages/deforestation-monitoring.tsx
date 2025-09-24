@@ -1284,6 +1284,36 @@ export default function DeforestationMonitoring() {
     }
   };
 
+  const getWdpaBadge = (status: string) => {
+    switch (status) {
+      case 'PROTECTED':
+        return <Badge className="bg-blue-100 text-blue-800">PROTECTED</Badge>;
+      case 'NOT_PROTECTED':
+        return <Badge className="bg-gray-100 text-gray-800">NOT_PROTECTED</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  const getPeatlandBadge = (status: string) => {
+    // Handle area values in hectares (e.g., "4399.2547 ha")
+    if (status && status.includes(' ha')) {
+      const areaValue = parseFloat(status.replace(' ha', ''));
+      if (!isNaN(areaValue) && areaValue > 0) {
+        return <Badge className="bg-amber-100 text-amber-800">{status}</Badge>;
+      }
+    }
+    
+    switch (status) {
+      case 'PEATLAND':
+        return <Badge className="bg-amber-100 text-amber-800">PEATLAND</Badge>;
+      case 'NOT_PEATLAND':
+        return <Badge className="bg-gray-100 text-gray-800">NOT_PEATLAND</Badge>;
+      default:
+        return <Badge variant="secondary">{status || 'UNKNOWN'}</Badge>;
+    }
+  };
+
   const handleRevalidation = async (resultId: string) => {
     const result = analysisResults.find(r => r.plotId === resultId);
     if (!result) return;
@@ -2320,10 +2350,10 @@ export default function DeforestationMonitoring() {
                           {getLossBadge(result.sbtnLoss, result.sbtnLossArea)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          <Badge className="bg-green-100 text-green-800">COMPLIANT</Badge>
+                          {getWdpaBadge(result.wdpaStatus)}
                         </td>
                         <td className="px-4 py-4 text-sm">
-                          <Badge className="bg-green-100 text-green-800">COMPLIANT</Badge>
+                          {getPeatlandBadge(result.peatlandStatus)}
                         </td>
                       </tr>
                       );
