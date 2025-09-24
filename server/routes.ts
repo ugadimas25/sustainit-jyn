@@ -1209,8 +1209,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { supplierName, step } = req.params;
       const stepNumber = parseInt(step, 10);
-      if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 3) {
-        return res.status(400).json({ error: "Step must be a number between 1 and 3" });
+      if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 4) {
+        return res.status(400).json({ error: "Step must be a number between 1 and 4" });
       }
 
       const hasAccess = await storage.checkSupplierStepAccess(decodeURIComponent(supplierName), stepNumber);
