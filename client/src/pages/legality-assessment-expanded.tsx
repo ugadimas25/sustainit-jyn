@@ -4597,7 +4597,7 @@ export default function LegalityAssessmentExpanded() {
 
                         {/* Bukti Implementasi Point 3.5 */}
                         <div className="space-y-6">
-                          <h4 className="text-lg font-semibold border-b pb-2">3.7 Bukti Implementasi Point 3.5</h4>
+                          <h5 className="text-md font-semibold border-b pb-2">Bukti Implementasi Point 3.5</h5>
                           
                           {[
                             { key: 'buktiGRTT', label: 'Bukti GRTT (Jika Ada)' },
