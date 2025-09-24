@@ -1814,10 +1814,10 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
                 if (!peatlandLayer) {
                   console.log('🔄 Creating new Indonesian Peatland layer...');
                   
-                  // Show loading indicator
+                  // Show loading indicator at bottom right
                   const loadingMessage = document.createElement('div');
                   loadingMessage.id = 'peatland-loading';
-                  loadingMessage.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif;';
+                  loadingMessage.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 15px 20px; border-radius: 8px; z-index: 10000; font-family: Arial, sans-serif; font-size: 14px;';
                   loadingMessage.innerHTML = '🔄 Loading Indonesian Peatland data...';
                   document.body.appendChild(loadingMessage);
                   
