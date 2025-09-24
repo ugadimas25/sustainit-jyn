@@ -2534,7 +2534,7 @@ export default function DeforestationMonitoring() {
           <div className="w-[90vw] h-[90vh] bg-white rounded-lg shadow-xl flex flex-col">
             {/* Header */}
             <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-lg">
-              <h3 className="text-lg font-semibold">Quick Preview - EUDR Analysis Results</h3>
+              <h3 className="text-lg font-semibold">EUDR Map Viewer</h3>
               <div className="flex items-center gap-4">
                 <Button 
                   variant="outline" 
