@@ -1433,8 +1433,7 @@ export default function DeforestationMonitoring() {
   };
 
   const handleQuickPreview = () => {
-    console.log('🗺️ Navigating directly to full map viewer');
-    setLocation('/map-viewer');
+    setShowQuickPreview(true);
   };
 
   const handleViewFullMap = () => {
