@@ -358,23 +358,31 @@ export interface IStorage {
 
 // Database implementation of IStorage
 export class DatabaseStorage implements IStorage {
-  public sessionStore: session.Store;
+  private _sessionStore: session.Store | null = null;
+
+  // Lazy initialization for performance optimization
+  public get sessionStore(): session.Store {
+    if (!this._sessionStore) {
+      // Use database session store in production, memory store in development
+      if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+        const PgSession = ConnectPgSimple(session);
+        this._sessionStore = new PgSession({
+          conString: process.env.DATABASE_URL,
+          tableName: 'session',
+          createTableIfMissing: true,
+        });
+      } else {
+        // Fallback to memory store for development
+        this._sessionStore = new (MemoryStore(session))({
+          checkPeriod: 86400000, // prune expired entries every 24h
+        });
+      }
+    }
+    return this._sessionStore;
+  }
 
   constructor() {
-    // Use database session store in production, memory store in development
-    if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
-      const PgSession = ConnectPgSimple(session);
-      this.sessionStore = new PgSession({
-        conString: process.env.DATABASE_URL,
-        tableName: 'session',
-        createTableIfMissing: true,
-      });
-    } else {
-      // Fallback to memory store for development
-      this.sessionStore = new (MemoryStore(session))({
-        checkPeriod: 86400000, // prune expired entries every 24h
-      });
-    }
+    // Session store is now lazily initialized when first accessed
   }
 
   // User management
@@ -966,7 +974,7 @@ export class DatabaseStorage implements IStorage {
       const { estateDataCollection } = await import("@shared/schema");
       const [result] = await db
         .insert(estateDataCollection)
-        .values(insertEstateData)
+        .values([insertEstateData])
         .returning();
       return result;
     } catch (error) {
@@ -1028,7 +1036,7 @@ export class DatabaseStorage implements IStorage {
       const { millDataCollection } = await import("@shared/schema");
       const [result] = await db
         .insert(millDataCollection)
-        .values(insertMillData)
+        .values([insertMillData])
         .returning();
       return result;
     } catch (error) {
@@ -1090,7 +1098,7 @@ export class DatabaseStorage implements IStorage {
       const { traceabilityDataCollection } = await import("@shared/schema");
       const [result] = await db
         .insert(traceabilityDataCollection)
-        .values(insertData)
+        .values([insertData])
         .returning();
       return result;
     } catch (error) {
@@ -1126,7 +1134,7 @@ export class DatabaseStorage implements IStorage {
       const { kcpDataCollection } = await import("@shared/schema");
       const [result] = await db
         .insert(kcpDataCollection)
-        .values(insertData)
+        .values([insertData])
         .returning();
       return result;
     } catch (error) {
@@ -2070,7 +2078,7 @@ export class DatabaseStorage implements IStorage {
 
   async createOrganization(insertOrganization: InsertOrganization): Promise<Organization> {
     try {
-      const [org] = await db.insert(organizations).values(insertOrganization).returning();
+      const [org] = await db.insert(organizations).values([insertOrganization]).returning();
       return org;
     } catch (error) {
       console.error("Error creating organization:", error);
@@ -2094,7 +2102,7 @@ export class DatabaseStorage implements IStorage {
   async deleteOrganization(id: string): Promise<boolean> {
     try {
       const result = await db.delete(organizations).where(eq(organizations.id, id));
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("Error deleting organization:", error);
       throw error;
@@ -2385,7 +2393,7 @@ export class DatabaseStorage implements IStorage {
 
   async createRole(insertRole: InsertRole): Promise<Role> {
     try {
-      const [role] = await db.insert(roles).values(insertRole).returning();
+      const [role] = await db.insert(roles).values([insertRole]).returning();
       return role;
     } catch (error) {
       console.error("Error creating role:", error);
@@ -2412,7 +2420,7 @@ export class DatabaseStorage implements IStorage {
       await db.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
       
       const result = await db.delete(roles).where(eq(roles.id, id));
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("Error deleting role:", error);
       throw error;
@@ -2472,7 +2480,7 @@ export class DatabaseStorage implements IStorage {
 
   async createPermission(insertPermission: InsertPermission): Promise<Permission> {
     try {
-      const [permission] = await db.insert(permissions).values(insertPermission).returning();
+      const [permission] = await db.insert(permissions).values([insertPermission]).returning();
       return permission;
     } catch (error) {
       console.error("Error creating permission:", error);

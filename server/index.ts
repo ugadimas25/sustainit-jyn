@@ -8,7 +8,7 @@ const app = express();
 // Configure CORS for production
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.REPLIT_DEV_DOMAIN, process.env.REPL_SLUG] 
+    ? [process.env.REPLIT_DEV_DOMAIN, process.env.REPL_SLUG].filter((url): url is string => !!url) 
     : true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
