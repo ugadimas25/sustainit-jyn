@@ -457,18 +457,11 @@ export default function RiskAssessment() {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={!canProceedWithAssessment}
                   data-testid="button-submit-assessment"
                 >
                   Simpan Assessment Risiko
                   <Calculator className="w-4 h-4 ml-2" />
                 </Button>
-                
-                {!canProceedWithAssessment && (
-                  <div className="text-center text-sm text-gray-500 mt-2">
-                    Silakan validasi nama supplier Anda terlebih dahulu untuk melanjutkan risk assessment.
-                  </div>
-                )}
               </form>
             </Form>
           </CardContent>
