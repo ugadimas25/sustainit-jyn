@@ -661,6 +661,16 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             console.log('🚀🚀🚀 EUDR Map Viewer iframe script started - VERSION 2.0');
             console.log('🔧 DEBUG: Starting iframe script execution');
             
+            // Send message to parent to confirm iframe is loading
+            try {
+              window.parent.postMessage({
+                type: 'iframe-debug',
+                message: 'EUDR Map Viewer iframe script loading...'
+              }, '*');
+            } catch(e) {
+              console.log('Could not send debug message to parent:', e);
+            }
+            
             // Initialize map
             const map = L.map('map').setView([0, 0], 2);
 
@@ -2034,6 +2044,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
             setTimeout(() => {
               console.log('🔧 Setting up all layer controls after DOM ready...');
               
+              // Send debug message to parent
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'Starting layer control setup...'
+                }, '*');
+              } catch(e) {}
+              
               // Setup deforestation layers first
               console.log('🌳 Setting up deforestation layer controls...');
               setupDeforestationLayers();
@@ -2044,6 +2062,14 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
               setupPeatlandLayer();
               
               console.log('✅ All layer control setup completed');
+              
+              // Send completion message to parent
+              try {
+                window.parent.postMessage({
+                  type: 'iframe-debug',
+                  message: 'All layer controls setup completed!'
+                }, '*');
+              } catch(e) {}
             }, 200);
 
             // Pre-load and test deforestation layers for immediate availability
@@ -2265,6 +2291,12 @@ function EudrMapViewer({ analysisResults, onClose }: EudrMapViewerProps) {
 
       // Listen for close message from iframe
       const handleMessage = (event: MessageEvent) => {
+        // Debug messages from iframe
+        if (event.data.type === 'iframe-debug') {
+          console.log('🔧 IFRAME DEBUG:', event.data.message);
+          return;
+        }
+        
         if (event.data.type === 'closeMap' || event.data.type === 'backToResults') {
           // Ensure localStorage flags are set correctly for table restoration
           console.log('🔙 Returning from EUDR Map Viewer, setting restore flags');
