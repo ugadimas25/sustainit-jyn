@@ -1,822 +1,940 @@
-import { useState, useRef, useEffect } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { ObjectUploader } from '@/components/ObjectUploader';
-import { Badge } from '@/components/ui/badge';
-import { FileText, ChevronDown, Shield, CheckCircle, AlertTriangle } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import jsPDF from 'jspdf';
-import type { UploadResult } from '@uppy/core';
+import { FileText, Shield, Save, ArrowLeft } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { insertLegalComplianceSchema, type InsertLegalCompliance } from '@shared/schema';
+import { z } from 'zod';
 
+// Section configuration matching DOCX template exactly
+interface SectionItem {
+  key: string;
+  label: string;
+  type: 'yesNo' | 'yesNoNA' | 'text' | 'textarea';
+  required?: boolean;
+  explanationKey?: string;
+  explanation?: string;
+}
+
+interface Section {
+  id: string;
+  title: string;
+  items: SectionItem[];
+}
+
+const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
+  {
+    id: '3.1',
+    title: '3.1 Hak Penggunaan Tanah',
+    items: [
+      {
+        key: 'historisPerolehanTanah',
+        label: 'Apakah Perusahaan Memiliki Historis Perolehan Tanah',
+        type: 'textarea',
+        explanation: 'Lampirkan Dokumen : (dalam Bentuk Google Drive )'
+      },
+      {
+        key: 'izinPencadangan',
+        label: 'Izin Pencadangan Lahan',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'izinPencadanganKeterangan'
+      },
+      {
+        key: 'persetujuanPKKPR',
+        label: 'Persetujuan Kesesuaian Kegiatan Pemanfaatan Ruang (PKKPR) / Izin Lokasi',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'persetujuanPKKPRKeterangan'
+      },
+      {
+        key: 'izinUsahaPerkebunan',
+        label: 'Izin Usaha Perkebunan',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'izinUsahaPerkebunanKeterangan'
+      },
+      {
+        key: 'skHGU',
+        label: 'SK HGU',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'skHGUKeterangan'
+      },
+      {
+        key: 'sertifikatHGU',
+        label: 'Sertifikat HGU',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sertifikatHGUKeterangan'
+      },
+      {
+        key: 'laporanPemanfaatanHGU',
+        label: 'Laporan Pemanfaatan HGU',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanPemanfaatanHGUKeterangan'
+      },
+      {
+        key: 'laporanLPUP',
+        label: 'Laporan Perkembangan Usaha Perkebunan (LPUP)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanLPUPKeterangan'
+      }
+    ]
+  },
+  {
+    id: '3.2',
+    title: '3.2 Perlindungan Lingkungan Hidup',
+    items: [
+      {
+        key: 'izinLingkungan',
+        label: 'Izin Lingkungan dan Dokumen Terkait',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'izinLingkunganKeterangan'
+      },
+      {
+        key: 'izinRintekLimbahB3',
+        label: 'Izin / Rintek TPS Limbah B3',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'izinRintekLimbahB3Keterangan'
+      },
+      {
+        key: 'izinPertekLimbahCair',
+        label: 'Izin / Pertek Pengelolaan Limbah Cair Industri',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'izinPertekLimbahCairKeterangan'
+      },
+      {
+        key: 'persetujuanAndalalin',
+        label: 'Persetujuan Teknis ANDALALIN',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'persetujuanAndalalinKeterangan'
+      },
+      {
+        key: 'daftarPestisida',
+        label: 'Daftar pestisida dan izin edar yang masih berlaku',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'daftarPestisidaKeterangan'
+      }
+    ]
+  },
+  {
+    id: '3.3',
+    title: '3.3 Bukti Pelaksanaan',
+    items: [
+      {
+        key: 'buktiPelaksanaanRKL',
+        label: 'Laporan Pelaksanaan RKL/RPL',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'buktiPelaksanaanRKLKeterangan'
+      },
+      {
+        key: 'laporanPenggunaanPestisida',
+        label: 'Laporan Penggunaan Pestisida',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanPenggunaanPestisidaKeterangan'
+      }
+    ]
+  },
+  {
+    id: '3.4',
+    title: '3.4 Peraturan yang berhubungan dengan Kehutanan',
+    items: [
+      {
+        key: 'areaSesuaiPeruntukan',
+        label: 'Apakah area yang diusahakan sesuai dengan peruntukannya',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'areaSesuaiPeruntukanKeterangan'
+      },
+      {
+        key: 'skPelepasan',
+        label: 'SK Pelepasan/Tukar Menukar Kawasan Hutan (Jika Kawasan berasal dari kawasan hutan negara)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'skPelepasanKeterangan'
+      },
+      {
+        key: 'dokumenInstansiRelevant',
+        label: 'Dokumen yang dikeluarkan oleh Instansi relevan menunjukan kesesuain ruang area tanam (PKKPR, Risalah Panitia B, Tinjauan Teknis dari Kehutanan)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'dokumenInstansiRelevantKeterangan'
+      }
+    ]
+  },
+  {
+    id: '3.5',
+    title: '3.5 Hak Pihak Ke 3 termasuk Hak-Hak Masyarakat adat',
+    items: [
+      {
+        key: 'kebijakanHakPihakKetiga',
+        label: 'Apakah Perusahaan Memiliki Kebijakan Terkait Hak pihak ketiga, prinsip persetujuan awal tanpa paksaan dan berdasarkan informasi (FPIC), termasuk Hak-Hak Masyarakat Adat',
+        type: 'yesNoNA',
+        required: true,
+        explanationKey: 'kebijakanHakPihakKetigaKeterangan'
+      },
+      {
+        key: 'kebijakanPerusahaan',
+        label: 'Kebijakan Perusahaan',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'kebijakanPerusahaanKeterangan'
+      },
+      {
+        key: 'sopUsulanGRTT',
+        label: 'SOP Usulan dan Persetujuan GRTT',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopUsulanGRTTKeterangan'
+      },
+      {
+        key: 'sopPADIATAPA',
+        label: 'SOP Persetujuan Atas Dasar Informasi di Awal Tanpa Paksaan (PADIATAPA) & Pemetaan Partisipatif',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopPADIATAPAKeterangan'
+      },
+      {
+        key: 'sopPenangananInformasi',
+        label: 'SOP Penanganan Permintaan Informasi',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopPenangananInformasiKeterangan'
+      },
+      {
+        key: 'sopPenangananKeluhan',
+        label: 'SOP Penanganan Keluhan Stakeholder',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopPenangananKeluhanKeterangan'
+      }
+    ]
+  },
+  {
+    id: '3.6',
+    title: '3.6 Kewajiban Pengembangan Plasma minimum 20 % dari Lahan yang di Usahakan',
+    items: [
+      {
+        key: 'mouKerjaSama',
+        label: 'MoU Kerja sama',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'mouKerjaSamaKeterangan'
+      },
+      {
+        key: 'skCPCL',
+        label: 'SK CPCL (Calon Petani Calon Lahan)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'skCPCLKeterangan'
+      },
+      {
+        key: 'laporanRealisasiPlasma',
+        label: 'Laporan Realisasi Plasma',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanRealisasiPlasmaKeterangan',
+        explanation: '(Dapat menggunakan Laporan SPUP)'
+      }
+    ]
+  },
+  {
+    id: '3.7',
+    title: '3.7 Bukti Implementasi Point 3.5',
+    items: [
+      {
+        key: 'buktiImplementasi',
+        label: 'Bukti Implementasi',
+        type: 'textarea'
+      }
+    ]
+  }
+];
 
 export default function LegalityCompliance() {
-  const [activeTab, setActiveTab] = useState('supplier-compliance');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  
-  
-  // Progress tracking
-  const [complianceProgress, setComplianceProgress] = useState({
-    overall: 0,
-    sections: {
-      landRights: 0,
-      environmental: 0,
-      implementation: 0,
-      forestry: 0,
-      thirdParty: 0,
-      cooperation: 0,
-      information: 0,
-      humanRights: 0,
-      labor: 0,
-      antiCorruption: 0,
-      taxation: 0
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form setup using react-hook-form with zodResolver
+  const form = useForm<InsertLegalCompliance>({
+    resolver: zodResolver(insertLegalComplianceSchema.extend({
+      namaSupplier: z.string().min(1, 'Nama Supplier wajib diisi')
+    })),
+    defaultValues: {
+      namaSupplier: '',
+      namaGroup: '',
+      aktaPendirianPerusahaan: '',
+      aktaPerubahan: '',
+      izinBerusaha: '',
+      tipeSertifikat: '',
+      alamatKantor: '',
+      alamatKebun: '',
+      koordinatKebun: '',
+      koordinatKantor: '',
+      namaPenanggungJawab: '',
+      jabatanPenanggungJawab: '',
+      emailPenanggungJawab: '',
+      nomorTeleponPenanggungJawab: '',
+      namaTimInternal: '',
+      jabatanTimInternal: '',
+      emailTimInternal: '',
+      nomorTelefonTimInternal: '',
+      historisPerolehanTanah: '',
+      buktiImplementasi: '',
+      status: 'draft',
+      assessorName: 'KPN Compliance Administrator'
     }
   });
 
-  
-
-  // Supplier compliance form state
-  const [supplierComplianceForm, setSupplierComplianceForm] = useState({
-    // Basic Information
-    namaSupplier: '',
-    namaGroup: '',
-    aktaPendirianPerusahaan: '',
-    aktaPerubahan: '',
-    izinBerusaha: '',
-    tipeSertifikat: '',
-    alamatKantor: '',
-    alamatKebun: '',
-    koordinatKebun: '',
-    koordinatKantor: '',
-    jenisSupplier: '',
-    namaPenanggungJawab: '',
-    jabatanPenanggungJawab: '',
-    emailPenanggungJawab: '',
-    nomorTeleponPenanggungJawab: '',
-    namaTimInternal: '',
-    jabatanTimInternal: '',
-    emailTimInternal: '',
-    nomorTeleponTimInternal: '',
-    
-    // 3.1 Hak Penggunaan Tanah
-    historisPerolehanTanah: '',
-    historisKeterangan: '',
-    izinPencadangan: '',
-    izinPencadanganLahan: '',
-    izinPencadanganKeterangan: '',
-    persetujuanPKKPR: '',
-    persetujuanPKKPRKeterangan: '',
-    izinUsahaPerkebunan: '',
-    izinUsahaPerkebunanKeterangan: '',
-    skHGU: '',
-    skHGUKeterangan: '',
-    sertifikatHGU: '',
-    sertifikatHGUKeterangan: '',
-    laporanPemanfaatanHGU: '',
-    laporanPemanfaatanHGUKeterangan: '',
-    laporanLPUP: '',
-    laporanLPUPKeterangan: '',
-    
-    // 3.2 Perlindungan Lingkungan Hidup
-    izinLingkungan: '',
-    izinLingkunganKeterangan: '',
-    izinRintekTPS: '',
-    izinRintekTPSKeterangan: '',
-    izinLimbahCair: '',
-    izinLimbahCairKeterangan: '',
-    izinPertekLimbah: '',
-    izinPertekLimbahKeterangan: '',
-    persetujuanAndalalin: '',
-    persetujuanAndalalinKeterangan: '',
-    daftarPestisida: '',
-    daftarPestisidaKeterangan: '',
-    
-    // 3.3 Bukti Pelaksanaan
-    buktiPelaksanaan: '',
-    buktiPelaksanaanII: '',
-    buktiPelaksanaanKeterangan: '',
-    laporanRKLRPL: '',
-    laporanRKLRPLKeterangan: '',
-    laporanPestisida: '',
-    laporanPestisidaKeterangan: '',
-    
-    // 3.4 Peraturan Kehutanan
-    peraturanKehutanan: '',
-    peraturanKehutananKeterangan: '',
-    areaSesuaiPeruntukan: '',
-    areaSesuaiPeruntukanKeterangan: '',
-    skPelepasanHutan: '',
-    skPelepasanHutanKeterangan: '',
-    dokumenInstansiRelevant: '',
-    dokumenInstansiRelevanKeterangan: '',
-    
-    // 3.5 Hak Pihak Ketiga dan Masyarakat Adat
-    hakPihakKetiga: '',
-    hakPihakKetigaKeterangan: '',
-    kebijakanHakPihakKetiga: '',
-    kebijakanHakPihakKetigaKeterangan: '',
-    kebijakanPerusahaan: '',
-    kebijakanPerusahaanKeterangan: '',
-    sopGRTT: '',
-    sopGRTTKeterangan: '',
-    sopPADIATAPA: '',
-    sopPADIATAPAKeterangan: '',
-    sopPermintaanInformasi: '',
-    sopPermintaanInformasiKeterangan: '',
-    sopKeluhanStakeholder: '',
-    sopKeluhanStakeholderKeterangan: '',
-    
-    // 3.6 Kewajiban Pengembangan Plasma
-    mouKerjasama: '',
-    mouKerjasamaKeterangan: '',
-    mouKerjaSama: '',
-    mouKerjaSamaKeterangan: '',
-    skCPCL: '',
-    skCPCLKeterangan: '',
-    laporanRealisasiPlasma: '',
-    laporanRealisasiPlasmaKeterangan: '',
-    
-    // 3.7 Bukti Implementasi
-    suratMasukInformasi: '',
-    suratMasukInformasiKeterangan: '',
-    suratKeluarInformasi: '',
-    suratKeluarInformasiKeterangan: '',
-    buktiGRTT: '',
-    buktiGRTTKeterangan: '',
-    buktiFPIC: '',
-    buktiFPICKeterangan: '',
-    suratMasukPermintaan: '',
-    suratMasukPermintaanKeterangan: '',
-    suratKeluarPermintaan: '',
-    suratKeluarPermintaanKeterangan: '',
-    suratMasukKeluhan: '',
-    suratMasukKeluhanKeterangan: '',
-    suratKeluarKeluhan: '',
-    suratKeluarKeluhanKeterangan: '',
-    
-    // 3.8 Sengketa Lahan
-    laporanSengketaLahan: '',
-    laporanSengketaLahanKeterangan: '',
-    
-    // 3.9 Hak Buruh dan HAM
-    kebijakanHAM: '',
-    kebijakanHAMKeterangan: '',
-    komitmenHakBuruh: '',
-    kebijakanHakBuruh: '',
-    kebijakanHakBuruhKeterangan: '',
-    sopKetenagakerjaan: '',
-    sopKetenagakerjaanKeterangan: '',
-    sopK3: '',
-    sopK3Keterangan: '',
-    
-    // 3.10 Bukti Pelaksanaan HAM
-    buktiDisnaker: '',
-    buktiDisnakerKeterangan: '',
-    buktiPerjanjianKerja: '',
-    buktiPerjanjianKerjaKeterangan: '',
-    daftarKaryawan: '',
-    daftarKaryawanKeterangan: '',
-    skUMR: '',
-    skUMRKeterangan: '',
-    skSerikatPekerja: '',
-    skSerikatPekerjaKeterangan: '',
-    buktiBPJS: '',
-    buktiBPJSKeterangan: '',
-    laporanP2K3: '',
-    laporanP2K3Keterangan: '',
-    
-    // 3.11 Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai - Anti-corruption Section
-    komitmenAntikorupsi: '',
-    kebijakanAntikorupsi: '',
-    kebijakanAntikorupsiKeterangan: '',
-    sopKodeEtikBisnis: '',
-    sopKodeEtikBisnisKeterangan: '',
-    sopKodeEtik: '',
-    sopKodeEtikKeterangan: '',
-    saluranPengaduan: '',
-    saluranPengaduanKeterangan: '',
-    
-    // 3.12 Bukti Terdaftar Pajak dan pemenuhan persyaratan eksport
-    suratTerdaftarPajak: '',
-    suratTerdaftarPajakKeterangan: '',
-    suratTerdaftarPajakStatus: '',
-    npwp: '',
-    npwpKeterangan: '',
-    npwpStatus: '',
-    
-    // Status fields for conditional rendering
-    izinPencadanganStatus: '',
-    persetujuanPKKPRStatus: '',
-    izinUsahaPerkebunanStatus: '',
-    izinRintekTPSStatus: '',
-    izinLimbahCairStatus: '',
-    persetujuanAndalalinStatus: '',
-  });
-
-  // Helper functions for progress calculation
-  const calculateSectionProgress = (fields: string[], formData: any) => {
-    const totalFields = fields.length;
-    const completedFields = fields.filter(field => 
-      formData[field as keyof typeof formData] !== ''
-    ).length;
-    return totalFields > 0 ? (completedFields / totalFields) * 100 : 0;
-  };
-
-  const calculateOverallProgress = (formData: any) => {
-    const sectionFields = {
-      landRights: ['historisPerolehanTanah', 'izinPencadangan', 'persetujuanPKKPR', 'izinUsahaPerkebunan', 'skHGU'],
-      environmental: ['izinLingkungan', 'izinRintekTPS', 'izinLimbahCair', 'persetujuanAndalalin', 'daftarPestisida'],
-      implementation: ['buktiPelaksanaan', 'laporanRKLRPL', 'laporanPestisida'],
-      forestry: ['areaSesuaiPeruntukan', 'skPelepasanHutan', 'dokumenInstansiRelevan'],
-      thirdParty: ['kebijakanHakPihakKetiga', 'kebijakanPerusahaan', 'sopGRTT'],
-      cooperation: ['mouKerjaSama', 'skCPCL', 'laporanRealisasiPlasma'],
-      information: ['suratMasukPermintaan', 'suratKeluarPermintaan', 'suratMasukKeluhan'],
-      humanRights: ['komitmenHakBuruh', 'kebijakanHakBuruh', 'sopKetenagakerjaan'],
-      labor: ['daftarKaryawan', 'skUMR', 'skSerikatPekerja', 'buktiBPJS', 'laporanP2K3'],
-      antiCorruption: ['komitmenAntikorupsi', 'kebijakanAntikorupsi', 'sopKodeEtik', 'saluranPengaduan'],
-      taxation: ['suratTerdaftarPajak', 'npwp']
-    };
-
-    const sectionProgress: {
-      landRights: number;
-      environmental: number;
-      implementation: number;
-      forestry: number;
-      thirdParty: number;
-      cooperation: number;
-      information: number;
-      humanRights: number;
-      labor: number;
-      antiCorruption: number;
-      taxation: number;
-    } = {
-      landRights: 0,
-      environmental: 0,
-      implementation: 0,
-      forestry: 0,
-      thirdParty: 0,
-      cooperation: 0,
-      information: 0,
-      humanRights: 0,
-      labor: 0,
-      antiCorruption: 0,
-      taxation: 0
-    };
-    let totalProgress = 0;
-    
-    Object.entries(sectionFields).forEach(([section, fields]) => {
-      const progress = calculateSectionProgress(fields, formData);
-      sectionProgress[section as keyof typeof sectionProgress] = progress;
-      totalProgress += progress;
-    });
-
-    return {
-      overall: totalProgress / Object.keys(sectionFields).length,
-      sections: sectionProgress
-    };
-  };
-
-  // Export functions
-  const exportToPDF = () => {
-    const pdf = new jsPDF();
-    
-    // Add title
-    pdf.setFontSize(18);
-    pdf.text('EUDR Compliance Report', 20, 30);
-    
-    // Add supplier info
-    pdf.setFontSize(12);
-    pdf.text(`Supplier: ${supplierComplianceForm.namaSupplier}`, 20, 50);
-    pdf.text(`Group: ${supplierComplianceForm.namaGroup}`, 20, 65);
-    pdf.text(`Overall Compliance: ${complianceProgress.overall.toFixed(1)}%`, 20, 80);
-    
-    // Add sections progress
-    let yPos = 100;
-    Object.entries(complianceProgress.sections).forEach(([section, progress]) => {
-      pdf.text(`${section}: ${progress.toFixed(1)}%`, 30, yPos);
-      yPos += 15;
-    });
-    
-    pdf.save(`compliance-report-${supplierComplianceForm.namaSupplier}.pdf`);
-    
-    toast({
-      title: "Report exported successfully",
-      description: "Compliance report has been saved as PDF",
-    });
-  };
-
-  const exportToInteractiveDashboard = () => {
-    const dashboardData = {
-      supplier: supplierComplianceForm.namaSupplier,
-      progress: complianceProgress,
-      timestamp: new Date().toISOString(),
-      formData: supplierComplianceForm
-    };
-    
-    const dataStr = JSON.stringify(dashboardData, null, 2);
-    const dataBlob = new Blob([dataStr], {type: 'application/json'});
-    
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(dataBlob);
-    link.download = `compliance-dashboard-${supplierComplianceForm.namaSupplier}.json`;
-    link.click();
-    
-    toast({
-      title: "Dashboard data exported",
-      description: "Interactive dashboard data has been downloaded",
-    });
-  };
-
-  // Update progress when form changes
-  useEffect(() => {
-    const newProgress = calculateOverallProgress(supplierComplianceForm);
-    setComplianceProgress(newProgress);
-  }, [supplierComplianceForm]);
-
-  // Fetch data from Data Collection forms for suggestions
-  const { data: estateData = [] } = useQuery({
-    queryKey: ['/api', 'estate-data-collection'],
-  });
-
-  const { data: millData = [] } = useQuery({
-    queryKey: ['/api', 'mill-data-collection'],
-  });
-
-  const { data: traceabilityData = [] } = useQuery({
-    queryKey: ['/api', 'traceability-data-collection'],
-  });
-
-  const { data: kcpData = [] } = useQuery({
-    queryKey: ['/api', 'kcp-data-collection'],
-  });
-
-  const { data: bulkingData = [] } = useQuery({
-    queryKey: ['/api', 'bulking-data-collection'],
-  });
-
-  // Helper functions to extract suggestions from data collection forms
-  const getSupplierSuggestions = (): string[] => {
-    const suggestions: string[] = [];
-    
-    // Get supplier names from estate data
-    if (Array.isArray(estateData)) {
-      estateData.forEach((estate: any) => {
-        if (estate?.supplierName) suggestions.push(estate.supplierName);
-        if (estate?.groupName) suggestions.push(estate.groupName);
-        if (estate?.companyName) suggestions.push(estate.companyName);
+  // Create submission mutation
+  const createLegalComplianceMutation = useMutation({
+    mutationFn: async (data: InsertLegalCompliance) => {
+      return await apiRequest('/api/legal-compliance', {
+        method: 'POST',
+        body: JSON.stringify(data)
       });
-    }
-    
-    // Get supplier names from mill data
-    if (Array.isArray(millData)) {
-      millData.forEach((mill: any) => {
-        if (mill?.supplierName) suggestions.push(mill.supplierName);
-        if (mill?.companyName) suggestions.push(mill.companyName);
-      });
-    }
-    
-    // Get supplier names from traceability data
-    if (Array.isArray(traceabilityData)) {
-      traceabilityData.forEach((traceability: any) => {
-        if (traceability?.supplierName) suggestions.push(traceability.supplierName);
-        if (traceability?.companyName) suggestions.push(traceability.companyName);
-      });
-    }
-    
-    return Array.from(new Set(suggestions.filter(Boolean)));
-  };
-
-  const getAddressSuggestions = (): string[] => {
-    const suggestions: string[] = [];
-    
-    // Get addresses from all forms
-    const allData = [
-      ...(Array.isArray(estateData) ? estateData : []),
-      ...(Array.isArray(millData) ? millData : []),
-      ...(Array.isArray(traceabilityData) ? traceabilityData : []),
-      ...(Array.isArray(kcpData) ? kcpData : []),
-      ...(Array.isArray(bulkingData) ? bulkingData : [])
-    ];
-    
-    allData.forEach((item: any) => {
-      if (item?.officeAddress) suggestions.push(item.officeAddress);
-      if (item?.facilityAddress) suggestions.push(item.facilityAddress);
-      if (item?.address) suggestions.push(item.address);
-      if (item?.estateAddress) suggestions.push(item.estateAddress);
-      if (item?.location) suggestions.push(item.location);
-    });
-    
-    return Array.from(new Set(suggestions.filter(Boolean)));
-  };
-
-  const getCoordinateSuggestions = (): string[] => {
-    const suggestions: string[] = [];
-    
-    const allData = [
-      ...(Array.isArray(estateData) ? estateData : []),
-      ...(Array.isArray(millData) ? millData : []),
-      ...(Array.isArray(traceabilityData) ? traceabilityData : []),
-      ...(Array.isArray(kcpData) ? kcpData : []),
-      ...(Array.isArray(bulkingData) ? bulkingData : [])
-    ];
-    
-    allData.forEach((item: any) => {
-      if (item?.coordinates) suggestions.push(item.coordinates);
-      if (item?.gpsCoordinates) suggestions.push(item.gpsCoordinates);
-      if (item?.latitude && item?.longitude) {
-        suggestions.push(`${item.latitude}, ${item.longitude}`);
-      }
-    });
-    
-    return Array.from(new Set(suggestions.filter(Boolean)));
-  };
-
-  const getContactPersonSuggestions = (): string[] => {
-    const suggestions: string[] = [];
-    
-    const allData = [
-      ...(Array.isArray(estateData) ? estateData : []),
-      ...(Array.isArray(millData) ? millData : []),
-      ...(Array.isArray(traceabilityData) ? traceabilityData : []),
-      ...(Array.isArray(kcpData) ? kcpData : []),
-      ...(Array.isArray(bulkingData) ? bulkingData : [])
-    ];
-    
-    allData.forEach((item: any) => {
-      if (item?.contactPersonName) suggestions.push(item.contactPersonName);
-      if (item?.responsiblePerson) suggestions.push(item.responsiblePerson);
-      if (item?.managerName) suggestions.push(item.managerName);
-      if (item?.personInCharge) suggestions.push(item.personInCharge);
-    });
-    
-    return Array.from(new Set(suggestions.filter(Boolean)));
-  };
-
-  // AutocompleteInput component
-  const AutocompleteInput = ({ 
-    value, 
-    onChange, 
-    suggestions, 
-    placeholder, 
-    className,
-    ...props 
-  }: {
-    value: string;
-    onChange: (value: string) => void;
-    suggestions: string[];
-    placeholder?: string;
-    className?: string;
-  } & React.InputHTMLAttributes<HTMLInputElement>) => {
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      if (value) {
-        const filtered = suggestions.filter(suggestion => 
-          suggestion.toLowerCase().includes(value.toLowerCase())
-        );
-        setFilteredSuggestions(filtered);
-      } else {
-        setFilteredSuggestions(suggestions);
-      }
-    }, [value, suggestions]);
-
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (
-          dropdownRef.current && 
-          !dropdownRef.current.contains(event.target as Node) &&
-          !inputRef.current?.contains(event.target as Node)
-        ) {
-          setShowSuggestions(false);
-        }
-      };
-
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    return (
-      <div className="relative">
-        <div className="relative">
-          <Input
-            ref={inputRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onFocus={() => setShowSuggestions(true)}
-            placeholder={placeholder}
-            className={className}
-            {...props}
-          />
-          {suggestions.length > 0 && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-muted-foreground hover:bg-transparent"
-              onClick={() => setShowSuggestions(!showSuggestions)}
-            >
-              <ChevronDown className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
-        {showSuggestions && filteredSuggestions.length > 0 && (
-          <div
-            ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto"
-          >
-            {filteredSuggestions.map((suggestion, index) => (
-              <div
-                key={index}
-                className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
-                onClick={() => {
-                  onChange(suggestion);
-                  setShowSuggestions(false);
-                }}
-              >
-                {suggestion}
-              </div>
-            ))}
-          </div>
-        )}
-        {showSuggestions && filteredSuggestions.length === 0 && value && (
-          <div
-            ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg"
-          >
-            <div className="px-3 py-2 text-sm text-gray-500">
-              Tidak ada saran yang ditemukan
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const createSupplierComplianceMutation = useMutation({
-    mutationFn: async (data: any) => {
-      // First save the data
-      const saveResponse = await apiRequest('POST', '/api/supplier-compliance', data) as any;
-      
-      // Then analyze it with AI
-      const analysisResponse = await apiRequest('POST', `/api/supplier-compliance/${saveResponse.id}/analyze`, {
-        formData: data,
-        supplierName: data.namaSupplier
-      }) as any;
-      
-      return { saveResponse, analysisResponse };
     },
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/supplier-compliance'] });
-      
-      // Mark form as submitted to show progress tracker
-      setIsFormSubmitted(true);
-      
+    onSuccess: () => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['/api/legal-compliance'] });
       toast({
-        title: "Data Supplier Compliance berhasil disimpan dan dianalisis",
-        description: "Data telah disimpan dan analisis AI telah selesai.",
+        title: "Legal Compliance Berhasil Disimpan",
+        description: "Formulir legal compliance telah berhasil disimpan.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Gagal menyimpan data",
-        description: error.message || "Terjadi kesalahan saat menyimpan data supplier compliance.",
+        title: "Error",
+        description: error?.message || "Terjadi kesalahan saat menyimpan data",
         variant: "destructive",
       });
-    },
+    }
   });
 
-  const handleSupplierComplianceSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createSupplierComplianceMutation.mutate(supplierComplianceForm);
-  };
-
-  const handleGetUploadParameters = async () => {
+  // Handle form submission
+  const onSubmit = async (data: InsertLegalCompliance) => {
+    setIsSubmitting(true);
     try {
-      const response = await fetch('/api/objects/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await response.json();
-      return {
-        method: 'PUT' as const,
-        url: data.uploadURL,
-      };
-    } catch (error) {
-      console.error('Error getting upload parameters:', error);
-      throw error;
+      await createLegalComplianceMutation.mutateAsync(data);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDocumentUploadComplete = (
-    result: UploadResult<Record<string, unknown>, Record<string, unknown>>,
-    fieldName: string
-  ) => {
-    if (result.successful && result.successful.length > 0) {
-      const uploadedFile = result.successful[0];
-      const uploadURL = uploadedFile.response?.uploadURL || uploadedFile.uploadURL || '';
-      const objectPath = uploadURL.includes('/uploads/') ? 
-        `/objects${uploadURL.split('/uploads')[1]}` : uploadURL;
-      
-      setSupplierComplianceForm(prev => ({ ...prev, [fieldName]: objectPath }));
-      
-      toast({
-        title: "Dokumen berhasil diunggah",
-        description: `Dokumen untuk ${fieldName} telah berhasil diunggah.`,
-      });
-    }
-  };
+  // Section renderer component
+  const SectionRenderer = ({ section }: { section: Section }) => (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-lg">{section.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {section.items.map((item) => {
+          if (item.type === 'yesNo' || item.type === 'yesNoNA') {
+            const options = item.type === 'yesNoNA' 
+              ? [
+                  { value: 'YA', label: 'Ya' },
+                  { value: 'TIDAK', label: 'Tidak' },
+                  { value: 'TIDAK_RELEVAN', label: 'Tidak relevan' }
+                ]
+              : [
+                  { value: 'YA', label: 'Ya' },
+                  { value: 'TIDAK', label: 'Tidak' }
+                ];
+
+            return (
+              <div key={item.key} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name={item.key as keyof InsertLegalCompliance}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        {item.label}
+                        {item.required && <span className="text-red-500 ml-1">*</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          value={(field.value as string) || ''}
+                          onValueChange={field.onChange}
+                          className="flex gap-4"
+                          data-testid={`radio-${item.key}`}
+                        >
+                          {options.map((option) => (
+                            <div key={option.value} className="flex items-center space-x-2">
+                              <RadioGroupItem 
+                                value={option.value} 
+                                id={`${item.key}-${option.value}`}
+                                data-testid={`radio-${item.key}-${option.value}`}
+                              />
+                              <Label htmlFor={`${item.key}-${option.value}`}>{option.label}</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                      {item.explanation && (
+                        <p className="text-xs text-gray-600">{item.explanation}</p>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                {/* Explanation field for radio buttons */}
+                {item.explanationKey && (
+                  <FormField
+                    control={form.control}
+                    name={item.explanationKey as keyof InsertLegalCompliance}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm">Keterangan:</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Masukkan keterangan..."
+                            className="min-h-[80px]"
+                            {...field}
+                            value={field.value || ''}
+                            data-testid={`textarea-${item.explanationKey}`}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            );
+          } else if (item.type === 'textarea' || item.type === 'text') {
+            return (
+              <FormField
+                key={item.key}
+                control={form.control}
+                name={item.key as keyof InsertLegalCompliance}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium">
+                      {item.label}
+                      {item.required && <span className="text-red-500 ml-1">*</span>}
+                    </FormLabel>
+                    <FormControl>
+                      {item.type === 'textarea' ? (
+                        <Textarea
+                          placeholder="Masukkan informasi..."
+                          className="min-h-[100px]"
+                          {...field}
+                          value={field.value || ''}
+                          data-testid={`textarea-${item.key}`}
+                        />
+                      ) : (
+                        <Input
+                          placeholder="Masukkan informasi..."
+                          {...field}
+                          value={field.value || ''}
+                          data-testid={`input-${item.key}`}
+                        />
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                    {item.explanation && (
+                      <p className="text-xs text-gray-600">{item.explanation}</p>
+                    )}
+                  </FormItem>
+                )}
+              />
+            );
+          }
+          return null;
+        })}
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <TooltipProvider>
-      <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Legality Compliance</h1>
-          <p className="text-gray-600">
-            Sistem penilaian kepatuhan hukum supplier untuk memastikan compliance dengan regulasi EUDR
-          </p>
+    <div className="min-h-screen bg-neutral-bg">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900" data-testid="text-page-title">
+                Formulir Informasi Kepatuhan Hukum
+              </h1>
+              <p className="text-gray-600 mt-1">
+                (Kebun Sendiri/Kebun Satu Manajemen Pengelolaan/Third-Partied)
+              </p>
+            </div>
+            <Button 
+              onClick={() => setLocation('/supply-chain-workflow')}
+              variant="outline"
+              data-testid="button-back-workflow"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Workflow
+            </Button>
+          </div>
         </div>
-        
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="supplier-compliance" data-testid="tab-supplier-compliance">Supplier Compliance</TabsTrigger>
-          </TabsList>
-
-          {/* Supplier Compliance Tab */}
-          <TabsContent value="supplier-compliance" className="space-y-6">
-            <Card>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Basic Company Information */}
+            <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Formulir Informasi Kepatuhan Hukum</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                  Informasi Perusahaan
+                </CardTitle>
                 <CardDescription>
-                  (Kebun Sendiri/Kebun Satu Manajemen Pengelolaan/Third-Partied)
+                  Informasi dasar perusahaan yang diperlukan untuk formulir kepatuhan hukum
                 </CardDescription>
               </CardHeader>
-              
-              {/* Interactive Compliance Progress Tracker - Only show after form submission */}
-              {isFormSubmitted && (
-                <div className="px-6 pb-4">
-                <Card className="border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                          <Shield className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg">Compliance Progress Tracker</CardTitle>
-                          <CardDescription>Interactive scoring with real-time validation</CardDescription>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-3xl font-bold text-blue-600">
-                          {complianceProgress.overall.toFixed(1)}%
-                        </div>
-                        <div className="text-sm text-gray-500">Overall Score</div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Overall Progress</span>
-                        <span className="text-sm text-gray-500">{complianceProgress.overall.toFixed(1)}%</span>
-                      </div>
-                      <Progress value={complianceProgress.overall} className="h-2" />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                      {Object.entries(complianceProgress.sections).map(([section, progress]) => (
-                        <div key={section} className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${
-                            progress >= 80 ? 'bg-green-500' : 
-                            progress >= 60 ? 'bg-yellow-500' : 
-                            progress >= 40 ? 'bg-orange-500' : 'bg-red-500'
-                          }`} />
-                          <span className="text-xs text-gray-600 capitalize">{section.replace(/([A-Z])/g, ' $1').trim()}</span>
-                          <span className="text-xs font-medium ml-auto">{progress.toFixed(0)}%</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Export Buttons */}
-                    <div className="flex gap-2 pt-3 border-t">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={exportToPDF}
-                        className="flex items-center gap-2"
-                      >
-                        <FileText className="w-4 h-4" />
-                        Export PDF
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline" 
-                        size="sm"
-                        onClick={exportToInteractiveDashboard}
-                        className="flex items-center gap-2"
-                      >
-                        <FileText className="w-4 h-4" />
-                        Dashboard
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-                </div>
-              )}
-
               <CardContent>
-                <form onSubmit={handleSupplierComplianceSubmit} className="space-y-8">
-                  {/* Basic Information Section */}
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="font-medium">Nama Supplier :</Label>
-                        <AutocompleteInput
-                          value={supplierComplianceForm.namaSupplier}
-                          onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaSupplier: value }))}
-                          suggestions={getSupplierSuggestions()}
-                          placeholder="Pilih dari data yang tersedia atau ketik manual"
-                          data-testid="input-nama-supplier"
-                        />
-                        {getSupplierSuggestions().length > 0 && (
-                          <div className="text-xs text-blue-600">
-                            💡 {getSupplierSuggestions().length} saran tersedia dari data collection
-                          </div>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="font-medium">Nama Group / Parent Company Name :</Label>
-                        <AutocompleteInput
-                          value={supplierComplianceForm.namaGroup}
-                          onChange={(value: string) => setSupplierComplianceForm(prev => ({ ...prev, namaGroup: value }))}
-                          suggestions={getSupplierSuggestions()}
-                          placeholder="Pilih dari data yang tersedia atau ketik manual"
-                          data-testid="input-nama-group"
-                        />
-                        {getSupplierSuggestions().length > 0 && (
-                          <div className="text-xs text-blue-600">
-                            💡 {getSupplierSuggestions().length} saran tersedia dari data collection
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="namaSupplier"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">
+                          Nama Supplier
+                          <span className="text-red-500 ml-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Masukkan nama supplier" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-nama-supplier"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="namaGroup"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Nama Group / Parent Company Name</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Masukkan nama group" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-nama-group"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    {/* Rest of the form - truncated for brevity but includes all the original form fields */}
-                    {/* This includes all the sections: Basic Info, Land Rights, Environmental Protection, etc. */}
-                    
-                    <div className="space-y-4 pt-6">
-                      <Button 
-                        type="submit" 
-                        data-testid="button-submit-supplier-compliance"
-                        className="w-full" 
-                        disabled={createSupplierComplianceMutation.isPending}
-                      >
-                        {createSupplierComplianceMutation.isPending ? 'Menyimpan...' : 'Simpan Data Supplier Compliance'}
-                      </Button>
-                      
-                      {/* Prominent View Consolidated Results CTA */}
-                      <div className="border-t pt-4">
-                        <Button 
-                          type="button"
-                          variant="outline"
-                          onClick={() => setLocation('/supply-chain-analysis')}
-                          className="w-full flex items-center justify-center gap-2 border-2 border-blue-200 hover:border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-3"
-                          data-testid="button-view-consolidated-results"
-                        >
-                          <FileText className="w-5 h-5" />
-                          View Consolidated Results & Analysis
-                          <span className="text-sm text-blue-600 ml-2">→</span>
-                        </Button>
-                        <p className="text-sm text-gray-600 text-center mt-2">
-                          View comprehensive supplier assessments, AI analysis, and compliance reports
-                        </p>
-                      </div>
-                    </div>
+                  <FormField
+                    control={form.control}
+                    name="aktaPendirianPerusahaan"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Akta Pendirian Perusahaan</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Masukkan akta pendirian" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-akta-pendirian"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="aktaPerubahan"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Akta Perubahan (Jika Ada)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Masukkan akta perubahan" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-akta-perubahan"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="izinBerusaha"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Izin Berusaha (Nomor Induk Berusaha)</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Masukkan izin berusaha" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-izin-berusaha"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="tipeSertifikat"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Tipe Sertifikat Yang Dimiliki Perusahan</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="(ISPO/RSPO/ISCC/PROPER LINGKUNGAN,SMK3)" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-tipe-sertifikat"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="alamatKantor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Alamat Kantor</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Masukkan alamat kantor" 
+                            className="min-h-[80px]"
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="textarea-alamat-kantor"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="alamatKebun"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Alamat Kebun</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Masukkan alamat kebun" 
+                            className="min-h-[80px]"
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="textarea-alamat-kebun"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="koordinatKebun"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Koordinat Kebun</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Masukkan koordinat kebun" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-koordinat-kebun"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="koordinatKantor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Koordinat Kantor</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Masukkan koordinat kantor" 
+                            {...field}
+                            value={field.value || ''}
+                            data-testid="input-koordinat-kantor"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="jenisSupplier"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-medium">Jenis Supplier</FormLabel>
+                        <FormControl>
+                          <Select value={field.value || ''} onValueChange={field.onChange}>
+                            <SelectTrigger data-testid="select-jenis-supplier">
+                              <SelectValue placeholder="Pilih jenis supplier" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="kebun_plasma">Kebun plasma yang dikelola penuh oleh perusahaan (KKPA)</SelectItem>
+                              <SelectItem value="kebun_sister_company">Kebun dalam satu grup manajemen (sister company)</SelectItem>
+                              <SelectItem value="kebun_pihak_ketiga">Kebun pihak ketiga (PT/ CV/ Koperasi)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Penanggung Jawab */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold mb-4">Penanggung Jawab</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="namaPenanggungJawab"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nama</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Masukkan nama penanggung jawab" 
+                              {...field}
+                              value={field.value || ''}
+                              data-testid="input-nama-penanggung-jawab"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="jabatanPenanggungJawab"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Jabatan</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Masukkan jabatan" 
+                              {...field}
+                              value={field.value || ''}
+                              data-testid="input-jabatan-penanggung-jawab"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="emailPenanggungJawab"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email"
+                              placeholder="Masukkan email" 
+                              {...field}
+                              value={field.value || ''}
+                              data-testid="input-email-penanggung-jawab"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nomorTeleponPenanggungJawab"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nomor Telepon / Handphone</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Masukkan nomor telepon" 
+                              {...field}
+                              value={field.value || ''}
+                              data-testid="input-telepon-penanggung-jawab"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                </form>
+                </div>
+
+                {/* Tim Internal */}
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold mb-4">Tim Internal yang bertanggung jawab mengawasi implementasi kebijakan keberlanjutan perusahan</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="namaTimInternal"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nama</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Masukkan nama tim internal" 
+                              {...field}
+                              value={field.value || ''}
+                              data-testid="input-nama-tim-internal"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="jabatanTimInternal"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Jabatan</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Masukkan jabatan" 
+                              {...field} 
+                              data-testid="input-jabatan-tim-internal"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="emailTimInternal"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email"
+                              placeholder="Masukkan email" 
+                              {...field} 
+                              data-testid="input-email-tim-internal"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nomorTelefonTimInternal"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nomor Telepon / Handphone</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Masukkan nomor telepon" 
+                              {...field} 
+                              data-testid="input-telepon-tim-internal"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+
+            {/* Legal Compliance Sections 3.1-3.7 */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6" data-testid="text-legal-compliance-title">
+                Legal Compliance
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Berlaku Untuk Perusahaan Yang Belum Sertifikasi ISPO
+              </p>
+              
+              {LEGAL_COMPLIANCE_SECTIONS.map((section) => (
+                <SectionRenderer key={section.id} section={section} />
+              ))}
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end gap-4 pt-6 border-t">
+              <Button 
+                type="button"
+                variant="outline"
+                onClick={() => setLocation('/supply-chain-workflow')}
+                data-testid="button-cancel"
+              >
+                Batal
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                data-testid="button-submit-legal-compliance"
+              >
+                {isSubmitting ? (
+                  <>Menyimpan...</>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Simpan Legal Compliance
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
-      </div>
-    </TooltipProvider>
+    </div>
   );
 }

@@ -28,6 +28,11 @@ export const groupStatusEnum = pgEnum("group_status", ["active", "inactive"]);
 export const permissionEffectEnum = pgEnum("permission_effect", ["allow", "deny"]);
 export const auditActionEnum = pgEnum("audit_action", ["create", "update", "delete", "login", "logout", "access_granted", "access_denied", "permission_changed", "role_assigned", "group_joined", "group_left"]);
 
+// Legal Compliance Form Enums (matching DOCX template exactly)
+export const yesNoEnum = pgEnum("yes_no", ["YA", "TIDAK"]);
+export const yesNoNAEnum = pgEnum("yes_no_na", ["YA", "TIDAK", "TIDAK_RELEVAN"]);
+export const jenisSupplierEnum = pgEnum("jenis_supplier", ["kebun_plasma", "kebun_sister_company", "kebun_pihak_ketiga"]);
+
 // Users table for authentication - Enhanced for RBAC
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1541,6 +1546,110 @@ export const supplierAssessmentProgress = pgTable("supplier_assessment_progress"
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Legal Compliance Form (matching DOCX template exactly - sections 3.1-3.7)
+export const legalCompliance = pgTable("legal_compliance", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Basic Company Information
+  namaSupplier: text("nama_supplier").notNull(), // MANDATORY
+  namaGroup: text("nama_group"),
+  aktaPendirianPerusahaan: text("akta_pendirian_perusahaan"),
+  aktaPerubahan: text("akta_perubahan"),
+  izinBerusaha: text("izin_berusaha"),
+  tipeSertifikat: text("tipe_sertifikat"),
+  alamatKantor: text("alamat_kantor"),
+  alamatKebun: text("alamat_kebun"),
+  koordinatKebun: text("koordinat_kebun"),
+  koordinatKantor: text("koordinat_kantor"),
+  jenisSupplier: jenisSupplierEnum("jenis_supplier"),
+  namaPenanggungJawab: text("nama_penanggung_jawab"),
+  jabatanPenanggungJawab: text("jabatan_penanggung_jawab"),
+  emailPenanggungJawab: text("email_penanggung_jawab"),
+  nomorTeleponPenanggungJawab: text("nomor_telepon_penanggung_jawab"),
+  namaTimInternal: text("nama_tim_internal"),
+  jabatanTimInternal: text("jabatan_tim_internal"),
+  emailTimInternal: text("email_tim_internal"),
+  nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
+  
+  // 3.1 Hak Penggunaan Tanah
+  historisPerolehanTanah: text("historis_perolehan_tanah"),
+  historisPerolehanTanahKeterangan: text("historis_perolehan_tanah_keterangan"),
+  izinPencadangan: yesNoEnum("izin_pencadangan"),
+  izinPencadanganKeterangan: text("izin_pencadangan_keterangan"),
+  persetujuanPKKPR: yesNoEnum("persetujuan_pkkpr"),
+  persetujuanPKKPRKeterangan: text("persetujuan_pkkpr_keterangan"),
+  izinUsahaPerkebunan: yesNoEnum("izin_usaha_perkebunan"),
+  izinUsahaPerkebunanKeterangan: text("izin_usaha_perkebunan_keterangan"),
+  skHGU: yesNoEnum("sk_hgu"),
+  skHGUKeterangan: text("sk_hgu_keterangan"),
+  sertifikatHGU: yesNoEnum("sertifikat_hgu"),
+  sertifikatHGUKeterangan: text("sertifikat_hgu_keterangan"),
+  laporanPemanfaatanHGU: yesNoEnum("laporan_pemanfaatan_hgu"),
+  laporanPemanfaatanHGUKeterangan: text("laporan_pemanfaatan_hgu_keterangan"),
+  laporanLPUP: yesNoEnum("laporan_lpup"),
+  laporanLPUPKeterangan: text("laporan_lpup_keterangan"),
+
+  // 3.2 Perlindungan Lingkungan Hidup
+  izinLingkungan: yesNoEnum("izin_lingkungan"),
+  izinLingkunganKeterangan: text("izin_lingkungan_keterangan"),
+  izinRintekLimbahB3: yesNoEnum("izin_rintek_limbah_b3"),
+  izinRintekLimbahB3Keterangan: text("izin_rintek_limbah_b3_keterangan"),
+  izinPertekLimbahCair: yesNoEnum("izin_pertek_limbah_cair"),
+  izinPertekLimbahCairKeterangan: text("izin_pertek_limbah_cair_keterangan"),
+  persetujuanAndalalin: yesNoEnum("persetujuan_andalalin"),
+  persetujuanAndalalinKeterangan: text("persetujuan_andalalin_keterangan"),
+  daftarPestisida: yesNoEnum("daftar_pestisida"),
+  daftarPestisidaKeterangan: text("daftar_pestisida_keterangan"),
+
+  // 3.3 Bukti Pelaksanaan (for section 3.2)
+  buktiPelaksanaanRKL: yesNoEnum("bukti_pelaksanaan_rkl"),
+  buktiPelaksanaanRKLKeterangan: text("bukti_pelaksanaan_rkl_keterangan"),
+  laporanPenggunaanPestisida: yesNoEnum("laporan_penggunaan_pestisida"),
+  laporanPenggunaanPestisidaKeterangan: text("laporan_penggunaan_pestisida_keterangan"),
+
+  // 3.4 Peraturan Kehutanan
+  areaSesuaiPeruntukan: yesNoEnum("area_sesuai_peruntukan"),
+  areaSesuaiPeruntukanKeterangan: text("area_sesuai_peruntukan_keterangan"),
+  skPelepasan: yesNoEnum("sk_pelepasan"),
+  skPelepaasanKeterangan: text("sk_pelepasan_keterangan"),
+  dokumenInstansiRelevant: yesNoEnum("dokumen_instansi_relevant"),
+  dokumenInstansiRelevantKeterangan: text("dokumen_instansi_relevant_keterangan"),
+
+  // 3.5 Hak Pihak Ke 3 (some fields allow "TIDAK_RELEVAN")
+  kebijakanHakPihakKetiga: yesNoNAEnum("kebijakan_hak_pihak_ketiga"),
+  kebijakanHakPihakKetigaKeterangan: text("kebijakan_hak_pihak_ketiga_keterangan"),
+  kebijakanPerusahaan: yesNoEnum("kebijakan_perusahaan"),
+  kebijakanPerusahaanKeterangan: text("kebijakan_perusahaan_keterangan"),
+  sopUsulanGRTT: yesNoEnum("sop_usulan_grtt"),
+  sopUsulanGRTTKeterangan: text("sop_usulan_grtt_keterangan"),
+  sopPADIATAPA: yesNoEnum("sop_padiatapa"),
+  sopPADIATAPAKeterangan: text("sop_padiatapa_keterangan"),
+  sopPenangananInformasi: yesNoEnum("sop_penanganan_informasi"),
+  sopPenangananInformasiKeterangan: text("sop_penanganan_informasi_keterangan"),
+  sopPenangananKeluhan: yesNoEnum("sop_penanganan_keluhan"),
+  sopPenangananKeluhanKeterangan: text("sop_penanganan_keluhan_keterangan"),
+
+  // 3.6 Kewajiban Pengembangan Plasma
+  mouKerjaSama: yesNoEnum("mou_kerja_sama"),
+  mouKerjaSamaKeterangan: text("mou_kerja_sama_keterangan"),
+  skCPCL: yesNoEnum("sk_cpcl"),
+  skCPCLKeterangan: text("sk_cpcl_keterangan"),
+  laporanRealisasiPlasma: yesNoEnum("laporan_realisasi_plasma"),
+  laporanRealisasiPlasmaKeterangan: text("laporan_realisasi_plasma_keterangan"),
+
+  // 3.7 Bukti Implementasi (for section 3.5)
+  buktiImplementasi: text("bukti_implementasi"),
+
+  // Metadata
+  assessorId: varchar("assessor_id").references(() => users.id),
+  assessorName: text("assessor_name"),
+  submittedAt: timestamp("submitted_at"),
+  status: text("status").default("draft"), // draft, submitted, approved, rejected
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Export EUDR Assessment types
 export type EudrAssessment = typeof eudrAssessments.$inferSelect;
 export type InsertEudrAssessment = typeof eudrAssessments.$inferInsert;
@@ -2060,3 +2169,80 @@ export const auditLogFilterSchema = z.object({
   limit: z.number().min(1).max(1000).default(50),
   offset: z.number().min(0).default(0),
 });
+
+// Legal Compliance form validation schemas
+export const insertLegalComplianceSchema = createInsertSchema(legalCompliance).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  assessorId: true,
+  submittedAt: true,
+}).extend({
+  // Mandatory field validation
+  namaSupplier: z.string().min(1, "Nama Supplier wajib diisi"),
+  
+  // Conditional validation: explanation required when answer is TIDAK
+  izinPencadanganKeterangan: z.string().optional(),
+  persetujuanPKKPRKeterangan: z.string().optional(),
+  izinUsahaPerkebunanKeterangan: z.string().optional(),
+  skHGUKeterangan: z.string().optional(),
+  sertifikatHGUKeterangan: z.string().optional(),
+  laporanPemanfaatanHGUKeterangan: z.string().optional(),
+  laporanLPUPKeterangan: z.string().optional(),
+  
+  izinLingkunganKeterangan: z.string().optional(),
+  izinRintekLimbahB3Keterangan: z.string().optional(),
+  izinPertekLimbahCairKeterangan: z.string().optional(),
+  persetujuanAndalalinKeterangan: z.string().optional(),
+  daftarPestisidaKeterangan: z.string().optional(),
+  
+  buktiPelaksanaanRKLKeterangan: z.string().optional(),
+  laporanPenggunaanPestisidaKeterangan: z.string().optional(),
+  
+  areaSesuaiPeruntukanKeterangan: z.string().optional(),
+  skPelepaasanKeterangan: z.string().optional(),
+  dokumenInstansiRelevantKeterangan: z.string().optional(),
+  
+  kebijakanHakPihakKetigaKeterangan: z.string().optional(),
+  kebijakanPerusahaanKeterangan: z.string().optional(),
+  sopUsulanGRTTKeterangan: z.string().optional(),
+  sopPADIATAPAKeterangan: z.string().optional(),
+  sopPenangananInformasiKeterangan: z.string().optional(),
+  sopPenangananKeluhanKeterangan: z.string().optional(),
+  
+  mouKerjaSamaKeterangan: z.string().optional(),
+  skCPCLKeterangan: z.string().optional(),
+  laporanRealisasiPlasmaKeterangan: z.string().optional(),
+}).partial({
+  // All Yes/No fields are optional for draft saves (will be enforced in UI)
+  izinPencadangan: true,
+  persetujuanPKKPR: true,
+  izinUsahaPerkebunan: true,
+  skHGU: true,
+  sertifikatHGU: true,
+  laporanPemanfaatanHGU: true,
+  laporanLPUP: true,
+  izinLingkungan: true,
+  izinRintekLimbahB3: true,
+  izinPertekLimbahCair: true,
+  persetujuanAndalalin: true,
+  daftarPestisida: true,
+  buktiPelaksanaanRKL: true,
+  laporanPenggunaanPestisida: true,
+  areaSesuaiPeruntukan: true,
+  skPelepasan: true,
+  dokumenInstansiRelevant: true,
+  kebijakanHakPihakKetiga: true,
+  kebijakanPerusahaan: true,
+  sopUsulanGRTT: true,
+  sopPADIATAPA: true,
+  sopPenangananInformasi: true,
+  sopPenangananKeluhan: true,
+  mouKerjaSama: true,
+  skCPCL: true,
+  laporanRealisasiPlasma: true,
+});
+
+// Export types
+export type LegalCompliance = typeof legalCompliance.$inferSelect;
+export type InsertLegalCompliance = z.infer<typeof insertLegalComplianceSchema>;
