@@ -19,7 +19,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-// Risk assessment data based on KPNPLT-SST-xxxx.06.1 methodology
+// Risk analysis data based on KPNPLT-SST-xxxx.06.1 methodology
 interface SpatialRiskItem {
   no: number;
   itemAnalisa: string;
@@ -45,7 +45,7 @@ interface NonSpatialRiskItem {
   linkSumber: string[];
 }
 
-interface RiskAssessmentFormData {
+interface RiskAnalysisFormData {
   supplierName: string;
   assessmentDate: string;
   assessorName: string;
@@ -178,13 +178,13 @@ const NON_SPATIAL_RISK_TEMPLATE: NonSpatialRiskItem[] = [
   }
 ];
 
-const riskAssessmentSchema = z.object({
+const riskAnalysisSchema = z.object({
   supplierName: z.string().optional(), // Made optional for draft saves
   assessmentDate: z.string(),
   assessorName: z.string().optional()
 });
 
-export default function RiskAssessment() {
+export default function RiskAnalysis() {
   const [, setLocation] = useLocation();
   const [spatialRiskItems, setSpatialRiskItems] = useState<SpatialRiskItem[]>([...SPATIAL_RISK_TEMPLATE]);
   const [nonSpatialRiskItems, setNonSpatialRiskItems] = useState<NonSpatialRiskItem[]>([...NON_SPATIAL_RISK_TEMPLATE]);
@@ -194,7 +194,7 @@ export default function RiskAssessment() {
   
 
   const form = useForm({
-    resolver: zodResolver(riskAssessmentSchema),
+    resolver: zodResolver(riskAnalysisSchema),
     defaultValues: {
       supplierName: '',
       assessmentDate: new Date().toISOString().split('T')[0],
@@ -299,11 +299,11 @@ export default function RiskAssessment() {
     }
   };
 
-  // Risk Assessment API mutation
-  const createRiskAssessmentMutation = useMutation({
+  // Risk Analysis API mutation
+  const createRiskAnalysisMutation = useMutation({
     mutationFn: async (data: any) => {
-      // Prepare the risk assessment data for backend
-      const riskAssessmentData = {
+      // Prepare the risk analysis data for backend
+      const riskAnalysisData = {
         supplierName: data.supplierName,
         assessorName: data.assessorName || 'KPN Compliance Administrator',
         assessmentDate: new Date(data.assessmentDate).toISOString(),
@@ -319,7 +319,7 @@ export default function RiskAssessment() {
         notes: `Risk analysis completed on ${new Date().toLocaleDateString()} with ${spatialRiskItems.length} spatial and ${nonSpatialRiskItems.length} non-spatial risk items evaluated.`
       };
 
-      const response = await apiRequest('POST', '/api/risk-assessments', riskAssessmentData);
+      const response = await apiRequest('POST', '/api/risk-assessments', riskAnalysisData);
       return response.json();
     },
     onSuccess: (result) => {
@@ -338,7 +338,7 @@ export default function RiskAssessment() {
         description: "Gagal menyimpan risk analysis. Silakan coba lagi.",
         variant: "destructive"
       });
-      console.error('Risk assessment submission error:', error);
+      console.error('Risk analysis submission error:', error);
     }
   });
 
@@ -435,9 +435,9 @@ export default function RiskAssessment() {
   // Handle form submission
   const onSubmit = async (data: any) => {
     try {
-      await createRiskAssessmentMutation.mutateAsync(data);
+      await createRiskAnalysisMutation.mutateAsync(data);
     } catch (error) {
-      console.error('Error submitting risk assessment:', error);
+      console.error('Error submitting risk analysis:', error);
     }
   };
 
@@ -510,17 +510,17 @@ export default function RiskAssessment() {
       },
       'Hak Pihak Ke 3 termasuk Hak-Hak Masyarakat adat (Pengelolaan Plasma dan FPIC)': {
         'tinggi': '1. Jika terdapat pemberitaan di media cetak/elektronik tentang konflik lahan dengan masyarakat adat atau petani plasma, termasuk pelanggaran prinsip FPIC (Free, Prior, Informed Consent)\n2. Tidak Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
-        'sedang': '1. Jika terdapat pemberitaan di media cetak/elektronik tentang konflik lahan dengan masyarakat adat atau petani plasma, namun sedang dalam proses penyelesaian/mediasi\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
-        'rendah': '1. Tidak terdapat pemberitaan negatif di media cetak/elektronik terkait konflik dengan masyarakat adat atau petani plasma\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder'
+        'sedang': '1. Tidak ada pemberitaan media mengenai konflik lahan, namun ada laporan internal tentang ketidakpuasan masyarakat lokal\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder namun implementasi belum optimal',
+        'rendah': '1. Tidak ada konflik lahan yang dilaporkan atau ada konflik namun sudah terselesaikan dengan baik\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder dan implementasi berjalan dengan baik'
       },
       'Hak Buruh dan Hak Asasi Manusia': {
         'tinggi': '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan)\n2. Tidak Memiliki Sistem Penanganan Keluhan Karyawan',
-        'sedang': '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan) namun sedang dalam proses mediasi/penyelesaian\n2. Memiliki Mekanisme/Sistem Penanganan Keluhan Karyawan',
-        'rendah': '1. Tidak Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik tentang Pelanggaran HAM / Buruh\n2. Terdapat Pemberitaan namun sudah diselesaikan\n3. Memiliki Mekanisme/Sistem Penanganan Keluhan Karyawan'
+        'sedang': '1. Ada laporan internal tentang masalah HAM/buruh namun tidak ada pemberitaan media\n2. Memiliki Sistem Penanganan Keluhan Karyawan namun implementasi belum optimal',
+        'rendah': '1. Tidak ada pelanggaran HAM/buruh yang dilaporkan\n2. Memiliki Sistem Penanganan Keluhan Karyawan yang berfungsi dengan baik'
       },
       'Perpajakan, Antikorupsi, perdagangan dan Bea Cukai': {
         'tinggi': 'Jika Terdapat Release dari Pemerintah/Instansi Terkait, Mengenai : 1. Penggelapan Pajak 2. Kasus Korupsi dan Suap',
-        'rendah': 'Jika Tidak Terdapat Pemberitaan di Media Baik Cetak Maupun Elektronik'
+        'rendah': 'Tidak ada pelanggaran perpajakan, korupsi, atau masalah perdagangan dan bea cukai yang dilaporkan oleh pemerintah/instansi terkait'
       }
     };
     return parameterMap[itemAnalisa]?.[tipeRisiko] || '';
@@ -531,86 +531,75 @@ export default function RiskAssessment() {
     const mitigasiMap: Record<string, Record<string, string>> = {
       'Lingkungan': {
         'tinggi': '1. Sosialisasi Kebijakan Perusahaan\n2. Melakukan gap analisis dan pendampingan untuk pemenuhan persyaratan yang sesuai dengan regulasi lingkungan',
-        'sedang': '1. Sosialisasi Kebijakan Perusahaan\n2. Monitoring tindak lanjut perbaikan',
-        'rendah': 'Monitoring berkala terkait isu lingkungan di media'
+        'sedang': '1. Monitoring implementasi upaya perbaikan yang telah dilakukan\n2. Memberikan dukungan teknis untuk memastikan kepatuhan regulasi lingkungan',
+        'rendah': '1. Monitoring berkala untuk memastikan tidak ada pelanggaran lingkungan baru\n2. Sosialisasi berkala mengenai kebijakan perusahaan'
       },
       'Keanekaragaman Hayati': {
         'tinggi': 'Mendorong Supplier membentuk Sistem Penanganan Konflik Satwa Liar termasuk laporan penangannya',
-        'sedang': 'Mendorong Supplier untuk mengaplikasikan sistem penanganan konflik satwa liar.',
-        'rendah': 'Monitoring Konflik dari Pemberitaan Media'
+        'sedang': '1. Memberikan pelatihan untuk mengoptimalkan prosedur penanganan konflik satwa\n2. Monitoring implementasi SOP penanganan konflik satwa',
+        'rendah': '1. Monitoring berkala untuk memastikan tidak ada konflik satwa baru\n2. Sosialisasi berkala mengenai prosedur penanganan konflik satwa'
       },
       'Hak Pihak Ke 3 termasuk Hak-Hak Masyarakat adat (Pengelolaan Plasma dan FPIC)': {
         'tinggi': 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
-        'sedang': '1. Mendorong percepatan proses resolusi konflik melalui mekanisme mediasi terbuka\n2. Sosialisasi kebijakan perusahaan kepada supplier',
-        'rendah': 'Monitoring isu sosial secara berkala untuk deteksi dini potensi konflik baru.'
+        'sedang': '1. Memberikan pelatihan untuk mengoptimalkan implementasi SOP penanganan keluhan\n2. Monitoring implementasi FPIC dan pengelolaan plasma',
+        'rendah': '1. Monitoring berkala untuk memastikan tidak ada konflik lahan baru\n2. Sosialisasi berkala mengenai implementasi SOP dan FPIC'
       },
       'Hak Buruh dan Hak Asasi Manusia': {
         'tinggi': 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
-        'sedang': '1. Mendorong percepatan proses resolusi konflik melalui mekanisme mediasi terbuka\n2. Sosialisasi kebijakan perusahaan kepada supplier',
-        'rendah': 'Monitoring isu sosial secara berkala untuk deteksi dini pelanggaran terhadap hak buruh dan hak asasi manusia'
+        'sedang': '1. Memberikan pelatihan untuk mengoptimalkan sistem penanganan keluhan karyawan\n2. Monitoring implementasi kebijakan HAM/buruh',
+        'rendah': '1. Monitoring berkala untuk memastikan tidak ada pelanggaran HAM/buruh baru\n2. Sosialisasi berkala mengenai kebijakan HAM/buruh'
       },
       'Perpajakan, Antikorupsi, perdagangan dan Bea Cukai': {
         'tinggi': 'Di Keluarkan dari Rantai Pasok',
-        'rendah': ''
+        'rendah': '1. Monitoring berkala untuk memastikan kepatuhan perpajakan\n2. Sosialisasi berkala mengenai kebijakan antikorupsi dan kepatuhan regulasi'
       }
     };
     return mitigasiMap[itemAnalisa]?.[tipeRisiko] || '';
   };
 
   return (
-    <div className="min-h-screen bg-neutral-bg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation('/supply-chain-analysis')}
+              className="flex items-center gap-2"
+              data-testid="button-back-supply-chain"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Kembali ke Supply Chain Analysis
+            </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900" data-testid="text-page-title">
-                Risk Analysis
-              </h1>
-              <h2 className="text-xl font-semibold text-gray-800 mt-2">
-                Supplier Risk Assessment and Mitigation Planning
-              </h2>
+              <h1 className="text-3xl font-bold text-gray-900">Risk Analysis</h1>
               <p className="text-gray-600 mt-1">
-                Comprehensive spatial and non-spatial risk evaluation for supply chain compliance
+                Comprehensive risk analysis platform dengan spatial dan non-spatial assessment berdasarkan metodologi KPNPLT-SST-xxxx.06.1
               </p>
-              <p className="text-sm text-gray-500 mt-1">
-                Assessment conducted before supplier partnership agreements are implemented
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-sm text-gray-600">Overall Risk Score</div>
-                <div className="flex items-center gap-2">
-                  <Badge className={getRiskBadgeColor(riskClassification)}>
-                    {riskClassification.toUpperCase()}
-                  </Badge>
-                  <span className="text-lg font-bold">{totalScore}%</span>
-                </div>
-              </div>
-              <Button 
-                onClick={() => setLocation('/supply-chain-workflow')}
-                variant="outline"
-                data-testid="button-back-workflow"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Workflow
-              </Button>
             </div>
           </div>
+          <Badge className="bg-blue-100 text-blue-800 text-lg px-4 py-2">
+            <Shield className="w-5 h-5 mr-2" />
+            Step 4 of 4
+          </Badge>
         </div>
-        
 
-        {/* Supplier Information Form */}
-        <Card className="mb-6">
+        {/* Assessment Form */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-600" />
-              Informasi Supplier
+              <FileCheck className="w-5 h-5 text-blue-600" />
+              Risk Analysis Form
             </CardTitle>
+            <CardDescription>
+              Input informasi supplier dan lakukan analisa risiko menggunakan framework spasial dan non-spasial
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
@@ -619,7 +608,11 @@ export default function RiskAssessment() {
                       <FormItem>
                         <FormLabel>Nama Supplier</FormLabel>
                         <FormControl>
-                          <Input placeholder="Masukkan nama supplier" {...field} data-testid="input-supplier-name" />
+                          <Input 
+                            placeholder="Masukkan nama supplier" 
+                            {...field}
+                            data-testid="input-supplier-name"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -632,7 +625,11 @@ export default function RiskAssessment() {
                       <FormItem>
                         <FormLabel>Tanggal Assessment</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} data-testid="input-assessment-date" />
+                          <Input 
+                            type="date" 
+                            {...field}
+                            data-testid="input-assessment-date"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -645,7 +642,11 @@ export default function RiskAssessment() {
                       <FormItem>
                         <FormLabel>Nama Assessor</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nama assessor" {...field} data-testid="input-assessor-name" />
+                          <Input 
+                            placeholder="Nama assessor" 
+                            {...field}
+                            data-testid="input-assessor-name"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -655,10 +656,10 @@ export default function RiskAssessment() {
                 <Button 
                   type="submit" 
                   className="w-full"
-                  disabled={createRiskAssessmentMutation.isPending}
+                  disabled={createRiskAnalysisMutation.isPending}
                   data-testid="button-submit-assessment"
                 >
-                  {createRiskAssessmentMutation.isPending ? "Menyimpan..." : "Simpan Risk Analysis"}
+                  {createRiskAnalysisMutation.isPending ? "Menyimpan..." : "Simpan Risk Analysis"}
                   <Calculator className="w-4 h-4 ml-2" />
                 </Button>
               </form>
@@ -666,15 +667,15 @@ export default function RiskAssessment() {
           </CardContent>
         </Card>
 
-        {/* Spatial Risk Assessment Table */}
+        {/* Spatial Risk Assessment */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-green-600" />
-              I. ANALISA RISIKO SPASIAL
+              I. Analisa Spasial
             </CardTitle>
             <CardDescription>
-              Form metode perhitungan tingkat risiko dan mitigasinya
+              Risk assessment berdasarkan analisa geospasial dengan 4 komponen utama
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -685,10 +686,10 @@ export default function RiskAssessment() {
                     <TableHead className="w-12">No</TableHead>
                     <TableHead className="w-32">Item Analisa</TableHead>
                     <TableHead className="w-24">Tipe Risiko</TableHead>
+                    <TableHead className="w-24">Nilai Risiko</TableHead>
+                    <TableHead className="w-20">Bobot</TableHead>
+                    <TableHead className="w-20">Risiko</TableHead>
                     <TableHead className="w-96">Parameter</TableHead>
-                    <TableHead className="w-20">Bobot (A)</TableHead>
-                    <TableHead className="w-20">Nilai Risiko (B)</TableHead>
-                    <TableHead className="w-20">NR (A×B)</TableHead>
                     <TableHead className="w-96">Mitigasi</TableHead>
                     <TableHead className="w-32">Sumber</TableHead>
                     <TableHead className="w-32">Link Sumber</TableHead>
@@ -704,9 +705,8 @@ export default function RiskAssessment() {
                           value={item.tipeRisiko} 
                           onValueChange={(value) => {
                             updateRiskItem(index, 'tipeRisiko', value);
-                            updateRiskItem(index, 'parameter', getParameterText(item.itemAnalisa, value as any));
                           }}
-                          data-testid={`select-risk-type-${index}`}
+                          data-testid={`select-spatial-risk-type-${index}`}
                         >
                           <SelectTrigger className="w-full">
                             <SelectValue />
@@ -718,21 +718,21 @@ export default function RiskAssessment() {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="max-w-md">
-                        <div className="text-sm whitespace-pre-wrap">
-                          {getParameterText(item.itemAnalisa, item.tipeRisiko)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center font-bold">{item.bobot}</TableCell>
-                      <TableCell className="text-center font-bold">
+                      <TableCell className="text-center">
                         <Badge className={getRiskBadgeColor(item.tipeRisiko)}>
                           {item.nilaiRisiko}
                         </Badge>
                       </TableCell>
+                      <TableCell className="text-center font-bold">{item.bobot}</TableCell>
                       <TableCell className="text-center font-bold">{item.risiko}</TableCell>
                       <TableCell className="max-w-md">
                         <div className="text-sm whitespace-pre-wrap">
-                          {getMitigasiText(item.itemAnalisa, item.tipeRisiko)}
+                          {item.parameter}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-md">
+                        <div className="text-sm whitespace-pre-wrap">
+                          {item.mitigasi}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -768,34 +768,12 @@ export default function RiskAssessment() {
                 </TableBody>
               </Table>
             </div>
-
-            {/* Risk Classification and Calculation */}
-            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Spatial Risk Scoring Summary */}
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Klasifikasi Tingkat Risiko</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span>Rendah:</span>
-                      <Badge className="bg-green-100 text-green-800">≥67%</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Sedang:</span>
-                      <Badge className="bg-yellow-100 text-yellow-800">61&lt;x&lt;67</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Tinggi:</span>
-                      <Badge className="bg-red-100 text-red-800">≤60%</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Perhitungan Risiko</CardTitle>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Spatial Risk Score Calculation</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

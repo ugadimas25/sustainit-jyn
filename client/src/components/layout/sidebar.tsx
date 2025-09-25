@@ -52,7 +52,7 @@ const navigation: NavigationItem[] = [
       { name: '1. Data Collection', href: '/data-collection', icon: Shield, step: 1, testId: 'nav-supply-chain-analysis-step-1' },
       { name: '2. Spatial Analysis', href: '/spatial-analysis', icon: Satellite, step: 2, testId: 'nav-supply-chain-analysis-step-2' },
       { name: '3. Legality Compliance', href: '/legality-compliance', icon: Scale, step: 3, testId: 'nav-supply-chain-analysis-step-3' },
-      { name: '4. Risk Analysis', href: '/risk-assessment', icon: AlertTriangle, step: 4, testId: 'nav-supply-chain-analysis-step-4' },
+      { name: '4. Risk Analysis', href: '/risk-analysis', icon: AlertTriangle, step: 4, testId: 'nav-supply-chain-analysis-step-4' },
     ]
   },
   { name: 'Supply Chain Linkage', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },

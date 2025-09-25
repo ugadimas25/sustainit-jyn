@@ -14,7 +14,7 @@ import PlotMapping from "@/pages/plot-mapping";
 import SupplyChainAnalysis from "@/pages/supply-chain-analysis";
 import LegalityAssessment from "@/pages/data-collection";
 import LegalityCompliance from "@/pages/legality-compliance";
-import RiskAssessment from "@/pages/risk-assessment";
+import RiskAnalysis from "@/pages/risk-analysis";
 import UnifiedMonitoring from "@/pages/unified-monitoring";
 import SupplyChainSimple from "@/pages/supply-chain-simple";
 import DeforestationMonitoring from "@/pages/deforestation-monitoring";
@@ -40,7 +40,7 @@ function Router() {
       <ProtectedRoute path="/supply-chain-analysis" component={() => <SupplyChainAnalysis />} />
       <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
       <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
-      <ProtectedRoute path="/risk-assessment" component={() => <RiskAssessment />} />
+      <ProtectedRoute path="/risk-analysis" component={() => <RiskAnalysis />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
       <ProtectedRoute path="/due-diligence-report" component={() => <DueDiligenceReport />} />
       
