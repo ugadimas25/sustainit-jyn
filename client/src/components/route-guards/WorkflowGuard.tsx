@@ -14,6 +14,12 @@ export function WorkflowGuard({ step, children }: WorkflowGuardProps) {
   const { toast } = useToast();
   const { data: accessData, isLoading } = useSupplierStepAccess(step);
 
+  // Always allow access to Legality Compliance (step 3) and Risk Assessment (step 4)
+  // This removes the workflow lock and allows direct access to these forms
+  if (step === 3 || step === 4) {
+    return <>{children}</>;
+  }
+
   useEffect(() => {
     if (!isLoading) {
       // Handle error cases (network errors, endpoint missing, etc.)
@@ -34,10 +40,6 @@ export function WorkflowGuard({ step, children }: WorkflowGuardProps) {
 
         if (step === 2) {
           requiredStep = "Data Collection";
-        } else if (step === 3) {
-          requiredStep = "Data Collection and Spatial Analysis (plot save)";
-        } else if (step === 4) {
-          requiredStep = "Data Collection, Spatial Analysis, and Legality Compliance";
         }
 
         toast({

@@ -98,7 +98,7 @@ const SPATIAL_RISK_TEMPLATE: SpatialRiskItem[] = [
 ];
 
 const riskAssessmentSchema = z.object({
-  supplierName: z.string().min(1, 'Supplier name is required'),
+  supplierName: z.string().optional(), // Made optional for draft saves
   assessmentDate: z.string(),
   assessorName: z.string().optional()
 });
@@ -145,8 +145,8 @@ export default function RiskAssessment() {
     );
     
     setSupplierFound(found);
-    // Only block if supplier is explicitly searched but not found
-    setCanProceedWithAssessment(found);
+    // Always allow proceed - workflow lock has been removed
+    setCanProceedWithAssessment(true);
     
     if (found) {
       toast({
@@ -156,9 +156,9 @@ export default function RiskAssessment() {
       });
     } else {
       toast({
-        title: "Supplier Not Found",
-        description: "Your entity is not found in the system. Please complete data collection first.",
-        variant: "destructive"
+        title: "Supplier Not Found - Draft Mode",
+        description: "Your entity is not found in the system. You can still proceed and save as draft. Link to supplier later through Data Collection.",
+        variant: "default"
       });
     }
   };

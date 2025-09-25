@@ -1362,10 +1362,10 @@ export const eudrAssessments = pgTable("eudr_assessments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
 
   // Supplier/Business Details
-  supplierType: supplierTypeEnum("supplier_type").notNull(),
-  supplierName: text("supplier_name").notNull(),
-  supplierID: text("supplier_id").notNull(),
-  location: text("location").notNull(),
+  supplierType: supplierTypeEnum("supplier_type"),
+  supplierName: text("supplier_name"),
+  supplierID: text("supplier_id"),
+  location: text("location"),
   ownership: text("ownership"),
 
   // Contact Details
@@ -1381,8 +1381,8 @@ export const eudrAssessments = pgTable("eudr_assessments", {
   // 1. Land Tenure
   landTitleNumber: text("land_title_number"),
   titleIssuanceDate: date("title_issuance_date"),
-  tenureType: tenureTypeEnum("tenure_type").notNull(),
-  landArea: decimal("land_area", { precision: 10, scale: 2 }).notNull(), // hectares
+  tenureType: tenureTypeEnum("tenure_type"),
+  landArea: decimal("land_area", { precision: 10, scale: 2 }), // hectares
   gpsCoordinates: text("gps_coordinates"),
   plotMapReference: text("plot_map_reference"),
   landTenureDocuments: jsonb("land_tenure_documents").$type<Array<{
@@ -1395,10 +1395,10 @@ export const eudrAssessments = pgTable("eudr_assessments", {
   }>>().default([]),
 
   // 2. Environmental Laws
-  permitType: permitTypeEnum("permit_type").notNull(),
+  permitType: permitTypeEnum("permit_type"),
   permitNumber: text("permit_number"),
   issuanceYear: integer("issuance_year"),
-  environmentalStatus: text("environmental_status").notNull(), // AMDAL/UKL-UPL/SPPL
+  environmentalStatus: text("environmental_status"), // AMDAL/UKL-UPL/SPPL
   monitoringReportDetails: text("monitoring_report_details"),
   environmentalDocuments: jsonb("environmental_documents").$type<Array<{
     id: string;
@@ -1411,7 +1411,7 @@ export const eudrAssessments = pgTable("eudr_assessments", {
 
   // 3. Forest-Related Regulations
   forestLicenseNumber: text("forest_license_number"),
-  forestStatus: forestStatusEnum("forest_status").notNull(),
+  forestStatus: forestStatusEnum("forest_status"),
   impactAssessmentID: text("impact_assessment_id"),
   protectedAreaStatus: boolean("protected_area_status").default(false),
   forestDocuments: jsonb("forest_documents").$type<Array<{
@@ -1544,7 +1544,23 @@ export const supplierAssessmentProgress = pgTable("supplier_assessment_progress"
 // Export EUDR Assessment types
 export type EudrAssessment = typeof eudrAssessments.$inferSelect;
 export type InsertEudrAssessment = typeof eudrAssessments.$inferInsert;
-export const insertEudrAssessmentSchema = createInsertSchema(eudrAssessments);
+export const insertEudrAssessmentSchema = createInsertSchema(eudrAssessments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).partial({
+  // Make all nullable fields optional for draft saves
+  supplierType: true,
+  supplierName: true,
+  supplierID: true,
+  location: true,
+  ownership: true,
+  tenureType: true,
+  landArea: true,
+  permitType: true,
+  environmentalStatus: true,
+  forestStatus: true,
+});
 
 // Risk Assessment system based on KPNPLT-SST-XXXX.06.1 methodology
 export const riskCategoryEnum = pgEnum("risk_category", ["spatial", "non_spatial"]);
@@ -1558,7 +1574,7 @@ export const riskAssessments = pgTable("risk_assessments", {
 
   // Reference to supplier/party being assessed
   supplierId: varchar("supplier_id").references(() => suppliers.id),
-  supplierName: text("supplier_name").notNull(),
+  supplierName: text("supplier_name"), // Made nullable for draft saves
   assessorId: varchar("assessor_id").references(() => users.id),
   assessorName: text("assessor_name"),
 
@@ -1664,6 +1680,9 @@ export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments).om
   id: true,
   createdAt: true,
   updatedAt: true,
+}).partial({
+  // Make nullable fields optional for draft saves
+  supplierName: true,
 });
 
 export type RiskAssessmentItem = typeof riskAssessmentItems.$inferSelect;

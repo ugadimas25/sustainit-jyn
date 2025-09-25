@@ -69,8 +69,8 @@ export default function LegalityCompliance() {
     );
     
     setSupplierFound(found);
-    // Only block if supplier is explicitly searched but not found
-    setCanProceedWithAssessment(found);
+    // Always allow proceed - workflow lock has been removed
+    setCanProceedWithAssessment(true);
     
     if (found) {
       toast({
@@ -80,9 +80,9 @@ export default function LegalityCompliance() {
       });
     } else {
       toast({
-        title: "Supplier Not Found",
-        description: "Your entity is not found in the system. Please complete data collection first.",
-        variant: "destructive"
+        title: "Supplier Not Found - Draft Mode",
+        description: "Your entity is not found in the system. You can still proceed and save as draft. Link to supplier later through Data Collection.",
+        variant: "default"
       });
     }
   };

@@ -99,6 +99,12 @@ export function useSupplierStepAccess(step: number) {
   return useQuery({
     queryKey: ['/api/supplier-step-access', currentSupplier, step],
     queryFn: async () => {
+      // Always allow access to Legality Compliance (step 3) and Risk Assessment (step 4)
+      // This removes the workflow lock and allows direct access to these forms
+      if (step === 3 || step === 4) {
+        return { hasAccess: true, unlocked: true };
+      }
+      
       if (!currentSupplier) {
         return { hasAccess: true }; // Allow all steps without supplier
       }
@@ -112,7 +118,7 @@ export function useSupplierStepAccess(step: number) {
       }
       return response.json();
     },
-    enabled: !!currentSupplier || step === 1 || step === 2, // Always check for steps 1 and 2, others need supplier
+    enabled: true, // Always check access for all steps
     staleTime: 30 * 1000, // 30 seconds
   });
 }
