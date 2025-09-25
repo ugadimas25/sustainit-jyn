@@ -206,9 +206,8 @@ export default function RiskAssessment() {
     const totalBobot = spatialRiskItems.reduce((sum, item) => sum + item.bobot, 0);
     const calculatedScore = totalBobot > 0 ? (totalNR / totalBobot) : 0;
     
-    // Since lower risk value = higher risk level, we need to invert the percentage for display
-    // Convert to percentage where higher percentage = better (lower risk)
-    const scorePercentage = ((4 - calculatedScore) / 3) * 100;
+    // Convert to percentage: tinggi(1)→~0%, sedang(2)→~50%, rendah(3)→~100%
+    const scorePercentage = ((calculatedScore - 1) / 2) * 100;
     
     // Determine risk classification based on exact thresholds from Form 06.1
     let classification: 'rendah' | 'sedang' | 'tinggi';
@@ -241,6 +240,7 @@ export default function RiskAssessment() {
       const riskValueMap = { 'tinggi': 1, 'sedang': 2, 'rendah': 3 } as const;
       updatedItems[index].nilaiRisiko = riskValueMap[value as keyof typeof riskValueMap] as 1 | 2 | 3;
       updatedItems[index].risiko = updatedItems[index].bobot * updatedItems[index].nilaiRisiko;
+      updatedItems[index].parameter = getParameterText(updatedItems[index].itemAnalisa, value as any);
       updatedItems[index].mitigasi = getMitigasiText(updatedItems[index].itemAnalisa, value as any);
     }
     
