@@ -23,7 +23,7 @@ import { z } from 'zod';
 interface SectionItem {
   key: string;
   label: string;
-  type: 'yesNo' | 'yesNoNA' | 'text' | 'textarea';
+  type: 'yesNo' | 'yesNoNA' | 'text' | 'textarea' | 'section-header';
   required?: boolean;
   explanationKey?: string;
   explanation?: string;
@@ -298,6 +298,170 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         type: 'textarea'
       }
     ]
+  },
+  {
+    id: '3.8',
+    title: '3.8 Penanganan Keluhan Stakeholder',
+    items: [
+      {
+        key: 'laporanPenyelesaianSengketa',
+        label: 'Laporan penyelesaian sengketa lahan (Jika Ada)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanPenyelesaianSengketaKeterangan',
+        documentKey: 'laporanPenyelesaianSengketaDokumen'
+      }
+    ]
+  },
+  {
+    id: 'I',
+    title: 'I. Hak Buruh dan Hak Asasi Manusia',
+    items: [
+      {
+        key: '3.9',
+        label: '3.9 Jelaskan Komitmen Perusahaan Terhadap Hak Buruh dan Hak Asasi Pekerja',
+        type: 'section-header'
+      },
+      {
+        key: 'kebijakanBuruhHAM',
+        label: 'a. Kebijakan',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'kebijakanBuruhHAMKeterangan',
+        documentKey: 'kebijakanBuruhHAMDokumen'
+      },
+      {
+        key: 'sopKetenagakerjaan',
+        label: 'b. SOP/Mekanisme yang berhubungan dengan Ketenagakerjaan',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopKetenagakerjaanKeterangan',
+        documentKey: 'sopKetenagakerjaanDokumen'
+      },
+      {
+        key: 'sopK3',
+        label: 'c. SOP/Mekanisme yang berhubungan dengan K3',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopK3Keterangan',
+        documentKey: 'sopK3Dokumen'
+      },
+      {
+        key: '3.10',
+        label: '3.10 Berikan Bukti Pelaksanaan prosedur point 3.9 diatas',
+        type: 'section-header'
+      },
+      {
+        key: 'buktiPencatatanDisnaker',
+        label: 'a. Bukti Pencatatan perjanjian kerja ke DISNAKER',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'buktiPencatatanDisnakerKeterangan',
+        documentKey: 'buktiPencatatanDisnakerDokumen'
+      },
+      {
+        key: 'skUMRPenggajian',
+        label: 'b. SK UMR / Penggajian',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'skUMRPenggajianKeterangan',
+        documentKey: 'skUMRPenggajianDokumen'
+      },
+      {
+        key: 'skSerikatPekerja',
+        label: 'c. SK Pembentukan dan atau SK Pengesahan Serikat Pekerja / SK LKS Bipartit (Jika Tidak ada Serikat)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'skSerikatPekerjaKeterangan',
+        documentKey: 'skSerikatPekerjaDokumen'
+      },
+      {
+        key: 'buktiTerdaftarBPJS',
+        label: 'd. Bukti Terdaftar BPJS TK dan Kesehatan',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'buktiTerdaftarBPJSKeterangan',
+        documentKey: 'buktiTerdaftarBPJSDokumen'
+      },
+      {
+        key: 'laporanP2K3',
+        label: 'e. Laporan P2K3 / Serifikat SMK3',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanP2K3Keterangan',
+        documentKey: 'laporanP2K3Dokumen'
+      }
+    ]
+  },
+  {
+    id: 'II',
+    title: 'II. Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai',
+    items: [
+      {
+        key: '3.11',
+        label: '3.11 Jelaskan Komitmen Perusahaan Terhadap Kebijakan Terkait Peraturan Perpajakan, Antikorupsi, perdagangan dan Bea Cukai',
+        type: 'section-header'
+      },
+      {
+        key: 'kebijakanPerpajakanAntikorupsi',
+        label: 'a. Kebijakan',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'kebijakanPerpajakanAntikorupsiKeterangan',
+        documentKey: 'kebijakanPerpajakanAntikorupsiDokumen'
+      },
+      {
+        key: 'sopKodeEtikBisnis',
+        label: 'b. SOP/Mekanisme yang berhubungan dengan Kode etik bisnis (Penanganan Laporan Terkait dengan Kode Etik Bisnis seperti:Korupsi , Kolusi)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopKodeEtikBisnisKeterangan',
+        documentKey: 'sopKodeEtikBisnisDokumen'
+      },
+      {
+        key: 'saluranPengaduanPublik',
+        label: 'c. Saluran Pengaduan yang dapat diakses Publik',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'saluranPengaduanPublikKeterangan',
+        documentKey: 'saluranPengaduanPublikDokumen'
+      },
+      {
+        key: '3.12',
+        label: '3.12 Bukti Terdaftar Pajak dan pemenuhan persyaratan eksport',
+        type: 'section-header'
+      },
+      {
+        key: 'suratKeteranganTerdaftarPajak',
+        label: 'a. Surat keterangan Terdaftar Pajak',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'suratKeteranganTerdaftarPajakKeterangan',
+        documentKey: 'suratKeteranganTerdaftarPajakDokumen'
+      },
+      {
+        key: 'npwp',
+        label: 'b. NPWP',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'npwpKeterangan',
+        documentKey: 'npwpDokumen'
+      }
+    ]
+  },
+  {
+    id: 'III',
+    title: 'III. Ketentuan Lainnya',
+    items: [
+      {
+        key: 'sertifikasi',
+        label: '3.13 Sertifikasi',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sertifikasiKeterangan',
+        documentKey: 'sertifikasiDokumen'
+      }
+    ]
   }
 ];
 
@@ -558,6 +722,14 @@ export default function LegalityCompliance() {
                   </FormItem>
                 )}
               />
+            );
+          } else if (item.type === 'section-header') {
+            return (
+              <div key={item.key} className="py-3">
+                <h3 className="text-base font-semibold text-gray-900 border-b border-gray-200 pb-2">
+                  {item.label}
+                </h3>
+              </div>
             );
           }
           return null;

@@ -1667,6 +1667,63 @@ export const legalCompliance = pgTable("legal_compliance", {
   // 3.7 Bukti Implementasi (for section 3.5)
   buktiImplementasi: text("bukti_implementasi"),
 
+  // 3.8 Penanganan Keluhan Stakeholder
+  laporanPenyelesaianSengketa: yesNoEnum("laporan_penyelesaian_sengketa"),
+  laporanPenyelesaianSengketaKeterangan: text("laporan_penyelesaian_sengketa_keterangan"),
+  laporanPenyelesaianSengketaDokumen: text("laporan_penyelesaian_sengketa_dokumen"), // document URL
+
+  // 3.9 Hak Buruh dan Hak Asasi Manusia
+  kebijakanBuruhHAM: yesNoEnum("kebijakan_buruh_ham"),
+  kebijakanBuruhHAMKeterangan: text("kebijakan_buruh_ham_keterangan"),
+  kebijakanBuruhHAMDokumen: text("kebijakan_buruh_ham_dokumen"), // document URL
+  sopKetenagakerjaan: yesNoEnum("sop_ketenagakerjaan"),
+  sopKetenagakerjaanKeterangan: text("sop_ketenagakerjaan_keterangan"),
+  sopKetenagakerjaanDokumen: text("sop_ketenagakerjaan_dokumen"), // document URL
+  sopK3: yesNoEnum("sop_k3"),
+  sopK3Keterangan: text("sop_k3_keterangan"),
+  sopK3Dokumen: text("sop_k3_dokumen"), // document URL
+
+  // 3.10 Bukti Pelaksanaan Hak Buruh dan HAM
+  buktiPencatatanDisnaker: yesNoEnum("bukti_pencatatan_disnaker"),
+  buktiPencatatanDisnakerKeterangan: text("bukti_pencatatan_disnaker_keterangan"),
+  buktiPencatatanDisnakerDokumen: text("bukti_pencatatan_disnaker_dokumen"), // document URL
+  skUMRPenggajian: yesNoEnum("sk_umr_penggajian"),
+  skUMRPenggajianKeterangan: text("sk_umr_penggajian_keterangan"),
+  skUMRPenggajianDokumen: text("sk_umr_penggajian_dokumen"), // document URL
+  skSerikatPekerja: yesNoEnum("sk_serikat_pekerja"),
+  skSerikatPekerjaKeterangan: text("sk_serikat_pekerja_keterangan"),
+  skSerikatPekerjaDokumen: text("sk_serikat_pekerja_dokumen"), // document URL
+  buktiTerdaftarBPJS: yesNoEnum("bukti_terdaftar_bpjs"),
+  buktiTerdaftarBPJSKeterangan: text("bukti_terdaftar_bpjs_keterangan"),
+  buktiTerdaftarBPJSDokumen: text("bukti_terdaftar_bpjs_dokumen"), // document URL
+  laporanP2K3: yesNoEnum("laporan_p2k3"),
+  laporanP2K3Keterangan: text("laporan_p2k3_keterangan"),
+  laporanP2K3Dokumen: text("laporan_p2k3_dokumen"), // document URL
+
+  // 3.11 Perpajakan, Antikorupsi, Perdagangan dan Bea Cukai
+  kebijakanPerpajakanAntikorupsi: yesNoEnum("kebijakan_perpajakan_antikorupsi"),
+  kebijakanPerpajakanAntikorupsiKeterangan: text("kebijakan_perpajakan_antikorupsi_keterangan"),
+  kebijakanPerpajakanAntikorupsiDokumen: text("kebijakan_perpajakan_antikorupsi_dokumen"), // document URL
+  sopKodeEtikBisnis: yesNoEnum("sop_kode_etik_bisnis"),
+  sopKodeEtikBisnisKeterangan: text("sop_kode_etik_bisnis_keterangan"),
+  sopKodeEtikBisnisDokumen: text("sop_kode_etik_bisnis_dokumen"), // document URL
+  saluranPengaduanPublik: yesNoEnum("saluran_pengaduan_publik"),
+  saluranPengaduanPublikKeterangan: text("saluran_pengaduan_publik_keterangan"),
+  saluranPengaduanPublikDokumen: text("saluran_pengaduan_publik_dokumen"), // document URL
+
+  // 3.12 Bukti Terdaftar Pajak dan Pemenuhan Persyaratan Eksport
+  suratKeteranganTerdaftarPajak: yesNoEnum("surat_keterangan_terdaftar_pajak"),
+  suratKeteranganTerdaftarPajakKeterangan: text("surat_keterangan_terdaftar_pajak_keterangan"),
+  suratKeteranganTerdaftarPajakDokumen: text("surat_keterangan_terdaftar_pajak_dokumen"), // document URL
+  npwp: yesNoEnum("npwp"),
+  npwpKeterangan: text("npwp_keterangan"),
+  npwpDokumen: text("npwp_dokumen"), // document URL
+
+  // 3.13 Ketentuan Lainnya - Sertifikasi
+  sertifikasi: yesNoEnum("sertifikasi"),
+  sertifikasiKeterangan: text("sertifikasi_keterangan"),
+  sertifikasiDokumen: text("sertifikasi_dokumen"), // document URL
+
   // Metadata
   assessorId: varchar("assessor_id").references(() => users.id),
   assessorName: text("assessor_name"),
