@@ -31,6 +31,16 @@ app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 // Serve attached assets (PDFs, documents, etc.)
 app.use('/attached_assets', express.static('attached_assets'));
 
+// Health check endpoint for deployment readiness
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -82,11 +92,11 @@ app.use((req, res, next) => {
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
+  // For Autoscale deployment, PORT should be 80. Default to 5000 for development.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : '0.0.0.0';
 
   server.listen({
     port,
