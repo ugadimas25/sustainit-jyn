@@ -1435,28 +1435,14 @@ export class DatabaseStorage implements IStorage {
       const progress = await this.getSupplierAssessmentProgressByName(supplierName);
 
       if (!progress) {
-        // No progress record - only allow step 1 (Data Collection)
-        return requestedStep === 1;
-      }
-
-      // Step 1 (Data Collection) is always accessible
-      if (requestedStep === 1) {
+        // No progress record - allow all steps (users can start anywhere)
         return true;
       }
 
-      // Step 2 (Spatial Analysis) is always accessible after step 1
-      if (requestedStep === 2) {
-        return true; // Spatial analysis should always be accessible after data collection
-      }
-
-      // Step 3 (Legality Compliance) requires Data Collection to be completed AND current step to be at least 3
-      if (requestedStep === 3) {
-        return (progress.dataCollectionCompleted || false) && (progress.currentStep || 1) >= 3;
-      }
-
-      // Step 4 (Risk Assessment) requires both Data Collection and Legality Compliance to be completed
-      if (requestedStep === 4) {
-        return (progress.dataCollectionCompleted || false) && (progress.legalityComplianceCompleted || false);
+      // All steps are now accessible regardless of completion status
+      // This removes the workflow lock and allows users to access any step directly
+      if (requestedStep >= 1 && requestedStep <= 4) {
+        return true;
       }
 
       return false;
