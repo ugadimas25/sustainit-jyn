@@ -34,11 +34,23 @@ interface SpatialRiskItem {
   score?: number;
 }
 
+interface NonSpatialRiskItem {
+  no: number;
+  itemAnalisa: string;
+  tipeRisiko: 'tinggi' | 'sedang' | 'rendah';
+  parameter: string;
+  nilaiRisiko: 1 | 2 | 3;
+  mitigasi: string;
+  sumber: string[];
+  linkSumber: string[];
+}
+
 interface RiskAssessmentFormData {
   supplierName: string;
   assessmentDate: string;
   assessorName: string;
   spatialRiskItems: SpatialRiskItem[];
+  nonSpatialRiskItems: NonSpatialRiskItem[];
   totalScore: number;
   riskClassification: 'rendah' | 'sedang' | 'tinggi';
 }
@@ -94,6 +106,70 @@ const SPATIAL_RISK_TEMPLATE: SpatialRiskItem[] = [
       'https://kpn.co.id/sk-tmat-docs',
       'https://kpn.co.id/konsesi-maps'
     ]
+  },
+  {
+    no: 4,
+    itemAnalisa: 'Indigenous People',
+    tipeRisiko: 'tinggi',
+    parameter: '1. Ada Overlap dengan Peta BRWA, ada kasus pemberitaan konflik dan belum ada bukti penyelesaian\n2. Tidak Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
+    nilaiRisiko: 1,
+    bobot: 10,
+    risiko: 10,
+    mitigasi: 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
+    sumber: ['Peta Wilayah Adat (BRWA)', 'Bukti FPIC'],
+    linkSumber: [
+      'https://brwa.or.id/',
+      'https://kpn.co.id/fpic-docs'
+    ]
+  }
+];
+
+// Non-Spatial Risk Template - Media Coverage Analysis (Referensi untuk Supplier Engagement)
+const NON_SPATIAL_RISK_TEMPLATE: NonSpatialRiskItem[] = [
+  {
+    no: 1,
+    itemAnalisa: 'Lingkungan',
+    tipeRisiko: 'tinggi',
+    parameter: '1. Jika terdapat pemberitaan di media cetak/elektronik mengenai pencemaran lingkungan, perusakan ekosistem, atau pelanggaran izin lingkungan yang signifikan, Seperti : Deforestasi, Pembakaran Lahan, Limbah\n2. Tidak memiliki upaya perbaikan',
+    nilaiRisiko: 3,
+    mitigasi: '1. Sosialisasi Kebijakan Perusahaan\n2. Melakukan gap analisis dan pendampingan untuk pemenuhan persyaratan yang sesuai dengan regulasi lingkungan',
+    sumber: ['Media Cetak', 'Media Elektronik'],
+    linkSumber: ['https://news.google.com/', 'https://kompas.com/']
+  },
+  {
+    no: 2,
+    itemAnalisa: 'Keanekaragaman Hayati',
+    tipeRisiko: 'tinggi',
+    parameter: '1. Terdapat Konflik Satwa RTE (Rare, Threatened, and Endangered)\n2. Tidak Memiliki SOP Penanganan Konflik Satwa',
+    nilaiRisiko: 3,
+    mitigasi: 'Mendorong Supplier membentuk Sistem Penanganan Konflik Satwa Liar termasuk laporan penangannya',
+    sumber: ['IBA', 'EBA', 'IUCN', 'Peta Konsesi Perusahaan'],
+    linkSumber: [
+      'https://www.birdlife.org/',
+      'https://www.protectedplanet.net/en',
+      'https://www.iucnredlist.org/resources/spatial-data-download',
+      'https://kpn.co.id/konsesi-maps'
+    ]
+  },
+  {
+    no: 3,
+    itemAnalisa: 'Hak Pihak Ke 3 termasuk Hak-Hak Masyarakat adat (Pengelolaan Plasma dan FPIC)',
+    tipeRisiko: 'tinggi',
+    parameter: '1. Jika terdapat pemberitaan di media cetak/elektronik tentang konflik lahan dengan masyarakat adat atau petani plasma, termasuk pelanggaran prinsip FPIC (Free, Prior, Informed Consent)\n2. Tidak Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
+    nilaiRisiko: 3,
+    mitigasi: 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
+    sumber: ['Media Cetak', 'Media Elektronik'],
+    linkSumber: ['https://news.google.com/', 'https://kompas.com/']
+  },
+  {
+    no: 4,
+    itemAnalisa: 'HAM/Buruh',
+    tipeRisiko: 'tinggi',
+    parameter: '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan)\n2. Tidak memiliki upaya perbaikan',
+    nilaiRisiko: 3,
+    mitigasi: '1. Sosialisasi Kebijakan Perusahaan\n2. Melakukan gap analisis dan pendampingan untuk pemenuhan persyaratan yang sesuai dengan regulasi HAM/buruh',
+    sumber: ['Media Cetak', 'Media Elektronik'],
+    linkSumber: ['https://news.google.com/', 'https://kompas.com/']
   }
 ];
 
@@ -106,6 +182,7 @@ const riskAssessmentSchema = z.object({
 export default function RiskAssessment() {
   const [, setLocation] = useLocation();
   const [spatialRiskItems, setSpatialRiskItems] = useState<SpatialRiskItem[]>([...SPATIAL_RISK_TEMPLATE]);
+  const [nonSpatialRiskItems, setNonSpatialRiskItems] = useState<NonSpatialRiskItem[]>([...NON_SPATIAL_RISK_TEMPLATE]);
   const [totalScore, setTotalScore] = useState<number>(0);
   const [riskClassification, setRiskClassification] = useState<'rendah' | 'sedang' | 'tinggi'>('tinggi');
   const { toast } = useToast();
@@ -170,6 +247,22 @@ export default function RiskAssessment() {
     setSpatialRiskItems(updatedItems);
   };
 
+  // Update non-spatial risk item
+  const updateNonSpatialRiskItem = (index: number, field: keyof NonSpatialRiskItem, value: any) => {
+    const updatedItems = [...nonSpatialRiskItems];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    
+    // Update when risk level changes
+    if (field === 'tipeRisiko') {
+      const riskValueMap = { 'tinggi': 3, 'sedang': 2, 'rendah': 1 } as const;
+      updatedItems[index].nilaiRisiko = riskValueMap[value as keyof typeof riskValueMap] as 1 | 2 | 3;
+      updatedItems[index].parameter = getNonSpatialParameterText(updatedItems[index].itemAnalisa, value as any);
+      updatedItems[index].mitigasi = getNonSpatialMitigasiText(updatedItems[index].itemAnalisa, value as any);
+    }
+    
+    setNonSpatialRiskItems(updatedItems);
+  };
+
   // Get risk level badge color
   const getRiskBadgeColor = (level: string) => {
     switch (level.toLowerCase()) {
@@ -191,6 +284,7 @@ export default function RiskAssessment() {
       assessmentDate: data.assessmentDate,
       assessorName: data.assessorName || 'KPN Compliance Administrator',
       spatialRiskItems,
+      nonSpatialRiskItems,
       totalScore,
       riskClassification
     };
@@ -206,18 +300,23 @@ export default function RiskAssessment() {
     const mitigasiMap: Record<string, Record<string, string>> = {
       'Deforestasi': {
         'tinggi': 'Dikeluarkan dari Rantai Pasok',
-        'sedang': 'Melakukan monitoring berkala dan sosialisasi kebijakan NDPE',
-        'rendah': 'Tetap melakukan monitoring berkala sesuai prosedur standar'
+        'sedang': '1. Monitoring berkala plot sumber TBS\n2. Sosialisasi kebijakan perusahaan kepada supplier dan menetapkan syarat perjanjian jual beli yang ketat',
+        'rendah': '1. Monitoring berkala plot sumber TBS\n2. Sosialisasi kebijakan perusahaan kepada supplier dan menetapkan syarat perjanjian jual beli yang ketat'
       },
       'Legalitas Lahan': {
         'tinggi': '1. Dikeluarkan dari Rantai Pasok\n2. Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses legalitas lahan. Jika legalitas lahan selesai, supplier dapat dimasukan ke dalam rantai pasok',
-        'sedang': 'Melakukan pendampingan intensif dan monitoring proses legalitas',
-        'rendah': 'Monitoring berkala untuk memastikan kepatuhan berkelanjutan'
+        'sedang': '1. Sosialisasi kebijakan perusahaan kepada supplier\n2. Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses legalitas lahan. Jika legalitas lahan selesai, supplier dapat dimasukan ke dalam rantai pasok',
+        'rendah': 'Monitoring Berkala plot Sumber TBS'
       },
       'Kawasan Gambut': {
         'tinggi': 'Melakukan Pendampingan/pelibatan supplier dalam rangka mendorong proses pengurusan SK TMAT.',
-        'sedang': 'Monitoring proses bimbingan teknis dan pendampingan SK TMAT',
-        'rendah': 'Monitoring berkala untuk memastikan kepatuhan SK TMAT'
+        'sedang': 'Sosialisasi kebijakan perusahaan kepada supplier.',
+        'rendah': 'Sosialisasi kebijakan perusahaan kepada supplier.'
+      },
+      'Indigenous People': {
+        'tinggi': 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
+        'sedang': '1. Dorong percepatan proses resolusi konflik melalui mekanisme mediasi terbuka\n2. Sosialisasi kebijakan perusahaan kepada supplier',
+        'rendah': 'Monitoring isu sosial secara berkala untuk deteksi dini potensi konflik baru.'
       }
     };
     return mitigasiMap[itemAnalisa]?.[tipeRisiko] || '';
@@ -228,7 +327,7 @@ export default function RiskAssessment() {
     const parameterMap: Record<string, Record<string, string>> = {
       'Deforestasi': {
         'tinggi': 'Ditemukan adanya Pembukaan Lahan Setelah Desember 2020',
-        'sedang': 'Ada Indikasi Deforestasi di Sekitar Area dan PKS Terima TBS Luar',
+        'sedang': 'Ada Indikasi Deforestasi di Sekitar Area dan PKS Terima TBS',
         'rendah': 'Sumber TBS Berasal dari Kebun yang dikembangkan sebelum Desember 2020'
       },
       'Legalitas Lahan': {
@@ -239,10 +338,69 @@ export default function RiskAssessment() {
       'Kawasan Gambut': {
         'tinggi': 'Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan Belum Memiliki SK TMAT',
         'sedang': 'Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan sedang proses bimbingan teknis dari kementerian terkait dalam rangka penerbitan SK TMAT',
-        'rendah': '1. Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan Memiliki SK TMAT\n2. Plot Sumber TBS tidak overlap dengan peta indikatif gambut'
+        'rendah': '1. Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan Sudah memiliki SK TMAT\n2. Tidak Berada dikawasan Gambut'
+      },
+      'Indigenous People': {
+        'tinggi': '1. Ada Overlap dengan Peta BRWA, ada kasus pemberitaan konflik dan belum ada bukti penyelesaian\n2. Tidak Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
+        'sedang': '1. Tidak ada Overlap dengan peta BRWA, Terdapat Konflik namun sudah ada proses penyelesaian\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
+        'rendah': '1. Tidak ada Overlap, (Jika Terdapat Kasus Konflik) Kasus sudah terselesaikan\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder'
       }
     };
     return parameterMap[itemAnalisa]?.[tipeRisiko] || '';
+  };
+
+  // Get Non-Spatial parameter text for each risk level
+  const getNonSpatialParameterText = (itemAnalisa: string, tipeRisiko: 'tinggi' | 'sedang' | 'rendah') => {
+    const parameterMap: Record<string, Record<string, string>> = {
+      'Lingkungan': {
+        'tinggi': '1. Jika terdapat pemberitaan di media cetak/elektronik mengenai pencemaran lingkungan, perusakan ekosistem, atau pelanggaran izin lingkungan yang signifikan, Seperti : Deforestasi, Pembakaran Lahan, Limbah\n2. Tidak memiliki upaya perbaikan',
+        'sedang': 'Jika terdapat pemberitaan di media cetak/elektronik mengenai dugaan pelanggaran lingkungan, namun telah melakukan upaya perbaikan.',
+        'rendah': '1. Terdapat Isu Media, Namun Isu Sudah Terselesaikan\n2. Tidak terdapat pemberitaan negatif di media cetak/elektronik terkait pelanggaran lingkungan.'
+      },
+      'Keanekaragaman Hayati': {
+        'tinggi': '1. Terdapat Konflik Satwa RTE (Rare, Threatened, and Endangered)\n2. Tidak Memiliki SOP Penanganan Konflik Satwa',
+        'sedang': '1. Terdapat Konflik Satwa RTE (Rare, Threatened, and Endangered)\n2. Perusahaan Memiliki Prosedur/Mekanisme Penanganan',
+        'rendah': '1. Tidak Terdapat Konflik Satwa RTE (Rare, Threatened, and Endangered)\n2. Perusahaan Memiliki Prosedur/Mekanisme Penanganan'
+      },
+      'Hak Pihak Ke 3 termasuk Hak-Hak Masyarakat adat (Pengelolaan Plasma dan FPIC)': {
+        'tinggi': '1. Jika terdapat pemberitaan di media cetak/elektronik tentang konflik lahan dengan masyarakat adat atau petani plasma, termasuk pelanggaran prinsip FPIC (Free, Prior, Informed Consent)\n2. Tidak Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
+        'sedang': '1. Jika terdapat pemberitaan di media cetak/elektronik tentang konflik lahan dengan masyarakat adat atau petani plasma, namun sedang dalam proses penyelesaian/mediasi\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
+        'rendah': '1. Tidak terdapat pemberitaan negatif di media cetak/elektronik terkait konflik dengan masyarakat adat atau petani plasma\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder'
+      },
+      'HAM/Buruh': {
+        'tinggi': '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan)\n2. Tidak memiliki upaya perbaikan',
+        'sedang': 'Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan), namun telah melakukan upaya perbaikan',
+        'rendah': '1. Terdapat Isu Media, Namun Isu Sudah Terselesaikan\n2. Tidak terdapat pemberitaan negatif di media cetak/elektronik terkait pelanggaran HAM/buruh'
+      }
+    };
+    return parameterMap[itemAnalisa]?.[tipeRisiko] || '';
+  };
+
+  // Get Non-Spatial mitigation text for each risk level
+  const getNonSpatialMitigasiText = (itemAnalisa: string, tipeRisiko: 'tinggi' | 'sedang' | 'rendah') => {
+    const mitigasiMap: Record<string, Record<string, string>> = {
+      'Lingkungan': {
+        'tinggi': '1. Sosialisasi Kebijakan Perusahaan\n2. Melakukan gap analisis dan pendampingan untuk pemenuhan persyaratan yang sesuai dengan regulasi lingkungan',
+        'sedang': '1. Sosialisasi Kebijakan Perusahaan\n2. Monitoring tindak lanjut perbaikan',
+        'rendah': 'Monitoring berkala terkait isu lingkungan di media'
+      },
+      'Keanekaragaman Hayati': {
+        'tinggi': 'Mendorong Supplier membentuk Sistem Penanganan Konflik Satwa Liar termasuk laporan penangannya',
+        'sedang': 'Mendorong Supplier untuk mengaplikasikan sistem penanganan konflik satwa liar.',
+        'rendah': 'Monitoring Konflik dari Pemberitaan Media'
+      },
+      'Hak Pihak Ke 3 termasuk Hak-Hak Masyarakat adat (Pengelolaan Plasma dan FPIC)': {
+        'tinggi': 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
+        'sedang': '1. Mendorong percepatan proses resolusi konflik melalui mekanisme mediasi terbuka\n2. Sosialisasi kebijakan perusahaan kepada supplier',
+        'rendah': 'Monitoring isu sosial secara berkala untuk deteksi dini potensi konflik baru.'
+      },
+      'HAM/Buruh': {
+        'tinggi': '1. Sosialisasi Kebijakan Perusahaan\n2. Melakukan gap analisis dan pendampingan untuk pemenuhan persyaratan yang sesuai dengan regulasi HAM/buruh',
+        'sedang': '1. Sosialisasi Kebijakan Perusahaan\n2. Monitoring tindak lanjut perbaikan',
+        'rendah': 'Monitoring berkala terkait isu HAM/buruh di media'
+      }
+    };
+    return mitigasiMap[itemAnalisa]?.[tipeRisiko] || '';
   };
 
   return (
@@ -506,6 +664,113 @@ export default function RiskAssessment() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Non-Spatial Risk Assessment - Media Coverage Analysis */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-orange-600" />
+              II. Analisa Non Spasial (Pemberitaan Media)
+            </CardTitle>
+            <CardDescription>
+              Hanya untuk Referensi Untuk Supplier Engagement
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">No</TableHead>
+                    <TableHead className="w-32">Item Analisa</TableHead>
+                    <TableHead className="w-24">Tipe Risiko</TableHead>
+                    <TableHead className="w-96">Parameter</TableHead>
+                    <TableHead className="w-96">Mitigasi</TableHead>
+                    <TableHead className="w-32">Sumber</TableHead>
+                    <TableHead className="w-32">Link Sumber</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {nonSpatialRiskItems.map((item, index) => (
+                    <TableRow key={index} className="border-b">
+                      <TableCell className="font-medium">{item.no}</TableCell>
+                      <TableCell className="font-semibold">{item.itemAnalisa}</TableCell>
+                      <TableCell>
+                        <Select 
+                          value={item.tipeRisiko} 
+                          onValueChange={(value) => {
+                            updateNonSpatialRiskItem(index, 'tipeRisiko', value);
+                          }}
+                          data-testid={`select-nonspatial-risk-type-${index}`}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="tinggi">Tinggi</SelectItem>
+                            <SelectItem value="sedang">Sedang</SelectItem>
+                            <SelectItem value="rendah">Rendah</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="max-w-md">
+                        <div className="text-sm whitespace-pre-wrap">
+                          {getNonSpatialParameterText(item.itemAnalisa, item.tipeRisiko)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-md">
+                        <div className="text-sm whitespace-pre-wrap">
+                          {getNonSpatialMitigasiText(item.itemAnalisa, item.tipeRisiko)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-xs space-y-1">
+                          {item.sumber.map((source, idx) => (
+                            <div key={idx} className="flex items-center gap-1">
+                              <span>{idx + 1}.</span>
+                              <span>{source}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-xs space-y-1">
+                          {item.linkSumber.map((link, idx) => (
+                            <div key={idx} className="flex items-center gap-1">
+                              <span>{idx + 1}.</span>
+                              <a 
+                                href={link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 truncate max-w-xs"
+                              >
+                                <ExternalLink className="w-3 h-3 inline mr-1" />
+                                Link
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            
+            {/* Note for Non-Spatial Analysis */}
+            <div className="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5" />
+                <div>
+                  <h4 className="font-semibold text-orange-800">Catatan Penting</h4>
+                  <p className="text-sm text-orange-700 mt-1">
+                    Analisa Non Spasial (Pemberitaan Media) ini hanya digunakan sebagai referensi untuk supplier engagement dan tidak mempengaruhi perhitungan skor risiko utama. Informasi ini membantu dalam memahami konteks media dan reputasi supplier untuk strategi pendampingan yang lebih efektif.
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
