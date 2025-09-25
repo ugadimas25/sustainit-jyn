@@ -60,11 +60,8 @@ externalPort = 3002
 localPort = 40061
 externalPort = 3001
 
-[[ports]]
-localPort = 41799
-externalPort = 3003
-
 [agent]
+integrations = ["javascript_object_storage:1.0.0"]
 
 [objectStorage]
 defaultBucketID = "replit-objstore-cfa936f1-fc37-4d62-a25b-d353da306365"

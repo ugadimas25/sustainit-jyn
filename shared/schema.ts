@@ -1574,68 +1574,95 @@ export const legalCompliance = pgTable("legal_compliance", {
   // 3.1 Hak Penggunaan Tanah
   historisPerolehanTanah: text("historis_perolehan_tanah"),
   historisPerolehanTanahKeterangan: text("historis_perolehan_tanah_keterangan"),
+  historisPerolehanTanahDokumen: text("historis_perolehan_tanah_dokumen"), // document URL
   izinPencadangan: yesNoEnum("izin_pencadangan"),
   izinPencadanganKeterangan: text("izin_pencadangan_keterangan"),
+  izinPencadanganDokumen: text("izin_pencadangan_dokumen"), // document URL
   persetujuanPKKPR: yesNoEnum("persetujuan_pkkpr"),
   persetujuanPKKPRKeterangan: text("persetujuan_pkkpr_keterangan"),
+  persetujuanPKKPRDokumen: text("persetujuan_pkkpr_dokumen"), // document URL
   izinUsahaPerkebunan: yesNoEnum("izin_usaha_perkebunan"),
   izinUsahaPerkebunanKeterangan: text("izin_usaha_perkebunan_keterangan"),
+  izinUsahaPerkebunanDokumen: text("izin_usaha_perkebunan_dokumen"), // document URL
   skHGU: yesNoEnum("sk_hgu"),
   skHGUKeterangan: text("sk_hgu_keterangan"),
+  skHGUDokumen: text("sk_hgu_dokumen"), // document URL
   sertifikatHGU: yesNoEnum("sertifikat_hgu"),
   sertifikatHGUKeterangan: text("sertifikat_hgu_keterangan"),
+  sertifikatHGUDokumen: text("sertifikat_hgu_dokumen"), // document URL
   laporanPemanfaatanHGU: yesNoEnum("laporan_pemanfaatan_hgu"),
   laporanPemanfaatanHGUKeterangan: text("laporan_pemanfaatan_hgu_keterangan"),
+  laporanPemanfaatanHGUDokumen: text("laporan_pemanfaatan_hgu_dokumen"), // document URL
   laporanLPUP: yesNoEnum("laporan_lpup"),
   laporanLPUPKeterangan: text("laporan_lpup_keterangan"),
+  laporanLPUPDokumen: text("laporan_lpup_dokumen"), // document URL
 
   // 3.2 Perlindungan Lingkungan Hidup
   izinLingkungan: yesNoEnum("izin_lingkungan"),
   izinLingkunganKeterangan: text("izin_lingkungan_keterangan"),
+  izinLingkunganDokumen: text("izin_lingkungan_dokumen"), // document URL
   izinRintekLimbahB3: yesNoEnum("izin_rintek_limbah_b3"),
   izinRintekLimbahB3Keterangan: text("izin_rintek_limbah_b3_keterangan"),
+  izinRintekLimbahB3Dokumen: text("izin_rintek_limbah_b3_dokumen"), // document URL
   izinPertekLimbahCair: yesNoEnum("izin_pertek_limbah_cair"),
   izinPertekLimbahCairKeterangan: text("izin_pertek_limbah_cair_keterangan"),
+  izinPertekLimbahCairDokumen: text("izin_pertek_limbah_cair_dokumen"), // document URL
   persetujuanAndalalin: yesNoEnum("persetujuan_andalalin"),
   persetujuanAndalalinKeterangan: text("persetujuan_andalalin_keterangan"),
+  persetujuanAndalalinDokumen: text("persetujuan_andalalin_dokumen"), // document URL
   daftarPestisida: yesNoEnum("daftar_pestisida"),
   daftarPestisidaKeterangan: text("daftar_pestisida_keterangan"),
+  daftarPestisidaDokumen: text("daftar_pestisida_dokumen"), // document URL
 
   // 3.3 Bukti Pelaksanaan (for section 3.2)
   buktiPelaksanaanRKL: yesNoEnum("bukti_pelaksanaan_rkl"),
   buktiPelaksanaanRKLKeterangan: text("bukti_pelaksanaan_rkl_keterangan"),
+  buktiPelaksanaanRKLDokumen: text("bukti_pelaksanaan_rkl_dokumen"), // document URL
   laporanPenggunaanPestisida: yesNoEnum("laporan_penggunaan_pestisida"),
   laporanPenggunaanPestisidaKeterangan: text("laporan_penggunaan_pestisida_keterangan"),
+  laporanPenggunaanPestisidaDokumen: text("laporan_penggunaan_pestisida_dokumen"), // document URL
 
   // 3.4 Peraturan Kehutanan
   areaSesuaiPeruntukan: yesNoEnum("area_sesuai_peruntukan"),
   areaSesuaiPeruntukanKeterangan: text("area_sesuai_peruntukan_keterangan"),
+  areaSesuaiPeruntukanDokumen: text("area_sesuai_peruntukan_dokumen"), // document URL
   skPelepasan: yesNoEnum("sk_pelepasan"),
   skPelepaasanKeterangan: text("sk_pelepasan_keterangan"),
+  skPelepaasanDokumen: text("sk_pelepasan_dokumen"), // document URL
   dokumenInstansiRelevant: yesNoEnum("dokumen_instansi_relevant"),
   dokumenInstansiRelevantKeterangan: text("dokumen_instansi_relevant_keterangan"),
+  dokumenInstansiRelevantDokumen: text("dokumen_instansi_relevant_dokumen"), // document URL
 
   // 3.5 Hak Pihak Ke 3 (some fields allow "TIDAK_RELEVAN")
   kebijakanHakPihakKetiga: yesNoNAEnum("kebijakan_hak_pihak_ketiga"),
   kebijakanHakPihakKetigaKeterangan: text("kebijakan_hak_pihak_ketiga_keterangan"),
+  kebijakanHakPihakKetigaDokumen: text("kebijakan_hak_pihak_ketiga_dokumen"), // document URL
   kebijakanPerusahaan: yesNoEnum("kebijakan_perusahaan"),
   kebijakanPerusahaanKeterangan: text("kebijakan_perusahaan_keterangan"),
+  kebijakanPerusahaanDokumen: text("kebijakan_perusahaan_dokumen"), // document URL
   sopUsulanGRTT: yesNoEnum("sop_usulan_grtt"),
   sopUsulanGRTTKeterangan: text("sop_usulan_grtt_keterangan"),
+  sopUsulanGRTTDokumen: text("sop_usulan_grtt_dokumen"), // document URL
   sopPADIATAPA: yesNoEnum("sop_padiatapa"),
   sopPADIATAPAKeterangan: text("sop_padiatapa_keterangan"),
+  sopPADIATAPADokumen: text("sop_padiatapa_dokumen"), // document URL
   sopPenangananInformasi: yesNoEnum("sop_penanganan_informasi"),
   sopPenangananInformasiKeterangan: text("sop_penanganan_informasi_keterangan"),
+  sopPenangananInformasiDokumen: text("sop_penanganan_informasi_dokumen"), // document URL
   sopPenangananKeluhan: yesNoEnum("sop_penanganan_keluhan"),
   sopPenangananKeluhanKeterangan: text("sop_penanganan_keluhan_keterangan"),
+  sopPenangananKeluhanDokumen: text("sop_penanganan_keluhan_dokumen"), // document URL
 
   // 3.6 Kewajiban Pengembangan Plasma
   mouKerjaSama: yesNoEnum("mou_kerja_sama"),
   mouKerjaSamaKeterangan: text("mou_kerja_sama_keterangan"),
+  mouKerjaSamaDokumen: text("mou_kerja_sama_dokumen"), // document URL
   skCPCL: yesNoEnum("sk_cpcl"),
   skCPCLKeterangan: text("sk_cpcl_keterangan"),
+  skCPCLDokumen: text("sk_cpcl_dokumen"), // document URL
   laporanRealisasiPlasma: yesNoEnum("laporan_realisasi_plasma"),
   laporanRealisasiPlasmaKeterangan: text("laporan_realisasi_plasma_keterangan"),
+  laporanRealisasiPlasmaDokumen: text("laporan_realisasi_plasma_dokumen"), // document URL
 
   // 3.7 Bukti Implementasi (for section 3.5)
   buktiImplementasi: text("bukti_implementasi"),

@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { FileText, Shield, Save, ArrowLeft } from 'lucide-react';
+import { FileText, Shield, Save, ArrowLeft, Upload, Check } from 'lucide-react';
+import { ObjectUploader } from '@/components/ObjectUploader';
+import type { UploadResult } from '@uppy/core';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { insertLegalComplianceSchema, type InsertLegalCompliance } from '@shared/schema';
@@ -25,6 +27,7 @@ interface SectionItem {
   required?: boolean;
   explanationKey?: string;
   explanation?: string;
+  documentKey?: string; // For document upload URL
 }
 
 interface Section {
@@ -49,49 +52,56 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         label: 'Izin Pencadangan Lahan',
         type: 'yesNo',
         required: true,
-        explanationKey: 'izinPencadanganKeterangan'
+        explanationKey: 'izinPencadanganKeterangan',
+        documentKey: 'izinPencadanganDokumen'
       },
       {
         key: 'persetujuanPKKPR',
         label: 'Persetujuan Kesesuaian Kegiatan Pemanfaatan Ruang (PKKPR) / Izin Lokasi',
         type: 'yesNo',
         required: true,
-        explanationKey: 'persetujuanPKKPRKeterangan'
+        explanationKey: 'persetujuanPKKPRKeterangan',
+        documentKey: 'persetujuanPKKPRDokumen'
       },
       {
         key: 'izinUsahaPerkebunan',
         label: 'Izin Usaha Perkebunan',
         type: 'yesNo',
         required: true,
-        explanationKey: 'izinUsahaPerkebunanKeterangan'
+        explanationKey: 'izinUsahaPerkebunanKeterangan',
+        documentKey: 'izinUsahaPerkebunanDokumen'
       },
       {
         key: 'skHGU',
         label: 'SK HGU',
         type: 'yesNo',
         required: true,
-        explanationKey: 'skHGUKeterangan'
+        explanationKey: 'skHGUKeterangan',
+        documentKey: 'skHGUDokumen'
       },
       {
         key: 'sertifikatHGU',
         label: 'Sertifikat HGU',
         type: 'yesNo',
         required: true,
-        explanationKey: 'sertifikatHGUKeterangan'
+        explanationKey: 'sertifikatHGUKeterangan',
+        documentKey: 'sertifikatHGUDokumen'
       },
       {
         key: 'laporanPemanfaatanHGU',
         label: 'Laporan Pemanfaatan HGU',
         type: 'yesNo',
         required: true,
-        explanationKey: 'laporanPemanfaatanHGUKeterangan'
+        explanationKey: 'laporanPemanfaatanHGUKeterangan',
+        documentKey: 'laporanPemanfaatanHGUDokumen'
       },
       {
         key: 'laporanLPUP',
         label: 'Laporan Perkembangan Usaha Perkebunan (LPUP)',
         type: 'yesNo',
         required: true,
-        explanationKey: 'laporanLPUPKeterangan'
+        explanationKey: 'laporanLPUPKeterangan',
+        documentKey: 'laporanLPUPDokumen'
       }
     ]
   },
@@ -104,35 +114,40 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         label: 'Izin Lingkungan dan Dokumen Terkait',
         type: 'yesNo',
         required: true,
-        explanationKey: 'izinLingkunganKeterangan'
+        explanationKey: 'izinLingkunganKeterangan',
+        documentKey: 'izinLingkunganDokumen'
       },
       {
         key: 'izinRintekLimbahB3',
         label: 'Izin / Rintek TPS Limbah B3',
         type: 'yesNo',
         required: true,
-        explanationKey: 'izinRintekLimbahB3Keterangan'
+        explanationKey: 'izinRintekLimbahB3Keterangan',
+        documentKey: 'izinRintekLimbahB3Dokumen'
       },
       {
         key: 'izinPertekLimbahCair',
         label: 'Izin / Pertek Pengelolaan Limbah Cair Industri',
         type: 'yesNo',
         required: true,
-        explanationKey: 'izinPertekLimbahCairKeterangan'
+        explanationKey: 'izinPertekLimbahCairKeterangan',
+        documentKey: 'izinPertekLimbahCairDokumen'
       },
       {
         key: 'persetujuanAndalalin',
         label: 'Persetujuan Teknis ANDALALIN',
         type: 'yesNo',
         required: true,
-        explanationKey: 'persetujuanAndalalinKeterangan'
+        explanationKey: 'persetujuanAndalalinKeterangan',
+        documentKey: 'persetujuanAndalalinDokumen'
       },
       {
         key: 'daftarPestisida',
         label: 'Daftar pestisida dan izin edar yang masih berlaku',
         type: 'yesNo',
         required: true,
-        explanationKey: 'daftarPestisidaKeterangan'
+        explanationKey: 'daftarPestisidaKeterangan',
+        documentKey: 'daftarPestisidaDokumen'
       }
     ]
   },
@@ -145,14 +160,16 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         label: 'Laporan Pelaksanaan RKL/RPL',
         type: 'yesNo',
         required: true,
-        explanationKey: 'buktiPelaksanaanRKLKeterangan'
+        explanationKey: 'buktiPelaksanaanRKLKeterangan',
+        documentKey: 'buktiPelaksanaanRKLDokumen'
       },
       {
         key: 'laporanPenggunaanPestisida',
         label: 'Laporan Penggunaan Pestisida',
         type: 'yesNo',
         required: true,
-        explanationKey: 'laporanPenggunaanPestisidaKeterangan'
+        explanationKey: 'laporanPenggunaanPestisidaKeterangan',
+        documentKey: 'laporanPenggunaanPestisidaDokumen'
       }
     ]
   },
@@ -165,21 +182,24 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         label: 'Apakah area yang diusahakan sesuai dengan peruntukannya',
         type: 'yesNo',
         required: true,
-        explanationKey: 'areaSesuaiPeruntukanKeterangan'
+        explanationKey: 'areaSesuaiPeruntukanKeterangan',
+        documentKey: 'areaSesuaiPeruntukanDokumen'
       },
       {
         key: 'skPelepasan',
         label: 'SK Pelepasan/Tukar Menukar Kawasan Hutan (Jika Kawasan berasal dari kawasan hutan negara)',
         type: 'yesNo',
         required: true,
-        explanationKey: 'skPelepasanKeterangan'
+        explanationKey: 'skPelepasanKeterangan',
+        documentKey: 'skPelepasanDokumen'
       },
       {
         key: 'dokumenInstansiRelevant',
         label: 'Dokumen yang dikeluarkan oleh Instansi relevan menunjukan kesesuain ruang area tanam (PKKPR, Risalah Panitia B, Tinjauan Teknis dari Kehutanan)',
         type: 'yesNo',
         required: true,
-        explanationKey: 'dokumenInstansiRelevantKeterangan'
+        explanationKey: 'dokumenInstansiRelevantKeterangan',
+        documentKey: 'dokumenInstansiRelevantDokumen'
       }
     ]
   },
@@ -192,42 +212,48 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         label: 'Apakah Perusahaan Memiliki Kebijakan Terkait Hak pihak ketiga, prinsip persetujuan awal tanpa paksaan dan berdasarkan informasi (FPIC), termasuk Hak-Hak Masyarakat Adat',
         type: 'yesNoNA',
         required: true,
-        explanationKey: 'kebijakanHakPihakKetigaKeterangan'
+        explanationKey: 'kebijakanHakPihakKetigaKeterangan',
+        documentKey: 'kebijakanHakPihakKetigaDokumen'
       },
       {
         key: 'kebijakanPerusahaan',
         label: 'Kebijakan Perusahaan',
         type: 'yesNo',
         required: true,
-        explanationKey: 'kebijakanPerusahaanKeterangan'
+        explanationKey: 'kebijakanPerusahaanKeterangan',
+        documentKey: 'kebijakanPerusahaanDokumen'
       },
       {
         key: 'sopUsulanGRTT',
         label: 'SOP Usulan dan Persetujuan GRTT',
         type: 'yesNo',
         required: true,
-        explanationKey: 'sopUsulanGRTTKeterangan'
+        explanationKey: 'sopUsulanGRTTKeterangan',
+        documentKey: 'sopUsulanGRTTDokumen'
       },
       {
         key: 'sopPADIATAPA',
         label: 'SOP Persetujuan Atas Dasar Informasi di Awal Tanpa Paksaan (PADIATAPA) & Pemetaan Partisipatif',
         type: 'yesNo',
         required: true,
-        explanationKey: 'sopPADIATAPAKeterangan'
+        explanationKey: 'sopPADIATAPAKeterangan',
+        documentKey: 'sopPADIATAPADokumen'
       },
       {
         key: 'sopPenangananInformasi',
         label: 'SOP Penanganan Permintaan Informasi',
         type: 'yesNo',
         required: true,
-        explanationKey: 'sopPenangananInformasiKeterangan'
+        explanationKey: 'sopPenangananInformasiKeterangan',
+        documentKey: 'sopPenangananInformasiDokumen'
       },
       {
         key: 'sopPenangananKeluhan',
         label: 'SOP Penanganan Keluhan Stakeholder',
         type: 'yesNo',
         required: true,
-        explanationKey: 'sopPenangananKeluhanKeterangan'
+        explanationKey: 'sopPenangananKeluhanKeterangan',
+        documentKey: 'sopPenangananKeluhanDokumen'
       }
     ]
   },
@@ -240,14 +266,16 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         label: 'MoU Kerja sama',
         type: 'yesNo',
         required: true,
-        explanationKey: 'mouKerjaSamaKeterangan'
+        explanationKey: 'mouKerjaSamaKeterangan',
+        documentKey: 'mouKerjaSamaDokumen'
       },
       {
         key: 'skCPCL',
         label: 'SK CPCL (Calon Petani Calon Lahan)',
         type: 'yesNo',
         required: true,
-        explanationKey: 'skCPCLKeterangan'
+        explanationKey: 'skCPCLKeterangan',
+        documentKey: 'skCPCLDokumen'
       },
       {
         key: 'laporanRealisasiPlasma',
@@ -255,6 +283,7 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         type: 'yesNo',
         required: true,
         explanationKey: 'laporanRealisasiPlasmaKeterangan',
+        documentKey: 'laporanRealisasiPlasmaDokumen',
         explanation: '(Dapat menggunakan Laporan SPUP)'
       }
     ]
@@ -276,6 +305,7 @@ export default function LegalityCompliance() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingDocuments, setUploadingDocuments] = useState<Record<string, boolean>>({});
 
   // Form setup using react-hook-form with zodResolver
   const form = useForm<InsertLegalCompliance>({
@@ -332,6 +362,40 @@ export default function LegalityCompliance() {
       });
     }
   });
+
+  // Handle document upload
+  const handleGetUploadParameters = async () => {
+    try {
+      const response = await apiRequest('/api/objects/upload', {
+        method: 'POST'
+      });
+      return {
+        method: 'PUT' as const,
+        url: response.uploadURL || response.url || '',
+      };
+    } catch (error) {
+      console.error('Error getting upload parameters:', error);
+      throw error;
+    }
+  };
+
+  const handleDocumentUpload = (documentKey: string) => 
+    async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+      if (result.successful && result.successful.length > 0) {
+        const uploadedFile = result.successful[0];
+        const documentUrl = uploadedFile.uploadURL || '';
+        
+        // Update the form with the document URL
+        form.setValue(documentKey as keyof InsertLegalCompliance, documentUrl as any);
+        
+        toast({
+          title: "Dokumen Berhasil Diunggah",
+          description: `Dokumen telah berhasil diunggah dan disimpan.`,
+        });
+        
+        setUploadingDocuments(prev => ({ ...prev, [documentKey]: false }));
+      }
+    };
 
   // Handle form submission
   const onSubmit = async (data: InsertLegalCompliance) => {
@@ -421,6 +485,39 @@ export default function LegalityCompliance() {
                       </FormItem>
                     )}
                   />
+                )}
+                
+                {/* Document upload for yes/no questions */}
+                {item.documentKey && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">
+                      Upload Dokumen Pendukung:
+                    </Label>
+                    <div className="flex items-center gap-3">
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={10485760} // 10MB
+                        onGetUploadParameters={handleGetUploadParameters}
+                        onComplete={handleDocumentUpload(item.documentKey)}
+                        buttonClassName="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload Dokumen
+                      </ObjectUploader>
+                      
+                      {/* Show upload status or document name */}
+                      {uploadingDocuments[item.documentKey] ? (
+                        <span className="text-sm text-blue-600">Mengunggah...</span>
+                      ) : form.watch(item.documentKey as keyof InsertLegalCompliance) ? (
+                        <div className="flex items-center text-sm text-green-600">
+                          <Check className="w-4 h-4 mr-1" />
+                          Dokumen telah diunggah
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-500">Belum ada dokumen</span>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             );
