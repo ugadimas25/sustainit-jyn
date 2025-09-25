@@ -108,4 +108,15 @@ app.use((req, res, next) => {
       log(`Production server accessible at https://${process.env.REPLIT_DEV_DOMAIN}`);
     }
   });
+
+  // Handle server errors gracefully
+  server.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      log(`Port ${port} is already in use. Please kill existing processes or change the PORT environment variable.`);
+      process.exit(1);
+    } else {
+      log(`Server error: ${err.message}`);
+      throw err;
+    }
+  });
 })();
