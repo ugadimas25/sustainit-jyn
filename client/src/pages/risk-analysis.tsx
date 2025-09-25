@@ -206,38 +206,41 @@ export default function RiskAnalysis() {
 
   // Calculate total score and risk classification according to Risk Analysis methodology
   const calculateRiskAssessment = () => {
-    // Calculate spatial risk score (using weight-based formula)
+    // Calculate spatial risk score (using weight-based formula with inverse scoring)
     const spatialTotalNR = spatialRiskItems.reduce((sum, item) => sum + (item.bobot * item.nilaiRisiko), 0);
     const spatialTotalBobot = spatialRiskItems.reduce((sum, item) => sum + item.bobot, 0);
-    const spatialScore = spatialTotalBobot > 0 ? (spatialTotalNR / spatialTotalBobot) : 0;
+    const spatialRawScore = spatialTotalBobot > 0 ? (spatialTotalNR / spatialTotalBobot) : 0;
     
-    // Calculate non-spatial risk score (simple average of risk values)
+    // Convert spatial score to 0-100 scale (inverse: lower raw score = higher percentage)
+    // tinggi(1) → 100%, sedang(2) → 50%, rendah(3) → 0%
+    const spatialScore = ((4 - spatialRawScore) / 3) * 100;
+    
+    // Calculate non-spatial risk score (simple average with standard scoring)
     const nonSpatialTotal = nonSpatialRiskItems.reduce((sum, item) => sum + item.nilaiRisiko, 0);
     const nonSpatialCount = nonSpatialRiskItems.length;
-    const nonSpatialScore = nonSpatialCount > 0 ? (nonSpatialTotal / nonSpatialCount) : 0;
+    const nonSpatialRawScore = nonSpatialCount > 0 ? (nonSpatialTotal / nonSpatialCount) : 0;
+    
+    // Convert non-spatial score to 0-100 scale (standard: higher raw score = higher percentage)  
+    // rendah(1) → 0%, sedang(2) → 50%, tinggi(3) → 100%
+    const nonSpatialScore = ((nonSpatialRawScore - 1) / 2) * 100;
     
     // Combined risk assessment: spatial analysis weighted at 70%, non-spatial at 30%
     const combinedScore = (spatialScore * 0.7) + (nonSpatialScore * 0.3);
     
-    // Convert to percentage scale (1-3 scale to 0-100%)
-    // For spatial: tinggi(1)→~0%, sedang(2)→~50%, rendah(3)→~100%
-    // For non-spatial: tinggi(3)→~100%, sedang(2)→~50%, rendah(1)→~0% (inverted)
-    const scorePercentage = ((combinedScore - 1) / 2) * 100;
-    
     // Determine risk classification based on combined score
     let classification: 'rendah' | 'sedang' | 'tinggi';
-    if (scorePercentage >= 70) {
-      classification = 'rendah';   // Low risk
-    } else if (scorePercentage >= 40 && scorePercentage < 70) {
+    if (combinedScore >= 70) {
+      classification = 'tinggi';   // High risk (high score = high risk)
+    } else if (combinedScore >= 40 && combinedScore < 70) {
       classification = 'sedang';   // Medium risk  
     } else {
-      classification = 'tinggi';   // High risk
+      classification = 'rendah';   // Low risk (low score = low risk)
     }
     
-    setTotalScore(Math.round(scorePercentage));
+    setTotalScore(Math.round(combinedScore));
     setRiskClassification(classification);
     
-    return { scorePercentage: Math.round(scorePercentage), classification };
+    return { scorePercentage: Math.round(combinedScore), classification };
   };
 
   // Calculate risk when items change

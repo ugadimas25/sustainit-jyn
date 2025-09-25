@@ -19,9 +19,10 @@ const supplierAssessments = [
     legalityStatus: "completed",
     legalityScore: 88,
     legalityDate: "2024-12-12",
-    riskAssessmentStatus: "completed",
-    riskAssessmentScore: 92,
-    riskAssessmentDate: "2024-12-15",
+    riskAnalysisStatus: "completed",
+    riskAnalysisScore: 25, // Low risk score (25% = rendah)
+    riskAnalysisLevel: "rendah", // Indonesian: rendah, sedang, tinggi
+    riskAnalysisDate: "2024-12-15",
     overallStatus: "compliant",
     overallScore: 92,
     lastUpdated: "2024-12-15"
@@ -36,9 +37,10 @@ const supplierAssessments = [
     legalityStatus: "completed",
     legalityScore: 90,
     legalityDate: "2024-12-11",
-    riskAssessmentStatus: "in_progress",
-    riskAssessmentScore: null,
-    riskAssessmentDate: null,
+    riskAnalysisStatus: "in_progress",
+    riskAnalysisScore: null,
+    riskAnalysisLevel: null,
+    riskAnalysisDate: null,
     overallStatus: "in_progress",
     overallScore: 89,
     lastUpdated: "2024-12-11"
@@ -53,9 +55,10 @@ const supplierAssessments = [
     legalityStatus: "pending",
     legalityScore: null,
     legalityDate: null,
-    riskAssessmentStatus: "pending",
-    riskAssessmentScore: null,
-    riskAssessmentDate: null,
+    riskAnalysisStatus: "pending",
+    riskAnalysisScore: null,
+    riskAnalysisLevel: null,
+    riskAnalysisDate: null,
     overallStatus: "pending",
     overallScore: 78,
     lastUpdated: "2024-12-05"
@@ -70,9 +73,10 @@ const supplierAssessments = [
     legalityStatus: "completed",
     legalityScore: 85,
     legalityDate: "2024-12-10",
-    riskAssessmentStatus: "completed",
-    riskAssessmentScore: 88,
-    riskAssessmentDate: "2024-12-13",
+    riskAnalysisStatus: "completed",
+    riskAnalysisScore: 55, // Medium risk score (55% = sedang)
+    riskAnalysisLevel: "sedang",
+    riskAnalysisDate: "2024-12-13",
     overallStatus: "compliant",
     overallScore: 85,
     lastUpdated: "2024-12-13"
@@ -87,14 +91,80 @@ const supplierAssessments = [
     legalityStatus: "completed",
     legalityScore: 94,
     legalityDate: "2024-12-12",
-    riskAssessmentStatus: "in_progress",
-    riskAssessmentScore: null,
-    riskAssessmentDate: null,
+    riskAnalysisStatus: "completed",
+    riskAnalysisScore: 82, // High risk score (82% = tinggi)
+    riskAnalysisLevel: "tinggi", 
+    riskAnalysisDate: "2024-12-12",
     overallStatus: "in_progress",
     overallScore: 93,
     lastUpdated: "2024-12-12"
   }
 ];
+
+// Risk level mapping functions
+const getRiskLevelInEnglish = (indonesianLevel: string | null) => {
+  if (!indonesianLevel) return null;
+  const mapping = {
+    'rendah': 'low',
+    'sedang': 'medium', 
+    'tinggi': 'high'
+  };
+  return mapping[indonesianLevel as keyof typeof mapping] || indonesianLevel;
+};
+
+const getRiskBadgeColor = (level: string | null) => {
+  if (!level) return 'bg-gray-100 text-gray-800';
+  const englishLevel = getRiskLevelInEnglish(level);
+  switch (englishLevel) {
+    case 'low':
+      return 'bg-green-100 text-green-800';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-800';
+    case 'high':
+      return 'bg-red-100 text-red-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
+
+const getRiskDisplayText = (level: string | null) => {
+  if (!level) return 'N/A';
+  const englishLevel = getRiskLevelInEnglish(level);
+  switch (englishLevel) {
+    case 'low':
+      return 'Low Risk';
+    case 'medium':
+      return 'Medium Risk';
+    case 'high':
+      return 'High Risk';
+    default:
+      return level;
+  }
+};
+
+// Risk Analysis badge component
+const RiskAnalysisBadge = ({ level, score }: { level: string | null; score?: number | null }) => {
+  if (!level && !score) {
+    return (
+      <Badge className="bg-gray-100 text-gray-800 flex items-center text-xs">
+        <Clock className="w-3 h-3 mr-1" />
+        Pending
+      </Badge>
+    );
+  }
+
+  return (
+    <div className="flex flex-col space-y-1">
+      <Badge className={`${getRiskBadgeColor(level)} flex items-center text-xs`}>
+        <AlertTriangle className="w-3 h-3 mr-1" />
+        {getRiskDisplayText(level)}
+      </Badge>
+      {score && (
+        <span className="text-xs text-gray-600 font-medium">{score}% Risk Score</span>
+      )}
+    </div>
+  );
+};
 
 // Status badge component
 const StatusBadge = ({ status, score }: { status: string; score?: number | null }) => {
@@ -238,7 +308,7 @@ export default function SupplyChainAnalysis() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2" data-testid="title-risk-assessment-results">
               <AlertTriangle className="w-5 h-5" />
-              Risk Assessment Results
+              Risk Analysis Results
             </CardTitle>
             <CardDescription>Risk distribution and score</CardDescription>
           </CardHeader>
@@ -315,7 +385,7 @@ export default function SupplyChainAnalysis() {
                   <TableHead>Type</TableHead>
                   <TableHead className="text-center">Data Collection</TableHead>
                   <TableHead className="text-center">Legality Assessment</TableHead>
-                  <TableHead className="text-center">Risk Assessment</TableHead>
+                  <TableHead className="text-center">Risk Analysis</TableHead>
                   <TableHead className="text-center">Overall Status</TableHead>
                   <TableHead className="text-center">Score</TableHead>
                   <TableHead className="text-center">Actions</TableHead>
@@ -348,9 +418,9 @@ export default function SupplyChainAnalysis() {
                       />
                     </TableCell>
                     <TableCell className="text-center">
-                      <StatusBadge
-                        status={supplier.riskAssessmentStatus}
-                        score={supplier.riskAssessmentScore}
+                      <RiskAnalysisBadge
+                        level={supplier.riskAnalysisLevel}
+                        score={supplier.riskAnalysisScore}
                       />
                     </TableCell>
                     <TableCell className="text-center">
@@ -446,7 +516,7 @@ export default function SupplyChainAnalysis() {
                   4
                 </div>
                 <div>
-                  <p className="font-medium text-orange-900">Risk Assessment</p>
+                  <p className="font-medium text-orange-900">Risk Analysis</p>
                   <p className="text-sm text-orange-700">Comprehensive risk evaluation and scoring</p>
                 </div>
               </div>
@@ -660,12 +730,12 @@ export default function SupplyChainAnalysis() {
         </CardContent>
       </Card>
 
-      {/* Risk Assessment Results */}
+      {/* Risk Analysis Results */}
       <Card data-testid="card-risk-assessment-results">
         <CardHeader>
           <CardTitle className="flex items-center gap-2" data-testid="title-risk-assessment-results">
             <AlertTriangle className="w-5 h-5 text-red-600" />
-            Risk Assessment Results
+            Risk Analysis Results
           </CardTitle>
           <CardDescription>
             Comprehensive risk evaluation and mitigation recommendations
@@ -693,9 +763,9 @@ export default function SupplyChainAnalysis() {
               </div>
             </div>
 
-            {/* Recent Risk Assessments */}
+            {/* Recent Risk Analysis */}
             <div>
-              <h4 className="font-semibold mb-3">Recent Risk Assessments</h4>
+              <h4 className="font-semibold mb-3">Recent Risk Analysis</h4>
               <div className="space-y-2">
                 <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                   <span className="font-medium">PT Permata Hijau Estate</span>
