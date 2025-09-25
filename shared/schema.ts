@@ -1757,7 +1757,22 @@ export const insertEudrAssessmentSchema = createInsertSchema(eudrAssessments).om
 
 // Risk Assessment system based on KPNPLT-SST-XXXX.06.1 methodology
 export const riskCategoryEnum = pgEnum("risk_category", ["spatial", "non_spatial"]);
-export const riskItemTypeEnum = pgEnum("risk_item_type", ["deforestasi", "legalitas_lahan", "kawasan_gambut", "indigenous_people", "sertifikasi", "dokumentasi_legal"]);
+export const riskItemTypeEnum = pgEnum("risk_item_type", [
+  // Spatial analysis items (4 items from document)
+  "deforestasi", 
+  "legalitas_lahan", 
+  "kawasan_gambut", 
+  "indigenous_people",
+  // Non-spatial analysis items (5 items from document)
+  "lingkungan", 
+  "keanekaragaman_hayati", 
+  "hak_pihak_ketiga", 
+  "hak_buruh_ham", 
+  "perpajakan_antikorupsi",
+  // Legacy items (keeping for backward compatibility)
+  "sertifikasi", 
+  "dokumentasi_legal"
+]);
 export const riskParameterLevelEnum = pgEnum("risk_parameter_level", ["tinggi", "sedang", "rendah"]); // High, Medium, Low
 export const mitigationStatusEnum = pgEnum("mitigation_status", ["pending", "in_progress", "completed", "not_applicable"]);
 
@@ -1790,10 +1805,18 @@ export const riskAssessments = pgTable("risk_assessments", {
 
   // Individual risk item scores (JSON structure for flexibility)
   riskItemScores: jsonb("risk_item_scores").$type<{
+    // Spatial analysis items (4 items from Risk Analysis document)
     deforestasi: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
     legalitas_lahan: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
     kawasan_gambut: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
     indigenous_people: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
+    // Non-spatial analysis items (5 items from Risk Analysis document)
+    lingkungan?: { score: number; level: string; parameter: string; mitigasi: string; };
+    keanekaragaman_hayati?: { score: number; level: string; parameter: string; mitigasi: string; };
+    hak_pihak_ketiga?: { score: number; level: string; parameter: string; mitigasi: string; };
+    hak_buruh_ham?: { score: number; level: string; parameter: string; mitigasi: string; };
+    perpajakan_antikorupsi?: { score: number; level: string; parameter: string; mitigasi: string; };
+    // Legacy items (keeping for backward compatibility)
     sertifikasi?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
     dokumentasi_legal?: { score: number; level: string; parameter: string; weight: number; mitigasi: string; };
   }>(),

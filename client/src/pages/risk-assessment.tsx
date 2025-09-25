@@ -15,7 +15,7 @@ import { useLocation } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
@@ -143,13 +143,8 @@ const NON_SPATIAL_RISK_TEMPLATE: NonSpatialRiskItem[] = [
     parameter: '1. Terdapat Konflik Satwa RTE (Rare, Threatened, and Endangered)\n2. Tidak Memiliki SOP Penanganan Konflik Satwa',
     nilaiRisiko: 3,
     mitigasi: 'Mendorong Supplier membentuk Sistem Penanganan Konflik Satwa Liar termasuk laporan penangannya',
-    sumber: ['IBA', 'EBA', 'IUCN', 'Peta Konsesi Perusahaan'],
-    linkSumber: [
-      'https://www.birdlife.org/',
-      'https://www.protectedplanet.net/en',
-      'https://www.iucnredlist.org/resources/spatial-data-download',
-      'https://kpn.co.id/konsesi-maps'
-    ]
+    sumber: ['Media Cetak', 'Media Elektronik'],
+    linkSumber: ['https://news.google.com/', 'https://kompas.com/']
   },
   {
     no: 3,
@@ -163,13 +158,23 @@ const NON_SPATIAL_RISK_TEMPLATE: NonSpatialRiskItem[] = [
   },
   {
     no: 4,
-    itemAnalisa: 'HAM/Buruh',
+    itemAnalisa: 'Hak Buruh dan Hak Asasi Manusia',
     tipeRisiko: 'tinggi',
-    parameter: '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan)\n2. Tidak memiliki upaya perbaikan',
+    parameter: '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan)\n2. Tidak Memiliki Sistem Penanganan Keluhan Karyawan',
     nilaiRisiko: 3,
-    mitigasi: '1. Sosialisasi Kebijakan Perusahaan\n2. Melakukan gap analisis dan pendampingan untuk pemenuhan persyaratan yang sesuai dengan regulasi HAM/buruh',
+    mitigasi: 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
     sumber: ['Media Cetak', 'Media Elektronik'],
     linkSumber: ['https://news.google.com/', 'https://kompas.com/']
+  },
+  {
+    no: 5,
+    itemAnalisa: 'Perpajakan, Antikorupsi, perdagangan dan Bea Cukai',
+    tipeRisiko: 'tinggi',
+    parameter: 'Jika Terdapat Release dari Pemerintah/Instansi Terkait, Mengenai : 1. Penggelapan Pajak 2. Kasus Korupsi dan Suap',
+    nilaiRisiko: 3,
+    mitigasi: 'Di Keluarkan dari Rantai Pasok',
+    sumber: ['Media Cetak', 'Media Elektronik', 'Rilis Pemerintah'],
+    linkSumber: ['https://news.google.com/', 'https://kompas.com/', 'https://kemenkeu.go.id/']
   }
 ];
 
@@ -199,24 +204,34 @@ export default function RiskAssessment() {
 
   
 
-  // Calculate total score and risk classification according to Form 06.1 methodology
+  // Calculate total score and risk classification according to Risk Analysis methodology
   const calculateRiskAssessment = () => {
-    // Formula: Score = Σ(Bobot A × Nilai Risiko B) / Total Bobot × 100
-    const totalNR = spatialRiskItems.reduce((sum, item) => sum + (item.bobot * item.nilaiRisiko), 0);
-    const totalBobot = spatialRiskItems.reduce((sum, item) => sum + item.bobot, 0);
-    const calculatedScore = totalBobot > 0 ? (totalNR / totalBobot) : 0;
+    // Calculate spatial risk score (using weight-based formula)
+    const spatialTotalNR = spatialRiskItems.reduce((sum, item) => sum + (item.bobot * item.nilaiRisiko), 0);
+    const spatialTotalBobot = spatialRiskItems.reduce((sum, item) => sum + item.bobot, 0);
+    const spatialScore = spatialTotalBobot > 0 ? (spatialTotalNR / spatialTotalBobot) : 0;
     
-    // Convert to percentage: tinggi(1)→~0%, sedang(2)→~50%, rendah(3)→~100%
-    const scorePercentage = ((calculatedScore - 1) / 2) * 100;
+    // Calculate non-spatial risk score (simple average of risk values)
+    const nonSpatialTotal = nonSpatialRiskItems.reduce((sum, item) => sum + item.nilaiRisiko, 0);
+    const nonSpatialCount = nonSpatialRiskItems.length;
+    const nonSpatialScore = nonSpatialCount > 0 ? (nonSpatialTotal / nonSpatialCount) : 0;
     
-    // Determine risk classification based on exact thresholds from Form 06.1
+    // Combined risk assessment: spatial analysis weighted at 70%, non-spatial at 30%
+    const combinedScore = (spatialScore * 0.7) + (nonSpatialScore * 0.3);
+    
+    // Convert to percentage scale (1-3 scale to 0-100%)
+    // For spatial: tinggi(1)→~0%, sedang(2)→~50%, rendah(3)→~100%
+    // For non-spatial: tinggi(3)→~100%, sedang(2)→~50%, rendah(1)→~0% (inverted)
+    const scorePercentage = ((combinedScore - 1) / 2) * 100;
+    
+    // Determine risk classification based on combined score
     let classification: 'rendah' | 'sedang' | 'tinggi';
-    if (scorePercentage >= 67) {
-      classification = 'rendah';
-    } else if (scorePercentage >= 61 && scorePercentage < 67) {
-      classification = 'sedang';
+    if (scorePercentage >= 70) {
+      classification = 'rendah';   // Low risk
+    } else if (scorePercentage >= 40 && scorePercentage < 70) {
+      classification = 'sedang';   // Medium risk  
     } else {
-      classification = 'tinggi';
+      classification = 'tinggi';   // High risk
     }
     
     setTotalScore(Math.round(scorePercentage));
@@ -228,7 +243,7 @@ export default function RiskAssessment() {
   // Calculate risk when items change
   useEffect(() => {
     calculateRiskAssessment();
-  }, [spatialRiskItems]);
+  }, [spatialRiskItems, nonSpatialRiskItems]);
 
   // Update risk item
   const updateRiskItem = (index: number, field: keyof SpatialRiskItem, value: any) => {
@@ -254,8 +269,15 @@ export default function RiskAssessment() {
     
     // Update when risk level changes
     if (field === 'tipeRisiko') {
-      const riskValueMap = { 'tinggi': 3, 'sedang': 2, 'rendah': 1 } as const;
-      updatedItems[index].nilaiRisiko = riskValueMap[value as keyof typeof riskValueMap] as 1 | 2 | 3;
+      // Special case for Perpajakan item (only High=3, Low=1, no Medium)
+      if (updatedItems[index].itemAnalisa === 'Perpajakan, Antikorupsi, perdagangan dan Bea Cukai') {
+        const riskValueMap = { 'tinggi': 3, 'rendah': 1 } as const;
+        updatedItems[index].nilaiRisiko = riskValueMap[value as keyof typeof riskValueMap] as 1 | 3;
+      } else {
+        // Standard mapping for other items (High=3, Medium=2, Low=1)
+        const riskValueMap = { 'tinggi': 3, 'sedang': 2, 'rendah': 1 } as const;
+        updatedItems[index].nilaiRisiko = riskValueMap[value as keyof typeof riskValueMap] as 1 | 2 | 3;
+      }
       updatedItems[index].parameter = getNonSpatialParameterText(updatedItems[index].itemAnalisa, value as any);
       updatedItems[index].mitigasi = getNonSpatialMitigasiText(updatedItems[index].itemAnalisa, value as any);
     }
@@ -277,22 +299,146 @@ export default function RiskAssessment() {
     }
   };
 
-  // Handle form submission
-  const onSubmit = (data: any) => {
-    const formData: RiskAssessmentFormData = {
-      supplierName: data.supplierName,
-      assessmentDate: data.assessmentDate,
-      assessorName: data.assessorName || 'KPN Compliance Administrator',
-      spatialRiskItems,
-      nonSpatialRiskItems,
-      totalScore,
-      riskClassification
-    };
+  // Risk Assessment API mutation
+  const createRiskAssessmentMutation = useMutation({
+    mutationFn: async (data: any) => {
+      // Prepare the risk assessment data for backend
+      const riskAssessmentData = {
+        supplierName: data.supplierName,
+        assessorName: data.assessorName || 'KPN Compliance Administrator',
+        assessmentDate: new Date(data.assessmentDate).toISOString(),
+        status: 'Complete',
+        overallScore: totalScore,
+        riskClassification: riskClassification,
+        spatialRiskScore: calculateSpatialScore(),
+        spatialRiskLevel: getSpatialRiskLevel(),
+        nonSpatialRiskScore: calculateNonSpatialScore(),
+        nonSpatialRiskLevel: getNonSpatialRiskLevel(),
+        riskItemScores: buildRiskItemScores(),
+        mitigationActions: buildMitigationActions(),
+        notes: `Risk analysis completed on ${new Date().toLocaleDateString()} with ${spatialRiskItems.length} spatial and ${nonSpatialRiskItems.length} non-spatial risk items evaluated.`
+      };
 
-    toast({
-      title: "Risk Assessment Completed",
-      description: `Assessment untuk ${data.supplierName} berhasil disimpan dengan skor ${totalScore}% (${riskClassification.toUpperCase()})`,
+      const response = await apiRequest('POST', '/api/risk-assessments', riskAssessmentData);
+      return response.json();
+    },
+    onSuccess: (result) => {
+      // Invalidate risk assessments cache to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      
+      toast({
+        title: "Risk Analysis Completed",
+        description: `Assessment untuk ${form.getValues('supplierName')} berhasil disimpan dengan skor ${totalScore}% (${riskClassification.toUpperCase()})`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Gagal menyimpan risk analysis. Silakan coba lagi.",
+        variant: "destructive"
+      });
+      console.error('Risk assessment submission error:', error);
+    }
+  });
+
+  // Helper functions for backend data preparation
+  const calculateSpatialScore = () => {
+    const totalNR = spatialRiskItems.reduce((sum, item) => sum + (item.bobot * item.nilaiRisiko), 0);
+    const totalBobot = spatialRiskItems.reduce((sum, item) => sum + item.bobot, 0);
+    return totalBobot > 0 ? (totalNR / totalBobot) : 0;
+  };
+
+  const calculateNonSpatialScore = () => {
+    const total = nonSpatialRiskItems.reduce((sum, item) => sum + item.nilaiRisiko, 0);
+    const count = nonSpatialRiskItems.length;
+    return count > 0 ? (total / count) : 0;
+  };
+
+  const getSpatialRiskLevel = () => {
+    const score = calculateSpatialScore();
+    if (score <= 1.5) return 'high';
+    if (score <= 2.5) return 'medium';
+    return 'low';
+  };
+
+  const getNonSpatialRiskLevel = () => {
+    const score = calculateNonSpatialScore();
+    if (score >= 2.5) return 'high';
+    if (score >= 1.5) return 'medium';
+    return 'low';
+  };
+
+  const buildRiskItemScores = () => {
+    const scores: any = {};
+    
+    // Add spatial risk items
+    spatialRiskItems.forEach(item => {
+      const key = item.itemAnalisa.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      scores[key] = {
+        score: item.nilaiRisiko,
+        level: item.tipeRisiko,
+        parameter: item.parameter,
+        weight: item.bobot,
+        mitigasi: item.mitigasi
+      };
     });
+
+    // Add non-spatial risk items
+    nonSpatialRiskItems.forEach(item => {
+      const key = item.itemAnalisa.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      scores[key] = {
+        score: item.nilaiRisiko,
+        level: item.tipeRisiko,
+        parameter: item.parameter,
+        mitigasi: item.mitigasi
+      };
+    });
+
+    return scores;
+  };
+
+  const buildMitigationActions = () => {
+    const actions: any[] = [];
+    
+    // Add spatial mitigation actions
+    spatialRiskItems.forEach(item => {
+      if (item.mitigasi && item.mitigasi.trim()) {
+        actions.push({
+          riskItem: item.itemAnalisa,
+          action: item.mitigasi,
+          status: 'pending',
+          targetDate: '',
+          assignedTo: '',
+          progress: 0
+        });
+      }
+    });
+
+    // Add non-spatial mitigation actions
+    nonSpatialRiskItems.forEach(item => {
+      if (item.mitigasi && item.mitigasi.trim()) {
+        actions.push({
+          riskItem: item.itemAnalisa,
+          action: item.mitigasi,
+          status: 'pending',
+          targetDate: '',
+          assignedTo: '',
+          progress: 0
+        });
+      }
+    });
+
+    return actions;
+  };
+
+  // Handle form submission
+  const onSubmit = async (data: any) => {
+    try {
+      await createRiskAssessmentMutation.mutateAsync(data);
+    } catch (error) {
+      console.error('Error submitting risk assessment:', error);
+    }
   };
 
   // Get mitigation text for each risk level
@@ -367,10 +513,14 @@ export default function RiskAssessment() {
         'sedang': '1. Jika terdapat pemberitaan di media cetak/elektronik tentang konflik lahan dengan masyarakat adat atau petani plasma, namun sedang dalam proses penyelesaian/mediasi\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder',
         'rendah': '1. Tidak terdapat pemberitaan negatif di media cetak/elektronik terkait konflik dengan masyarakat adat atau petani plasma\n2. Memiliki SOP mengenai Padiatapan dan Penanganan Keluhan Stakeholder'
       },
-      'HAM/Buruh': {
-        'tinggi': '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan)\n2. Tidak memiliki upaya perbaikan',
-        'sedang': 'Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan), namun telah melakukan upaya perbaikan',
-        'rendah': '1. Terdapat Isu Media, Namun Isu Sudah Terselesaikan\n2. Tidak terdapat pemberitaan negatif di media cetak/elektronik terkait pelanggaran HAM/buruh'
+      'Hak Buruh dan Hak Asasi Manusia': {
+        'tinggi': '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan)\n2. Tidak Memiliki Sistem Penanganan Keluhan Karyawan',
+        'sedang': '1. Jika Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik Seperti : Terdapat Pelanggaran HAM/buruh (kerja paksa, intimidasi, kekerasan) namun sedang dalam proses mediasi/penyelesaian\n2. Memiliki Mekanisme/Sistem Penanganan Keluhan Karyawan',
+        'rendah': '1. Tidak Terdapat Pemberitaan Baik Media Cetak Maupun Media Elektronik tentang Pelanggaran HAM / Buruh\n2. Terdapat Pemberitaan namun sudah diselesaikan\n3. Memiliki Mekanisme/Sistem Penanganan Keluhan Karyawan'
+      },
+      'Perpajakan, Antikorupsi, perdagangan dan Bea Cukai': {
+        'tinggi': 'Jika Terdapat Release dari Pemerintah/Instansi Terkait, Mengenai : 1. Penggelapan Pajak 2. Kasus Korupsi dan Suap',
+        'rendah': 'Jika Tidak Terdapat Pemberitaan di Media Baik Cetak Maupun Elektronik'
       }
     };
     return parameterMap[itemAnalisa]?.[tipeRisiko] || '';
@@ -394,10 +544,14 @@ export default function RiskAssessment() {
         'sedang': '1. Mendorong percepatan proses resolusi konflik melalui mekanisme mediasi terbuka\n2. Sosialisasi kebijakan perusahaan kepada supplier',
         'rendah': 'Monitoring isu sosial secara berkala untuk deteksi dini potensi konflik baru.'
       },
-      'HAM/Buruh': {
-        'tinggi': '1. Sosialisasi Kebijakan Perusahaan\n2. Melakukan gap analisis dan pendampingan untuk pemenuhan persyaratan yang sesuai dengan regulasi HAM/buruh',
-        'sedang': '1. Sosialisasi Kebijakan Perusahaan\n2. Monitoring tindak lanjut perbaikan',
-        'rendah': 'Monitoring berkala terkait isu HAM/buruh di media'
+      'Hak Buruh dan Hak Asasi Manusia': {
+        'tinggi': 'Melakukan Pendampingan/pelibatan supplier, dalam upaya penyelesaian konflik',
+        'sedang': '1. Mendorong percepatan proses resolusi konflik melalui mekanisme mediasi terbuka\n2. Sosialisasi kebijakan perusahaan kepada supplier',
+        'rendah': 'Monitoring isu sosial secara berkala untuk deteksi dini pelanggaran terhadap hak buruh dan hak asasi manusia'
+      },
+      'Perpajakan, Antikorupsi, perdagangan dan Bea Cukai': {
+        'tinggi': 'Di Keluarkan dari Rantai Pasok',
+        'rendah': ''
       }
     };
     return mitigasiMap[itemAnalisa]?.[tipeRisiko] || '';
@@ -410,17 +564,17 @@ export default function RiskAssessment() {
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900" data-testid="text-page-title">
-                KPNPLT-SST-xxxx.06.1
+              <h1 className="text-3xl font-bold text-gray-900" data-testid="text-page-title">
+                Risk Analysis
               </h1>
               <h2 className="text-xl font-semibold text-gray-800 mt-2">
-                FORM METODE PERHITUNGAN TINGKAT RISIKO DAN MITIGASINYA
+                Supplier Risk Assessment and Mitigation Planning
               </h2>
               <p className="text-gray-600 mt-1">
-                I. ANALISA RISIKO SPASIAL
+                Comprehensive spatial and non-spatial risk evaluation for supply chain compliance
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                Pemeriksaan ini dilaksanakan sebelum perjanjian kerja sama dengan pemasok diberlakukan
+                Assessment conducted before supplier partnership agreements are implemented
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -501,9 +655,10 @@ export default function RiskAssessment() {
                 <Button 
                   type="submit" 
                   className="w-full"
+                  disabled={createRiskAssessmentMutation.isPending}
                   data-testid="button-submit-assessment"
                 >
-                  Simpan Assessment Risiko
+                  {createRiskAssessmentMutation.isPending ? "Menyimpan..." : "Simpan Risk Analysis"}
                   <Calculator className="w-4 h-4 ml-2" />
                 </Button>
               </form>
@@ -769,6 +924,123 @@ export default function RiskAssessment() {
                   <p className="text-sm text-orange-700 mt-1">
                     Analisa Non Spasial (Pemberitaan Media) ini hanya digunakan sebagai referensi untuk supplier engagement dan tidak mempengaruhi perhitungan skor risiko utama. Informasi ini membantu dalam memahami konteks media dan reputasi supplier untuk strategi pendampingan yang lebih efektif.
                   </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Mitigation Plans Section */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-purple-600" />
+              III. Risk Mitigation Plans
+            </CardTitle>
+            <CardDescription>
+              Comprehensive mitigation strategies based on identified risk levels for both spatial and non-spatial analysis
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              
+              {/* Spatial Risk Mitigation */}
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                  Spatial Risk Mitigation Strategies
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {spatialRiskItems.map((item, index) => (
+                    <Card key={index} className="border border-gray-200">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm font-medium">{item.itemAnalisa}</CardTitle>
+                          <Badge className={getRiskBadgeColor(item.tipeRisiko)}>
+                            {item.tipeRisiko.toUpperCase()}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                          {getMitigasiText(item.itemAnalisa, item.tipeRisiko)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Non-Spatial Risk Mitigation */}
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                  Non-Spatial Risk Mitigation Strategies
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {nonSpatialRiskItems.map((item, index) => (
+                    <Card key={index} className="border border-gray-200">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-sm font-medium">{item.itemAnalisa}</CardTitle>
+                          <Badge className={getRiskBadgeColor(item.tipeRisiko)}>
+                            {item.tipeRisiko.toUpperCase()}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                          {getNonSpatialMitigasiText(item.itemAnalisa, item.tipeRisiko)}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Overall Risk Summary and Recommendations */}
+              <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-6 h-6 text-blue-600 mt-1" />
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-blue-900 mb-2">Overall Risk Assessment Summary</h4>
+                    <div className="space-y-2 text-sm text-blue-800">
+                      <div className="flex items-center justify-between">
+                        <span>Overall Risk Classification:</span>
+                        <Badge className={`${getRiskBadgeColor(riskClassification)} text-sm px-3 py-1`}>
+                          {riskClassification.toUpperCase()} RISK
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Risk Score:</span>
+                        <span className="font-bold">{totalScore}%</span>
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-blue-300">
+                        <h5 className="font-medium mb-2">Next Steps:</h5>
+                        <ul className="list-disc list-inside space-y-1 text-sm">
+                          {riskClassification === 'tinggi' && (
+                            <>
+                              <li>Immediate attention required for all high-risk items</li>
+                              <li>Consider exclusion from supply chain for critical violations</li>
+                              <li>Implement intensive supplier support and monitoring</li>
+                            </>
+                          )}
+                          {riskClassification === 'sedang' && (
+                            <>
+                              <li>Enhanced monitoring and support programs required</li>
+                              <li>Develop improvement timeline with supplier</li>
+                              <li>Regular progress assessments recommended</li>
+                            </>
+                          )}
+                          {riskClassification === 'rendah' && (
+                            <>
+                              <li>Continue standard monitoring procedures</li>
+                              <li>Maintain current supplier relationship</li>
+                              <li>Annual reassessment recommended</li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
