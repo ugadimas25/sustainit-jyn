@@ -3736,7 +3736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('🚀 Sending request to EUDR Multilayer API...');
         console.log(`📤 Request size: ${formBody.length} bytes`);
 
-        response = await fetch('https://gis-development.koltivaapi.com/data/v1/multilayer_processing_ktv', {
+        response = await fetch('http://43.156.75.206/api/v1/upload-geojson', {
           method: 'POST',
           headers: {
             'Content-Type': `multipart/form-data; boundary=${boundary}`
