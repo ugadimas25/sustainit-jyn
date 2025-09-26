@@ -3736,7 +3736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('🚀 Sending request to EUDR Multilayer API...');
         console.log(`📤 Request size: ${formBody.length} bytes`);
 
-        response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
+        response = await fetch('https://gis-development.koltivaapi.com/api/v1/upload-geojson', {
           method: 'POST',
           headers: {
             'Content-Type': `multipart/form-data; boundary=${boundary}`

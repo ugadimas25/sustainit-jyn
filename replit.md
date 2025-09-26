@@ -50,4 +50,4 @@ Preferred communication style: Simple, everyday language.
 - **Global Forest Watch (GFW) API**: Deforestation monitoring and GLAD alerts.
 - **World Database on Protected Areas (WDPA)**: Protected area verification.
 - **Uppy.js**: File upload library (AWS S3 integration, drag-and-drop).
-- **EUDR Multilayer API (https://eudr-multilayer-api.fly.dev)**: Real-time satellite data processing for deforestation analysis.
+- **EUDR Multilayer API (https://gis-development.koltivaapi.com)**: Real-time satellite data processing for deforestation analysis.

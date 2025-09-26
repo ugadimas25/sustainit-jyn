@@ -552,7 +552,7 @@ const protectedStatus = await wdpaService.checkProtectedArea(plotCoordinates);
 #### EUDR Multilayer API
 ```typescript
 // Real-time satellite analysis
-const response = await fetch('https://eudr-multilayer-api.fly.dev/analyze', {
+const response = await fetch('https://gis-development.koltivaapi.com/analyze', {
   method: 'POST',
   body: JSON.stringify({ coordinates, datasets: ['GFW', 'JRC', 'SBTN'] })
 });
