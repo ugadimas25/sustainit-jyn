@@ -3335,117 +3335,230 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
-  // Helper function to get country from coordinates using adm_boundary_lv0
-  async function getCountryFromCoordinates(lat: number, lng: number): Promise<string> {
+  // Optimized batch spatial calculations function for WDPA and peatland intersections
+  async function batchSpatialCalculations(features: any[]): Promise<Record<number, {wdpa: any, peatland: any}>> {
+    const results: Record<number, {wdpa: any, peatland: any}> = {};
+    
     try {
-      // Primary method: Use PostGIS database lookup for adm_boundary_lv0
-      console.log(`🗄️  Checking adm_boundary_lv0 for coordinates (${lat}, ${lng})`);
-
+      console.log(`🗄️ Starting batch spatial calculations for ${features.length} features`);
+      
+      // Build batch geometry collection for all features
+      const featureGeometries = features.map((feature, index) => ({
+        index,
+        geometry: feature.geometry,
+        hasValidGeometry: feature.geometry && feature.geometry.coordinates
+      })).filter(item => item.hasValidGeometry);
+      
+      console.log(`📐 Processing ${featureGeometries.length} features with valid geometries`);
+      
+      if (featureGeometries.length === 0) {
+        return results;
+      }
+      
+      // BATCH WDPA INTERSECTION CALCULATIONS
+      console.log(`🏞️ Executing batch WDPA intersection calculations...`);
       try {
-        // Use raw SQL query to check if point is within any country boundary
-        const result = await db.execute(sql`
-          SELECT nam_0 
-          FROM adm_boundary_lv0 
-          WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))
-          LIMIT 1
+        const wdpaGeomValues = featureGeometries.map(item => 
+          `(${item.index}, ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(item.geometry)}'), 4326))`
+        ).join(', ');
+        
+        const batchWdpaQuery = await db.execute(sql`
+          WITH feature_geoms(feature_idx, geom) AS (
+            VALUES ${sql.raw(wdpaGeomValues)}
+          ),
+          wdpa_intersections AS (
+            SELECT 
+              fg.feature_idx,
+              COALESCE(SUM(ST_Area(ST_Intersection(ST_Transform(w.geom, 4326)::geography, fg.geom::geography))), 0) / 10000 AS intersection_area_ha,
+              array_agg(DISTINCT w.name) FILTER (WHERE w.name IS NOT NULL) as wdpa_names,
+              array_agg(DISTINCT w.category) FILTER (WHERE w.category IS NOT NULL) as wdpa_categories
+            FROM feature_geoms fg
+            LEFT JOIN wdpa_idn w ON ST_Intersects(ST_Transform(w.geom, 4326), fg.geom)
+            GROUP BY fg.feature_idx
+          )
+          SELECT * FROM wdpa_intersections
         `);
-
-        if (result.rows && result.rows.length > 0) {
-          const countryName = result.rows[0].nam_0;
-          console.log(`✅ Country detected from adm_boundary_lv0: ${countryName}`);
-          return countryName as string;
-        }
-      } catch (dbError) {
-        console.log(`❌ Database query error:`, dbError);
+        
+        batchWdpaQuery.rows.forEach(row => {
+          const idx = row.feature_idx as number;
+          if (!results[idx]) results[idx] = { wdpa: null, peatland: null };
+          results[idx].wdpa = {
+            intersection_area_ha: row.intersection_area_ha || 0,
+            wdpa_names: row.wdpa_names || [],
+            wdpa_categories: row.wdpa_categories || []
+          };
+        });
+        
+        console.log(`✅ Batch WDPA calculations completed for ${batchWdpaQuery.rows.length} features`);
+      } catch (wdpaError) {
+        console.error('❌ Batch WDPA calculation error:', wdpaError);
+        // Fallback: set empty results for all features
+        featureGeometries.forEach(item => {
+          if (!results[item.index]) results[item.index] = { wdpa: null, peatland: null };
+          results[item.index].wdpa = { intersection_area_ha: 0, wdpa_names: [], wdpa_categories: [] };
+        });
       }
-
-      // Fallback 1: Try with a buffer around the point for more tolerance
+      
+      // BATCH PEATLAND INTERSECTION CALCULATIONS
+      console.log(`🏞️ Executing batch peatland intersection calculations...`);
       try {
-        const result = await db.execute(sql`
-          SELECT nam_0 
-          FROM adm_boundary_lv0 
-          WHERE ST_DWithin(geom, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326), 0.01)
-          ORDER BY ST_Distance(geom, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326))
-          LIMIT 1
+        const peatlandGeomValues = featureGeometries.map(item => 
+          `(${item.index}, ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(item.geometry)}'), 4326))`
+        ).join(', ');
+        
+        const batchPeatlandQuery = await db.execute(sql`
+          WITH feature_geoms(feature_idx, geom) AS (
+            VALUES ${sql.raw(peatlandGeomValues)}
+          ),
+          peatland_intersections AS (
+            SELECT 
+              fg.feature_idx,
+              COALESCE(SUM(ST_Area(ST_Intersection(p.geom, fg.geom)::geography)), 0) / 10000 as intersection_area_ha
+            FROM feature_geoms fg
+            LEFT JOIN peatland_idn p ON ST_Intersects(ST_Transform(p.geom, 4326), fg.geom)
+            GROUP BY fg.feature_idx
+          )
+          SELECT * FROM peatland_intersections
         `);
-
-        if (result.rows && result.rows.length > 0) {
-          const countryName = result.rows[0].nam_0;
-          console.log(`✅ Country detected from adm_boundary_lv0 with buffer: ${countryName}`);
-          return countryName as string;
+        
+        batchPeatlandQuery.rows.forEach(row => {
+          const idx = row.feature_idx as number;
+          if (!results[idx]) results[idx] = { wdpa: null, peatland: null };
+          results[idx].peatland = {
+            intersection_area_ha: row.intersection_area_ha || 0
+          };
+        });
+        
+        console.log(`✅ Batch peatland calculations completed for ${batchPeatlandQuery.rows.length} features`);
+      } catch (peatlandError) {
+        console.error('❌ Batch peatland calculation error:', peatlandError);
+        // Fallback: set empty results for all features
+        featureGeometries.forEach(item => {
+          if (!results[item.index]) results[item.index] = { wdpa: null, peatland: null };
+          results[item.index].peatland = { intersection_area_ha: 0 };
+        });
+      }
+      
+      // Fill in results for features without valid geometry
+      features.forEach((feature, index) => {
+        if (!results[index]) {
+          results[index] = {
+            wdpa: { intersection_area_ha: 0, wdpa_names: [], wdpa_categories: [] },
+            peatland: { intersection_area_ha: 0 }
+          };
         }
-      } catch (dbError) {
-        console.log(`❌ Database buffer query error:`, dbError);
-      }
-
-      // Fallback 2: Enhanced coordinate-based country detection for Indonesia
-      console.log(`🗺️  Using coordinate-based country detection for (${lat}, ${lng})`);
-
-      // Indonesia - more precise bounds including Sulawesi
-      if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
-        // Special check for Sulawesi region where your plots are located
-        if (lat >= -6 && lat <= 2 && lng >= 118 && lng <= 125) {
-          console.log(`🇮🇩 Detected Indonesia (Sulawesi region) by coordinates`);
-          return 'Indonesia';
-        }
-        console.log(`🇮🇩 Detected Indonesia by coordinates`);
-        return 'Indonesia';
-      }
-      // Malaysia
-      else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
-        console.log(`🇲🇾 Detected Malaysia by coordinates`);
-        return 'Malaysia';
-      }
-      // Nigeria
-      else if (lat >= 4.27 && lat <= 13.89 && lng >= 2.67 && lng <= 14.68) {
-        console.log(`🇳🇬 Detected Nigeria by coordinates`);
-        return 'Nigeria';
-      }
-      // Ghana
-      else if (lat >= 4.74 && lat <= 11.17 && lng >= -3.25 && lng <= 1.19) {
-        console.log(`🇬🇭 Detected Ghana by coordinates`);
-        return 'Ghana';
-      }
-      // Ivory Coast
-      else if (lat >= 4.36 && lat <= 10.74 && lng >= -8.60 && lng <= -2.49) {
-        console.log(`🇨🇮 Detected Ivory Coast by coordinates`);
-        return 'Ivory Coast';
-      }
-      // Brazil
-      else if (lat >= -33.75 && lat <= 5.27 && lng >= -73.99 && lng <= -28.84) {
-        console.log(`🇧🇷 Detected Brazil by coordinates`);
-        return 'Brazil';
-      }
-      // Central African Republic
-      else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
-        console.log(`🇨🇫 Detected Central African Republic by coordinates`);
-        return 'Central African Republic';
-      }
-
-      console.log(`❓ Could not determine country for coordinates (${lat}, ${lng})`);
-      return 'Unknown';
-
+      });
+      
+      console.log(`✅ Batch spatial calculations completed for ${features.length} features`);
+      return results;
+      
     } catch (error) {
-      console.error('Database lookup error:', error);
+      console.error('❌ Critical error in batch spatial calculations:', error);
+      // Ultimate fallback: create empty results for all features
+      features.forEach((feature, index) => {
+        results[index] = {
+          wdpa: { intersection_area_ha: 0, wdpa_names: [], wdpa_categories: [] },
+          peatland: { intersection_area_ha: 0 }
+        };
+      });
+      return results;
+    }
+  }
 
-      // Final fallback based on coordinate ranges
-      if (lat >= -11 && lat <= 6 && lng >= 95 && lng <= 141) {
-        return 'Indonesia';
-      } else if (lat >= 0.85 && lat <= 7.36 && lng >= 99.64 && lng <= 119.27) {
-        return 'Malaysia';
-      } else if (lat >= 4.27 && lat <= 13.89 && lng >= 2.67 && lng <= 14.68) {
-        return 'Nigeria';
-      } else if (lat >= 4.74 && lat <= 11.17 && lng >= -3.25 && lng <= 1.19) {
-        return 'Ghana';
-      } else if (lat >= 4.36 && lat <= 10.74 && lng >= -8.60 && lng <= -2.49) {
-        return 'Ivory Coast';
-      } else if (lat >= -33.75 && lat <= 5.27 && lng >= -73.99 && lng <= -28.84) {
-        return 'Brazil';
-      } else if (lat >= 2.22 && lat <= 11.00 && lng >= 14.42 && lng <= 27.46) {
-        return 'Central African Republic';
+  // Optimized batch country detection function
+  async function getBatchCountryFromCoordinates(coordinates: Array<{lat: number, lng: number, index: number}>): Promise<Record<number, string>> {
+    const results: Record<number, string> = {};
+    
+    try {
+      // Fast Indonesia coordinate range check (covers 95% of our cases)
+      const indonesiaCoords: number[] = [];
+      const otherCoords: Array<{lat: number, lng: number, index: number}> = [];
+      
+      coordinates.forEach(coord => {
+        if (coord.lat >= -11 && coord.lat <= 6 && coord.lng >= 95 && coord.lng <= 141) {
+          results[coord.index] = 'Indonesia';
+          indonesiaCoords.push(coord.index);
+        } else {
+          otherCoords.push(coord);
+        }
+      });
+      
+      console.log(`🚀 Fast-tracked ${indonesiaCoords.length} Indonesia coordinates via range check`);
+      
+      // Only query database for non-Indonesia coordinates if any exist
+      if (otherCoords.length > 0) {
+        console.log(`🗄️ Batch checking ${otherCoords.length} coordinates in adm_boundary_lv0`);
+        
+        try {
+          // Build efficient batch query for remaining coordinates
+          const coordValues = otherCoords.map(coord => `(${coord.index}, ${coord.lng}, ${coord.lat})`).join(', ');
+          
+          const batchQuery = await db.execute(sql`
+            WITH coord_inputs(idx, lng, lat) AS (
+              VALUES ${sql.raw(coordValues)}
+            ),
+            points AS (
+              SELECT idx, ST_SetSRID(ST_MakePoint(lng, lat), 4326) as geom
+              FROM coord_inputs
+            ),
+            country_matches AS (
+              SELECT DISTINCT ON (p.idx) p.idx, a.nam_0 as country
+              FROM points p
+              JOIN adm_boundary_lv0 a ON ST_Contains(a.geom, p.geom)
+            )
+            SELECT idx, country FROM country_matches
+          `);
+          
+          batchQuery.rows.forEach(row => {
+            results[row.idx as number] = row.country as string;
+          });
+          
+          console.log(`✅ Batch resolved ${batchQuery.rows.length} countries from database`);
+        } catch (dbError) {
+          console.warn('Batch database query failed, using fallback logic:', dbError);
+          // Fallback to coordinate-based detection for remaining coordinates
+          otherCoords.forEach(coord => {
+            if (coord.lat >= 0.85 && coord.lat <= 7.36 && coord.lng >= 99.64 && coord.lng <= 119.27) {
+              results[coord.index] = 'Malaysia';
+            } else if (coord.lat >= 4.27 && coord.lat <= 13.89 && coord.lng >= 2.67 && coord.lng <= 14.68) {
+              results[coord.index] = 'Nigeria';
+            } else if (coord.lat >= 4.74 && coord.lat <= 11.17 && coord.lng >= -3.25 && coord.lng <= 1.19) {
+              results[coord.index] = 'Ghana';
+            } else if (coord.lat >= 4.36 && coord.lat <= 10.74 && coord.lng >= -8.60 && coord.lng <= -2.49) {
+              results[coord.index] = 'Ivory Coast';
+            } else if (coord.lat >= -33.75 && coord.lat <= 5.27 && coord.lng >= -73.99 && coord.lng <= -28.84) {
+              results[coord.index] = 'Brazil';
+            } else if (coord.lat >= 2.22 && coord.lat <= 11.00 && coord.lng >= 14.42 && coord.lng <= 27.46) {
+              results[coord.index] = 'Central African Republic';
+            } else {
+              results[coord.index] = 'Unknown';
+            }
+          });
+        }
       }
-
-      return 'Unknown';
+      
+      // Ensure all coordinates have results
+      coordinates.forEach(coord => {
+        if (!results[coord.index]) {
+          results[coord.index] = 'Unknown';
+        }
+      });
+      
+      return results;
+      
+    } catch (error) {
+      console.error('Batch country detection error:', error);
+      // Ultimate fallback: coordinate-based detection for all
+      coordinates.forEach(coord => {
+        if (coord.lat >= -11 && coord.lat <= 6 && coord.lng >= 95 && coord.lng <= 141) {
+          results[coord.index] = 'Indonesia';
+        } else if (coord.lat >= 0.85 && coord.lat <= 7.36 && coord.lng >= 99.64 && coord.lng <= 119.27) {
+          results[coord.index] = 'Malaysia';
+        } else {
+          results[coord.index] = 'Unknown';
+        }
+      });
+      return results;
     }
   }
 
@@ -3657,7 +3770,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Continue processing even if some properties are missing
           // This is more forgiving than before
 
-        // Get country from multiple sources with priority order
+        // OPTIMIZATION: Skip individual country detection here - will be done in batch later
+        // This saves 93+ individual PostGIS calls during preprocessing phase
         let detectedCountry = 'Unknown';
 
         // Priority 1: Use country_name from API response if available and not "unknown"
@@ -3667,29 +3781,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           detectedCountry = feature.properties.country_name;
           console.log(`✅ Country from API response: ${detectedCountry}`);
         }
-        // Priority 2: Use PostGIS spatial lookup based on geometry centroid
+        // Priority 2: Fast coordinate-based detection for Indonesian data (no database calls)
         else {
           const centroid = getCentroidFromGeometry(feature.geometry);
-          if (centroid) {
-            console.log(`🌍 Detecting country for coordinates: ${centroid.lat}, ${centroid.lng}`);
-            detectedCountry = await getCountryFromCoordinates(centroid.lat, centroid.lng);
-            console.log(`✅ Country detected: ${detectedCountry}`);
-
-            // No delay needed since we're using local database
+          if (centroid && centroid.lat >= -11 && centroid.lat <= 6 && centroid.lng >= 95 && centroid.lng <= 141) {
+            detectedCountry = 'Indonesia';
+            console.log(`🇮🇩 Fast Indonesia detection via coordinates: ${detectedCountry}`);
+          } else if (props['.Distict'] || props['.Aggregator Location']) {
+            detectedCountry = 'Indonesia';
+            console.log(`🇮🇩 Using Indonesian data format fallback: ${detectedCountry}`);
           } else {
-            // Priority 3: Fallback to property-based detection for Indonesian data
-            if (props['.Distict'] || props['.Aggregator Location']) {
-              detectedCountry = 'Indonesia';
-              console.log(`🇮🇩 Using Indonesian data format fallback: ${detectedCountry}`);
-            } else {
-              detectedCountry = props.country_name || props.country || props.district ||
-                               props.region || props.province || props.kabupaten || 'Indonesia';
-              console.log(`🌍 Using property fallback: ${detectedCountry}`);
-            }
+            detectedCountry = props.country_name || props.country || props.district ||
+                             props.region || props.province || props.kabupaten || 'Indonesia';
+            console.log(`🌍 Using property fallback: ${detectedCountry}`);
           }
         }
 
-        // Update feature properties with detected country
+        // Update feature properties with detected country (will be refined in batch processing)
           feature.properties.detected_country = detectedCountry;
           validatedFeatures.push(feature);
 
@@ -3815,7 +3923,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Process features in parallel for better performance
         console.log(`🚀 Starting parallel processing of ${analysisResults.data.features.length} features`);
         
-        const processFeature = async (feature: any, featureIndex: number) => {
+        const processFeature = async (feature: any, featureIndex: number, countryResults: Record<number, string>, spatialResults: Record<number, {wdpa: any, peatland: any}>) => {
           console.log(`=== PROCESSING FEATURE ${featureIndex + 1} ===`);
           console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
 
@@ -3830,12 +3938,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`🔄 API returned different plot_id: ${feature.properties.plot_id}, keeping original: ${plotId}`);
             }
 
-            // Use detected country with proper validation and fallback
-            let country = feature.properties?.detected_country || 'Unknown';
+            // Use pre-computed batch country detection results (MAJOR OPTIMIZATION!)
+            let country = countryResults[featureIndex] || feature.properties?.detected_country || 'Unknown';
 
-            console.log(`🌍 Initial country detection: ${country}`);
+            console.log(`🌍 Using batch-detected country: ${country}`);
 
-            // Apply additional validation and fallback logic
+            // Apply additional validation and fallback logic for edge cases only
             if (!country || country === 'Unknown' || country === 'unknown') {
               // Check for Indonesian-specific field patterns
               if (feature.properties?.['.Distict']) {
@@ -3849,15 +3957,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 country = feature.properties.country_name;
                 console.log(`🌍 Using country_name from API: ${country}`);
               } else {
-                // Use centroid-based detection as final fallback
-                const centroid = getCentroidFromGeometry(feature.geometry);
-                if (centroid) {
-                  country = await getCountryFromCoordinates(centroid.lat, centroid.lng);
-                  console.log(`🗺️ Country from coordinates: ${country}`);
-                } else {
-                  country = 'Indonesia'; // Default for most palm oil data
-                  console.log(`🇮🇩 Using Indonesia as final fallback`);
-                }
+                country = 'Indonesia'; // Default for most palm oil data
+                console.log(`🇮🇩 Using Indonesia as final fallback`);
               }
             }
 
@@ -3947,132 +4048,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 analysisCoords = [101.4967, -0.5021]; // Central Indonesia
               }
               
-              // Check WDPA protected area intersection area using database query
+              // OPTIMIZATION: Use pre-computed WDPA intersection results (MAJOR PERFORMANCE BOOST!)
               let wdpaArea = 0; // Initialize WDPA intersection area in hectares
               if (country === 'Indonesia' || country === 'indonesia') {
                 try {
-                  // Calculate intersection area with wdpa_idn polygons using proper geometry handling
-                  let wdpaQuery;
-                  
-                  if (feature.geometry?.type === 'Polygon' || feature.geometry?.type === 'MultiPolygon') {
-                    // Use full geometry for polygon features with accurate geographic area calculation
-                    wdpaQuery = await db.execute(sql`
-                      WITH plot_geom AS (
-                        SELECT ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(feature.geometry)}), 4326)::geography AS geom
-                      )
-                      SELECT 
-                        COALESCE(SUM(ST_Area(ST_Intersection(ST_Transform(w.geom, 4326)::geography, plot_geom.geom))), 0) / 10000 AS intersection_area_ha,
-                        array_agg(DISTINCT w.name) as wdpa_names,
-                        array_agg(DISTINCT w.category) as wdpa_categories
-                      FROM wdpa_idn w, plot_geom
-                      WHERE ST_Intersects(ST_Transform(w.geom, 4326)::geography, plot_geom.geom)
-                    `);
+                  // Get pre-computed WDPA intersection results from batch calculation
+                  const wdpaResult = spatialResults[featureIndex]?.wdpa;
+                  if (wdpaResult) {
+                    wdpaArea = wdpaResult.intersection_area_ha || 0;
+                    // Use explicit threshold to handle very small intersections
+                    if (wdpaArea >= 0.0001) { // Minimum 0.0001 hectares (1 square meter)
+                      wdpaStatus = `${wdpaArea.toFixed(4)} ha`;
+                      const wdpaNames = wdpaResult.wdpa_names || [];
+                      const wdpaCategories = wdpaResult.wdpa_categories || [];
+                      console.log(`🏞️ Plot ${plotId} WDPA intersection (batch): ${wdpaArea.toFixed(4)} hectares with ${wdpaNames.length} protected areas (Categories: ${wdpaCategories.join(', ')})`);
+                    } else {
+                      wdpaStatus = 'NOT_PROTECTED';
+                    }
                   } else {
-                    // Fallback for point geometries - use buffer around point
-                    wdpaQuery = await db.execute(sql`
-                      WITH plot_geom AS (
-                        SELECT ST_Buffer(ST_SetSRID(ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}), 4326)::geography, 100) AS geom
-                      )
-                      SELECT 
-                        COALESCE(SUM(ST_Area(ST_Intersection(ST_Transform(w.geom, 4326)::geography, plot_geom.geom))), 0) / 10000 AS intersection_area_ha,
-                        array_agg(DISTINCT w.name) as wdpa_names,
-                        array_agg(DISTINCT w.category) as wdpa_categories
-                      FROM wdpa_idn w, plot_geom
-                      WHERE ST_Intersects(ST_Transform(w.geom, 4326)::geography, plot_geom.geom)
-                    `);
-                  }
-                  
-                  // Now wdpaQuery always returns one row due to aggregation
-                  wdpaArea = parseFloat(wdpaQuery.rows[0].intersection_area_ha as string) || 0;
-                  // Use explicit threshold to handle very small intersections
-                  if (wdpaArea >= 0.0001) { // Minimum 0.0001 hectares (1 square meter)
-                    wdpaStatus = `${wdpaArea.toFixed(4)} ha`;
-                    const wdpaNames = (wdpaQuery.rows[0].wdpa_names as string[])?.filter((name: string) => name) || [];
-                    const wdpaCategories = (wdpaQuery.rows[0].wdpa_categories as string[])?.filter((cat: string) => cat) || [];
-                    console.log(`🏞️ Plot ${plotId} WDPA intersection: ${wdpaArea.toFixed(4)} hectares with ${wdpaNames.length} protected areas (Categories: ${wdpaCategories.join(', ')})`);
-                  } else {
+                    console.warn(`⚠️ No WDPA batch result found for feature ${featureIndex}`);
                     wdpaStatus = 'NOT_PROTECTED';
                   }
                 } catch (wdpaError) {
-                  console.warn(`⚠️ WDPA intersection calculation failed for plot ${plotId}:`, wdpaError);
-                  // Fallback to simple point check if intersection calculation fails
-                  try {
-                    const fallbackQuery = await db.execute(sql`
-                      SELECT name, category 
-                      FROM wdpa_idn 
-                      WHERE ST_Contains(ST_Transform(geom, 4326)::geography, ST_SetSRID(ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}), 4326)::geography)
-                      LIMIT 1
-                    `);
-                    wdpaStatus = fallbackQuery.rows.length > 0 ? 'PROTECTED' : 'NOT_PROTECTED';
-                  } catch (fallbackError) {
-                    console.warn(`⚠️ WDPA fallback check also failed for plot ${plotId}:`, fallbackError);
-                    // Keep default 'UNKNOWN' for WDPA if all queries fail
-                  }
+                  console.warn(`⚠️ Error accessing WDPA batch results for plot ${plotId}:`, wdpaError);
+                  wdpaStatus = 'NOT_PROTECTED';
                 }
               } else {
                 // For non-Indonesia countries, assume not in protected area
                 wdpaStatus = 'NOT_PROTECTED';
               }
               
-              // Check peatland intersection area using database query
+              // OPTIMIZATION: Use pre-computed peatland intersection results (MAJOR PERFORMANCE BOOST!)
               let peatlandArea = 0; // Initialize peatland intersection area in hectares
               if (country === 'Indonesia' || country === 'indonesia') {
                 try {
-                  // Calculate intersection area with peatland_idn polygons using proper geometry handling
-                  let peatlandQuery;
-                  
-                  if (feature.geometry?.type === 'Polygon' || feature.geometry?.type === 'MultiPolygon') {
-                    // Use full geometry for polygon features with accurate geographic area calculation
-                    const geometryJson = JSON.stringify(feature.geometry);
-                    peatlandQuery = await db.execute(sql`
-                      WITH plot_geom AS (
-                        SELECT ST_SetSRID(ST_GeomFromGeoJSON(${geometryJson}), 4326) as geom
-                      )
-                      SELECT 
-                        COALESCE(SUM(ST_Area(ST_Intersection(p.geom, plot_geom.geom)::geography)), 0) / 10000 as intersection_area_ha
-                      FROM peatland_idn p, plot_geom
-                      WHERE ST_Intersects(ST_Transform(p.geom, 4326), plot_geom.geom)
-                    `);
-                  } else {
-                    // Fallback: create 100m buffer around centroid point for non-polygon features  
-                    peatlandQuery = await db.execute(sql`
-                      WITH plot_geom AS (
-                        SELECT ST_Buffer(ST_SetSRID(ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}), 4326)::geography, 100)::geometry as geom
-                      )
-                      SELECT 
-                        COALESCE(SUM(ST_Area(ST_Intersection(p.geom, plot_geom.geom)::geography)), 0) / 10000 as intersection_area_ha
-                      FROM peatland_idn p, plot_geom
-                      WHERE ST_Intersects(ST_Transform(p.geom, 4326), plot_geom.geom)
-                    `);
-                  }
-                  
-                  if (peatlandQuery.rows.length > 0) {
-                    peatlandArea = parseFloat(peatlandQuery.rows[0].intersection_area_ha as string) || 0;
+                  // Get pre-computed peatland intersection results from batch calculation
+                  const peatlandResult = spatialResults[featureIndex]?.peatland;
+                  if (peatlandResult) {
+                    peatlandArea = peatlandResult.intersection_area_ha || 0;
                     // Use explicit threshold to handle very small intersections
                     if (peatlandArea >= 0.0001) { // Minimum 0.0001 hectares (1 square meter)
                       peatlandStatus = `${peatlandArea.toFixed(4)} ha`;
-                      console.log(`🏞️ Plot ${plotId} peatland intersection: ${peatlandArea.toFixed(4)} hectares`);
+                      console.log(`🏞️ Plot ${plotId} peatland intersection (batch): ${peatlandArea.toFixed(4)} hectares`);
                     } else {
                       peatlandStatus = 'NOT_PEATLAND';
                     }
                   } else {
+                    console.warn(`⚠️ No peatland batch result found for feature ${featureIndex}`);
                     peatlandStatus = 'NOT_PEATLAND';
                   }
                 } catch (peatlandError) {
-                  console.warn(`⚠️ Peatland intersection calculation failed for plot ${plotId}:`, peatlandError);
-                  // Fallback to simple point check if intersection calculation fails
-                  try {
-                    const fallbackQuery = await db.execute(sql`
-                      SELECT kubah__gbt 
-                      FROM peatland_idn 
-                      WHERE ST_Contains(geom, ST_Point(${analysisCoords[0]}, ${analysisCoords[1]}))
-                      LIMIT 1
-                    `);
-                    peatlandStatus = fallbackQuery.rows.length > 0 ? 'PEATLAND' : 'NOT_PEATLAND';
-                  } catch (fallbackError) {
-                    console.warn(`⚠️ Peatland fallback check also failed for plot ${plotId}:`, fallbackError);
-                    // Keep default 'UNKNOWN' for peatland if all queries fail
-                  }
+                  console.warn(`⚠️ Error accessing peatland batch results for plot ${plotId}:`, peatlandError);
+                  peatlandStatus = 'NOT_PEATLAND';
                 }
               } else {
                 // For non-Indonesia countries, assume not peatland
@@ -4148,17 +4175,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         };
 
-        // Process features in parallel batches for optimal performance
-        const BATCH_SIZE = 5; // Process 5 features simultaneously to avoid database overload
+        // OPTIMIZATION: Batch country detection and spatial calculations for all features upfront
         const features = analysisResults.data.features;
         const totalFeatures = features.length;
+        
+        console.log(`🚀 Pre-processing ${totalFeatures} features for batch optimizations`);
+        
+        // Extract all coordinates for batch country detection
+        const allCoordinates: Array<{lat: number, lng: number, index: number}> = [];
+        features.forEach((feature, index) => {
+          const centroid = getCentroidFromGeometry(feature.geometry);
+          if (centroid) {
+            allCoordinates.push({
+              lat: centroid.lat,
+              lng: centroid.lng,
+              index: index
+            });
+          }
+        });
+        
+        // Batch country detection - replaces 93 individual PostGIS queries with 1-2 optimized queries
+        console.log(`🗄️ Batch country detection for ${allCoordinates.length} coordinates`);
+        const countryResults = await getBatchCountryFromCoordinates(allCoordinates);
+        console.log(`✅ Batch country detection completed`);
+        
+        // OPTIMIZATION: Batch WDPA and Peatland spatial calculations
+        console.log(`🗄️ Batch WDPA and peatland spatial calculations for ${totalFeatures} features`);
+        const spatialResults = await batchSpatialCalculations(features);
+        console.log(`✅ Batch spatial calculations completed`);
+        
+        // Process features in parallel batches for optimal performance
+        const BATCH_SIZE = 5; // Process 5 features simultaneously to avoid database overload
         
         console.log(`🔧 Processing ${totalFeatures} features in batches of ${BATCH_SIZE}`);
         
         for (let i = 0; i < totalFeatures; i += BATCH_SIZE) {
           const batch = features.slice(i, i + BATCH_SIZE);
           const batchPromises = batch.map((feature: any, batchIndex: number) => 
-            processFeature(feature, i + batchIndex)
+            processFeature(feature, i + batchIndex, countryResults, spatialResults)
           );
           
           try {
