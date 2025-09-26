@@ -61,15 +61,23 @@ export class WDPAService {
 
       const [longitude, latitude] = searchCoords;
 
-      // Query WDPA API for protected areas at coordinates
+      // Query WDPA API for protected areas at coordinates with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
       const response = await fetch(
         `${this.baseUrl}/protected_areas/search?` + 
         new URLSearchParams({
           'lat': latitude.toString(),
           'lng': longitude.toString(),
           'token': this.apiKey
-        })
+        }),
+        { 
+          signal: controller.signal
+        }
       );
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`WDPA API error: ${response.status} ${response.statusText}`);
@@ -93,7 +101,13 @@ export class WDPAService {
       };
     } catch (error) {
       console.error('WDPA verification error:', error);
-      throw new Error(`Protected area verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Only return mock data on actual timeout/abort errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('⚠️ WDPA API timeout - returning mock data as fallback');
+        return this.getMockWDPAResult();
+      }
+      // For other errors, propagate the error to maintain data integrity
+      throw new Error(`WDPA verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

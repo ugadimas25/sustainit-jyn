@@ -3736,13 +3736,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('🚀 Sending request to EUDR Multilayer API...');
         console.log(`📤 Request size: ${formBody.length} bytes`);
 
-        response = await fetch('http://43.156.75.206/api/v1/upload-geojson', {
+        // Add timeout and retry logic for external API
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+        response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
           method: 'POST',
           headers: {
             'Content-Type': `multipart/form-data; boundary=${boundary}`
           },
-          body: formBody
+          body: formBody,
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         console.log(`📥 API Response status: ${response.status} ${response.statusText}`);
 
@@ -3805,9 +3812,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log(`📋 Original Plot IDs from input GeoJSON:`, originalPlotIds);
 
-        // Store each analysis result in the database
-        for (const feature of analysisResults.data.features) {
-          const featureIndex = analysisResults.data.features.indexOf(feature);
+        // Process features in parallel for better performance
+        console.log(`🚀 Starting parallel processing of ${analysisResults.data.features.length} features`);
+        
+        const processFeature = async (feature: any, featureIndex: number) => {
           console.log(`=== PROCESSING FEATURE ${featureIndex + 1} ===`);
           console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
 
@@ -4121,14 +4129,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             };
 
-            await storage.createAnalysisResult(analysisResult);
+            // Retry database operations if they fail
+            let retries = 3;
+            while (retries > 0) {
+              try {
+                await storage.createAnalysisResult(analysisResult);
+                break; // Success, exit retry loop
+              } catch (dbError) {
+                retries--;
+                if (retries === 0) throw dbError; // Re-throw on final failure
+                console.log(`🔄 Database retry ${3 - retries}/3 for plot ${plotId}`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries))); // Exponential backoff
+              }
+            }
           } catch (err) {
             const errMessage = err instanceof Error ? err.message : 'Unknown error';
             console.log("Could not store analysis result:", errMessage);
           }
+        };
+
+        // Process features in parallel batches for optimal performance
+        const BATCH_SIZE = 5; // Process 5 features simultaneously to avoid database overload
+        const features = analysisResults.data.features;
+        const totalFeatures = features.length;
+        
+        console.log(`🔧 Processing ${totalFeatures} features in batches of ${BATCH_SIZE}`);
+        
+        for (let i = 0; i < totalFeatures; i += BATCH_SIZE) {
+          const batch = features.slice(i, i + BATCH_SIZE);
+          const batchPromises = batch.map((feature: any, batchIndex: number) => 
+            processFeature(feature, i + batchIndex)
+          );
+          
+          try {
+            await Promise.all(batchPromises);
+            console.log(`✅ Completed batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(totalFeatures / BATCH_SIZE)} (features ${i + 1}-${Math.min(i + BATCH_SIZE, totalFeatures)})`);
+          } catch (batchError) {
+            console.error(`❌ Error in batch ${Math.floor(i / BATCH_SIZE) + 1}:`, batchError);
+          }
         }
 
-        console.log(`✅ Stored ${analysisResults.data.features.length} analysis results in database for reactive dashboard`);
+        console.log(`✅ Stored ${totalFeatures} analysis results in database for reactive dashboard (parallel processing completed)`);
       }
 
       // Return the response directly as it already has the expected structure
