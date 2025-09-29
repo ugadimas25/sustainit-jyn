@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import express from 'express';
+import express from "express";
 import { setupAuth, isAuthenticated } from "./auth";
 import { voiceAssistantRouter } from "./routes/voice-assistant";
 import userConfigRoutes from "./user-config-routes";
@@ -45,7 +45,7 @@ import {
   alertSchema,
   complianceTrendPointSchema,
   exportDataSchema,
-  plotSummarySchema
+  plotSummarySchema,
 } from "@shared/schema";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
@@ -57,8 +57,8 @@ import { promisify } from "util";
 import FormData from "form-data";
 import { Readable } from "stream";
 import { jsPDF } from "jspdf";
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
 const scryptAsync = promisify(scrypt);
 
@@ -70,7 +70,7 @@ async function hashPassword(password: string) {
 
 async function initializeDefaultUser() {
   // Only create default user in development environment
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== "development") {
     return;
   }
 
@@ -83,7 +83,7 @@ async function initializeDefaultUser() {
         password: hashedPassword,
         role: "admin",
         name: "KPN Compliance Administrator",
-        email: "admin@kpn.com"
+        email: "admin@kpn.com",
       });
       console.log("✓ Default user 'kpneudr' created successfully");
     }
@@ -101,14 +101,14 @@ async function seedSampleData() {
         code: "CPO",
         name: "Crude Palm Oil",
         uomBase: "kg",
-        category: "palm_oil"
+        category: "palm_oil",
       });
 
       await storage.createCommodity({
         code: "FFB",
         name: "Fresh Fruit Bunches",
         uomBase: "kg",
-        category: "palm_oil"
+        category: "palm_oil",
       });
     }
 
@@ -120,7 +120,7 @@ async function seedSampleData() {
         type: "grower",
         address: "Riau Province, Indonesia",
         country: "Indonesia",
-        certifications: ["RSPO", "ISPO"]
+        certifications: ["RSPO", "ISPO"],
       });
 
       const millParty = await storage.createParty({
@@ -128,7 +128,7 @@ async function seedSampleData() {
         type: "mill",
         address: "Central Sumatra, Indonesia",
         country: "Indonesia",
-        certifications: ["RSPO", "ISCC", "SFC"]
+        certifications: ["RSPO", "ISCC", "SFC"],
       });
     }
 
@@ -137,7 +137,8 @@ async function seedSampleData() {
     if (ddsReports.length === 0) {
       const ddsReport1 = await storage.createDdsReport({
         operatorLegalName: "PT THIP",
-        operatorAddress: "Jl. Jenderal Sudirman No. 45, Jakarta 12930, Indonesia",
+        operatorAddress:
+          "Jl. Jenderal Sudirman No. 45, Jakarta 12930, Indonesia",
         eoriNumber: "ID123456789000",
         hsCode: "151110",
         productDescription: "Crude Palm Oil (CPO)",
@@ -146,13 +147,14 @@ async function seedSampleData() {
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
           { latitude: -0.7893, longitude: 101.4467, plotId: "PLT-RIAU-TH-001" },
-          { latitude: -0.5333, longitude: 101.4500, plotId: "PLT-RIAU-TH-002" }
+          { latitude: -0.5333, longitude: 101.45, plotId: "PLT-RIAU-TH-002" },
         ]),
-        operatorDeclaration: "I hereby declare that the information provided is accurate and complete.",
+        operatorDeclaration:
+          "I hereby declare that the information provided is accurate and complete.",
         signedBy: "Dr. Bambang Suharto",
         signedDate: new Date("2024-08-15"),
         signatoryFunction: "Chief Executive Officer",
-        status: "draft"
+        status: "draft",
       });
 
       const ddsReport2 = await storage.createDdsReport({
@@ -165,21 +167,27 @@ async function seedSampleData() {
         countryOfProduction: "Indonesia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
-          { latitude: -1.2708, longitude: 103.7367, plotId: "PLT-JAMBI-UP-001" },
-          { latitude: -1.6000, longitude: 103.6000, plotId: "PLT-JAMBI-UP-002" }
+          {
+            latitude: -1.2708,
+            longitude: 103.7367,
+            plotId: "PLT-JAMBI-UP-001",
+          },
+          { latitude: -1.6, longitude: 103.6, plotId: "PLT-JAMBI-UP-002" },
         ]),
         priorDdsReference: "EU-DDS-2024-001",
-        operatorDeclaration: "This shipment complies with all EU deforestation regulations.",
+        operatorDeclaration:
+          "This shipment complies with all EU deforestation regulations.",
         signedBy: "Ir. Sari Indrawati",
         signedDate: new Date("2024-08-10"),
         signatoryFunction: "Operations Director",
         status: "generated",
-        pdfDocumentPath: "/pdfs/dds-sample-001.pdf"
+        pdfDocumentPath: "/pdfs/dds-sample-001.pdf",
       });
 
       const ddsReport3 = await storage.createDdsReport({
         operatorLegalName: "KPN 02",
-        operatorAddress: "Kawasan Industri Pulogadung, Jakarta 13260, Indonesia",
+        operatorAddress:
+          "Kawasan Industri Pulogadung, Jakarta 13260, Indonesia",
         eoriNumber: "ID456789123000",
         hsCode: "151190",
         productDescription: "Palm Kernel Oil",
@@ -187,17 +195,26 @@ async function seedSampleData() {
         countryOfProduction: "Indonesia",
         geolocationType: "plot",
         geolocationCoordinates: JSON.stringify([
-          { latitude: -2.1234, longitude: 102.8567, plotId: "PLT-SUMSEL-DS-001" },
-          { latitude: -2.5678, longitude: 103.1234, plotId: "PLT-SUMSEL-DS-002" }
+          {
+            latitude: -2.1234,
+            longitude: 102.8567,
+            plotId: "PLT-SUMSEL-DS-001",
+          },
+          {
+            latitude: -2.5678,
+            longitude: 103.1234,
+            plotId: "PLT-SUMSEL-DS-002",
+          },
         ]),
-        operatorDeclaration: "All products sourced from verified deforestation-free areas.",
+        operatorDeclaration:
+          "All products sourced from verified deforestation-free areas.",
         signedBy: "Drs. Agus Wibowo",
         signedDate: new Date("2024-08-05"),
         signatoryFunction: "Supply Chain Manager",
         status: "submitted",
         pdfDocumentPath: "/pdfs/dds-sample-002.pdf",
         euTraceReference: "EU-TRACE-1755198000-456789ab",
-        submissionDate: new Date("2024-08-06")
+        submissionDate: new Date("2024-08-06"),
       });
       console.log("✓ Sample DDS reports created");
     }
@@ -217,7 +234,7 @@ async function seedSampleData() {
         tier: 1,
         legalityStatus: "verified",
         legalityScore: 85,
-        certifications: ["RSPO", "ISPO"]
+        certifications: ["RSPO", "ISPO"],
       });
 
       await storage.createSupplier({
@@ -232,7 +249,7 @@ async function seedSampleData() {
         tier: 1,
         legalityStatus: "verified",
         legalityScore: 92,
-        certifications: ["RSPO", "ISPO", "ISCC"]
+        certifications: ["RSPO", "ISPO", "ISCC"],
       });
 
       await storage.createSupplier({
@@ -247,7 +264,7 @@ async function seedSampleData() {
         tier: 1,
         legalityStatus: "pending",
         legalityScore: 75,
-        certifications: ["ISPO"]
+        certifications: ["ISPO"],
       });
 
       await storage.createSupplier({
@@ -262,7 +279,7 @@ async function seedSampleData() {
         tier: 1,
         legalityStatus: "verified",
         legalityScore: 88,
-        certifications: ["RSPO", "ISPO"]
+        certifications: ["RSPO", "ISPO"],
       });
 
       await storage.createSupplier({
@@ -277,7 +294,7 @@ async function seedSampleData() {
         tier: 1,
         legalityStatus: "verified",
         legalityScore: 90,
-        certifications: ["RSPO", "ISPO", "ISCC"]
+        certifications: ["RSPO", "ISPO", "ISCC"],
       });
 
       console.log("✓ Sample suppliers created");
@@ -292,28 +309,34 @@ async function seedSampleData() {
 async function seedUserConfigurationData() {
   try {
     console.log("🔧 Seeding User Configuration data...");
-    
+
     // 1. Create default system organization
     const existingOrgs = await storage.getOrganizations();
     let systemOrg;
-    
+
     if (existingOrgs.length === 0) {
       systemOrg = await storage.createOrganization({
         name: "KPN System Administration",
         slug: "kpn-system-admin",
-        description: "Default system administration organization for KPN EUDR Platform",
+        description:
+          "Default system administration organization for KPN EUDR Platform",
         settings: {
-          features: ["user_management", "compliance_monitoring", "supply_chain", "analytics"],
-          branding: { 
+          features: [
+            "user_management",
+            "compliance_monitoring",
+            "supply_chain",
+            "analytics",
+          ],
+          branding: {
             primaryColor: "#2563eb",
-            logo: null
+            logo: null,
           },
           security: {
             passwordPolicy: { minLength: 8, requireNumbers: true },
-            sessionTimeout: 3600
-          }
+            sessionTimeout: 3600,
+          },
         },
-        status: "active"
+        status: "active",
       });
       console.log("✓ Created default system organization");
     } else {
@@ -322,70 +345,97 @@ async function seedUserConfigurationData() {
 
     // 2. Create system permissions organized by modules
     const modulePermissions = {
-      'user_management': [
-        { action: 'view_users', description: 'View user accounts' },
-        { action: 'create_users', description: 'Create new user accounts' },
-        { action: 'edit_users', description: 'Edit existing user accounts' },
-        { action: 'delete_users', description: 'Delete user accounts' },
-        { action: 'manage_roles', description: 'Assign/remove user roles' },
-        { action: 'lock_unlock_users', description: 'Lock/unlock user accounts' }
+      user_management: [
+        { action: "view_users", description: "View user accounts" },
+        { action: "create_users", description: "Create new user accounts" },
+        { action: "edit_users", description: "Edit existing user accounts" },
+        { action: "delete_users", description: "Delete user accounts" },
+        { action: "manage_roles", description: "Assign/remove user roles" },
+        {
+          action: "lock_unlock_users",
+          description: "Lock/unlock user accounts",
+        },
       ],
-      'organization_management': [
-        { action: 'view_organizations', description: 'View organizations' },
-        { action: 'create_organizations', description: 'Create new organizations' },
-        { action: 'edit_organizations', description: 'Edit organization settings' },
-        { action: 'delete_organizations', description: 'Delete organizations' }
+      organization_management: [
+        { action: "view_organizations", description: "View organizations" },
+        {
+          action: "create_organizations",
+          description: "Create new organizations",
+        },
+        {
+          action: "edit_organizations",
+          description: "Edit organization settings",
+        },
+        { action: "delete_organizations", description: "Delete organizations" },
       ],
-      'role_permission_management': [
-        { action: 'view_roles', description: 'View roles and permissions' },
-        { action: 'create_roles', description: 'Create new roles' },
-        { action: 'edit_roles', description: 'Edit existing roles' },
-        { action: 'delete_roles', description: 'Delete roles' },
-        { action: 'assign_permissions', description: 'Assign permissions to roles' }
+      role_permission_management: [
+        { action: "view_roles", description: "View roles and permissions" },
+        { action: "create_roles", description: "Create new roles" },
+        { action: "edit_roles", description: "Edit existing roles" },
+        { action: "delete_roles", description: "Delete roles" },
+        {
+          action: "assign_permissions",
+          description: "Assign permissions to roles",
+        },
       ],
-      'dashboard_analytics': [
-        { action: 'view_dashboard', description: 'Access main dashboard' },
-        { action: 'view_analytics', description: 'View analytics and reports' },
-        { action: 'export_data', description: 'Export dashboard data' }
+      dashboard_analytics: [
+        { action: "view_dashboard", description: "Access main dashboard" },
+        { action: "view_analytics", description: "View analytics and reports" },
+        { action: "export_data", description: "Export dashboard data" },
       ],
-      'supply_chain_management': [
-        { action: 'view_suppliers', description: 'View supplier information' },
-        { action: 'create_suppliers', description: 'Add new suppliers' },
-        { action: 'edit_suppliers', description: 'Edit supplier information' },
-        { action: 'delete_suppliers', description: 'Remove suppliers' },
-        { action: 'manage_traceability', description: 'Manage supply chain traceability' }
+      supply_chain_management: [
+        { action: "view_suppliers", description: "View supplier information" },
+        { action: "create_suppliers", description: "Add new suppliers" },
+        { action: "edit_suppliers", description: "Edit supplier information" },
+        { action: "delete_suppliers", description: "Remove suppliers" },
+        {
+          action: "manage_traceability",
+          description: "Manage supply chain traceability",
+        },
       ],
-      'compliance_monitoring': [
-        { action: 'view_compliance', description: 'View compliance status' },
-        { action: 'create_assessments', description: 'Create compliance assessments' },
-        { action: 'edit_assessments', description: 'Edit existing assessments' },
-        { action: 'generate_reports', description: 'Generate compliance reports' },
-        { action: 'view_audit_logs', description: 'Access audit trail' }
+      compliance_monitoring: [
+        { action: "view_compliance", description: "View compliance status" },
+        {
+          action: "create_assessments",
+          description: "Create compliance assessments",
+        },
+        {
+          action: "edit_assessments",
+          description: "Edit existing assessments",
+        },
+        {
+          action: "generate_reports",
+          description: "Generate compliance reports",
+        },
+        { action: "view_audit_logs", description: "Access audit trail" },
       ],
-      'deforestation_monitoring': [
-        { action: 'view_plots', description: 'View plot information' },
-        { action: 'create_plots', description: 'Add new plots' },
-        { action: 'edit_plots', description: 'Edit plot data' },
-        { action: 'analyze_deforestation', description: 'Run deforestation analysis' },
-        { action: 'view_alerts', description: 'View deforestation alerts' }
-      ]
+      deforestation_monitoring: [
+        { action: "view_plots", description: "View plot information" },
+        { action: "create_plots", description: "Add new plots" },
+        { action: "edit_plots", description: "Edit plot data" },
+        {
+          action: "analyze_deforestation",
+          description: "Run deforestation analysis",
+        },
+        { action: "view_alerts", description: "View deforestation alerts" },
+      ],
     };
 
     const createdPermissions: Record<string, any> = {};
     const existingPermissions = await storage.getPermissions();
-    
+
     for (const [module, permissions] of Object.entries(modulePermissions)) {
       for (const perm of permissions) {
-        const existing = existingPermissions.find(p => 
-          p.module === module && p.action === perm.action
+        const existing = existingPermissions.find(
+          (p) => p.module === module && p.action === perm.action,
         );
-        
+
         if (!existing) {
           const newPerm = await storage.createPermission({
             module,
             action: perm.action,
             description: perm.description,
-            resource: '*'
+            resource: "*",
           });
           createdPermissions[`${module}.${perm.action}`] = newPerm;
         } else {
@@ -393,99 +443,127 @@ async function seedUserConfigurationData() {
         }
       }
     }
-    
-    console.log(`✓ Created/verified ${Object.keys(createdPermissions).length} system permissions`);
+
+    console.log(
+      `✓ Created/verified ${Object.keys(createdPermissions).length} system permissions`,
+    );
 
     // 3. Create default roles with appropriate permissions
     const defaultRoles = [
       {
-        name: 'system_admin',
-        description: 'Full system access with all permissions',
-        permissions: Object.keys(createdPermissions) // All permissions
+        name: "system_admin",
+        description: "Full system access with all permissions",
+        permissions: Object.keys(createdPermissions), // All permissions
       },
       {
-        name: 'organization_admin', 
-        description: 'Organization-level administration',
+        name: "organization_admin",
+        description: "Organization-level administration",
         permissions: [
-          'user_management.view_users', 'user_management.create_users',
-          'user_management.edit_users', 'user_management.manage_roles',
-          'role_permission_management.view_roles', 'role_permission_management.assign_permissions',
-          'dashboard_analytics.view_dashboard', 'dashboard_analytics.view_analytics',
-          'supply_chain_management.view_suppliers', 'supply_chain_management.create_suppliers',
-          'supply_chain_management.edit_suppliers', 'compliance_monitoring.view_compliance',
-          'compliance_monitoring.create_assessments', 'deforestation_monitoring.view_plots',
-          'deforestation_monitoring.create_plots', 'deforestation_monitoring.analyze_deforestation'
-        ]
+          "user_management.view_users",
+          "user_management.create_users",
+          "user_management.edit_users",
+          "user_management.manage_roles",
+          "role_permission_management.view_roles",
+          "role_permission_management.assign_permissions",
+          "dashboard_analytics.view_dashboard",
+          "dashboard_analytics.view_analytics",
+          "supply_chain_management.view_suppliers",
+          "supply_chain_management.create_suppliers",
+          "supply_chain_management.edit_suppliers",
+          "compliance_monitoring.view_compliance",
+          "compliance_monitoring.create_assessments",
+          "deforestation_monitoring.view_plots",
+          "deforestation_monitoring.create_plots",
+          "deforestation_monitoring.analyze_deforestation",
+        ],
       },
       {
-        name: 'User Manager',
-        description: 'User account management and basic operations',
+        name: "User Manager",
+        description: "User account management and basic operations",
         permissions: [
-          'user_management.view_users', 'user_management.create_users',
-          'user_management.edit_users', 'user_management.manage_roles',
-          'dashboard_analytics.view_dashboard', 'supply_chain_management.view_suppliers',
-          'compliance_monitoring.view_compliance', 'deforestation_monitoring.view_plots'
-        ]
+          "user_management.view_users",
+          "user_management.create_users",
+          "user_management.edit_users",
+          "user_management.manage_roles",
+          "dashboard_analytics.view_dashboard",
+          "supply_chain_management.view_suppliers",
+          "compliance_monitoring.view_compliance",
+          "deforestation_monitoring.view_plots",
+        ],
       },
       {
-        name: 'Supply Chain Manager',
-        description: 'Supply chain and traceability management',
+        name: "Supply Chain Manager",
+        description: "Supply chain and traceability management",
         permissions: [
-          'dashboard_analytics.view_dashboard', 'dashboard_analytics.view_analytics',
-          'supply_chain_management.view_suppliers', 'supply_chain_management.create_suppliers',
-          'supply_chain_management.edit_suppliers', 'supply_chain_management.manage_traceability',
-          'compliance_monitoring.view_compliance', 'compliance_monitoring.create_assessments',
-          'deforestation_monitoring.view_plots', 'deforestation_monitoring.create_plots',
-          'deforestation_monitoring.analyze_deforestation'
-        ]
+          "dashboard_analytics.view_dashboard",
+          "dashboard_analytics.view_analytics",
+          "supply_chain_management.view_suppliers",
+          "supply_chain_management.create_suppliers",
+          "supply_chain_management.edit_suppliers",
+          "supply_chain_management.manage_traceability",
+          "compliance_monitoring.view_compliance",
+          "compliance_monitoring.create_assessments",
+          "deforestation_monitoring.view_plots",
+          "deforestation_monitoring.create_plots",
+          "deforestation_monitoring.analyze_deforestation",
+        ],
       },
       {
-        name: 'Compliance Officer',
-        description: 'Compliance monitoring and assessment',
+        name: "Compliance Officer",
+        description: "Compliance monitoring and assessment",
         permissions: [
-          'dashboard_analytics.view_dashboard', 'dashboard_analytics.view_analytics',
-          'supply_chain_management.view_suppliers', 'compliance_monitoring.view_compliance',
-          'compliance_monitoring.create_assessments', 'compliance_monitoring.edit_assessments',
-          'compliance_monitoring.generate_reports', 'compliance_monitoring.view_audit_logs',
-          'deforestation_monitoring.view_plots', 'deforestation_monitoring.analyze_deforestation',
-          'deforestation_monitoring.view_alerts'
-        ]
+          "dashboard_analytics.view_dashboard",
+          "dashboard_analytics.view_analytics",
+          "supply_chain_management.view_suppliers",
+          "compliance_monitoring.view_compliance",
+          "compliance_monitoring.create_assessments",
+          "compliance_monitoring.edit_assessments",
+          "compliance_monitoring.generate_reports",
+          "compliance_monitoring.view_audit_logs",
+          "deforestation_monitoring.view_plots",
+          "deforestation_monitoring.analyze_deforestation",
+          "deforestation_monitoring.view_alerts",
+        ],
       },
       {
-        name: 'Regular User',
-        description: 'Basic access with read permissions',
+        name: "Regular User",
+        description: "Basic access with read permissions",
         permissions: [
-          'dashboard_analytics.view_dashboard', 'supply_chain_management.view_suppliers',
-          'compliance_monitoring.view_compliance', 'deforestation_monitoring.view_plots'
-        ]
-      }
+          "dashboard_analytics.view_dashboard",
+          "supply_chain_management.view_suppliers",
+          "compliance_monitoring.view_compliance",
+          "deforestation_monitoring.view_plots",
+        ],
+      },
     ];
 
     const existingRoles = await storage.getRoles();
     const createdRoles: Record<string, any> = {};
 
     for (const roleData of defaultRoles) {
-      const existing = existingRoles.find(r => r.name === roleData.name);
-      
+      const existing = existingRoles.find((r) => r.name === roleData.name);
+
       if (!existing) {
         const newRole = await storage.createRole({
           name: roleData.name,
           description: roleData.description,
           organizationId: systemOrg.id,
-          isSystem: roleData.name === 'system_admin'
+          isSystem: roleData.name === "system_admin",
         });
-        
+
         // Assign permissions to role
         const permissionIds = roleData.permissions
-          .map(permKey => createdPermissions[permKey]?.id)
-          .filter(id => id !== undefined);
-        
+          .map((permKey) => createdPermissions[permKey]?.id)
+          .filter((id) => id !== undefined);
+
         if (permissionIds.length > 0) {
           await storage.setRolePermissions(newRole.id, permissionIds);
         }
-        
+
         createdRoles[roleData.name] = newRole;
-        console.log(`✓ Created role: ${roleData.name} with ${roleData.permissions.length} permissions`);
+        console.log(
+          `✓ Created role: ${roleData.name} with ${roleData.permissions.length} permissions`,
+        );
       } else {
         createdRoles[roleData.name] = existing;
       }
@@ -493,50 +571,68 @@ async function seedUserConfigurationData() {
 
     // 4. Assign System Administrator role to default admin user (ROBUST VERSION)
     const adminUser = await storage.getUserByUsername("kpneudr");
-    if (adminUser && systemOrg && createdRoles['system_admin']) {
+    if (adminUser && systemOrg && createdRoles["system_admin"]) {
       // ALWAYS ensure user is in system organization
       let existingUserOrg = await storage.getUserOrganizations(adminUser.id);
-      const isInSystemOrg = existingUserOrg.some(uo => uo.organizationId === systemOrg.id);
-      
+      const isInSystemOrg = existingUserOrg.some(
+        (uo) => uo.organizationId === systemOrg.id,
+      );
+
       if (!isInSystemOrg) {
         await storage.addUserToOrganization({
           userId: adminUser.id,
           organizationId: systemOrg.id,
-          status: 'active',
-          isDefault: true
+          status: "active",
+          isDefault: true,
         });
         console.log("✓ Added admin user to system organization");
       } else {
         // Ensure it's marked as default organization
-        const userOrg = existingUserOrg.find(uo => uo.organizationId === systemOrg.id);
+        const userOrg = existingUserOrg.find(
+          (uo) => uo.organizationId === systemOrg.id,
+        );
         if (userOrg && !userOrg.isDefault) {
           // Update to make it default
           // Skip update for now - user already in organization
           console.log("✓ Updated admin user default organization");
         }
       }
-      
+
       // ALWAYS ensure system admin role is assigned
-      const existingUserRoles = await storage.getUserRoles(adminUser.id, systemOrg.id);
-      const hasAdminRole = existingUserRoles.some(r => r.roleId === createdRoles['system_admin'].id);
-      
+      const existingUserRoles = await storage.getUserRoles(
+        adminUser.id,
+        systemOrg.id,
+      );
+      const hasAdminRole = existingUserRoles.some(
+        (r) => r.roleId === createdRoles["system_admin"].id,
+      );
+
       if (!hasAdminRole) {
         await storage.assignUserRole({
           userId: adminUser.id,
-          roleId: createdRoles['system_admin'].id,
-          organizationId: systemOrg.id
+          roleId: createdRoles["system_admin"].id,
+          organizationId: systemOrg.id,
         });
-        console.log("✓ Assigned System Administrator role to default admin user");
+        console.log(
+          "✓ Assigned System Administrator role to default admin user",
+        );
       } else {
         console.log("✓ Admin user already has System Administrator role");
       }
-      
+
       // VERIFY and LOG final state
       const finalUserOrgs = await storage.getUserOrganizations(adminUser.id);
-      const finalUserRoles = await storage.getUserRoles(adminUser.id, systemOrg.id);
-      console.log(`✓ ADMIN USER VERIFICATION: User ${adminUser.username} has ${finalUserOrgs.length} org(s), ${finalUserRoles.length} role(s) in system org`);
+      const finalUserRoles = await storage.getUserRoles(
+        adminUser.id,
+        systemOrg.id,
+      );
+      console.log(
+        `✓ ADMIN USER VERIFICATION: User ${adminUser.username} has ${finalUserOrgs.length} org(s), ${finalUserRoles.length} role(s) in system org`,
+      );
     } else {
-      console.error(`❌ SEEDING ERROR: Missing adminUser(${!!adminUser}) or systemOrg(${!!systemOrg}) or system_admin role(${!!createdRoles['system_admin']})`);
+      console.error(
+        `❌ SEEDING ERROR: Missing adminUser(${!!adminUser}) or systemOrg(${!!systemOrg}) or system_admin role(${!!createdRoles["system_admin"]})`,
+      );
     }
 
     console.log("✓ User Configuration seeding completed successfully");
@@ -554,17 +650,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await seedUserConfigurationData();
 
   // Voice Assistant Routes
-  app.use('/api/voice-assistant', voiceAssistantRouter);
+  app.use("/api/voice-assistant", voiceAssistantRouter);
 
   // User Configuration Routes (RBAC System)
-  app.use('/api/user-config', userConfigRoutes);
+  app.use("/api/user-config", userConfigRoutes);
 
   // GraphQL endpoint for traceability queries
-  app.post('/api/graphql', isAuthenticated, async (req, res) => {
+  app.post("/api/graphql", isAuthenticated, async (req, res) => {
     try {
       const { query, variables } = req.body;
 
-      if (query.includes('traceForward') || query.includes('traceBackward') || query.includes('getFullLineage')) {
+      if (
+        query.includes("traceForward") ||
+        query.includes("traceBackward") ||
+        query.includes("getFullLineage")
+      ) {
         const entityId = variables?.entityId;
         const entityType = variables?.entityType;
 
@@ -576,174 +676,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalNodes: 12,
           nodes: [
             {
-              id: 'plot-riau-001',
-              type: 'plot',
-              name: 'Palm Plot A - Riau Province',
+              id: "plot-riau-001",
+              type: "plot",
+              name: "Palm Plot A - Riau Province",
               data: {
                 level: 0,
-                area: '5.2 hectares',
-                farmer: 'Budi Santoso',
-                crop: 'oil_palm',
-                plantingYear: 2018
+                area: "5.2 hectares",
+                farmer: "Budi Santoso",
+                crop: "oil_palm",
+                plantingYear: 2018,
               },
               coordinates: { latitude: -0.5021, longitude: 101.4967 },
-              riskLevel: 'low',
-              certifications: ['RSPO', 'ISPO'],
+              riskLevel: "low",
+              certifications: ["RSPO", "ISPO"],
               distance: 0,
-              massBalance: { input: 0, output: 50.5, efficiency: 100 }
+              massBalance: { input: 0, output: 50.5, efficiency: 100 },
             },
             {
-              id: 'collection-riau-001',
-              type: 'facility',
-              name: 'Riau Collection Center A',
+              id: "collection-riau-001",
+              type: "facility",
+              name: "Riau Collection Center A",
               data: {
                 level: 1,
-                facilityType: 'collection_center',
-                capacity: '1000 tonnes/day',
-                operatingHours: '24/7'
+                facilityType: "collection_center",
+                capacity: "1000 tonnes/day",
+                operatingHours: "24/7",
               },
               coordinates: { latitude: -0.5105, longitude: 101.5123 },
-              riskLevel: 'low',
-              certifications: ['RSPO', 'ISCC'],
+              riskLevel: "low",
+              certifications: ["RSPO", "ISCC"],
               distance: 2.1,
-              massBalance: { input: 50.5, output: 48.2, efficiency: 95.4 }
+              massBalance: { input: 50.5, output: 48.2, efficiency: 95.4 },
             },
             {
-              id: 'mill-sumatra-001',
-              type: 'facility',
-              name: 'Central Palm Mill Complex',
+              id: "mill-sumatra-001",
+              type: "facility",
+              name: "Central Palm Mill Complex",
               data: {
                 level: 2,
-                facilityType: 'mill',
-                capacity: '200 tonnes/hour',
-                processes: ['sterilization', 'pressing', 'clarification']
+                facilityType: "mill",
+                capacity: "200 tonnes/hour",
+                processes: ["sterilization", "pressing", "clarification"],
               },
               coordinates: { latitude: -0.5234, longitude: 101.5456 },
-              riskLevel: 'medium',
-              certifications: ['RSPO', 'ISCC', 'SFC'],
+              riskLevel: "medium",
+              certifications: ["RSPO", "ISCC", "SFC"],
               distance: 8.7,
-              massBalance: { input: 48.2, output: 22.1, efficiency: 45.8 }
+              massBalance: { input: 48.2, output: 22.1, efficiency: 45.8 },
             },
             {
-              id: 'refinery-jakarta-001',
-              type: 'facility',
-              name: 'Jakarta Oil Refinery Complex',
+              id: "refinery-jakarta-001",
+              type: "facility",
+              name: "Jakarta Oil Refinery Complex",
               data: {
                 level: 3,
-                facilityType: 'refinery',
-                capacity: '500 tonnes/day',
-                processes: ['neutralization', 'bleaching', 'deodorization']
+                facilityType: "refinery",
+                capacity: "500 tonnes/day",
+                processes: ["neutralization", "bleaching", "deodorization"],
               },
               coordinates: { latitude: -6.2088, longitude: 106.8456 },
-              riskLevel: 'low',
-              certifications: ['RSPO', 'ISCC', 'RTRS'],
+              riskLevel: "low",
+              certifications: ["RSPO", "ISCC", "RTRS"],
               distance: 45.3,
-              massBalance: { input: 22.1, output: 21.8, efficiency: 98.6 }
+              massBalance: { input: 22.1, output: 21.8, efficiency: 98.6 },
             },
             {
-              id: 'port-jakarta-001',
-              type: 'facility',
-              name: 'Tanjung Priok Export Terminal',
+              id: "port-jakarta-001",
+              type: "facility",
+              name: "Tanjung Priok Export Terminal",
               data: {
                 level: 4,
-                facilityType: 'port',
-                capacity: '10000 tonnes storage',
-                exportDestinations: ['Rotterdam', 'Hamburg', 'Antwerp']
+                facilityType: "port",
+                capacity: "10000 tonnes storage",
+                exportDestinations: ["Rotterdam", "Hamburg", "Antwerp"],
               },
-              coordinates: { latitude: -6.1052, longitude: 106.8970 },
-              riskLevel: 'low',
-              certifications: ['RSPO', 'ISCC'],
+              coordinates: { latitude: -6.1052, longitude: 106.897 },
+              riskLevel: "low",
+              certifications: ["RSPO", "ISCC"],
               distance: 50.2,
-              massBalance: { input: 21.8, output: 21.8, efficiency: 100 }
+              massBalance: { input: 21.8, output: 21.8, efficiency: 100 },
             },
             {
-              id: 'shipment-exp-001',
-              type: 'shipment',
-              name: 'Export Shipment EXP-2024-001',
+              id: "shipment-exp-001",
+              type: "shipment",
+              name: "Export Shipment EXP-2024-001",
               data: {
                 level: 5,
-                destination: 'Rotterdam, Netherlands',
-                vessel: 'MV Palm Carrier',
-                departureDate: '2024-08-15',
-                estimatedArrival: '2024-09-10'
+                destination: "Rotterdam, Netherlands",
+                vessel: "MV Palm Carrier",
+                departureDate: "2024-08-15",
+                estimatedArrival: "2024-09-10",
               },
-              coordinates: { latitude: -6.1052, longitude: 106.8970 },
-              riskLevel: 'low',
-              certifications: ['EUDR', 'RSPO'],
+              coordinates: { latitude: -6.1052, longitude: 106.897 },
+              riskLevel: "low",
+              certifications: ["EUDR", "RSPO"],
               distance: 55.8,
-              massBalance: { input: 21.8, output: 21.8, efficiency: 100 }
-            }
+              massBalance: { input: 21.8, output: 21.8, efficiency: 100 },
+            },
           ],
           edges: [
             {
-              source: 'plot-riau-001',
-              target: 'collection-riau-001',
-              type: 'delivery',
+              source: "plot-riau-001",
+              target: "collection-riau-001",
+              type: "delivery",
               quantity: 50.5,
-              uom: 'tonnes',
-              date: '2024-08-10',
-              eventType: 'TRANSFER'
+              uom: "tonnes",
+              date: "2024-08-10",
+              eventType: "TRANSFER",
             },
             {
-              source: 'collection-riau-001',
-              target: 'mill-sumatra-001',
-              type: 'processing',
+              source: "collection-riau-001",
+              target: "mill-sumatra-001",
+              type: "processing",
               quantity: 48.2,
-              uom: 'tonnes',
-              date: '2024-08-11',
-              eventType: 'TRANSFORM'
+              uom: "tonnes",
+              date: "2024-08-11",
+              eventType: "TRANSFORM",
             },
             {
-              source: 'mill-sumatra-001',
-              target: 'refinery-jakarta-001',
-              type: 'transformation',
+              source: "mill-sumatra-001",
+              target: "refinery-jakarta-001",
+              type: "transformation",
               quantity: 22.1,
-              uom: 'tonnes',
-              date: '2024-08-12',
-              eventType: 'TRANSFER'
+              uom: "tonnes",
+              date: "2024-08-12",
+              eventType: "TRANSFER",
             },
             {
-              source: 'refinery-jakarta-001',
-              target: 'port-jakarta-001',
-              type: 'transfer',
+              source: "refinery-jakarta-001",
+              target: "port-jakarta-001",
+              type: "transfer",
               quantity: 21.8,
-              uom: 'tonnes',
-              date: '2024-08-13',
-              eventType: 'TRANSFER'
+              uom: "tonnes",
+              date: "2024-08-13",
+              eventType: "TRANSFER",
             },
             {
-              source: 'port-jakarta-001',
-              target: 'shipment-exp-001',
-              type: 'shipment',
+              source: "port-jakarta-001",
+              target: "shipment-exp-001",
+              type: "shipment",
               quantity: 21.8,
-              uom: 'tonnes',
-              date: '2024-08-15',
-              eventType: 'TRANSFER'
-            }
+              uom: "tonnes",
+              date: "2024-08-15",
+              eventType: "TRANSFER",
+            },
           ],
           riskAssessment: {
-            overallRisk: 'medium',
+            overallRisk: "medium",
             riskFactors: [
               {
-                type: 'Processing Efficiency',
-                severity: 'medium',
-                description: 'Mill processing efficiency below industry standard at 45.8%',
-                entityId: 'mill-sumatra-001',
-                recommendation: 'Equipment maintenance and process optimization needed'
+                type: "Processing Efficiency",
+                severity: "medium",
+                description:
+                  "Mill processing efficiency below industry standard at 45.8%",
+                entityId: "mill-sumatra-001",
+                recommendation:
+                  "Equipment maintenance and process optimization needed",
               },
               {
-                type: 'Geographic Risk',
-                severity: 'low',
-                description: 'Source location in low-risk deforestation area',
-                entityId: 'plot-riau-001',
-                recommendation: 'Continue monitoring satellite data'
-              }
+                type: "Geographic Risk",
+                severity: "low",
+                description: "Source location in low-risk deforestation area",
+                entityId: "plot-riau-001",
+                recommendation: "Continue monitoring satellite data",
+              },
             ],
             compliance: {
               eudrCompliant: true,
               rspoCompliant: true,
               issues: [],
-              score: 87.5
+              score: 87.5,
             },
             massBalanceValidation: {
               isValid: true,
@@ -751,152 +853,185 @@ export async function registerRoutes(app: Express): Promise<Server> {
               totalInput: 50.5,
               totalOutput: 21.8,
               totalWaste: 28.7,
-              conversionRate: 0.431 // CPO from FFB
-            }
+              conversionRate: 0.431, // CPO from FFB
+            },
           },
           chainOfCustodyEvents: [
             {
-              id: 'evt-001',
-              eventType: 'creation',
-              timestamp: '2024-08-10T06:00:00Z',
-              facility: 'plot-riau-001',
-              businessStep: 'harvesting',
+              id: "evt-001",
+              eventType: "creation",
+              timestamp: "2024-08-10T06:00:00Z",
+              facility: "plot-riau-001",
+              businessStep: "harvesting",
               quantity: 50.5,
-              uom: 'tonnes'
+              uom: "tonnes",
             },
             {
-              id: 'evt-002',
-              eventType: 'TRANSFER',
-              timestamp: '2024-08-10T14:00:00Z',
-              facility: 'collection-riau-001',
-              businessStep: 'receiving',
+              id: "evt-002",
+              eventType: "TRANSFER",
+              timestamp: "2024-08-10T14:00:00Z",
+              facility: "collection-riau-001",
+              businessStep: "receiving",
               quantity: 50.5,
-              uom: 'tonnes'
+              uom: "tonnes",
             },
             {
-              id: 'evt-003',
-              eventType: 'TRANSFORM',
-              timestamp: '2024-08-11T08:00:00Z',
-              facility: 'mill-sumatra-001',
-              businessStep: 'processing',
+              id: "evt-003",
+              eventType: "TRANSFORM",
+              timestamp: "2024-08-11T08:00:00Z",
+              facility: "mill-sumatra-001",
+              businessStep: "processing",
               inputQuantity: 48.2,
               outputQuantity: 22.1,
-              uom: 'tonnes'
-            }
-          ]
+              uom: "tonnes",
+            },
+          ],
         };
 
-        const operation = query.includes('traceForward') ? 'traceForward' :
-                         query.includes('traceBackward') ? 'traceBackward' : 'getFullLineage';
+        const operation = query.includes("traceForward")
+          ? "traceForward"
+          : query.includes("traceBackward")
+            ? "traceBackward"
+            : "getFullLineage";
         res.json({ data: { [operation]: mockLineageResult } });
-      } else if (query.includes('getCustodyChains')) {
+      } else if (query.includes("getCustodyChains")) {
         const mockChains = [
           {
-            id: 'chain-001',
-            chainId: 'CHAIN-FFB-001',
-            sourcePlot: { id: 'plot-riau-001', name: 'Palm Plot A - Riau', area: '5.2 ha' },
-            sourceFacility: { id: 'collection-riau-001', name: 'Riau Collection Center A', facilityType: 'collection_center' },
-            destinationFacility: { id: 'mill-sumatra-001', name: 'Central Palm Mill', facilityType: 'mill' },
-            productType: 'FFB',
+            id: "chain-001",
+            chainId: "CHAIN-FFB-001",
+            sourcePlot: {
+              id: "plot-riau-001",
+              name: "Palm Plot A - Riau",
+              area: "5.2 ha",
+            },
+            sourceFacility: {
+              id: "collection-riau-001",
+              name: "Riau Collection Center A",
+              facilityType: "collection_center",
+            },
+            destinationFacility: {
+              id: "mill-sumatra-001",
+              name: "Central Palm Mill",
+              facilityType: "mill",
+            },
+            productType: "FFB",
             totalQuantity: 50.5,
             remainingQuantity: 22.1,
-            status: 'active',
-            qualityGrade: 'Grade A',
-            batchNumber: 'BATCH-FFB-001',
-            harvestDate: '2024-08-10',
-            expiryDate: '2024-08-20',
-            riskLevel: 'low',
-            complianceScore: 87.5
+            status: "active",
+            qualityGrade: "Grade A",
+            batchNumber: "BATCH-FFB-001",
+            harvestDate: "2024-08-10",
+            expiryDate: "2024-08-20",
+            riskLevel: "low",
+            complianceScore: 87.5,
           },
           {
-            id: 'chain-002',
-            chainId: 'CHAIN-CPO-001',
-            sourcePlot: { id: 'plot-riau-002', name: 'Palm Plot B - Sumatra', area: '8.1 ha' },
-            sourceFacility: { id: 'mill-sumatra-001', name: 'Central Palm Mill', facilityType: 'mill' },
-            destinationFacility: { id: 'refinery-jakarta-001', name: 'Jakarta Oil Refinery', facilityType: 'refinery' },
-            productType: 'CPO',
+            id: "chain-002",
+            chainId: "CHAIN-CPO-001",
+            sourcePlot: {
+              id: "plot-riau-002",
+              name: "Palm Plot B - Sumatra",
+              area: "8.1 ha",
+            },
+            sourceFacility: {
+              id: "mill-sumatra-001",
+              name: "Central Palm Mill",
+              facilityType: "mill",
+            },
+            destinationFacility: {
+              id: "refinery-jakarta-001",
+              name: "Jakarta Oil Refinery",
+              facilityType: "refinery",
+            },
+            productType: "CPO",
             totalQuantity: 22.1,
             remainingQuantity: 21.8,
-            status: 'active',
-            qualityGrade: 'Premium',
-            batchNumber: 'BATCH-CPO-002',
-            harvestDate: '2024-08-12',
-            expiryDate: '2024-09-12',
-            riskLevel: 'medium',
-            complianceScore: 92.3
-          }
+            status: "active",
+            qualityGrade: "Premium",
+            batchNumber: "BATCH-CPO-002",
+            harvestDate: "2024-08-12",
+            expiryDate: "2024-09-12",
+            riskLevel: "medium",
+            complianceScore: 92.3,
+          },
         ];
         res.json({ data: { getCustodyChains: mockChains } });
-      } else if (query.includes('getFacilities')) {
+      } else if (query.includes("getFacilities")) {
         const mockFacilities = [
           {
-            id: 'collection-riau-001',
-            name: 'Riau Collection Center A',
-            facilityType: 'collection_center',
+            id: "collection-riau-001",
+            name: "Riau Collection Center A",
+            facilityType: "collection_center",
             location: { latitude: -0.5105, longitude: 101.5123 },
-            certifications: ['RSPO', 'ISCC'],
-            capacity: '1000 tonnes/day',
-            riskLevel: 'low'
+            certifications: ["RSPO", "ISCC"],
+            capacity: "1000 tonnes/day",
+            riskLevel: "low",
           },
           {
-            id: 'mill-sumatra-001',
-            name: 'Central Palm Mill Complex',
-            facilityType: 'mill',
+            id: "mill-sumatra-001",
+            name: "Central Palm Mill Complex",
+            facilityType: "mill",
             location: { latitude: -0.5234, longitude: 101.5456 },
-            certifications: ['RSPO', 'ISCC', 'SFC'],
-            capacity: '200 tonnes/hour',
-            riskLevel: 'medium'
+            certifications: ["RSPO", "ISCC", "SFC"],
+            capacity: "200 tonnes/hour",
+            riskLevel: "medium",
           },
           {
-            id: 'refinery-jakarta-001',
-            name: 'Jakarta Oil Refinery Complex',
-            facilityType: 'refinery',
+            id: "refinery-jakarta-001",
+            name: "Jakarta Oil Refinery Complex",
+            facilityType: "refinery",
             location: { latitude: -6.2088, longitude: 106.8456 },
-            certifications: ['RSPO', 'ISCC', 'RTRS'],
-            capacity: '500 tonnes/day',
-            riskLevel: 'low'
-          }
+            certifications: ["RSPO", "ISCC", "RTRS"],
+            capacity: "500 tonnes/day",
+            riskLevel: "low",
+          },
         ];
         res.json({ data: { getFacilities: mockFacilities } });
-      } else if (query.includes('getCustodyEvents')) {
+      } else if (query.includes("getCustodyEvents")) {
         const mockEvents = [
           {
-            id: 'evt-001',
-            eventType: 'creation',
-            eventTime: '2024-08-10T06:00:00Z',
-            businessStep: 'harvesting',
-            disposition: 'active',
+            id: "evt-001",
+            eventType: "creation",
+            eventTime: "2024-08-10T06:00:00Z",
+            businessStep: "harvesting",
+            disposition: "active",
             quantity: 50.5,
-            uom: 'tonnes',
-            facility: { name: 'Palm Plot A - Riau', facilityType: 'plot' },
-            recordedBy: { name: 'Farmer Budi Santoso' }
+            uom: "tonnes",
+            facility: { name: "Palm Plot A - Riau", facilityType: "plot" },
+            recordedBy: { name: "Farmer Budi Santoso" },
           },
           {
-            id: 'evt-002',
-            eventType: 'TRANSFER',
-            eventTime: '2024-08-10T14:00:00Z',
-            businessStep: 'shipping',
-            disposition: 'in_transit',
+            id: "evt-002",
+            eventType: "TRANSFER",
+            eventTime: "2024-08-10T14:00:00Z",
+            businessStep: "shipping",
+            disposition: "in_transit",
             quantity: 50.5,
-            uom: 'tonnes',
-            facility: { name: 'Riau Collection Center A', facilityType: 'collection_center' },
-            recordedBy: { name: 'Driver Ahmad' }
+            uom: "tonnes",
+            facility: {
+              name: "Riau Collection Center A",
+              facilityType: "collection_center",
+            },
+            recordedBy: { name: "Driver Ahmad" },
           },
           {
-            id: 'evt-003',
-            eventType: 'TRANSFORM',
-            eventTime: '2024-08-11T08:00:00Z',
-            businessStep: 'processing',
-            disposition: 'processed',
+            id: "evt-003",
+            eventType: "TRANSFORM",
+            eventTime: "2024-08-11T08:00:00Z",
+            businessStep: "processing",
+            disposition: "processed",
             inputQuantity: 48.2,
             outputQuantity: 22.1,
-            uom: 'tonnes',
-            facility: { name: 'Central Palm Mill Complex', facilityType: 'mill' },
-            recordedBy: { name: 'Mill Operator Sari' }
-          }
+            uom: "tonnes",
+            facility: {
+              name: "Central Palm Mill Complex",
+              facilityType: "mill",
+            },
+            recordedBy: { name: "Mill Operator Sari" },
+          },
         ];
         res.json({ data: { getCustodyEvents: mockEvents } });
-      } else if (query.includes('validateMassBalance')) {
+      } else if (query.includes("validateMassBalance")) {
         const mockValidation = {
           isValid: true,
           totalInput: 50.5,
@@ -906,18 +1041,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           conversionRate: 0.431,
           discrepancies: [],
           facilityEfficiencies: [
-            { facilityId: 'collection-riau-001', efficiency: 95.4, status: 'good' },
-            { facilityId: 'mill-sumatra-001', efficiency: 45.8, status: 'below_target' },
-            { facilityId: 'refinery-jakarta-001', efficiency: 98.6, status: 'excellent' }
-          ]
+            {
+              facilityId: "collection-riau-001",
+              efficiency: 95.4,
+              status: "good",
+            },
+            {
+              facilityId: "mill-sumatra-001",
+              efficiency: 45.8,
+              status: "below_target",
+            },
+            {
+              facilityId: "refinery-jakarta-001",
+              efficiency: 98.6,
+              status: "excellent",
+            },
+          ],
         };
         res.json({ data: { validateMassBalance: mockValidation } });
       } else {
-        res.status(400).json({ error: 'Unsupported GraphQL operation' });
+        res.status(400).json({ error: "Unsupported GraphQL operation" });
       }
     } catch (error) {
-      console.error('GraphQL error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      console.error("GraphQL error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -990,11 +1137,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/suppliers", isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertSupplierSchema.parse(req.body);
-      const supplier = await storage.createSupplier(validatedData as InsertSupplier);
+      const supplier = await storage.createSupplier(
+        validatedData as InsertSupplier,
+      );
       res.status(201).json(supplier);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid supplier data", details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid supplier data", details: error.errors });
       } else {
         res.status(500).json({ error: "Failed to create supplier" });
       }
@@ -1005,7 +1156,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const validatedData = insertSupplierSchema.partial().parse(req.body);
-      const supplier = await storage.updateSupplier(id, validatedData as Partial<Supplier>);
+      const supplier = await storage.updateSupplier(
+        id,
+        validatedData as Partial<Supplier>,
+      );
       if (!supplier) {
         res.status(404).json({ error: "Supplier not found" });
       } else {
@@ -1013,7 +1167,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid supplier data", details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid supplier data", details: error.errors });
       } else {
         res.status(500).json({ error: "Failed to update supplier" });
       }
@@ -1051,7 +1207,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(link);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid link data", details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid link data", details: error.errors });
       } else {
         res.status(500).json({ error: "Failed to create supplier link" });
       }
@@ -1089,7 +1247,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(shipment);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid shipment data", details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid shipment data", details: error.errors });
       } else {
         res.status(500).json({ error: "Failed to create shipment" });
       }
@@ -1099,7 +1259,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/shipments/:id", isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
-      const validatedData = insertWorkflowShipmentSchema.partial().parse(req.body);
+      const validatedData = insertWorkflowShipmentSchema
+        .partial()
+        .parse(req.body);
       const shipment = await storage.updateWorkflowShipment(id, validatedData);
       if (!shipment) {
         res.status(404).json({ error: "Shipment not found" });
@@ -1108,7 +1270,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid shipment data", details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid shipment data", details: error.errors });
       } else {
         res.status(500).json({ error: "Failed to update shipment" });
       }
@@ -1130,71 +1294,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Supplier Assessment Progress endpoints
-  app.get("/api/supplier-assessment-progress", isAuthenticated, async (req, res) => {
-    try {
-      const progress = await storage.getSupplierAssessmentProgress();
-      res.json(progress);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch supplier assessment progress" });
-    }
-  });
-
-  app.get("/api/supplier-assessment-progress/:supplierName", isAuthenticated, async (req, res) => {
-    try {
-      const { supplierName } = req.params;
-      const progress = await storage.getSupplierAssessmentProgressByName(decodeURIComponent(supplierName));
-      if (!progress) {
-        res.status(404).json({ error: "Supplier progress not found" });
-      } else {
+  app.get(
+    "/api/supplier-assessment-progress",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const progress = await storage.getSupplierAssessmentProgress();
         res.json(progress);
+      } catch (error) {
+        res
+          .status(500)
+          .json({ error: "Failed to fetch supplier assessment progress" });
       }
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch supplier progress" });
-    }
-  });
+    },
+  );
 
-  app.post("/api/supplier-assessment-progress", isAuthenticated, async (req, res) => {
-    try {
-      const validatedData = insertSupplierAssessmentProgressSchema.parse(req.body);
-      const progress = await storage.createSupplierAssessmentProgress(validatedData);
-      res.status(201).json(progress);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid progress data", details: error.errors });
-      } else {
-        res.status(500).json({ error: "Failed to create supplier progress" });
+  app.get(
+    "/api/supplier-assessment-progress/:supplierName",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { supplierName } = req.params;
+        const progress = await storage.getSupplierAssessmentProgressByName(
+          decodeURIComponent(supplierName),
+        );
+        if (!progress) {
+          res.status(404).json({ error: "Supplier progress not found" });
+        } else {
+          res.json(progress);
+        }
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch supplier progress" });
       }
-    }
-  });
+    },
+  );
 
-  app.put("/api/supplier-assessment-progress/:id", isAuthenticated, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const validatedData = insertSupplierAssessmentProgressSchema.partial().parse(req.body);
-      const progress = await storage.updateSupplierAssessmentProgress(id, validatedData);
-      if (!progress) {
-        res.status(404).json({ error: "Supplier progress not found" });
-      } else {
-        res.json(progress);
+  app.post(
+    "/api/supplier-assessment-progress",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const validatedData = insertSupplierAssessmentProgressSchema.parse(
+          req.body,
+        );
+        const progress =
+          await storage.createSupplierAssessmentProgress(validatedData);
+        res.status(201).json(progress);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          res
+            .status(400)
+            .json({ error: "Invalid progress data", details: error.errors });
+        } else {
+          res.status(500).json({ error: "Failed to create supplier progress" });
+        }
       }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid progress data", details: error.errors });
-      } else {
-        res.status(500).json({ error: "Failed to update supplier progress" });
+    },
+  );
+
+  app.put(
+    "/api/supplier-assessment-progress/:id",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const validatedData = insertSupplierAssessmentProgressSchema
+          .partial()
+          .parse(req.body);
+        const progress = await storage.updateSupplierAssessmentProgress(
+          id,
+          validatedData,
+        );
+        if (!progress) {
+          res.status(404).json({ error: "Supplier progress not found" });
+        } else {
+          res.json(progress);
+        }
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          res
+            .status(400)
+            .json({ error: "Invalid progress data", details: error.errors });
+        } else {
+          res.status(500).json({ error: "Failed to update supplier progress" });
+        }
       }
-    }
-  });
+    },
+  );
 
   // Workflow step management endpoints
   app.post("/api/supplier-workflow-step", isAuthenticated, async (req, res) => {
     try {
       const { supplierName, step, completed, referenceId } = req.body;
-      if (!supplierName || typeof step !== 'number' || typeof completed !== 'boolean') {
-        return res.status(400).json({ error: "Missing required fields: supplierName, step, completed" });
+      if (
+        !supplierName ||
+        typeof step !== "number" ||
+        typeof completed !== "boolean"
+      ) {
+        return res
+          .status(400)
+          .json({
+            error: "Missing required fields: supplierName, step, completed",
+          });
       }
 
-      const progress = await storage.updateSupplierWorkflowStep(supplierName, step, completed, referenceId);
+      const progress = await storage.updateSupplierWorkflowStep(
+        supplierName,
+        step,
+        completed,
+        referenceId,
+      );
       if (!progress) {
         res.status(404).json({ error: "Failed to update workflow step" });
       } else {
@@ -1205,20 +1414,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/supplier-step-access/:supplierName/:step", isAuthenticated, async (req, res) => {
-    try {
-      const { supplierName, step } = req.params;
-      const stepNumber = parseInt(step, 10);
-      if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 4) {
-        return res.status(400).json({ error: "Step must be a number between 1 and 4" });
-      }
+  app.get(
+    "/api/supplier-step-access/:supplierName/:step",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { supplierName, step } = req.params;
+        const stepNumber = parseInt(step, 10);
+        if (isNaN(stepNumber) || stepNumber < 1 || stepNumber > 4) {
+          return res
+            .status(400)
+            .json({ error: "Step must be a number between 1 and 4" });
+        }
 
-      const hasAccess = await storage.checkSupplierStepAccess(decodeURIComponent(supplierName), stepNumber);
-      res.json({ supplierName, step: stepNumber, hasAccess });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to check step access" });
-    }
-  });
+        const hasAccess = await storage.checkSupplierStepAccess(
+          decodeURIComponent(supplierName),
+          stepNumber,
+        );
+        res.json({ supplierName, step: stepNumber, hasAccess });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to check step access" });
+      }
+    },
+  );
 
   // Risk Assessment API endpoints based on Excel methodology
   app.get("/api/risk-assessments", isAuthenticated, async (req, res) => {
@@ -1244,24 +1462,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/risk-assessments/supplier/:supplierId", isAuthenticated, async (req, res) => {
-    try {
-      const { supplierId } = req.params;
-      const assessments = await storage.getRiskAssessmentBySupplier(supplierId);
-      res.json(assessments);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch supplier risk assessments" });
-    }
-  });
+  app.get(
+    "/api/risk-assessments/supplier/:supplierId",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { supplierId } = req.params;
+        const assessments =
+          await storage.getRiskAssessmentBySupplier(supplierId);
+        res.json(assessments);
+      } catch (error) {
+        res
+          .status(500)
+          .json({ error: "Failed to fetch supplier risk assessments" });
+      }
+    },
+  );
 
   app.post("/api/risk-assessments", isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertRiskAssessmentSchema.parse(req.body);
-      const assessment = await storage.createRiskAssessment(validatedData as InsertRiskAssessment);
+      const assessment = await storage.createRiskAssessment(
+        validatedData as InsertRiskAssessment,
+      );
       res.status(201).json(assessment);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid risk assessment data", details: error.errors });
+        res
+          .status(400)
+          .json({
+            error: "Invalid risk assessment data",
+            details: error.errors,
+          });
       } else {
         res.status(500).json({ error: "Failed to create risk assessment" });
       }
@@ -1271,8 +1503,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/risk-assessments/:id", isAuthenticated, async (req, res) => {
     try {
       const { id } = req.params;
-      const validatedData = insertRiskAssessmentSchema.partial().parse(req.body);
-      const assessment = await storage.updateRiskAssessment(id, validatedData as Partial<RiskAssessment>);
+      const validatedData = insertRiskAssessmentSchema
+        .partial()
+        .parse(req.body);
+      const assessment = await storage.updateRiskAssessment(
+        id,
+        validatedData as Partial<RiskAssessment>,
+      );
       if (!assessment) {
         res.status(404).json({ error: "Risk assessment not found" });
       } else {
@@ -1280,7 +1517,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid risk assessment data", details: error.errors });
+        res
+          .status(400)
+          .json({
+            error: "Invalid risk assessment data",
+            details: error.errors,
+          });
       } else {
         res.status(500).json({ error: "Failed to update risk assessment" });
       }
@@ -1302,200 +1544,273 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Risk Assessment Items endpoints
-  app.get("/api/risk-assessments/:assessmentId/items", isAuthenticated, async (req, res) => {
-    try {
-      const { assessmentId } = req.params;
-      const items = await storage.getRiskAssessmentItems(assessmentId);
-      res.json(items);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch risk assessment items" });
-    }
-  });
+  app.get(
+    "/api/risk-assessments/:assessmentId/items",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { assessmentId } = req.params;
+        const items = await storage.getRiskAssessmentItems(assessmentId);
+        res.json(items);
+      } catch (error) {
+        res
+          .status(500)
+          .json({ error: "Failed to fetch risk assessment items" });
+      }
+    },
+  );
 
-  app.post("/api/risk-assessments/:assessmentId/items", isAuthenticated, async (req, res) => {
-    try {
-      const { assessmentId } = req.params;
-      const validatedData = insertRiskAssessmentItemSchema.parse({
-        ...req.body,
-        riskAssessmentId: assessmentId
-      });
-      const item = await storage.createRiskAssessmentItem(validatedData as InsertRiskAssessmentItem);
-      res.status(201).json(item);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid risk assessment item data", details: error.errors });
-      } else {
-        res.status(500).json({ error: "Failed to create risk assessment item" });
+  app.post(
+    "/api/risk-assessments/:assessmentId/items",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { assessmentId } = req.params;
+        const validatedData = insertRiskAssessmentItemSchema.parse({
+          ...req.body,
+          riskAssessmentId: assessmentId,
+        });
+        const item = await storage.createRiskAssessmentItem(
+          validatedData as InsertRiskAssessmentItem,
+        );
+        res.status(201).json(item);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          res
+            .status(400)
+            .json({
+              error: "Invalid risk assessment item data",
+              details: error.errors,
+            });
+        } else {
+          res
+            .status(500)
+            .json({ error: "Failed to create risk assessment item" });
+        }
       }
-    }
-  });
+    },
+  );
 
-  app.put("/api/risk-assessment-items/:id", isAuthenticated, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const validatedData = insertRiskAssessmentItemSchema.partial().parse(req.body);
-      const item = await storage.updateRiskAssessmentItem(id, validatedData as Partial<RiskAssessmentItem>);
-      if (!item) {
-        res.status(404).json({ error: "Risk assessment item not found" });
-      } else {
-        res.json(item);
+  app.put(
+    "/api/risk-assessment-items/:id",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const validatedData = insertRiskAssessmentItemSchema
+          .partial()
+          .parse(req.body);
+        const item = await storage.updateRiskAssessmentItem(
+          id,
+          validatedData as Partial<RiskAssessmentItem>,
+        );
+        if (!item) {
+          res.status(404).json({ error: "Risk assessment item not found" });
+        } else {
+          res.json(item);
+        }
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          res
+            .status(400)
+            .json({
+              error: "Invalid risk assessment item data",
+              details: error.errors,
+            });
+        } else {
+          res
+            .status(500)
+            .json({ error: "Failed to update risk assessment item" });
+        }
       }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid risk assessment item data", details: error.errors });
-      } else {
-        res.status(500).json({ error: "Failed to update risk assessment item" });
-      }
-    }
-  });
+    },
+  );
 
-  app.delete("/api/risk-assessment-items/:id", isAuthenticated, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const deleted = await storage.deleteRiskAssessmentItem(id);
-      if (!deleted) {
-        res.status(404).json({ error: "Risk assessment item not found" });
-      } else {
-        res.json({ success: true });
+  app.delete(
+    "/api/risk-assessment-items/:id",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const deleted = await storage.deleteRiskAssessmentItem(id);
+        if (!deleted) {
+          res.status(404).json({ error: "Risk assessment item not found" });
+        } else {
+          res.json({ success: true });
+        }
+      } catch (error) {
+        res
+          .status(500)
+          .json({ error: "Failed to delete risk assessment item" });
       }
-    } catch (error) {
-      res.status(500).json({ error: "Failed to delete risk assessment item" });
-    }
-  });
+    },
+  );
 
   // Risk scoring and reporting endpoints based on Excel methodology
-  app.get("/api/risk-assessments/:assessmentId/score", isAuthenticated, async (req, res) => {
-    try {
-      const { assessmentId } = req.params;
-      const scoring = await storage.calculateRiskScore(assessmentId);
-      res.json(scoring);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to calculate risk score" });
-    }
-  });
+  app.get(
+    "/api/risk-assessments/:assessmentId/score",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { assessmentId } = req.params;
+        const scoring = await storage.calculateRiskScore(assessmentId);
+        res.json(scoring);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to calculate risk score" });
+      }
+    },
+  );
 
-  app.get("/api/risk-assessments/:assessmentId/report", isAuthenticated, async (req, res) => {
-    try {
-      const { assessmentId } = req.params;
-      const report = await storage.generateRiskReport(assessmentId);
-      res.json(report);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to generate risk report" });
-    }
-  });
+  app.get(
+    "/api/risk-assessments/:assessmentId/report",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { assessmentId } = req.params;
+        const report = await storage.generateRiskReport(assessmentId);
+        res.json(report);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to generate risk report" });
+      }
+    },
+  );
 
   // Excel-based risk template initialization endpoint
-  app.post("/api/risk-assessments/:assessmentId/init-excel-template", isAuthenticated, async (req, res) => {
-    try {
-      const { assessmentId } = req.params;
+  app.post(
+    "/api/risk-assessments/:assessmentId/init-excel-template",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { assessmentId } = req.params;
 
-      // Initialize default risk items based on Excel methodology
-      const defaultRiskItems = [
-        // Spatial Risk Analysis items from Excel
-        {
-          riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "deforestasi",
-          itemName: "Deforestasi",
-          riskLevel: "rendah",
-          parameter: "Sumber TBS Berasal dari Kebun yang di kembangkan sebelum Desember 2020",
-          riskValue: 3,
-          weight: "45.00",
-          calculatedRisk: 135.00, // 45 * 3
-          normalizedScore: 0.45, // 135 / 300 (max possible score)
-          finalScore: 0.15,
-          mitigationRequired: false,
-          mitigationDescription: "Monitoring berkala plot sumber TBS",
-          dataSources: ["Hansen Alert", "Glad Alert", "JRC Natural Forest"],
-          sourceLinks: ["https://storage.googleapis.com/earthenginepartners-hansen/GFC-2024-v1.12/download.html", "http://glad-forest-alert.appspot.com/", "https://data.jrc.ec.europa.eu/dataset/10d1b337-b7d1-4938-a048-686c8185b290"]
-        },
-        {
-          riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "legalitas_lahan",
-          itemName: "Legalitas Lahan",
-          riskLevel: "rendah",
-          parameter: "Memiliki Izin dan Berada di Kawasan APL",
-          riskValue: 3,
-          weight: "35.00",
-          calculatedRisk: 105.00,
-          normalizedScore: 0.35,
-          finalScore: 0.12,
-          mitigationRequired: false,
-          mitigationDescription: "Monitoring Berkala plot Sumber TBS",
-          dataSources: ["Peta WDPA", "Peta Kawasan Hutan Indonesia"],
-          sourceLinks: ["https://www.protectedplanet.net/en/thematic-areas/wdpa?tab=WDPA", "https://geoportal.menlhk.go.id/portal/apps/webappviewer/index.html?id=2ee8bdda1d714899955fccbe7fdf8468&utm_"]
-        },
-        {
-          riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "kawasan_gambut",
-          itemName: "Kawasan Gambut",
-          riskLevel: "sedang",
-          parameter: "Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan sedang proses bimbingan teknis",
-          riskValue: 2,
-          weight: "10.00",
-          calculatedRisk: 20.00,
-          normalizedScore: 0.10,
-          finalScore: 0.03,
-          mitigationRequired: true,
-          mitigationDescription: "Sosialisasi kebijakan perusahaan kepada supplier",
-          dataSources: ["Peta Areal Gambut"],
-          sourceLinks: ["https://brgm.go.id/"]
-        },
-        {
-          riskAssessmentId: assessmentId,
-          category: "spatial",
-          itemType: "indigenous_people",
-          itemName: "Indigenous People",
-          riskLevel: "rendah",
-          parameter: "Tidak ada Overlap dan Memiliki SOP mengenai Penanganan Keluhan Stakeholder",
-          riskValue: 3,
-          weight: "10.00",
-          calculatedRisk: 30.00,
-          normalizedScore: 0.10,
-          finalScore: 0.03,
-          mitigationRequired: false,
-          mitigationDescription: "Monitoring isu sosial secara berkala untuk deteksi dini potensi konflik",
-          dataSources: ["Peta Masyarakat Adat"],
-          sourceLinks: ["https://www.aman.or.id/"]
+        // Initialize default risk items based on Excel methodology
+        const defaultRiskItems = [
+          // Spatial Risk Analysis items from Excel
+          {
+            riskAssessmentId: assessmentId,
+            category: "spatial",
+            itemType: "deforestasi",
+            itemName: "Deforestasi",
+            riskLevel: "rendah",
+            parameter:
+              "Sumber TBS Berasal dari Kebun yang di kembangkan sebelum Desember 2020",
+            riskValue: 3,
+            weight: "45.00",
+            calculatedRisk: 135.0, // 45 * 3
+            normalizedScore: 0.45, // 135 / 300 (max possible score)
+            finalScore: 0.15,
+            mitigationRequired: false,
+            mitigationDescription: "Monitoring berkala plot sumber TBS",
+            dataSources: ["Hansen Alert", "Glad Alert", "JRC Natural Forest"],
+            sourceLinks: [
+              "https://storage.googleapis.com/earthenginepartners-hansen/GFC-2024-v1.12/download.html",
+              "http://glad-forest-alert.appspot.com/",
+              "https://data.jrc.ec.europa.eu/dataset/10d1b337-b7d1-4938-a048-686c8185b290",
+            ],
+          },
+          {
+            riskAssessmentId: assessmentId,
+            category: "spatial",
+            itemType: "legalitas_lahan",
+            itemName: "Legalitas Lahan",
+            riskLevel: "rendah",
+            parameter: "Memiliki Izin dan Berada di Kawasan APL",
+            riskValue: 3,
+            weight: "35.00",
+            calculatedRisk: 105.0,
+            normalizedScore: 0.35,
+            finalScore: 0.12,
+            mitigationRequired: false,
+            mitigationDescription: "Monitoring Berkala plot Sumber TBS",
+            dataSources: ["Peta WDPA", "Peta Kawasan Hutan Indonesia"],
+            sourceLinks: [
+              "https://www.protectedplanet.net/en/thematic-areas/wdpa?tab=WDPA",
+              "https://geoportal.menlhk.go.id/portal/apps/webappviewer/index.html?id=2ee8bdda1d714899955fccbe7fdf8468&utm_",
+            ],
+          },
+          {
+            riskAssessmentId: assessmentId,
+            category: "spatial",
+            itemType: "kawasan_gambut",
+            itemName: "Kawasan Gambut",
+            riskLevel: "sedang",
+            parameter:
+              "Plot Sumber TBS overlap dengan peta indikatif gambut fungsi lindung dan sedang proses bimbingan teknis",
+            riskValue: 2,
+            weight: "10.00",
+            calculatedRisk: 20.0,
+            normalizedScore: 0.1,
+            finalScore: 0.03,
+            mitigationRequired: true,
+            mitigationDescription:
+              "Sosialisasi kebijakan perusahaan kepada supplier",
+            dataSources: ["Peta Areal Gambut"],
+            sourceLinks: ["https://brgm.go.id/"],
+          },
+          {
+            riskAssessmentId: assessmentId,
+            category: "spatial",
+            itemType: "indigenous_people",
+            itemName: "Indigenous People",
+            riskLevel: "rendah",
+            parameter:
+              "Tidak ada Overlap dan Memiliki SOP mengenai Penanganan Keluhan Stakeholder",
+            riskValue: 3,
+            weight: "10.00",
+            calculatedRisk: 30.0,
+            normalizedScore: 0.1,
+            finalScore: 0.03,
+            mitigationRequired: false,
+            mitigationDescription:
+              "Monitoring isu sosial secara berkala untuk deteksi dini potensi konflik",
+            dataSources: ["Peta Masyarakat Adat"],
+            sourceLinks: ["https://www.aman.or.id/"],
+          },
+        ];
+
+        // Create all default items
+        const createdItems = [];
+        for (const itemData of defaultRiskItems) {
+          const item = await storage.createRiskAssessmentItem({
+            ...itemData,
+            category: itemData.category as "spatial" | "non_spatial",
+            itemType: itemData.itemType as
+              | "deforestasi"
+              | "legalitas_lahan"
+              | "kawasan_gambut"
+              | "indigenous_people"
+              | "sertifikasi"
+              | "dokumentasi_legal",
+            riskLevel: itemData.riskLevel as "tinggi" | "sedang" | "rendah",
+            calculatedRisk: itemData.calculatedRisk.toString(),
+            normalizedScore: itemData.normalizedScore.toString(),
+            finalScore: itemData.finalScore.toString(),
+          });
+          createdItems.push(item);
         }
-      ];
 
-      // Create all default items
-      const createdItems = [];
-      for (const itemData of defaultRiskItems) {
-        const item = await storage.createRiskAssessmentItem({
-          ...itemData,
-          category: itemData.category as "spatial" | "non_spatial",
-          itemType: itemData.itemType as "deforestasi" | "legalitas_lahan" | "kawasan_gambut" | "indigenous_people" | "sertifikasi" | "dokumentasi_legal",
-          riskLevel: itemData.riskLevel as "tinggi" | "sedang" | "rendah",
-          calculatedRisk: itemData.calculatedRisk.toString(),
-          normalizedScore: itemData.normalizedScore.toString(),
-          finalScore: itemData.finalScore.toString()
+        // Calculate initial score
+        const scoring = await storage.calculateRiskScore(assessmentId);
+
+        // Update assessment with initial scores
+        await storage.updateRiskAssessment(assessmentId, {
+          spatialRiskScore: scoring.overallScore.toString(),
+          spatialRiskLevel: scoring.riskClassification as any,
+          overallScore: scoring.overallScore.toString(),
+          riskClassification: scoring.riskClassification as any,
         });
-        createdItems.push(item);
+
+        res.json({
+          items: createdItems,
+          scoring,
+        });
+      } catch (error) {
+        res
+          .status(500)
+          .json({ error: "Failed to initialize Excel-based risk template" });
       }
-
-      // Calculate initial score
-      const scoring = await storage.calculateRiskScore(assessmentId);
-
-      // Update assessment with initial scores
-      await storage.updateRiskAssessment(assessmentId, {
-        spatialRiskScore: scoring.overallScore.toString(),
-        spatialRiskLevel: scoring.riskClassification as any,
-        overallScore: scoring.overallScore.toString(),
-        riskClassification: scoring.riskClassification as any
-      });
-
-      res.json({
-        items: createdItems,
-        scoring
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to initialize Excel-based risk template" });
-    }
-  });
+    },
+  );
 
   app.get("/api/mills", isAuthenticated, async (req, res) => {
     try {
@@ -1525,8 +1840,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
       const metrics = await storage.getDashboardMetrics(filters);
@@ -1544,7 +1863,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mediumRiskPlots: 0,
         deforestedPlots: 0,
         totalAreaHa: 0,
-        complianceRate: 0
+        complianceRate: 0,
       });
     }
   });
@@ -1555,8 +1874,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
       const riskSplit = await storage.getRiskSplit(filters);
@@ -1576,8 +1899,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
       const legalitySplit = await storage.getLegalitySplit(filters);
@@ -1597,18 +1924,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
       const suppliers = await storage.getSupplierCompliance(filters);
 
       // Validate response with schema - validate each item
-      const validatedSuppliers = suppliers.map(supplier => supplierSummarySchema.parse(supplier));
+      const validatedSuppliers = suppliers.map((supplier) =>
+        supplierSummarySchema.parse(supplier),
+      );
       res.json(validatedSuppliers);
     } catch (error) {
       console.error("Error fetching supplier compliance:", error);
-      res.status(500).json({ error: "Failed to fetch supplier compliance data" });
+      res
+        .status(500)
+        .json({ error: "Failed to fetch supplier compliance data" });
     }
   });
 
@@ -1618,14 +1953,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
       const alerts = await storage.getDashboardAlerts(filters);
 
       // Validate response with schema - validate each alert
-      const validatedAlerts = alerts.map(alert => alertSchema.parse(alert));
+      const validatedAlerts = alerts.map((alert) => alertSchema.parse(alert));
       res.json(validatedAlerts);
     } catch (error) {
       console.error("Error fetching dashboard alerts:", error);
@@ -1639,14 +1978,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
       const trendData = await storage.getComplianceTrend(filters);
 
       // Validate response with schema - validate each point
-      const validatedTrendData = trendData.map(point => complianceTrendPointSchema.parse(point));
+      const validatedTrendData = trendData.map((point) =>
+        complianceTrendPointSchema.parse(point),
+      );
       res.json(validatedTrendData);
     } catch (error) {
       console.error("Error fetching compliance trend:", error);
@@ -1674,32 +2019,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get analysis results for the selected plots
-      const analysisResultsToUpdate = await storage.getAnalysisResultsByPlotIds(plotIds);
+      const analysisResultsToUpdate =
+        await storage.getAnalysisResultsByPlotIds(plotIds);
 
       if (analysisResultsToUpdate.length === 0) {
-        return res.status(404).json({ error: "No analysis results found for the specified plot IDs" });
+        return res
+          .status(404)
+          .json({
+            error: "No analysis results found for the specified plot IDs",
+          });
       }
 
       // Update analysis results with supplier association
       const updatedAnalysisResults = [];
       for (const result of analysisResultsToUpdate) {
-        const updated = await storage.updateAnalysisResult(result.id, { supplierId });
+        const updated = await storage.updateAnalysisResult(result.id, {
+          supplierId,
+        });
         updatedAnalysisResults.push(updated);
 
         // Create or update plot record (handle missing supplier_id column gracefully)
         try {
           // First try to add supplier_id column if it doesn't exist
           try {
-            await db.execute(sql`ALTER TABLE plots ADD COLUMN IF NOT EXISTS supplier_id VARCHAR REFERENCES suppliers(id)`);
+            await db.execute(
+              sql`ALTER TABLE plots ADD COLUMN IF NOT EXISTS supplier_id VARCHAR REFERENCES suppliers(id)`,
+            );
           } catch (alterError) {
-            console.log('supplier_id column already exists or alter failed, continuing...');
+            console.log(
+              "supplier_id column already exists or alter failed, continuing...",
+            );
           }
 
           const existingPlot = await storage.getPlotByPlotId(result.plotId);
           if (existingPlot) {
             // Update existing plot with supplier association
             await storage.updateLot(existingPlot.id, { supplierId });
-            console.log(`✓ Updated existing plot ${result.plotId} with supplier ${supplierId}`);
+            console.log(
+              `✓ Updated existing plot ${result.plotId} with supplier ${supplierId}`,
+            );
           } else {
             // Create new plot record
             await storage.createPlot({
@@ -1708,9 +2066,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               polygon: result.geometry ? JSON.stringify(result.geometry) : null,
               areaHa: result.area.toString(),
               crop: "oil_palm", // Default crop
-              isActive: true
+              isActive: true,
             });
-            console.log(`✓ Created new plot ${result.plotId} with supplier ${supplierId}`);
+            console.log(
+              `✓ Created new plot ${result.plotId} with supplier ${supplierId}`,
+            );
           }
         } catch (plotError) {
           console.error(`Error handling plot ${result.plotId}:`, plotError);
@@ -1720,28 +2080,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update supplier assessment progress to enable Step 3 (Legality Compliance)
       try {
-        const progress = await storage.getSupplierAssessmentProgressByName(supplier.name);
+        const progress = await storage.getSupplierAssessmentProgressByName(
+          supplier.name,
+        );
         if (progress) {
           // Mark data collection as completed and enable legality compliance
           await storage.updateSupplierAssessmentProgress(progress.id, {
             dataCollectionCompleted: true,
             dataCollectionCompletedAt: new Date(),
-            currentStep: 3 // Enable Step 3 (Legality Compliance) - this should be step 3, not 2
+            currentStep: 3, // Enable Step 3 (Legality Compliance) - this should be step 3, not 2
           });
-          console.log(`✅ Updated existing progress for ${supplier.name} - enabled step 3`);
+          console.log(
+            `✅ Updated existing progress for ${supplier.name} - enabled step 3`,
+          );
         } else {
           // Create new progress record
           await storage.createSupplierAssessmentProgress({
             supplierName: supplier.name,
-            supplierType: supplier.supplierType || 'Estate',
+            supplierType: supplier.supplierType || "Estate",
             dataCollectionCompleted: true,
             dataCollectionCompletedAt: new Date(),
-            currentStep: 3 // Enable Step 3 (Legality Compliance)
+            currentStep: 3, // Enable Step 3 (Legality Compliance)
           });
-          console.log(`✅ Created new progress for ${supplier.name} - enabled step 3`);
+          console.log(
+            `✅ Created new progress for ${supplier.name} - enabled step 3`,
+          );
         }
       } catch (progressError) {
-        console.error("Error updating supplier assessment progress:", progressError);
+        console.error(
+          "Error updating supplier assessment progress:",
+          progressError,
+        );
       }
 
       res.json({
@@ -1752,16 +2121,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           supplier: {
             id: supplier.id,
             name: supplier.name,
-            companyName: supplier.companyName
+            companyName: supplier.companyName,
           },
           plotIds: plotIds,
-          nextStepEnabled: "Step 3 - Legality Compliance"
-        }
+          nextStepEnabled: "Step 3 - Legality Compliance",
+        },
       });
-
     } catch (error) {
       console.error("Error saving plot-supplier association:", error);
-      res.status(500).json({ error: "Failed to save plot-supplier association" });
+      res
+        .status(500)
+        .json({ error: "Failed to save plot-supplier association" });
     }
   });
 
@@ -1771,60 +2141,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
-      const format = req.query.format || 'json';
+      const format = req.query.format || "json";
       const exportData = await storage.getExportData(filters);
 
       // Validate response with schema
       const validatedExportData = exportDataSchema.parse(exportData);
 
-      if (format === 'csv') {
+      if (format === "csv") {
         // Convert to CSV format
         const csvLines: string[] = [];
 
         // Supplier summary CSV
-        csvLines.push('Supplier Summary');
-        csvLines.push('Supplier Name,Total Plots,Compliant Plots,Total Area (Ha),Compliance Rate (%),Risk Status,Legality Status,Region,Last Updated');
+        csvLines.push("Supplier Summary");
+        csvLines.push(
+          "Supplier Name,Total Plots,Compliant Plots,Total Area (Ha),Compliance Rate (%),Risk Status,Legality Status,Region,Last Updated",
+        );
 
-        validatedExportData.supplierSummaries.forEach(supplier => {
-          csvLines.push([
-            supplier.supplierName,
-            supplier.totalPlots,
-            supplier.compliantPlots,
-            supplier.totalArea,
-            supplier.complianceRate,
-            supplier.riskStatus,
-            supplier.legalityStatus,
-            supplier.region || '',
-            supplier.lastUpdated.toISOString()
-          ].join(','));
+        validatedExportData.supplierSummaries.forEach((supplier) => {
+          csvLines.push(
+            [
+              supplier.supplierName,
+              supplier.totalPlots,
+              supplier.compliantPlots,
+              supplier.totalArea,
+              supplier.complianceRate,
+              supplier.riskStatus,
+              supplier.legalityStatus,
+              supplier.region || "",
+              supplier.lastUpdated.toISOString(),
+            ].join(","),
+          );
         });
 
-        csvLines.push(''); // Empty line
+        csvLines.push(""); // Empty line
 
         // Plot summary CSV
-        csvLines.push('Plot Summary');
-        csvLines.push('Plot ID,Supplier Name,Region,Area (Ha),Risk Status,Legality Status,Last Updated');
+        csvLines.push("Plot Summary");
+        csvLines.push(
+          "Plot ID,Supplier Name,Region,Area (Ha),Risk Status,Legality Status,Last Updated",
+        );
 
-        validatedExportData.plotSummaries.forEach(plot => {
-          csvLines.push([
-            plot.plotId,
-            plot.supplierName,
-            plot.region || '',
-            plot.area,
-            plot.riskStatus,
-            plot.legalityStatus,
-            plot.lastUpdated.toISOString()
-          ].join(','));
+        validatedExportData.plotSummaries.forEach((plot) => {
+          csvLines.push(
+            [
+              plot.plotId,
+              plot.supplierName,
+              plot.region || "",
+              plot.area,
+              plot.riskStatus,
+              plot.legalityStatus,
+              plot.lastUpdated.toISOString(),
+            ].join(","),
+          );
         });
 
-        const csvContent = csvLines.join('\n');
+        const csvContent = csvLines.join("\n");
 
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="compliance-overview-${new Date().toISOString().split('T')[0]}.csv"`);
+        res.setHeader("Content-Type", "text/csv");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="compliance-overview-${new Date().toISOString().split("T")[0]}.csv"`,
+        );
         res.send(csvContent);
       } else {
         // Return JSON format
@@ -1842,14 +2227,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = dashboardFiltersSchema.parse({
         region: req.query.region,
         businessUnit: req.query.businessUnit,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined
+        dateFrom: req.query.dateFrom
+          ? new Date(req.query.dateFrom as string)
+          : undefined,
+        dateTo: req.query.dateTo
+          ? new Date(req.query.dateTo as string)
+          : undefined,
       });
 
       const plots = await storage.getPlotSummaries(filters);
 
       // Validate response with schema - validate each plot
-      const validatedPlots = plots.map(plot => plotSummarySchema.parse(plot));
+      const validatedPlots = plots.map((plot) => plotSummarySchema.parse(plot));
       res.json(validatedPlots);
     } catch (error) {
       console.error("Error fetching plot summaries:", error);
@@ -1861,51 +2250,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user", async (req, res) => {
     // Force fresh response - no caching
     res.set({
-      'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-      'Pragma': 'no-cache',
-      'Expires': '0',
-      'ETag': Math.random().toString() // Force unique response
+      "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+      Pragma: "no-cache",
+      Expires: "0",
+      ETag: Math.random().toString(), // Force unique response
     });
     if (req.user) {
       try {
         const { password, ...userWithoutPassword } = req.user as any;
-        
+
         // Derive the user's role from their organization roles
-        let derivedRole = 'user'; // default role
-        console.log(`🔍 DEBUG: Starting role derivation for user ${userWithoutPassword.username}`);
-        
+        let derivedRole = "user"; // default role
+        console.log(
+          `🔍 DEBUG: Starting role derivation for user ${userWithoutPassword.username}`,
+        );
+
         try {
           // Get user's organizations
-          const userOrgs = await storage.getUserOrganizations(userWithoutPassword.id);
-          
+          const userOrgs = await storage.getUserOrganizations(
+            userWithoutPassword.id,
+          );
+
           if (userOrgs.length > 0) {
             // Check roles in each organization
             for (const userOrg of userOrgs) {
-              const userRoles = await storage.getUserRoles(userWithoutPassword.id, userOrg.organizationId);
-              
+              const userRoles = await storage.getUserRoles(
+                userWithoutPassword.id,
+                userOrg.organizationId,
+              );
+
               for (const userRole of userRoles) {
                 const role = await storage.getRole(userRole.roleId);
-                if (role?.name === 'system_admin') {
-                  derivedRole = 'system_admin';
+                if (role?.name === "system_admin") {
+                  derivedRole = "system_admin";
                   break;
-                } else if (role?.name === 'organization_admin') {
-                  derivedRole = 'organization_admin';
+                } else if (role?.name === "organization_admin") {
+                  derivedRole = "organization_admin";
                 }
               }
-              
-              if (derivedRole === 'system_admin') break;
+
+              if (derivedRole === "system_admin") break;
             }
           }
         } catch (roleError) {
-          console.log('Error deriving user role:', roleError);
+          console.log("Error deriving user role:", roleError);
         }
-        
+
         // Return user with derived role
-        console.log(`🔍 DEBUG: Final derived role for ${userWithoutPassword.username}: ${derivedRole}`);
-        res.json({ ...userWithoutPassword, role: derivedRole, lastUpdated: new Date().toISOString() });
+        console.log(
+          `🔍 DEBUG: Final derived role for ${userWithoutPassword.username}: ${derivedRole}`,
+        );
+        res.json({
+          ...userWithoutPassword,
+          role: derivedRole,
+          lastUpdated: new Date().toISOString(),
+        });
       } catch (error) {
-        console.error('Error in /api/user:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error("Error in /api/user:", error);
+        res.status(500).json({ error: "Internal server error" });
       }
     } else {
       res.status(401).json({ error: "Not authenticated" });
@@ -1922,124 +2324,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Shipment traceability endpoint
-  app.get("/api/shipments/:shipmentId/traceability", isAuthenticated, async (req, res) => {
-    try {
-      const { shipmentId } = req.params;
+  app.get(
+    "/api/shipments/:shipmentId/traceability",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const { shipmentId } = req.params;
 
-      // Mock traceability data
-      const mockTraceability = {
-        shipment: {
-          id: shipmentId,
-          shipmentId: `EXP-2024-${shipmentId.slice(-3)}`,
-          destination: 'Rotterdam, Netherlands',
-          totalWeight: '21.8'
-        },
-        shipmentLots: [
-          {
-            lot: { id: 'lot-001', lotId: 'BATCH-CPO-001', quantity: 21.8 },
-            mill: { id: 'mill-001', name: 'Central Palm Mill Complex' }
-          }
-        ],
-        sourcePlots: [
-          {
-            plot: { id: 'plot-001', plotId: 'PLT-RIAU-001', name: 'Palm Plot A - Riau' },
-            supplier: { name: 'Riau Growers Cooperative' },
-            delivery: { weight: '50.5', deliveryDate: '2024-08-10' }
-          }
-        ]
-      };
+        // Mock traceability data
+        const mockTraceability = {
+          shipment: {
+            id: shipmentId,
+            shipmentId: `EXP-2024-${shipmentId.slice(-3)}`,
+            destination: "Rotterdam, Netherlands",
+            totalWeight: "21.8",
+          },
+          shipmentLots: [
+            {
+              lot: { id: "lot-001", lotId: "BATCH-CPO-001", quantity: 21.8 },
+              mill: { id: "mill-001", name: "Central Palm Mill Complex" },
+            },
+          ],
+          sourcePlots: [
+            {
+              plot: {
+                id: "plot-001",
+                plotId: "PLT-RIAU-001",
+                name: "Palm Plot A - Riau",
+              },
+              supplier: { name: "Riau Growers Cooperative" },
+              delivery: { weight: "50.5", deliveryDate: "2024-08-10" },
+            },
+          ],
+        };
 
-      res.json(mockTraceability);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch traceability data" });
-    }
-  });
+        res.json(mockTraceability);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to fetch traceability data" });
+      }
+    },
+  );
 
   // Enhanced DDS Reports routes for PRD implementation
 
   // Get available HS codes for product selection dropdown
-  app.get('/api/dds/hs-codes', isAuthenticated, async (req, res) => {
+  app.get("/api/dds/hs-codes", isAuthenticated, async (req, res) => {
     try {
       const hsCodes = [
-        { code: '1511', description: 'Palm Oil and its fractions, crude', category: 'palm_oil' },
-        { code: '151110', description: 'Crude palm oil', category: 'palm_oil' },
-        { code: '151190', description: 'Palm oil and its fractions, refined', category: 'palm_oil' },
-        { code: '1513', description: 'Coconut (copra), palm kernel or babassu oil', category: 'palm_oil' },
-        { code: '151321', description: 'Crude coconut oil', category: 'coconut' },
-        { code: '0901', description: 'Coffee, not roasted or decaffeinated', category: 'coffee' },
-        { code: '090111', description: 'Coffee, not roasted, not decaffeinated', category: 'coffee' },
-        { code: '1801', description: 'Cocoa beans, whole or broken, raw or roasted', category: 'cocoa' },
-        { code: '180100', description: 'Cocoa beans, whole or broken', category: 'cocoa' },
-        { code: '4401', description: 'Fuel wood, in logs, billets, twigs, faggots', category: 'wood' },
-        { code: '440110', description: 'Fuel wood, in logs, billets, twigs', category: 'wood' },
-        { code: '1201', description: 'Soya beans, whether or not broken', category: 'soy' },
-        { code: '120100', description: 'Soya beans, whether or not broken', category: 'soy' }
+        {
+          code: "1511",
+          description: "Palm Oil and its fractions, crude",
+          category: "palm_oil",
+        },
+        { code: "151110", description: "Crude palm oil", category: "palm_oil" },
+        {
+          code: "151190",
+          description: "Palm oil and its fractions, refined",
+          category: "palm_oil",
+        },
+        {
+          code: "1513",
+          description: "Coconut (copra), palm kernel or babassu oil",
+          category: "palm_oil",
+        },
+        {
+          code: "151321",
+          description: "Crude coconut oil",
+          category: "coconut",
+        },
+        {
+          code: "0901",
+          description: "Coffee, not roasted or decaffeinated",
+          category: "coffee",
+        },
+        {
+          code: "090111",
+          description: "Coffee, not roasted, not decaffeinated",
+          category: "coffee",
+        },
+        {
+          code: "1801",
+          description: "Cocoa beans, whole or broken, raw or roasted",
+          category: "cocoa",
+        },
+        {
+          code: "180100",
+          description: "Cocoa beans, whole or broken",
+          category: "cocoa",
+        },
+        {
+          code: "4401",
+          description: "Fuel wood, in logs, billets, twigs, faggots",
+          category: "wood",
+        },
+        {
+          code: "440110",
+          description: "Fuel wood, in logs, billets, twigs",
+          category: "wood",
+        },
+        {
+          code: "1201",
+          description: "Soya beans, whether or not broken",
+          category: "soy",
+        },
+        {
+          code: "120100",
+          description: "Soya beans, whether or not broken",
+          category: "soy",
+        },
       ];
       res.json(hsCodes);
     } catch (error) {
-      console.error('Error fetching HS codes:', error);
-      res.status(500).json({ error: 'Failed to fetch HS codes' });
+      console.error("Error fetching HS codes:", error);
+      res.status(500).json({ error: "Failed to fetch HS codes" });
     }
   });
 
   // Get scientific names for products dropdown
-  app.get('/api/dds/scientific-names', isAuthenticated, async (req, res) => {
+  app.get("/api/dds/scientific-names", isAuthenticated, async (req, res) => {
     try {
       const { category } = req.query;
       const scientificNames = {
         palm_oil: [
-          { name: 'Elaeis guineensis', common: 'African Oil Palm' },
-          { name: 'Elaeis oleifera', common: 'American Oil Palm' }
+          { name: "Elaeis guineensis", common: "African Oil Palm" },
+          { name: "Elaeis oleifera", common: "American Oil Palm" },
         ],
-        coconut: [
-          { name: 'Cocos nucifera', common: 'Coconut Palm' }
-        ],
+        coconut: [{ name: "Cocos nucifera", common: "Coconut Palm" }],
         coffee: [
-          { name: 'Coffea arabica', common: 'Arabica Coffee' },
-          { name: 'Coffea canephora', common: 'Robusta Coffee' },
-          { name: 'Coffea liberica', common: 'Liberica Coffee' }
+          { name: "Coffea arabica", common: "Arabica Coffee" },
+          { name: "Coffea canephora", common: "Robusta Coffee" },
+          { name: "Coffea liberica", common: "Liberica Coffee" },
         ],
-        cocoa: [
-          { name: 'Theobroma cacao', common: 'Cacao Tree' }
-        ],
-        soy: [
-          { name: 'Glycine max', common: 'Soybean' }
-        ],
-        wood: [
-          { name: 'Various species', common: 'Mixed Forest Species' }
-        ]
+        cocoa: [{ name: "Theobroma cacao", common: "Cacao Tree" }],
+        soy: [{ name: "Glycine max", common: "Soybean" }],
+        wood: [{ name: "Various species", common: "Mixed Forest Species" }],
       };
 
-      if (category && scientificNames[category as keyof typeof scientificNames]) {
+      if (
+        category &&
+        scientificNames[category as keyof typeof scientificNames]
+      ) {
         res.json(scientificNames[category as keyof typeof scientificNames]);
       } else {
         res.json(Object.values(scientificNames).flat());
       }
     } catch (error) {
-      console.error('Error fetching scientific names:', error);
-      res.status(500).json({ error: 'Failed to fetch scientific names' });
+      console.error("Error fetching scientific names:", error);
+      res.status(500).json({ error: "Failed to fetch scientific names" });
     }
   });
 
   // Validate GeoJSON data endpoint
-  app.post('/api/dds/validate-geojson', isAuthenticated, async (req, res) => {
+  app.post("/api/dds/validate-geojson", isAuthenticated, async (req, res) => {
     try {
       const { geojson } = req.body;
 
       if (!geojson) {
         return res.status(400).json({
           valid: false,
-          error: 'No GeoJSON data provided'
+          error: "No GeoJSON data provided",
         });
       }
 
       let parsedGeoJson;
       try {
-        parsedGeoJson = typeof geojson === 'string' ? JSON.parse(geojson) : geojson;
+        parsedGeoJson =
+          typeof geojson === "string" ? JSON.parse(geojson) : geojson;
       } catch (parseError) {
         return res.status(400).json({
           valid: false,
-          error: 'Invalid JSON format'
+          error: "Invalid JSON format",
         });
       }
 
@@ -2047,16 +2501,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!parsedGeoJson.type) {
         return res.status(400).json({
           valid: false,
-          error: 'Missing type property'
+          error: "Missing type property",
         });
       }
 
       // Check for valid geometry types
-      const validTypes = ['Feature', 'FeatureCollection', 'Polygon', 'MultiPolygon'];
+      const validTypes = [
+        "Feature",
+        "FeatureCollection",
+        "Polygon",
+        "MultiPolygon",
+      ];
       if (!validTypes.includes(parsedGeoJson.type)) {
         return res.status(400).json({
           valid: false,
-          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`
+          error: `Invalid GeoJSON type: ${parsedGeoJson.type}. Must be Feature, FeatureCollection, Polygon, or MultiPolygon`,
         });
       }
 
@@ -2066,7 +2525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let centroid = null;
 
       // Extract polygon geometry and calculate metadata
-      if (parsedGeoJson.type === 'Polygon') {
+      if (parsedGeoJson.type === "Polygon") {
         polygonFound = true;
         const coords = parsedGeoJson.coordinates;
         if (coords && coords[0] && coords[0].length >= 4) {
@@ -2074,7 +2533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           centroid = calculateCentroid(coords[0]);
           area = calculatePolygonArea(coords[0]);
         }
-      } else if (parsedGeoJson.type === 'MultiPolygon') {
+      } else if (parsedGeoJson.type === "MultiPolygon") {
         polygonFound = true;
         const coords = parsedGeoJson.coordinates;
         if (coords && coords[0] && coords[0][0] && coords[0][0].length >= 4) {
@@ -2082,24 +2541,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           centroid = calculateCentroid(coords[0][0]);
           area = calculatePolygonArea(coords[0][0]);
         }
-      } else if (parsedGeoJson.type === 'Feature') {
+      } else if (parsedGeoJson.type === "Feature") {
         const geometry = parsedGeoJson.geometry;
-        if (geometry && (geometry.type === 'Polygon' || geometry.type === 'MultiPolygon')) {
+        if (
+          geometry &&
+          (geometry.type === "Polygon" || geometry.type === "MultiPolygon")
+        ) {
           polygonFound = true;
-          const coords = geometry.type === 'Polygon' ? geometry.coordinates : geometry.coordinates[0];
+          const coords =
+            geometry.type === "Polygon"
+              ? geometry.coordinates
+              : geometry.coordinates[0];
           if (coords && coords[0] && coords[0].length >= 4) {
             boundingBox = calculateBoundingBox(coords[0]);
             centroid = calculateCentroid(coords[0]);
             area = calculatePolygonArea(coords[0]);
           }
         }
-      } else if (parsedGeoJson.type === 'FeatureCollection') {
+      } else if (parsedGeoJson.type === "FeatureCollection") {
         const features = parsedGeoJson.features;
         if (features && features.length > 0) {
           for (const feature of features) {
-            if (feature.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon')) {
+            if (
+              feature.geometry &&
+              (feature.geometry.type === "Polygon" ||
+                feature.geometry.type === "MultiPolygon")
+            ) {
               polygonFound = true;
-              const coords = feature.geometry.type === 'Polygon' ? feature.geometry.coordinates : feature.geometry.coordinates[0];
+              const coords =
+                feature.geometry.type === "Polygon"
+                  ? feature.geometry.coordinates
+                  : feature.geometry.coordinates[0];
               if (coords && coords[0] && coords[0].length >= 4) {
                 boundingBox = calculateBoundingBox(coords[0]);
                 centroid = calculateCentroid(coords[0]);
@@ -2114,7 +2586,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!polygonFound) {
         return res.status(400).json({
           valid: false,
-          error: 'No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.'
+          error:
+            "No valid polygon geometry found. Only Polygon and MultiPolygon geometries are supported.",
         });
       }
 
@@ -2124,27 +2597,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           area: area,
           boundingBox: boundingBox,
           centroid: centroid,
-          geometryType: parsedGeoJson.type
-        }
+          geometryType: parsedGeoJson.type,
+        },
       });
-
     } catch (error) {
-      console.error('Error validating GeoJSON:', error);
+      console.error("Error validating GeoJSON:", error);
       res.status(500).json({
         valid: false,
-        error: 'Server error during validation'
+        error: "Server error during validation",
       });
     }
   });
 
   // Get session-based DDS list (PRD requirement for dashboard)
-  app.get('/api/dds/list', isAuthenticated, async (req, res) => {
+  app.get("/api/dds/list", isAuthenticated, async (req, res) => {
     try {
       const sessionId = req.query.sessionId as string;
-      const reports = sessionId ? await storage.getDdsReportsBySession(sessionId) : await storage.getDdsReports();
+      const reports = sessionId
+        ? await storage.getDdsReportsBySession(sessionId)
+        : await storage.getDdsReports();
 
       // Format for PRD dashboard requirements
-      const formattedReports = reports.map(report => ({
+      const formattedReports = reports.map((report) => ({
         id: report.id,
         statementId: report.id.slice(-8).toUpperCase(),
         date: report.createdAt,
@@ -2153,18 +2627,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: report.status,
         downloadPath: report.pdfDocumentPath,
         fileName: report.pdfFileName,
-        canDownload: report.status !== 'draft'
+        canDownload: report.status !== "draft",
       }));
 
       res.json(formattedReports);
     } catch (error) {
-      console.error('Error fetching DDS list:', error);
-      res.status(500).json({ error: 'Failed to fetch DDS list' });
+      console.error("Error fetching DDS list:", error);
+      res.status(500).json({ error: "Failed to fetch DDS list" });
     }
   });
 
   // Enhanced DDS creation endpoint for comprehensive form data
-  app.post('/api/dds/create', isAuthenticated, async (req, res) => {
+  app.post("/api/dds/create", isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertDdsReportSchema.parse(req.body);
 
@@ -2174,278 +2648,328 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Auto-generate PDF filename
-      const operatorName = validatedData.operatorLegalName.replace(/[^a-zA-Z0-9]/g, '_');
-      const productName = (validatedData.commonName || validatedData.productDescription).replace(/[^a-zA-Z0-9]/g, '_');
-      const dateString = new Date().toISOString().split('T')[0];
+      const operatorName = validatedData.operatorLegalName.replace(
+        /[^a-zA-Z0-9]/g,
+        "_",
+      );
+      const productName = (
+        validatedData.commonName || validatedData.productDescription
+      ).replace(/[^a-zA-Z0-9]/g, "_");
+      const dateString = new Date().toISOString().split("T")[0];
       validatedData.pdfFileName = `DDS_${operatorName}_${productName}_${dateString}.pdf`;
 
       const ddsReport = await storage.createDdsReport(validatedData);
       res.status(201).json(ddsReport);
     } catch (error) {
-      console.error('Error creating DDS report:', error);
+      console.error("Error creating DDS report:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid DDS report data', details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid DDS report data", details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to create DDS report' });
+        res.status(500).json({ error: "Failed to create DDS report" });
       }
     }
   });
 
   // Original DDS reports endpoint (maintained for backward compatibility)
-  app.get('/api/dds-reports', isAuthenticated, async (req, res) => {
+  app.get("/api/dds-reports", isAuthenticated, async (req, res) => {
     try {
       const reports = await storage.getDdsReports();
       res.json(reports);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch DDS reports' });
+      res.status(500).json({ error: "Failed to fetch DDS reports" });
     }
   });
 
-  app.get('/api/dds-reports/:id', isAuthenticated, async (req, res) => {
+  app.get("/api/dds-reports/:id", isAuthenticated, async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (report) {
         res.json(report);
       } else {
-        res.status(404).json({ error: 'DDS report not found' });
+        res.status(404).json({ error: "DDS report not found" });
       }
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch DDS report' });
+      res.status(500).json({ error: "Failed to fetch DDS report" });
     }
   });
 
-  app.post('/api/dds-reports', isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports", isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertDdsReportSchema.parse(req.body);
       const newReport = await storage.createDdsReport(validatedData);
       res.status(201).json(newReport);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid DDS report data', details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid DDS report data", details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to create DDS report' });
+        res.status(500).json({ error: "Failed to create DDS report" });
       }
     }
   });
 
-  app.put('/api/dds-reports/:id', isAuthenticated, async (req, res) => {
+  app.put("/api/dds-reports/:id", isAuthenticated, async (req, res) => {
     try {
       const updates = req.body;
-      const updatedReport = await storage.updateDdsReport(req.params.id, updates);
+      const updatedReport = await storage.updateDdsReport(
+        req.params.id,
+        updates,
+      );
       if (updatedReport) {
         res.json(updatedReport);
       } else {
-        res.status(404).json({ error: 'DDS report not found' });
+        res.status(404).json({ error: "DDS report not found" });
       }
     } catch (error) {
-      res.status(500).json({ error: 'Failed to update DDS report' });
+      res.status(500).json({ error: "Failed to update DDS report" });
     }
   });
 
   // DDS Report PDF generation
-  app.post('/api/dds-reports/:id/pdf', isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports/:id/pdf", isAuthenticated, async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (!report) {
-        return res.status(404).json({ error: 'DDS report not found' });
+        return res.status(404).json({ error: "DDS report not found" });
       }
 
       // Generate actual PDF file
-      const { generateFixedDDSPDF } = await import('./pdf-generator-fixed.js');
+      const { generateFixedDDSPDF } = await import("./pdf-generator-fixed.js");
       const pdfBuffer = generateFixedDDSPDF(report);
 
       // For demo purposes, we'll return the PDF directly
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="dds-${report.id}.pdf"`);
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="dds-${report.id}.pdf"`,
+      );
       res.send(Buffer.from(pdfBuffer));
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      res.status(500).json({ error: 'Failed to generate PDF' });
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ error: "Failed to generate PDF" });
     }
   });
 
   // Generate FIXED 4-page DDS PDF document with correct format
-  app.get('/api/generate-fixed-dds-pdf', isAuthenticated, async (req, res) => {
+  app.get("/api/generate-fixed-dds-pdf", isAuthenticated, async (req, res) => {
     try {
-      const { generateFixedDDSPDF } = await import('./pdf-generator-fixed.js');
+      const { generateFixedDDSPDF } = await import("./pdf-generator-fixed.js");
       const pdfBuffer = generateFixedDDSPDF({});
-      
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename="dds-fixed-4-page.pdf"');
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        'attachment; filename="dds-fixed-4-page.pdf"',
+      );
       res.send(Buffer.from(pdfBuffer));
     } catch (error) {
-      console.error('Error generating FIXED DDS PDF:', error);
-      res.status(500).json({ error: 'Failed to generate FIXED DDS PDF' });
+      console.error("Error generating FIXED DDS PDF:", error);
+      res.status(500).json({ error: "Failed to generate FIXED DDS PDF" });
     }
   });
 
   // Generate dummy DDS PDF document
-  app.get('/api/generate-dummy-dds-pdf', isAuthenticated, async (req, res) => {
+  app.get("/api/generate-dummy-dds-pdf", isAuthenticated, async (req, res) => {
     try {
       // Create dummy report data
       const dummyReport = {
-        companyInternalRef: 'DDS-2024-DUMMY-001',
-        activity: 'Import of Palm Oil Products',
-        operatorLegalName: 'KPN Corporation Berhad',
-        operatorAddress: 'Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia',
-        operatorCountry: 'Malaysia',
-        operatorIsoCode: 'MY',
-        productDescription: 'Crude Palm Oil (CPO)',
-        netMassKg: 2150.000,
+        companyInternalRef: "DDS-2024-DUMMY-001",
+        activity: "Import of Palm Oil Products",
+        operatorLegalName: "KPN Corporation Berhad",
+        operatorAddress:
+          "Level 6, Menara KPN, Jalan Sultan Ismail, 50250 Kuala Lumpur, Malaysia",
+        operatorCountry: "Malaysia",
+        operatorIsoCode: "MY",
+        productDescription: "Crude Palm Oil (CPO)",
+        netMassKg: 2150.0,
         percentageEstimation: 5,
-        supplementaryUnit: 'MT',
-        scientificName: 'Elaeis guineensis',
-        commonName: 'Oil Palm',
-        producerName: 'Riau Cooperative Growers',
-        countryOfProduction: 'Malaysia',
+        supplementaryUnit: "MT",
+        scientificName: "Elaeis guineensis",
+        commonName: "Oil Palm",
+        producerName: "Riau Cooperative Growers",
+        countryOfProduction: "Malaysia",
         totalProducers: 15,
         totalPlots: 45,
-        totalProductionArea: 1250.50,
-        countryOfHarvest: 'Malaysia',
+        totalProductionArea: 1250.5,
+        countryOfHarvest: "Malaysia",
         maxIntermediaries: 2,
-        traceabilityMethod: 'GPS Coordinates + Plot Mapping',
-        expectedHarvestDate: '2024-12-31',
-        productionDateRange: 'January 2024 - December 2024'
+        traceabilityMethod: "GPS Coordinates + Plot Mapping",
+        expectedHarvestDate: "2024-12-31",
+        productionDateRange: "January 2024 - December 2024",
       };
 
-      console.log('Starting PDF generation...');
+      console.log("Starting PDF generation...");
 
       // Generate the PDF using jsPDF
       const doc = new jsPDF();
 
       // Set up the document
       doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Due Diligence Statement', 105, 20, { align: 'center' });
+      doc.setFont("helvetica", "bold");
+      doc.text("Due Diligence Statement", 105, 20, { align: "center" });
 
       // Page info
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('-------------------------------------------------------------------------------------------------------------', 10, 30);
-      doc.text('Page 1', 10, 40);
-      doc.text('Status: SUBMITTED', 150, 40);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        "-------------------------------------------------------------------------------------------------------------",
+        10,
+        30,
+      );
+      doc.text("Page 1", 10, 40);
+      doc.text("Status: SUBMITTED", 150, 40);
 
-      const currentDate = new Date().toLocaleDateString('en-GB');
+      const currentDate = new Date().toLocaleDateString("en-GB");
       doc.text(`Created On: ${currentDate}`, 10, 50);
 
       // Section 1
       let yPos = 70;
-      doc.setFont('helvetica', 'bold');
-      doc.text('1. Company Internal Ref:', 10, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("1. Company Internal Ref:", 10, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.companyInternalRef, 80, yPos);
 
       yPos += 10;
-      doc.setFont('helvetica', 'bold');
-      doc.text('2. Activity:', 10, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("2. Activity:", 10, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.activity, 50, yPos);
 
       // Section 3 - Operator Information
       yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('3. Operator/Trader name and address:', 10, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text("3. Operator/Trader name and address:", 10, yPos);
 
       yPos += 10;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Name:', 15, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("Name:", 15, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.operatorLegalName, 40, yPos);
 
       yPos += 10;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Address:', 15, yPos);
-      doc.setFont('helvetica', 'normal');
-      const addressLines = doc.splitTextToSize(dummyReport.operatorAddress, 140);
+      doc.setFont("helvetica", "bold");
+      doc.text("Address:", 15, yPos);
+      doc.setFont("helvetica", "normal");
+      const addressLines = doc.splitTextToSize(
+        dummyReport.operatorAddress,
+        140,
+      );
       doc.text(addressLines, 45, yPos);
       yPos += addressLines.length * 5;
 
       yPos += 5;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Country:', 15, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("Country:", 15, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.operatorCountry, 45, yPos);
 
       yPos += 10;
-      doc.setFont('helvetica', 'bold');
-      doc.text('ISO Code:', 15, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("ISO Code:", 15, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.operatorIsoCode, 45, yPos);
 
       // Commodity Section
       yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Commodity(ies) or Product(s)', 10, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text("Commodity(ies) or Product(s)", 10, yPos);
 
       yPos += 15;
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Description', 10, yPos);
-      doc.text('Net Mass (Kg)', 70, yPos);
-      doc.text('% Est.', 120, yPos);
-      doc.text('Units', 150, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text("Description", 10, yPos);
+      doc.text("Net Mass (Kg)", 70, yPos);
+      doc.text("% Est.", 120, yPos);
+      doc.text("Units", 150, yPos);
 
       yPos += 10;
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.productDescription, 10, yPos);
       doc.text(dummyReport.netMassKg.toString(), 70, yPos);
-      doc.text(dummyReport.percentageEstimation.toString() + '%', 120, yPos);
+      doc.text(dummyReport.percentageEstimation.toString() + "%", 120, yPos);
       doc.text(dummyReport.supplementaryUnit, 150, yPos);
 
       yPos += 15;
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Scientific Name:', 10, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("Scientific Name:", 10, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.scientificName, 60, yPos);
 
       yPos += 8;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Common Name:', 10, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("Common Name:", 10, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.commonName, 60, yPos);
 
       yPos += 8;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Producer Name:', 10, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("Producer Name:", 10, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.producerName, 60, yPos);
 
       yPos += 8;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Country of Production:', 10, yPos);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "bold");
+      doc.text("Country of Production:", 10, yPos);
+      doc.setFont("helvetica", "normal");
       doc.text(dummyReport.countryOfProduction, 80, yPos);
 
       // Summary Plot Information
       yPos += 20;
-      doc.setFont('helvetica', 'bold');
-      doc.text('Summary Plot Information', 10, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text("Summary Plot Information", 10, yPos);
 
       yPos += 10;
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.text(`Total Producers: ${dummyReport.totalProducers}`, 10, yPos);
       doc.text(`Total Plots: ${dummyReport.totalPlots}`, 10, yPos + 8);
-      doc.text(`Total Production Area (ha): ${dummyReport.totalProductionArea}`, 10, yPos + 16);
-      doc.text(`Country of Harvest: ${dummyReport.countryOfHarvest}`, 10, yPos + 24);
-      doc.text(`Max. Intermediaries: ${dummyReport.maxIntermediaries}`, 10, yPos + 32);
-      doc.text(`Traceability Method: ${dummyReport.traceabilityMethod}`, 10, yPos + 40);
-      doc.text(`Expected Harvest Date: ${dummyReport.expectedHarvestDate}`, 10, yPos + 48);
-      doc.text(`Production Date Range: ${dummyReport.productionDateRange}`, 10, yPos + 56);
+      doc.text(
+        `Total Production Area (ha): ${dummyReport.totalProductionArea}`,
+        10,
+        yPos + 16,
+      );
+      doc.text(
+        `Country of Harvest: ${dummyReport.countryOfHarvest}`,
+        10,
+        yPos + 24,
+      );
+      doc.text(
+        `Max. Intermediaries: ${dummyReport.maxIntermediaries}`,
+        10,
+        yPos + 32,
+      );
+      doc.text(
+        `Traceability Method: ${dummyReport.traceabilityMethod}`,
+        10,
+        yPos + 40,
+      );
+      doc.text(
+        `Expected Harvest Date: ${dummyReport.expectedHarvestDate}`,
+        10,
+        yPos + 48,
+      );
+      doc.text(
+        `Production Date Range: ${dummyReport.productionDateRange}`,
+        10,
+        yPos + 56,
+      );
 
       // PAGE 2 - EUDR Compliance Decision Tree (Halaman 2 ikuti EUDR Compliance Decision Tree GAMBAR TERLAMPIR)
       doc.addPage();
       doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EUDR Compliance Decision Tree', 105, 20, { align: 'center' });
+      doc.setFont("helvetica", "bold");
+      doc.text("EUDR Compliance Decision Tree", 105, 20, { align: "center" });
 
       // Header for page 2
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.rect(10, 30, 190, 15);
-      doc.text('Page 2 of 4', 15, 38);
-      doc.text('EUDR Compliance Verification - Art. 2.40', 75, 38);
+      doc.text("Page 2 of 4", 15, 38);
+      doc.text("EUDR Compliance Verification - Art. 2.40", 75, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
 
       yPos = 55;
@@ -2453,147 +2977,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Embed the EUDR Compliance Verification flowchart image
       try {
         // Base64 embedded EUDR Compliance Verification methodology image (Page 2)
-        const methodologyImageBase64 = "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
+        const methodologyImageBase64 =
+          "iVBORw0KGgoAAAANSUhEUgAABmYAAARCCAYAAAC5GE0SAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAP+lSURBVHhe7N17XFR1/sfx14Booomp4D3REiyxVVMzxUtpatamibXVrlprZjd+2k23ddtqyy21rYxqc9UtdbermlbrhdRM0cy8lWiCpqiICmriZRC5zO+PGYZzDgMMMIyI7+fjMT7ke87MucyZc77f7+d7sTkcDgciIiIiIiIiIiIiIiIlI5FJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERERERERERERMRPFJgRERERERERERERERHxEwVmRERERERERERERERE/ESBGRERERERERERERERET9RYEZERERE5BKXlZNNcsZ+00tEREREREQqh83hcDisieVhm3e/NcnNMeIDa5KIiFyCUjOPYj9/jpb1m1A7qJZ1sVxith36kc+SEgi/4iqGRN5IWHCIdRURKUVFf0fb0n7mi6SveT51i3UDIO8378GjHQZyTWgrd1pFtyk6hyL+lJWTzcGTR5T/LEVq5lEAWoQ0ti4SkYtUcXW1qqcVqRoUmBER1u3fysLkbziX75PbgVtAQE3ibom1JnvcXkBATSZ2u7vCBYHiPtvTfhTw9J7S1AsK5trQCOoE2GhzRXOurN+EBhWsVCnPfgBE1g+ncd0raFG3Aa3qN63wOfSVE/ZMVu/byNrULbyZ/rN1MQA9a4cyoFlnbm5+Ddc3u0aF5YvYhBVvcjYvrzDBVoPfRfahd6uOxtUAyMrJ4q4vJvI/+ylT+tc3P0v/5pGmNKne5m77gq3puzlvvO0FBPF/HYcQaQgEVNTbGz9i969p5BrSfPXcuVAq+jvKysnmjQ2zmZSykTrAWesK4Opcn8/a3uOJbtWxwtuUin9vcvGL353A0n3fm+57AQE1mdr3IWDfCQ18yir9q5n+cEtfJh50LqY2+uFM6jl9Qy5qluVfgas27+Z+Umrzc9IbNQIrMn0/o8bE8tl3f5tfJOynk/StpOYm2Va1rZGML9tcj13trmeaA95ORG5OBRXV6t6WpGqQYEZEWHhjmXEbPnYmlxBNsDh8fdfdHvOdZMGvUhEBSviivpsT/tRoOh7ymdwvTb8/qpo7ozsWa6Cta/2o3vtMB5tN4jh5dyPikrO2M+/tn3CP47sBKAGmCpDi9O6RjCTomK4r130BdlvqRjbvPuLVO7O6jyS0e1vNqQ4rUtZTvTajyyp...";
 
-        console.log("✅ Embedded EUDR Compliance methodology image, base64 length:", methodologyImageBase64.length);
+        console.log(
+          "✅ Embedded EUDR Compliance methodology image, base64 length:",
+          methodologyImageBase64.length,
+        );
 
-        doc.addImage(methodologyImageBase64, 'PNG', 15, yPos, 180, 100);
+        doc.addImage(methodologyImageBase64, "PNG", 15, yPos, 180, 100);
         yPos += 110;
       } catch (error) {
-        console.log('Note: Image embedding not supported, using text description');
+        console.log(
+          "Note: Image embedding not supported, using text description",
+        );
         yPos += 10;
       }
 
       // Methodology Section 1: Overview
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('1. EUDR Compliance Verification Process', 10, yPos);
+      doc.text("1. EUDR Compliance Verification Process", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
 
       const methodologyOverview = [
-        'The EUDR compliance verification follows Article 2.40 requirements through a systematic',
-        'three-step process: Proof of No Deforestation after 2020, Proof located on Approved Land,',
-        'and Proof of Legality across 8 key indicators.',
-        '',
-        'Data Sources:',
-        '• Geospatial data based on plot GPS/Polygon coordinates',
-        '• On-site surveys from farmers and plot assessments',
-        '• Satellite imagery analysis and desktop verification',
-        '• Field verification and land legality confirmation'
+        "The EUDR compliance verification follows Article 2.40 requirements through a systematic",
+        "three-step process: Proof of No Deforestation after 2020, Proof located on Approved Land,",
+        "and Proof of Legality across 8 key indicators.",
+        "",
+        "Data Sources:",
+        "• Geospatial data based on plot GPS/Polygon coordinates",
+        "• On-site surveys from farmers and plot assessments",
+        "• Satellite imagery analysis and desktop verification",
+        "• Field verification and land legality confirmation",
       ];
 
       methodologyOverview.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
+        doc.text(line, 10, yPos + index * 5);
       });
       yPos += 55;
 
       // Methodology Section 1: Deforestation Analysis
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('1. Deforestation Analysis Methodology', 10, yPos);
+      doc.text("1. Deforestation Analysis Methodology", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       const methodologyText1 = [
-        'Our deforestation analysis employs a multi-layer satellite monitoring approach:',
-        '',
-        '• Global Forest Watch (GFW) - Provides annual tree cover loss data',
-        '• Joint Research Centre (JRC) - EU\'s forest monitoring system',
-        '• Science Based Targets Network (SBTN) - Advanced deforestation alerts',
-        '',
-        'Analysis Workflow:',
-        '1. Plot boundary verification using GPS coordinates',
-        '2. Historical forest cover analysis (2000-2023)',
-        '3. Cross-reference with protected area databases',
-        '4. Risk assessment scoring and compliance determination'
+        "Our deforestation analysis employs a multi-layer satellite monitoring approach:",
+        "",
+        "• Global Forest Watch (GFW) - Provides annual tree cover loss data",
+        "• Joint Research Centre (JRC) - EU's forest monitoring system",
+        "• Science Based Targets Network (SBTN) - Advanced deforestation alerts",
+        "",
+        "Analysis Workflow:",
+        "1. Plot boundary verification using GPS coordinates",
+        "2. Historical forest cover analysis (2000-2023)",
+        "3. Cross-reference with protected area databases",
+        "4. Risk assessment scoring and compliance determination",
       ];
 
       methodologyText1.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
+        doc.text(line, 10, yPos + index * 5);
       });
       yPos += 70;
 
       // Methodology Section 2: Risk Assessment & Compliance Framework
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('2. Risk Assessment & Compliance Framework', 10, yPos);
+      doc.text("2. Risk Assessment & Compliance Framework", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       const methodologyText2 = [
-        'Risk Classification System:',
-        '',
-        '• HIGH RISK: Forest loss detected after December 31, 2020',
-        '• MEDIUM RISK: Forest loss between 2018-2020 (requires additional verification)',
-        '• LOW RISK: No significant forest loss detected in monitoring period',
-        '',
-        'Compliance Determination Process:',
-        '• COMPLIANT: No deforestation after cutoff date, all documentation verified',
-        '• NON-COMPLIANT: Evidence of post-2020 deforestation or legal violations',
-        '• UNDER REVIEW: Additional verification required for final determination'
+        "Risk Classification System:",
+        "",
+        "• HIGH RISK: Forest loss detected after December 31, 2020",
+        "• MEDIUM RISK: Forest loss between 2018-2020 (requires additional verification)",
+        "• LOW RISK: No significant forest loss detected in monitoring period",
+        "",
+        "Compliance Determination Process:",
+        "• COMPLIANT: No deforestation after cutoff date, all documentation verified",
+        "• NON-COMPLIANT: Evidence of post-2020 deforestation or legal violations",
+        "• UNDER REVIEW: Additional verification required for final determination",
       ];
 
       methodologyText2.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
+        doc.text(line, 10, yPos + index * 5);
       });
       yPos += 60;
 
       // Methodology Section 3: Data Integration & Sources
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('3. Data Integration & Verification Sources', 10, yPos);
+      doc.text("3. Data Integration & Verification Sources", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       const methodologyText3 = [
-        'Plot boundaries and verification data are provided in standardized GeoJSON format',
-        'ensuring full compatibility with EU TRACE system requirements and regulations.',
-        '',
-        'Primary Data Sources:',
-        '• Verified plot coordinates with sub-meter GPS accuracy',
-        '• Multi-temporal satellite imagery analysis (Sentinel-2, Landsat)',
-        '• Ground-truthing surveys and farmer documentation',
-        '• Integration with national land tenure and forest databases',
-        '• Cross-validation with protected area and conservation datasets',
-        '',
-        'All verification data and plot geometries are accessible through the',
-        'accompanying GeoJSON files referenced in this Due Diligence Statement.'
+        "Plot boundaries and verification data are provided in standardized GeoJSON format",
+        "ensuring full compatibility with EU TRACE system requirements and regulations.",
+        "",
+        "Primary Data Sources:",
+        "• Verified plot coordinates with sub-meter GPS accuracy",
+        "• Multi-temporal satellite imagery analysis (Sentinel-2, Landsat)",
+        "• Ground-truthing surveys and farmer documentation",
+        "• Integration with national land tenure and forest databases",
+        "• Cross-validation with protected area and conservation datasets",
+        "",
+        "All verification data and plot geometries are accessible through the",
+        "accompanying GeoJSON files referenced in this Due Diligence Statement.",
       ];
 
       methodologyText3.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
+        doc.text(line, 10, yPos + index * 5);
       });
       yPos += 65;
 
       // PAGE 3 - Risk Analysis and Process Flowcharts
       doc.addPage();
       doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Risk Analysis & Process Flowcharts', 105, 20, { align: 'center' });
+      doc.setFont("helvetica", "bold");
+      doc.text("Risk Analysis & Process Flowcharts", 105, 20, {
+        align: "center",
+      });
 
       // Header for page 3 with improved styling
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.rect(10, 30, 190, 15);
-      doc.text('Page 3 of 4', 15, 38);
-      doc.text('Risk Assessment Processes', 85, 38);
+      doc.text("Page 3 of 4", 15, 38);
+      doc.text("Risk Assessment Processes", 85, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
 
       yPos = 55;
 
       // Section 1: Risk Assessment Process Overview
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('1. Risk Assessment Process Overview', 10, yPos);
+      doc.text("1. Risk Assessment Process Overview", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
 
       // Create styled box for process overview
@@ -2601,55 +3133,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       yPos += 8;
 
       const riskOverviewText = [
-        'This section outlines the systematic risk assessment approach used to evaluate',
-        'deforestation risks and ensure EUDR compliance across all production plots.',
-        '',
-        'Key Process Components:',
-        '  • Data Collection → Risk Identification → Impact Assessment → Scoring',
-        '  • Satellite Monitoring → Field Verification → Documentation Review',
-        '  • Legal Compliance Check → Final Risk Determination → Mitigation Planning'
+        "This section outlines the systematic risk assessment approach used to evaluate",
+        "deforestation risks and ensure EUDR compliance across all production plots.",
+        "",
+        "Key Process Components:",
+        "  • Data Collection → Risk Identification → Impact Assessment → Scoring",
+        "  • Satellite Monitoring → Field Verification → Documentation Review",
+        "  • Legal Compliance Check → Final Risk Determination → Mitigation Planning",
       ];
 
       riskOverviewText.forEach((line, index) => {
-        doc.text(line, 12, yPos + (index * 5));
+        doc.text(line, 12, yPos + index * 5);
       });
       yPos += 50;
 
       // Section 2: Detailed Risk Categories & Assessment Matrix
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('2. Risk Categories & Assessment Matrix', 10, yPos);
+      doc.text("2. Risk Categories & Assessment Matrix", 10, yPos);
       yPos += 10;
 
       // Create assessment matrix table
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
 
       // Table borders
       doc.rect(10, yPos, 190, 60);
-      doc.line(10, yPos + 15, 200, yPos + 15);  // Header line
-      doc.line(60, yPos, 60, yPos + 60);        // First column divider
-      doc.line(120, yPos, 120, yPos + 60);      // Second column divider
+      doc.line(10, yPos + 15, 200, yPos + 15); // Header line
+      doc.line(60, yPos, 60, yPos + 60); // First column divider
+      doc.line(120, yPos, 120, yPos + 60); // Second column divider
 
       // Table headers
-      doc.setFont('helvetica', 'bold');
-      doc.text('Risk Category', 12, yPos + 10);
-      doc.text('Assessment Criteria', 62, yPos + 10);
-      doc.text('Compliance Action', 122, yPos + 10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Risk Category", 12, yPos + 10);
+      doc.text("Assessment Criteria", 62, yPos + 10);
+      doc.text("Compliance Action", 122, yPos + 10);
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       yPos += 20;
 
       // Table content
       const riskMatrix = [
-        ['Deforestation', 'Satellite imagery analysis', 'No forest loss post-2020'],
-        ['Legal Compliance', 'Permits & certifications', 'Valid documentation'],
-        ['Supply Chain', 'Traceability verification', 'Complete chain of custody'],
-        ['Operational', 'Quality & production data', 'Standards compliance']
+        [
+          "Deforestation",
+          "Satellite imagery analysis",
+          "No forest loss post-2020",
+        ],
+        ["Legal Compliance", "Permits & certifications", "Valid documentation"],
+        [
+          "Supply Chain",
+          "Traceability verification",
+          "Complete chain of custody",
+        ],
+        ["Operational", "Quality & production data", "Standards compliance"],
       ];
 
       riskMatrix.forEach((row, index) => {
-        const rowY = yPos + (index * 10);
+        const rowY = yPos + index * 10;
         doc.text(row[0], 12, rowY);
         doc.text(row[1], 62, rowY);
         doc.text(row[2], 122, rowY);
@@ -2661,107 +3201,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
       yPos += 50;
 
       // Section 3: Data Verification & Quality Assurance
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('3. Data Verification & Quality Assurance', 10, yPos);
+      doc.text("3. Data Verification & Quality Assurance", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       const qaText = [
-        'Quality assurance measures ensure accuracy and reliability of all compliance data:',
-        '',
-        '• Multi-source data cross-validation and consistency checks',
-        '• Independent third-party verification of critical findings',
-        '• Automated monitoring systems with manual verification protocols',
-        '• Regular audit trails and documentation review processes',
-        '',
-        'All verification data and plot geometries are accessible through standardized',
-        'GeoJSON files that accompany this Due Diligence Statement.'
+        "Quality assurance measures ensure accuracy and reliability of all compliance data:",
+        "",
+        "• Multi-source data cross-validation and consistency checks",
+        "• Independent third-party verification of critical findings",
+        "• Automated monitoring systems with manual verification protocols",
+        "• Regular audit trails and documentation review processes",
+        "",
+        "All verification data and plot geometries are accessible through standardized",
+        "GeoJSON files that accompany this Due Diligence Statement.",
       ];
 
       qaText.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
+        doc.text(line, 10, yPos + index * 5);
       });
       yPos += 50;
 
       // Reference to GeoJSON data
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
-      doc.text('GeoJSON Data Access:', 10, yPos);
+      doc.text("GeoJSON Data Access:", 10, yPos);
       yPos += 8;
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      const geoJsonLink = 'https://api.kpn-compliance.com/dds/geojson/plots-data.geojson';
+      const geoJsonLink =
+        "https://api.kpn-compliance.com/dds/geojson/plots-data.geojson";
       doc.setTextColor(0, 0, 255);
-      doc.text('Link: ' + geoJsonLink, 15, yPos);
+      doc.text("Link: " + geoJsonLink, 15, yPos);
       doc.setTextColor(0, 0, 0);
 
       // PAGE 4 - Land Cover Change Monitoring Flowchart
       doc.addPage();
       doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Land Cover Change Monitoring', 105, 20, { align: 'center' });
+      doc.setFont("helvetica", "bold");
+      doc.text("Land Cover Change Monitoring", 105, 20, { align: "center" });
 
       // Header for page 4
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.rect(10, 30, 190, 15);
-      doc.text('Page 4 of 4', 15, 38);
-      doc.text('Land Cover Change Monitoring System', 75, 38);
+      doc.text("Page 4 of 4", 15, 38);
+      doc.text("Land Cover Change Monitoring System", 75, 38);
       doc.text(`Generated: ${currentDate}`, 150, 38);
 
       yPos = 55;
 
       // Section 1: Monitoring System Overview
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('Land Cover Change Monitoring Flowchart', 10, yPos);
+      doc.text("Land Cover Change Monitoring Flowchart", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       const lccIntroText = [
-        'This flowchart illustrates the systematic workflow for monitoring and verifying',
-        'deforestation alerts across plantation concession areas. The monitoring system',
-        'operates on both scheduled (bi-weekly) and incident-based protocols.',
-        ''
+        "This flowchart illustrates the systematic workflow for monitoring and verifying",
+        "deforestation alerts across plantation concession areas. The monitoring system",
+        "operates on both scheduled (bi-weekly) and incident-based protocols.",
+        "",
       ];
 
       lccIntroText.forEach((line, index) => {
-        doc.text(line, 10, yPos + (index * 5));
+        doc.text(line, 10, yPos + index * 5);
       });
       yPos += 25;
 
       // Embed the LCC flowchart image
       try {
         // Define placeholder base64 image data or skip embedding if not available
-        const lccFlowchartImageBase64 = ''; // Placeholder - would contain actual base64 image data
+        const lccFlowchartImageBase64 = ""; // Placeholder - would contain actual base64 image data
         if (lccFlowchartImageBase64) {
-          doc.addImage(lccFlowchartImageBase64, 'PNG', 10, yPos, 190, 100);
+          doc.addImage(lccFlowchartImageBase64, "PNG", 10, yPos, 190, 100);
           yPos += 110;
-          console.log('✅ Successfully embedded Land Cover Change flowchart image');
+          console.log(
+            "✅ Successfully embedded Land Cover Change flowchart image",
+          );
         } else {
-          throw new Error('No flowchart image available');
+          throw new Error("No flowchart image available");
         }
       } catch (error) {
-        console.log('⚠️  LCC flowchart image embedding failed, using fallback text');
+        console.log(
+          "⚠️  LCC flowchart image embedding failed, using fallback text",
+        );
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('[LAND COVER CHANGE MONITORING FLOWCHART]', 105, yPos + 40, { align: 'center' });
-        doc.setFont('helvetica', 'normal');
+        doc.setFont("helvetica", "bold");
+        doc.text("[LAND COVER CHANGE MONITORING FLOWCHART]", 105, yPos + 40, {
+          align: "center",
+        });
+        doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.text('(See attached flowchart document for complete monitoring process)', 105, yPos + 50, { align: 'center' });
+        doc.text(
+          "(See attached flowchart document for complete monitoring process)",
+          105,
+          yPos + 50,
+          { align: "center" },
+        );
         yPos += 70;
       }
 
       // Section 2: Process Components
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('Key Process Components:', 10, yPos);
+      doc.text("Key Process Components:", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
 
       // Create process flow table
@@ -2769,23 +3321,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       doc.line(10, yPos + 15, 200, yPos + 15);
       doc.line(100, yPos, 100, yPos + 80);
 
-      doc.setFont('helvetica', 'bold');
-      doc.text('Process Stage', 12, yPos + 10);
-      doc.text('Responsible Party & Action', 102, yPos + 10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Process Stage", 12, yPos + 10);
+      doc.text("Responsible Party & Action", 102, yPos + 10);
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       yPos += 20;
 
       const lccProcesses = [
-        ['1. GIS Alert Detection', 'System Monitoring - Automated satellite analysis'],
-        ['2. Coordinate Verification', 'GIS Team - Location accuracy confirmation'],
-        ['3. Desktop Analysis', 'Technical Team - Preliminary assessment'],
-        ['4. Field Verification', 'Estate Manager - On-ground validation'],
-        ['5. Final Report', 'System Monitoring - Compliance determination']
+        [
+          "1. GIS Alert Detection",
+          "System Monitoring - Automated satellite analysis",
+        ],
+        [
+          "2. Coordinate Verification",
+          "GIS Team - Location accuracy confirmation",
+        ],
+        ["3. Desktop Analysis", "Technical Team - Preliminary assessment"],
+        ["4. Field Verification", "Estate Manager - On-ground validation"],
+        ["5. Final Report", "System Monitoring - Compliance determination"],
       ];
 
       lccProcesses.forEach((process, index) => {
-        const processY = yPos + (index * 12);
+        const processY = yPos + index * 12;
         doc.text(process[0], 12, processY);
         doc.text(process[1], 102, processY);
         if (index < lccProcesses.length - 1) {
@@ -2796,74 +3354,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
       yPos += 70;
 
       // Section 3: Legal Framework
-      doc.setFont('helvetica', 'bold');
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text('Legal Framework & Compliance:', 10, yPos);
+      doc.text("Legal Framework & Compliance:", 10, yPos);
       yPos += 10;
 
-      doc.setFont('helvetica', 'normal');
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       const legalFramework = [
-        '• UU No. 41 Tahun 1999 - Forestry Law: Prohibits unauthorized land clearing',
-        '• UU No. 32 Tahun 2009 - Environmental Protection: Requires environmental monitoring',
-        '• UU No. 39 Tahun 2014 - Plantation Law: Mandates sustainable practices',
-        '• PERMEN LHK No. P.8/2019 - Environmental information systems',
-        '• ISPO (Indonesian Sustainable Palm Oil) - No deforestation requirements',
-        '• NDPE Policy KPN Plantations - No Deforestation, No Peat, No Exploitation',
-        '• EU Deforestation Regulation (EUDR) - Supply chain traceability since 2020'
+        "• UU No. 41 Tahun 1999 - Forestry Law: Prohibits unauthorized land clearing",
+        "• UU No. 32 Tahun 2009 - Environmental Protection: Requires environmental monitoring",
+        "• UU No. 39 Tahun 2014 - Plantation Law: Mandates sustainable practices",
+        "• PERMEN LHK No. P.8/2019 - Environmental information systems",
+        "• ISPO (Indonesian Sustainable Palm Oil) - No deforestation requirements",
+        "• NDPE Policy KPN Plantations - No Deforestation, No Peat, No Exploitation",
+        "• EU Deforestation Regulation (EUDR) - Supply chain traceability since 2020",
       ];
 
       legalFramework.forEach((item, index) => {
-        doc.text(item, 10, yPos + (index * 5));
+        doc.text(item, 10, yPos + index * 5);
       });
 
       // Generate PDF buffer
-      const pdfBuffer = doc.output('arraybuffer');
+      const pdfBuffer = doc.output("arraybuffer");
 
-      console.log('✅ Enhanced 4-page PDF generated successfully with professional layout');
-      console.log('✅ PDF includes: Page 1 (DDS Data), Page 2 (Methodology), Page 3 (Risk Analysis), Page 4 (LCC Monitoring)');
+      console.log(
+        "✅ Enhanced 4-page PDF generated successfully with professional layout",
+      );
+      console.log(
+        "✅ PDF includes: Page 1 (DDS Data), Page 2 (Methodology), Page 3 (Risk Analysis), Page 4 (LCC Monitoring)",
+      );
       return pdfBuffer;
-
     } catch (error) {
-      console.error('Error generating dummy DDS PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ error: 'Failed to generate dummy DDS PDF', details: errorMessage });
+      console.error("Error generating dummy DDS PDF:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      res
+        .status(500)
+        .json({
+          error: "Failed to generate dummy DDS PDF",
+          details: errorMessage,
+        });
     }
   });
 
   // DDS Report Download endpoint
-  app.get('/api/dds/:id/download', isAuthenticated, async (req, res) => {
+  app.get("/api/dds/:id/download", isAuthenticated, async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (!report) {
-        return res.status(404).json({ error: 'DDS report not found' });
+        return res.status(404).json({ error: "DDS report not found" });
       }
 
       // Generate PDF for download
-      const { generateFixedDDSPDF } = await import('./pdf-generator-fixed.js');
+      const { generateFixedDDSPDF } = await import("./pdf-generator-fixed.js");
       const pdfBuffer = generateFixedDDSPDF(report);
 
       // Set response headers for file download
-      const filename = `dds-report-${report.id}-${new Date().toISOString().split('T')[0]}.pdf`;
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.setHeader('Content-Length', pdfBuffer.byteLength.toString());
+      const filename = `dds-report-${report.id}-${new Date().toISOString().split("T")[0]}.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`,
+      );
+      res.setHeader("Content-Length", pdfBuffer.byteLength.toString());
 
       console.log(`✅ DDS report ${report.id} PDF download initiated`);
       res.send(Buffer.from(pdfBuffer));
     } catch (error) {
-      console.error('Error downloading DDS report PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      res.status(500).json({ error: 'Failed to download DDS report PDF', details: errorMessage });
+      console.error("Error downloading DDS report PDF:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      res
+        .status(500)
+        .json({
+          error: "Failed to download DDS report PDF",
+          details: errorMessage,
+        });
     }
   });
 
   // DDS Report EU Trace submission
-  app.post('/api/dds-reports/:id/submit', isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports/:id/submit", isAuthenticated, async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (!report) {
-        return res.status(404).json({ error: 'DDS report not found' });
+        return res.status(404).json({ error: "DDS report not found" });
       }
 
       // Mock EU Trace submission - in real implementation, integrate with EU Trace API
@@ -2873,77 +3449,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateDdsReport(req.params.id, {
         euTraceReference: euTraceRef,
         submissionDate: new Date(),
-        status: 'submitted'
+        status: "submitted",
       });
 
       res.json({
         success: true,
-        message: 'DDS report submitted to EU Trace system',
-        euTraceReference: euTraceRef
+        message: "DDS report submitted to EU Trace system",
+        euTraceReference: euTraceRef,
       });
     } catch (error) {
-      console.error('Error submitting to EU Trace:', error);
-      res.status(500).json({ error: 'Failed to submit to EU Trace' });
+      console.error("Error submitting to EU Trace:", error);
+      res.status(500).json({ error: "Failed to submit to EU Trace" });
     }
   });
 
   // KML upload endpoint for DDS polygon data
-  app.post('/api/dds-reports/:id/upload-kml', isAuthenticated, async (req, res) => {
-    try {
-      const report = await storage.getDdsReportById(req.params.id);
-      if (!report) {
-        return res.status(404).json({ error: 'DDS report not found' });
+  app.post(
+    "/api/dds-reports/:id/upload-kml",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const report = await storage.getDdsReportById(req.params.id);
+        if (!report) {
+          return res.status(404).json({ error: "DDS report not found" });
+        }
+
+        const { kmlData, fileName } = req.body;
+        if (!kmlData) {
+          return res.status(400).json({ error: "KML data is required" });
+        }
+
+        // Parse KML and extract coordinates
+        // In real implementation, use a proper KML parser like @mapbox/togeojson
+        const mockPolygonCoordinates = [
+          { latitude: 3.139, longitude: 101.6869, plotId: "KML-PLOT-001" },
+          { latitude: 3.14, longitude: 101.688, plotId: "KML-PLOT-002" },
+          { latitude: 3.141, longitude: 101.689, plotId: "KML-PLOT-003" },
+        ];
+
+        // Update report with KML-derived coordinates
+        await storage.updateDdsReport(req.params.id, {
+          geolocationCoordinates: JSON.stringify(mockPolygonCoordinates),
+          kmlFileName: fileName || "uploaded-polygons.kml",
+        });
+
+        res.json({
+          success: true,
+          message: "KML file processed successfully",
+          extractedPlots: mockPolygonCoordinates.length,
+        });
+      } catch (error) {
+        console.error("Error processing KML upload:", error);
+        res.status(500).json({ error: "Failed to process KML file" });
       }
-
-      const { kmlData, fileName } = req.body;
-      if (!kmlData) {
-        return res.status(400).json({ error: 'KML data is required' });
-      }
-
-      // Parse KML and extract coordinates
-      // In real implementation, use a proper KML parser like @mapbox/togeojson
-      const mockPolygonCoordinates = [
-        { latitude: 3.1390, longitude: 101.6869, plotId: "KML-PLOT-001" },
-        { latitude: 3.1400, longitude: 101.6880, plotId: "KML-PLOT-002" },
-        { latitude: 3.1410, longitude: 101.6890, plotId: "KML-PLOT-003" }
-      ];
-
-      // Update report with KML-derived coordinates
-      await storage.updateDdsReport(req.params.id, {
-        geolocationCoordinates: JSON.stringify(mockPolygonCoordinates),
-        kmlFileName: fileName || 'uploaded-polygons.kml'
-      });
-
-      res.json({
-        success: true,
-        message: 'KML file processed successfully',
-        extractedPlots: mockPolygonCoordinates.length
-      });
-    } catch (error) {
-      console.error('Error processing KML upload:', error);
-      res.status(500).json({ error: 'Failed to process KML file' });
-    }
-  });
+    },
+  );
 
   // Generate GeoJSON files for verified deforestation-free polygons
-  app.post('/api/dds-reports/:id/generate-geojson', isAuthenticated, async (req, res) => {
-    try {
-      const report = await storage.getDdsReportById(req.params.id);
-      if (!report) {
-        return res.status(404).json({ error: 'DDS report not found' });
-      }
+  app.post(
+    "/api/dds-reports/:id/generate-geojson",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const report = await storage.getDdsReportById(req.params.id);
+        if (!report) {
+          return res.status(404).json({ error: "DDS report not found" });
+        }
 
-      // Parse coordinates from the report
-      let coordinates = [];
-      if (report.geolocationCoordinates) {
-        coordinates = JSON.parse(report.geolocationCoordinates);
-      }
+        // Parse coordinates from the report
+        let coordinates = [];
+        if (report.geolocationCoordinates) {
+          coordinates = JSON.parse(report.geolocationCoordinates);
+        }
 
-      // Generate GeoJSON files for each verified deforestation-free polygon
-      const geoJsonFiles = coordinates.map((coord: any, index: number) => {
-        const geoJson = {
+        // Generate GeoJSON files for each verified deforestation-free polygon
+        const geoJsonFiles = coordinates.map((coord: any, index: number) => {
+          const geoJson = {
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                properties: {
+                  plotId: coord.plotId || `PLOT-${index + 1}`,
+                  reportId: report.id,
+                  operatorName: report.operatorLegalName,
+                  verificationStatus: "deforestation-free",
+                  verificationDate: new Date().toISOString(),
+                  hsCode: report.hsCode,
+                  productDescription: report.productDescription,
+                },
+                geometry: {
+                  type: "Point",
+                  coordinates: [coord.longitude, coord.latitude],
+                },
+              },
+            ],
+          };
+
+          return {
+            fileName: `${coord.plotId || `plot-${index + 1}`}-verified.geojson`,
+            content: JSON.stringify(geoJson, null, 2),
+            plotId: coord.plotId || `PLOT-${index + 1}`,
+          };
+        });
+
+        // Create a combined GeoJSON file as well
+        const combinedGeoJson = {
           type: "FeatureCollection",
-          features: [{
+          features: coordinates.map((coord: any, index: number) => ({
             type: "Feature",
             properties: {
               plotId: coord.plotId || `PLOT-${index + 1}`,
@@ -2951,116 +3564,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
               operatorName: report.operatorLegalName,
               verificationStatus: "deforestation-free",
               verificationDate: new Date().toISOString(),
-              hsCode: report.hsCode,
-              productDescription: report.productDescription
             },
             geometry: {
               type: "Point",
-              coordinates: [coord.longitude, coord.latitude]
-            }
-          }]
-        };
-
-        return {
-          fileName: `${coord.plotId || `plot-${index + 1}`}-verified.geojson`,
-          content: JSON.stringify(geoJson, null, 2),
-          plotId: coord.plotId || `PLOT-${index + 1}`
-        };
-      });
-
-      // Create a combined GeoJSON file as well
-      const combinedGeoJson = {
-        type: "FeatureCollection",
-        features: coordinates.map((coord: any, index: number) => ({
-          type: "Feature",
-          properties: {
-            plotId: coord.plotId || `PLOT-${index + 1}`,
-            reportId: report.id,
-            operatorName: report.operatorLegalName,
-            verificationStatus: "deforestation-free",
-            verificationDate: new Date().toISOString()
-          },
-          geometry: {
-            type: "Point",
-            coordinates: [coord.longitude, coord.latitude]
-          }
-        }))
-      };
-
-      // Mock file paths - in real implementation, save to storage
-      const filePaths = geoJsonFiles.map((file: { fileName: string }) => `/geojson/${report.id}/${file.fileName}`);
-      const combinedFilePath = `/geojson/${report.id}/combined-verified-polygons.geojson`;
-
-      // Update report with generated GeoJSON paths
-      await storage.updateDdsReport(report.id, {
-        geojsonFilePaths: JSON.stringify([...filePaths, combinedFilePath])
-      });
-
-      res.json({
-        success: true,
-        message: 'GeoJSON files generated successfully',
-        files: [
-          ...geoJsonFiles.map((file: { fileName: string; plotId: string }) => ({
-            fileName: file.fileName,
-            path: `/geojson/${report.id}/${file.fileName}`,
-            plotId: file.plotId
+              coordinates: [coord.longitude, coord.latitude],
+            },
           })),
-          {
-            fileName: 'combined-verified-polygons.geojson',
-            path: combinedFilePath,
-            plotId: 'ALL'
-          }
-        ],
-        totalFiles: geoJsonFiles.length + 1
-      });
-    } catch (error) {
-      console.error('Error generating GeoJSON:', error);
-      res.status(500).json({ error: 'Failed to generate GeoJSON files' });
-    }
-  });
+        };
+
+        // Mock file paths - in real implementation, save to storage
+        const filePaths = geoJsonFiles.map(
+          (file: { fileName: string }) =>
+            `/geojson/${report.id}/${file.fileName}`,
+        );
+        const combinedFilePath = `/geojson/${report.id}/combined-verified-polygons.geojson`;
+
+        // Update report with generated GeoJSON paths
+        await storage.updateDdsReport(report.id, {
+          geojsonFilePaths: JSON.stringify([...filePaths, combinedFilePath]),
+        });
+
+        res.json({
+          success: true,
+          message: "GeoJSON files generated successfully",
+          files: [
+            ...geoJsonFiles.map(
+              (file: { fileName: string; plotId: string }) => ({
+                fileName: file.fileName,
+                path: `/geojson/${report.id}/${file.fileName}`,
+                plotId: file.plotId,
+              }),
+            ),
+            {
+              fileName: "combined-verified-polygons.geojson",
+              path: combinedFilePath,
+              plotId: "ALL",
+            },
+          ],
+          totalFiles: geoJsonFiles.length + 1,
+        });
+      } catch (error) {
+        console.error("Error generating GeoJSON:", error);
+        res.status(500).json({ error: "Failed to generate GeoJSON files" });
+      }
+    },
+  );
 
   // Download generated GeoJSON files
-  app.get('/api/dds-reports/:id/geojson/:fileName', isAuthenticated, async (req, res) => {
-    try {
-      const report = await storage.getDdsReportById(req.params.id);
-      if (!report) {
-        return res.status(404).json({ error: 'DDS report not found' });
+  app.get(
+    "/api/dds-reports/:id/geojson/:fileName",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const report = await storage.getDdsReportById(req.params.id);
+        if (!report) {
+          return res.status(404).json({ error: "DDS report not found" });
+        }
+
+        const { fileName } = req.params;
+
+        // In real implementation, serve from actual file storage
+        // Mock GeoJSON content for now
+        const mockGeoJson = {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              properties: {
+                plotId: "SAMPLE-PLOT",
+                reportId: report.id,
+                operatorName: report.operatorLegalName,
+                verificationStatus: "deforestation-free",
+                verificationDate: new Date().toISOString(),
+              },
+              geometry: {
+                type: "Point",
+                coordinates: [101.6869, 3.139],
+              },
+            },
+          ],
+        };
+
+        res.set({
+          "Content-Type": "application/geo+json",
+          "Content-Disposition": `attachment; filename=${fileName}`,
+        });
+
+        res.json(mockGeoJson);
+      } catch (error) {
+        console.error("Error downloading GeoJSON:", error);
+        res.status(500).json({ error: "Failed to download GeoJSON file" });
       }
-
-      const { fileName } = req.params;
-
-      // In real implementation, serve from actual file storage
-      // Mock GeoJSON content for now
-      const mockGeoJson = {
-        type: "FeatureCollection",
-        features: [{
-          type: "Feature",
-          properties: {
-            plotId: "SAMPLE-PLOT",
-            reportId: report.id,
-            operatorName: report.operatorLegalName,
-            verificationStatus: "deforestation-free",
-            verificationDate: new Date().toISOString()
-          },
-          geometry: {
-            type: "Point",
-            coordinates: [101.6869, 3.1390]
-          }
-        }]
-      };
-
-      res.set({
-        'Content-Type': 'application/geo+json',
-        'Content-Disposition': `attachment; filename=${fileName}`
-      });
-
-      res.json(mockGeoJson);
-    } catch (error) {
-      console.error('Error downloading GeoJSON:', error);
-      res.status(500).json({ error: 'Failed to download GeoJSON file' });
-    }
-  });
-
+    },
+  );
 
   // Estate Data Collection API routes
   app.get("/api/estate-data-collection", isAuthenticated, async (req, res) => {
@@ -3068,23 +3664,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const estates = await storage.getEstateDataCollection();
       res.json(estates);
     } catch (error) {
-      console.error('Error fetching estate data collections:', error);
-      res.status(500).json({ error: "Failed to fetch estate data collections" });
+      console.error("Error fetching estate data collections:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch estate data collections" });
     }
   });
 
   app.post("/api/estate-data-collection", isAuthenticated, async (req, res) => {
     try {
-      const { insertEstateDataCollectionSchema } = await import("@shared/schema");
+      const { insertEstateDataCollectionSchema } = await import(
+        "@shared/schema"
+      );
       const validatedData = insertEstateDataCollectionSchema.parse(req.body);
-      const estate = await storage.createEstateDataCollection(validatedData as import("@shared/schema").InsertEstateDataCollection);
+      const estate = await storage.createEstateDataCollection(
+        validatedData as import("@shared/schema").InsertEstateDataCollection,
+      );
       res.status(201).json(estate);
     } catch (error) {
-      console.error('Error creating estate data collection:', error);
+      console.error("Error creating estate data collection:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: "Invalid estate data", details: error.errors });
+        res
+          .status(400)
+          .json({ error: "Invalid estate data", details: error.errors });
       } else {
-        res.status(500).json({ error: "Failed to create estate data collection" });
+        res
+          .status(500)
+          .json({ error: "Failed to create estate data collection" });
       }
     }
   });
@@ -3095,36 +3701,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mills = await storage.getMillDataCollection();
       res.json(mills);
     } catch (error) {
-      console.error('Error fetching mill data collection:', error);
-      res.status(500).json({ error: 'Failed to fetch mill data collection' });
+      console.error("Error fetching mill data collection:", error);
+      res.status(500).json({ error: "Failed to fetch mill data collection" });
     }
   });
 
-  app.get("/api/mill-data-collection/:id", isAuthenticated, async (req, res) => {
-    try {
-      const mill = await storage.getMillDataCollectionById(req.params.id);
-      if (!mill) {
-        return res.status(404).json({ error: 'Mill data collection not found' });
+  app.get(
+    "/api/mill-data-collection/:id",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const mill = await storage.getMillDataCollectionById(req.params.id);
+        if (!mill) {
+          return res
+            .status(404)
+            .json({ error: "Mill data collection not found" });
+        }
+        res.json(mill);
+      } catch (error) {
+        console.error("Error fetching mill data collection:", error);
+        res.status(500).json({ error: "Failed to fetch mill data collection" });
       }
-      res.json(mill);
-    } catch (error) {
-      console.error('Error fetching mill data collection:', error);
-      res.status(500).json({ error: 'Failed to fetch mill data collection' });
-    }
-  });
+    },
+  );
 
   app.post("/api/mill-data-collection", isAuthenticated, async (req, res) => {
     try {
       const { insertMillDataCollectionSchema } = await import("@shared/schema");
       const validatedData = insertMillDataCollectionSchema.parse(req.body);
-      const mill = await storage.createMillDataCollection(validatedData as import("@shared/schema").InsertMillDataCollection);
+      const mill = await storage.createMillDataCollection(
+        validatedData as import("@shared/schema").InsertMillDataCollection,
+      );
       res.status(201).json(mill);
     } catch (error) {
-      console.error('Error creating mill data collection:', error);
+      console.error("Error creating mill data collection:", error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: 'Validation error', details: error.errors });
+        return res
+          .status(400)
+          .json({ error: "Validation error", details: error.errors });
       }
-      res.status(500).json({ error: 'Failed to create mill data collection' });
+      res.status(500).json({ error: "Failed to create mill data collection" });
     }
   });
 
@@ -3156,9 +3772,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // List files in the bucket (simplified implementation)
           // In a real implementation, you would list bucket contents and filter for .tiff/.tif files
           const mockTiffFiles = [
-            { name: 'uav_plot_001.tiff', path: `/objects/uav_plot_001.tiff`, size: '2.5MB' },
-            { name: 'uav_plot_002.tiff', path: `/objects/uav_plot_002.tiff`, size: '3.1MB' },
-            { name: 'sentinel_2024.tiff', path: `/objects/sentinel_2024.tiff`, size: '15.2MB' }
+            {
+              name: "uav_plot_001.tiff",
+              path: `/objects/uav_plot_001.tiff`,
+              size: "2.5MB",
+            },
+            {
+              name: "uav_plot_002.tiff",
+              path: `/objects/uav_plot_002.tiff`,
+              size: "3.1MB",
+            },
+            {
+              name: "sentinel_2024.tiff",
+              path: `/objects/sentinel_2024.tiff`,
+              size: "15.2MB",
+            },
           ];
           tiffFiles.push(...mockTiffFiles);
         } catch (error) {
@@ -3175,13 +3803,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/objects/:objectPath(*)", async (req, res) => {
     try {
-      const { ObjectStorageService, ObjectNotFoundError } = await import("./objectStorage");
+      const { ObjectStorageService, ObjectNotFoundError } = await import(
+        "./objectStorage"
+      );
       const objectStorageService = new ObjectStorageService();
-      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       console.error("Error accessing object:", error);
-      if (error instanceof Error && error.constructor.name === 'ObjectNotFoundError') {
+      if (
+        error instanceof Error &&
+        error.constructor.name === "ObjectNotFoundError"
+      ) {
         return res.sendStatus(404);
       }
       return res.sendStatus(500);
@@ -3189,179 +3824,216 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Traceability Data Collection endpoints
-  app.get('/api/traceability-data-collection', async (req, res) => {
+  app.get("/api/traceability-data-collection", async (req, res) => {
     try {
       const collections = await storage.getTraceabilityDataCollections();
       res.json(collections);
     } catch (error) {
-      console.error('Error fetching traceability data collections:', error);
-      res.status(500).json({ error: 'Failed to fetch traceability data collections' });
+      console.error("Error fetching traceability data collections:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch traceability data collections" });
     }
   });
 
-  app.post('/api/traceability-data-collection', async (req, res) => {
+  app.post("/api/traceability-data-collection", async (req, res) => {
     try {
-      const { insertTraceabilityDataCollectionSchema } = await import("@shared/schema");
-      const validatedData = insertTraceabilityDataCollectionSchema.parse(req.body);
-      const collection = await storage.createTraceabilityDataCollection(validatedData as import("@shared/schema").InsertTraceabilityDataCollection);
+      const { insertTraceabilityDataCollectionSchema } = await import(
+        "@shared/schema"
+      );
+      const validatedData = insertTraceabilityDataCollectionSchema.parse(
+        req.body,
+      );
+      const collection = await storage.createTraceabilityDataCollection(
+        validatedData as import("@shared/schema").InsertTraceabilityDataCollection,
+      );
       res.status(201).json(collection);
     } catch (error) {
-      console.error('Error creating traceability data collection:', error);
+      console.error("Error creating traceability data collection:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid data', details: error.errors });
+        res.status(400).json({ error: "Invalid data", details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to create traceability data collection' });
+        res
+          .status(500)
+          .json({ error: "Failed to create traceability data collection" });
       }
     }
   });
 
   // KCP Data Collection endpoints
-  app.get('/api/kcp-data-collection', async (req, res) => {
+  app.get("/api/kcp-data-collection", async (req, res) => {
     try {
       const collections = await storage.getKcpDataCollections();
       res.json(collections);
     } catch (error) {
-      console.error('Error fetching KCP data collections:', error);
-      res.status(500).json({ error: 'Failed to fetch KCP data collections' });
+      console.error("Error fetching KCP data collections:", error);
+      res.status(500).json({ error: "Failed to fetch KCP data collections" });
     }
   });
 
-  app.post('/api/kcp-data-collection', async (req, res) => {
+  app.post("/api/kcp-data-collection", async (req, res) => {
     try {
       const { insertKcpDataCollectionSchema } = await import("@shared/schema");
       const validatedData = insertKcpDataCollectionSchema.parse(req.body);
-      const collection = await storage.createKcpDataCollection(validatedData as import("@shared/schema").InsertKcpDataCollection);
+      const collection = await storage.createKcpDataCollection(
+        validatedData as import("@shared/schema").InsertKcpDataCollection,
+      );
       res.status(201).json(collection);
     } catch (error) {
-      console.error('Error creating KCP data collection:', error);
+      console.error("Error creating KCP data collection:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid data', details: error.errors });
+        res.status(400).json({ error: "Invalid data", details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to create KCP data collection' });
+        res.status(500).json({ error: "Failed to create KCP data collection" });
       }
     }
   });
 
   // Bulking Data Collection endpoints
-  app.get('/api/bulking-data-collection', async (req, res) => {
+  app.get("/api/bulking-data-collection", async (req, res) => {
     try {
       const collections = await storage.getBulkingDataCollections();
       res.json(collections);
     } catch (error) {
-      console.error('Error fetching bulking data collections:', error);
-      res.status(500).json({ error: 'Failed to fetch bulking data collections' });
+      console.error("Error fetching bulking data collections:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch bulking data collections" });
     }
   });
 
-  app.post('/api/bulking-data-collection', async (req, res) => {
+  app.post("/api/bulking-data-collection", async (req, res) => {
     try {
-      const { insertBulkingDataCollectionSchema } = await import("@shared/schema");
+      const { insertBulkingDataCollectionSchema } = await import(
+        "@shared/schema"
+      );
       const validatedData = insertBulkingDataCollectionSchema.parse(req.body);
-      const collection = await storage.createBulkingDataCollection(validatedData as import("@shared/schema").InsertBulkingDataCollection);
+      const collection = await storage.createBulkingDataCollection(
+        validatedData as import("@shared/schema").InsertBulkingDataCollection,
+      );
       res.status(201).json(collection);
     } catch (error) {
-      console.error('Error creating bulking data collection:', error);
+      console.error("Error creating bulking data collection:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid data', details: error.errors });
+        res.status(400).json({ error: "Invalid data", details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to create bulking data collection' });
+        res
+          .status(500)
+          .json({ error: "Failed to create bulking data collection" });
       }
     }
   });
 
   // EUDR Assessment endpoints
-  app.get('/api/eudr-assessments', isAuthenticated, async (req, res) => {
+  app.get("/api/eudr-assessments", isAuthenticated, async (req, res) => {
     try {
       const assessments = await storage.getEudrAssessments();
       res.json(assessments);
     } catch (error) {
-      console.error('Error fetching EUDR assessments:', error);
-      res.status(500).json({ error: 'Failed to fetch EUDR assessments' });
+      console.error("Error fetching EUDR assessments:", error);
+      res.status(500).json({ error: "Failed to fetch EUDR assessments" });
     }
   });
 
-  app.get('/api/eudr-assessments/:id', isAuthenticated, async (req, res) => {
+  app.get("/api/eudr-assessments/:id", isAuthenticated, async (req, res) => {
     try {
       const assessment = await storage.getEudrAssessment(req.params.id);
       if (assessment) {
         res.json(assessment);
       } else {
-        res.status(404).json({ error: 'EUDR assessment not found' });
+        res.status(404).json({ error: "EUDR assessment not found" });
       }
     } catch (error) {
-      console.error('Error fetching EUDR assessment:', error);
-      res.status(500).json({ error: 'Failed to fetch EUDR assessment' });
+      console.error("Error fetching EUDR assessment:", error);
+      res.status(500).json({ error: "Failed to fetch EUDR assessment" });
     }
   });
 
-  app.post('/api/eudr-assessments', isAuthenticated, async (req, res) => {
+  app.post("/api/eudr-assessments", isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertEudrAssessmentSchema.parse(req.body);
-      const assessment = await storage.createEudrAssessment(validatedData as InsertEudrAssessment);
+      const assessment = await storage.createEudrAssessment(
+        validatedData as InsertEudrAssessment,
+      );
       res.status(201).json(assessment);
     } catch (error) {
-      console.error('Error creating EUDR assessment:', error);
+      console.error("Error creating EUDR assessment:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid data', details: error.errors });
+        res.status(400).json({ error: "Invalid data", details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to create EUDR assessment' });
+        res.status(500).json({ error: "Failed to create EUDR assessment" });
       }
     }
   });
 
-  app.put('/api/eudr-assessments/:id', isAuthenticated, async (req, res) => {
+  app.put("/api/eudr-assessments/:id", isAuthenticated, async (req, res) => {
     try {
-      const validatedData = insertEudrAssessmentSchema.partial().parse(req.body);
-      const assessment = await storage.updateEudrAssessment(req.params.id, validatedData as Partial<EudrAssessment>);
+      const validatedData = insertEudrAssessmentSchema
+        .partial()
+        .parse(req.body);
+      const assessment = await storage.updateEudrAssessment(
+        req.params.id,
+        validatedData as Partial<EudrAssessment>,
+      );
       res.json(assessment);
     } catch (error) {
-      console.error('Error updating EUDR assessment:', error);
+      console.error("Error updating EUDR assessment:", error);
       if (error instanceof z.ZodError) {
-        res.status(400).json({ error: 'Invalid data', details: error.errors });
+        res.status(400).json({ error: "Invalid data", details: error.errors });
       } else {
-        res.status(500).json({ error: 'Failed to update EUDR assessment' });
+        res.status(500).json({ error: "Failed to update EUDR assessment" });
       }
     }
   });
 
-  app.delete('/api/eudr-assessments/:id', isAuthenticated, async (req, res) => {
+  app.delete("/api/eudr-assessments/:id", isAuthenticated, async (req, res) => {
     try {
       await storage.deleteEudrAssessment(req.params.id);
       res.status(204).send();
     } catch (error) {
-      console.error('Error deleting EUDR assessment:', error);
-      res.status(500).json({ error: 'Failed to delete EUDR assessment' });
+      console.error("Error deleting EUDR assessment:", error);
+      res.status(500).json({ error: "Failed to delete EUDR assessment" });
     }
   });
 
-
   // Optimized batch spatial calculations function for WDPA and peatland intersections
-  async function batchSpatialCalculations(features: any[]): Promise<Record<number, {wdpa: any, peatland: any}>> {
-    const results: Record<number, {wdpa: any, peatland: any}> = {};
-    
+  async function batchSpatialCalculations(
+    features: any[],
+  ): Promise<Record<number, { wdpa: any; peatland: any }>> {
+    const results: Record<number, { wdpa: any; peatland: any }> = {};
+
     try {
-      console.log(`🗄️ Starting batch spatial calculations for ${features.length} features`);
-      
+      console.log(
+        `🗄️ Starting batch spatial calculations for ${features.length} features`,
+      );
+
       // Build batch geometry collection for all features
-      const featureGeometries = features.map((feature, index) => ({
-        index,
-        geometry: feature.geometry,
-        hasValidGeometry: feature.geometry && feature.geometry.coordinates
-      })).filter(item => item.hasValidGeometry);
-      
-      console.log(`📐 Processing ${featureGeometries.length} features with valid geometries`);
-      
+      const featureGeometries = features
+        .map((feature, index) => ({
+          index,
+          geometry: feature.geometry,
+          hasValidGeometry: feature.geometry && feature.geometry.coordinates,
+        }))
+        .filter((item) => item.hasValidGeometry);
+
+      console.log(
+        `📐 Processing ${featureGeometries.length} features with valid geometries`,
+      );
+
       if (featureGeometries.length === 0) {
         return results;
       }
-      
+
       // BATCH WDPA INTERSECTION CALCULATIONS
       console.log(`🏞️ Executing batch WDPA intersection calculations...`);
       try {
-        const wdpaGeomValues = featureGeometries.map(item => 
-          `(${item.index}, ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(item.geometry)}'), 4326))`
-        ).join(', ');
-        
+        const wdpaGeomValues = featureGeometries
+          .map(
+            (item) =>
+              `(${item.index}, ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(item.geometry)}'), 4326))`,
+          )
+          .join(", ");
+
         const batchWdpaQuery = await db.execute(sql`
           WITH feature_geoms(feature_idx, geom) AS (
             VALUES ${sql.raw(wdpaGeomValues)}
@@ -3378,34 +4050,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
           SELECT * FROM wdpa_intersections
         `);
-        
-        batchWdpaQuery.rows.forEach(row => {
+
+        batchWdpaQuery.rows.forEach((row) => {
           const idx = row.feature_idx as number;
           if (!results[idx]) results[idx] = { wdpa: null, peatland: null };
           results[idx].wdpa = {
             intersection_area_ha: row.intersection_area_ha || 0,
             wdpa_names: row.wdpa_names || [],
-            wdpa_categories: row.wdpa_categories || []
+            wdpa_categories: row.wdpa_categories || [],
           };
         });
-        
-        console.log(`✅ Batch WDPA calculations completed for ${batchWdpaQuery.rows.length} features`);
+
+        console.log(
+          `✅ Batch WDPA calculations completed for ${batchWdpaQuery.rows.length} features`,
+        );
       } catch (wdpaError) {
-        console.error('❌ Batch WDPA calculation error:', wdpaError);
+        console.error("❌ Batch WDPA calculation error:", wdpaError);
         // Fallback: set empty results for all features
-        featureGeometries.forEach(item => {
-          if (!results[item.index]) results[item.index] = { wdpa: null, peatland: null };
-          results[item.index].wdpa = { intersection_area_ha: 0, wdpa_names: [], wdpa_categories: [] };
+        featureGeometries.forEach((item) => {
+          if (!results[item.index])
+            results[item.index] = { wdpa: null, peatland: null };
+          results[item.index].wdpa = {
+            intersection_area_ha: 0,
+            wdpa_names: [],
+            wdpa_categories: [],
+          };
         });
       }
-      
+
       // BATCH PEATLAND INTERSECTION CALCULATIONS
       console.log(`🏞️ Executing batch peatland intersection calculations...`);
       try {
-        const peatlandGeomValues = featureGeometries.map(item => 
-          `(${item.index}, ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(item.geometry)}'), 4326))`
-        ).join(', ');
-        
+        const peatlandGeomValues = featureGeometries
+          .map(
+            (item) =>
+              `(${item.index}, ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(item.geometry)}'), 4326))`,
+          )
+          .join(", ");
+
         const batchPeatlandQuery = await db.execute(sql`
           WITH feature_geoms(feature_idx, geom) AS (
             VALUES ${sql.raw(peatlandGeomValues)}
@@ -3420,45 +4102,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
           SELECT * FROM peatland_intersections
         `);
-        
-        batchPeatlandQuery.rows.forEach(row => {
+
+        batchPeatlandQuery.rows.forEach((row) => {
           const idx = row.feature_idx as number;
           if (!results[idx]) results[idx] = { wdpa: null, peatland: null };
           results[idx].peatland = {
-            intersection_area_ha: row.intersection_area_ha || 0
+            intersection_area_ha: row.intersection_area_ha || 0,
           };
         });
-        
-        console.log(`✅ Batch peatland calculations completed for ${batchPeatlandQuery.rows.length} features`);
+
+        console.log(
+          `✅ Batch peatland calculations completed for ${batchPeatlandQuery.rows.length} features`,
+        );
       } catch (peatlandError) {
-        console.error('❌ Batch peatland calculation error:', peatlandError);
+        console.error("❌ Batch peatland calculation error:", peatlandError);
         // Fallback: set empty results for all features
-        featureGeometries.forEach(item => {
-          if (!results[item.index]) results[item.index] = { wdpa: null, peatland: null };
+        featureGeometries.forEach((item) => {
+          if (!results[item.index])
+            results[item.index] = { wdpa: null, peatland: null };
           results[item.index].peatland = { intersection_area_ha: 0 };
         });
       }
-      
+
       // Fill in results for features without valid geometry
       features.forEach((feature, index) => {
         if (!results[index]) {
           results[index] = {
-            wdpa: { intersection_area_ha: 0, wdpa_names: [], wdpa_categories: [] },
-            peatland: { intersection_area_ha: 0 }
+            wdpa: {
+              intersection_area_ha: 0,
+              wdpa_names: [],
+              wdpa_categories: [],
+            },
+            peatland: { intersection_area_ha: 0 },
           };
         }
       });
-      
-      console.log(`✅ Batch spatial calculations completed for ${features.length} features`);
+
+      console.log(
+        `✅ Batch spatial calculations completed for ${features.length} features`,
+      );
       return results;
-      
     } catch (error) {
-      console.error('❌ Critical error in batch spatial calculations:', error);
+      console.error("❌ Critical error in batch spatial calculations:", error);
       // Ultimate fallback: create empty results for all features
       features.forEach((feature, index) => {
         results[index] = {
-          wdpa: { intersection_area_ha: 0, wdpa_names: [], wdpa_categories: [] },
-          peatland: { intersection_area_ha: 0 }
+          wdpa: {
+            intersection_area_ha: 0,
+            wdpa_names: [],
+            wdpa_categories: [],
+          },
+          peatland: { intersection_area_ha: 0 },
         };
       });
       return results;
@@ -3466,33 +4160,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Optimized batch country detection function
-  async function getBatchCountryFromCoordinates(coordinates: Array<{lat: number, lng: number, index: number}>): Promise<Record<number, string>> {
+  async function getBatchCountryFromCoordinates(
+    coordinates: Array<{ lat: number; lng: number; index: number }>,
+  ): Promise<Record<number, string>> {
     const results: Record<number, string> = {};
-    
+
     try {
       // Fast Indonesia coordinate range check (covers 95% of our cases)
       const indonesiaCoords: number[] = [];
-      const otherCoords: Array<{lat: number, lng: number, index: number}> = [];
-      
-      coordinates.forEach(coord => {
-        if (coord.lat >= -11 && coord.lat <= 6 && coord.lng >= 95 && coord.lng <= 141) {
-          results[coord.index] = 'Indonesia';
+      const otherCoords: Array<{ lat: number; lng: number; index: number }> =
+        [];
+
+      coordinates.forEach((coord) => {
+        if (
+          coord.lat >= -11 &&
+          coord.lat <= 6 &&
+          coord.lng >= 95 &&
+          coord.lng <= 141
+        ) {
+          results[coord.index] = "Indonesia";
           indonesiaCoords.push(coord.index);
         } else {
           otherCoords.push(coord);
         }
       });
-      
-      console.log(`🚀 Fast-tracked ${indonesiaCoords.length} Indonesia coordinates via range check`);
-      
+
+      console.log(
+        `🚀 Fast-tracked ${indonesiaCoords.length} Indonesia coordinates via range check`,
+      );
+
       // Only query database for non-Indonesia coordinates if any exist
       if (otherCoords.length > 0) {
-        console.log(`🗄️ Batch checking ${otherCoords.length} coordinates in adm_boundary_lv0`);
-        
+        console.log(
+          `🗄️ Batch checking ${otherCoords.length} coordinates in adm_boundary_lv0`,
+        );
+
         try {
           // Build efficient batch query for remaining coordinates
-          const coordValues = otherCoords.map(coord => `(${coord.index}, ${coord.lng}, ${coord.lat})`).join(', ');
-          
+          const coordValues = otherCoords
+            .map((coord) => `(${coord.index}, ${coord.lng}, ${coord.lat})`)
+            .join(", ");
+
           const batchQuery = await db.execute(sql`
             WITH coord_inputs(idx, lng, lat) AS (
               VALUES ${sql.raw(coordValues)}
@@ -3508,54 +4216,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
             )
             SELECT idx, country FROM country_matches
           `);
-          
-          batchQuery.rows.forEach(row => {
+
+          batchQuery.rows.forEach((row) => {
             results[row.idx as number] = row.country as string;
           });
-          
-          console.log(`✅ Batch resolved ${batchQuery.rows.length} countries from database`);
+
+          console.log(
+            `✅ Batch resolved ${batchQuery.rows.length} countries from database`,
+          );
         } catch (dbError) {
-          console.warn('Batch database query failed, using fallback logic:', dbError);
+          console.warn(
+            "Batch database query failed, using fallback logic:",
+            dbError,
+          );
           // Fallback to coordinate-based detection for remaining coordinates
-          otherCoords.forEach(coord => {
-            if (coord.lat >= 0.85 && coord.lat <= 7.36 && coord.lng >= 99.64 && coord.lng <= 119.27) {
-              results[coord.index] = 'Malaysia';
-            } else if (coord.lat >= 4.27 && coord.lat <= 13.89 && coord.lng >= 2.67 && coord.lng <= 14.68) {
-              results[coord.index] = 'Nigeria';
-            } else if (coord.lat >= 4.74 && coord.lat <= 11.17 && coord.lng >= -3.25 && coord.lng <= 1.19) {
-              results[coord.index] = 'Ghana';
-            } else if (coord.lat >= 4.36 && coord.lat <= 10.74 && coord.lng >= -8.60 && coord.lng <= -2.49) {
-              results[coord.index] = 'Ivory Coast';
-            } else if (coord.lat >= -33.75 && coord.lat <= 5.27 && coord.lng >= -73.99 && coord.lng <= -28.84) {
-              results[coord.index] = 'Brazil';
-            } else if (coord.lat >= 2.22 && coord.lat <= 11.00 && coord.lng >= 14.42 && coord.lng <= 27.46) {
-              results[coord.index] = 'Central African Republic';
+          otherCoords.forEach((coord) => {
+            if (
+              coord.lat >= 0.85 &&
+              coord.lat <= 7.36 &&
+              coord.lng >= 99.64 &&
+              coord.lng <= 119.27
+            ) {
+              results[coord.index] = "Malaysia";
+            } else if (
+              coord.lat >= 4.27 &&
+              coord.lat <= 13.89 &&
+              coord.lng >= 2.67 &&
+              coord.lng <= 14.68
+            ) {
+              results[coord.index] = "Nigeria";
+            } else if (
+              coord.lat >= 4.74 &&
+              coord.lat <= 11.17 &&
+              coord.lng >= -3.25 &&
+              coord.lng <= 1.19
+            ) {
+              results[coord.index] = "Ghana";
+            } else if (
+              coord.lat >= 4.36 &&
+              coord.lat <= 10.74 &&
+              coord.lng >= -8.6 &&
+              coord.lng <= -2.49
+            ) {
+              results[coord.index] = "Ivory Coast";
+            } else if (
+              coord.lat >= -33.75 &&
+              coord.lat <= 5.27 &&
+              coord.lng >= -73.99 &&
+              coord.lng <= -28.84
+            ) {
+              results[coord.index] = "Brazil";
+            } else if (
+              coord.lat >= 2.22 &&
+              coord.lat <= 11.0 &&
+              coord.lng >= 14.42 &&
+              coord.lng <= 27.46
+            ) {
+              results[coord.index] = "Central African Republic";
             } else {
-              results[coord.index] = 'Unknown';
+              results[coord.index] = "Unknown";
             }
           });
         }
       }
-      
+
       // Ensure all coordinates have results
-      coordinates.forEach(coord => {
+      coordinates.forEach((coord) => {
         if (!results[coord.index]) {
-          results[coord.index] = 'Unknown';
+          results[coord.index] = "Unknown";
         }
       });
-      
+
       return results;
-      
     } catch (error) {
-      console.error('Batch country detection error:', error);
+      console.error("Batch country detection error:", error);
       // Ultimate fallback: coordinate-based detection for all
-      coordinates.forEach(coord => {
-        if (coord.lat >= -11 && coord.lat <= 6 && coord.lng >= 95 && coord.lng <= 141) {
-          results[coord.index] = 'Indonesia';
-        } else if (coord.lat >= 0.85 && coord.lat <= 7.36 && coord.lng >= 99.64 && coord.lng <= 119.27) {
-          results[coord.index] = 'Malaysia';
+      coordinates.forEach((coord) => {
+        if (
+          coord.lat >= -11 &&
+          coord.lat <= 6 &&
+          coord.lng >= 95 &&
+          coord.lng <= 141
+        ) {
+          results[coord.index] = "Indonesia";
+        } else if (
+          coord.lat >= 0.85 &&
+          coord.lat <= 7.36 &&
+          coord.lng >= 99.64 &&
+          coord.lng <= 119.27
+        ) {
+          results[coord.index] = "Malaysia";
         } else {
-          results[coord.index] = 'Unknown';
+          results[coord.index] = "Unknown";
         }
       });
       return results;
@@ -3563,37 +4315,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Helper function to extract centroid coordinates from geometry
-  function getCentroidFromGeometry(geometry: any): { lat: number, lng: number } | null {
+  function getCentroidFromGeometry(
+    geometry: any,
+  ): { lat: number; lng: number } | null {
     try {
       if (!geometry || !geometry.coordinates) return null;
 
-      if (geometry.type === 'Point') {
+      if (geometry.type === "Point") {
         return { lng: geometry.coordinates[0], lat: geometry.coordinates[1] };
-      } else if (geometry.type === 'Polygon') {
+      } else if (geometry.type === "Polygon") {
         const coords = geometry.coordinates[0];
         if (coords && coords.length > 0) {
           const lngs = coords.map((c: number[]) => c[0]);
           const lats = coords.map((c: number[]) => c[1]);
           return {
             lng: lngs.reduce((a: number, b: number) => a + b, 0) / lngs.length,
-            lat: lats.reduce((a: number, b: number) => a + b, 0) / lats.length
+            lat: lats.reduce((a: number, b: number) => a + b, 0) / lats.length,
           };
         }
-      } else if (geometry.type === 'MultiPolygon') {
+      } else if (geometry.type === "MultiPolygon") {
         const coords = geometry.coordinates[0][0];
         if (coords && coords.length > 0) {
           const lngs = coords.map((c: number[]) => c[0]);
           const lats = coords.map((c: number[]) => c[1]);
           return {
             lng: lngs.reduce((a: number, b: number) => a + b, 0) / lngs.length,
-            lat: lats.reduce((a: number, b: number) => a + b, 0) / lats.length
+            lat: lats.reduce((a: number, b: number) => a + b, 0) / lats.length,
           };
         }
       }
 
       return null;
     } catch (error) {
-      console.warn('Error extracting centroid:', error);
+      console.warn("Error extracting centroid:", error);
       return null;
     }
   }
@@ -3606,18 +4360,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Convert geometry to WKT format for PostGIS calculation
-      let wkt = '';
+      let wkt = "";
 
-      if (geometry.type === 'Polygon') {
+      if (geometry.type === "Polygon") {
         const coords = geometry.coordinates[0];
         if (coords && coords.length >= 4) {
-          const wktCoords = coords.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
+          const wktCoords = coords
+            .map((coord: any) => `${coord[0]} ${coord[1]}`)
+            .join(", ");
           wkt = `POLYGON((${wktCoords}))`;
         }
-      } else if (geometry.type === 'MultiPolygon') {
+      } else if (geometry.type === "MultiPolygon") {
         const coords = geometry.coordinates[0][0];
         if (coords && coords.length >= 4) {
-          const wktCoords = coords.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
+          const wktCoords = coords
+            .map((coord: any) => `${coord[0]} ${coord[1]}`)
+            .join(", ");
           wkt = `POLYGON((${wktCoords}))`;
         }
       }
@@ -3631,34 +4389,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         SELECT ST_Area(ST_Transform(ST_GeomFromText(${wkt}, 4326), 3857)) / 10000 as area_hectares
       `);
 
-      const areaHectares = parseFloat(result.rows[0]?.area_hectares?.toString() || '1.0');
+      const areaHectares = parseFloat(
+        result.rows[0]?.area_hectares?.toString() || "1.0",
+      );
 
       // Ensure minimum area and reasonable maximum
       if (areaHectares < 0.1) return 0.1;
       if (areaHectares > 1000) return 1000;
 
-      console.log(`📏 Calculated area: ${areaHectares.toFixed(2)} hectares using PostGIS`);
+      console.log(
+        `📏 Calculated area: ${areaHectares.toFixed(2)} hectares using PostGIS`,
+      );
       return Math.round(areaHectares * 100) / 100; // Round to 2 decimal places
-
     } catch (error) {
-      console.warn('Error calculating area from geometry:', error);
+      console.warn("Error calculating area from geometry:", error);
       return 1.0; // Default 1 hectare
     }
   }
 
   // GeoJSON upload and analysis endpoint
-  app.post('/api/geojson/upload', isAuthenticated, async (req, res) => {
+  app.post("/api/geojson/upload", isAuthenticated, async (req, res) => {
     try {
       // Add CORS headers for production
-      res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+      res.header("Access-Control-Allow-Credentials", "true");
+      res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+      console.log("📥 Received GeoJSON upload request");
+      console.log("📋 Request headers:", Object.keys(req.headers));
+      console.log("📋 Content-Type:", req.headers["content-type"]);
+      console.log("📋 Body keys:", Object.keys(req.body || {}));
+
+      // Server-side payload size check (API limit: 50MB)
+      const requestSizeBytes = JSON.stringify(req.body).length;
+      const requestSizeMB = requestSizeBytes / (1024 * 1024);
+      console.log(`📏 Server received payload: ${requestSizeMB.toFixed(2)} MB`);
       
-      console.log('📥 Received GeoJSON upload request');
-      console.log('📋 Request headers:', Object.keys(req.headers));
-      console.log('📋 Content-Type:', req.headers['content-type']);
-      console.log('📋 Body keys:', Object.keys(req.body || {}));
-      
+      if (requestSizeMB > 50) {
+        return res.status(413).json({
+          error: "Request payload too large",
+          details: `Payload size: ${requestSizeMB.toFixed(1)}MB exceeds 50MB limit`,
+          suggestion: "Split your GeoJSON into smaller files with 20-50 features each"
+        });
+      }
+
       const { geojson, geojsonFile, filename, fileName } = req.body;
 
       // Accept both parameter names for flexibility
@@ -3666,58 +4440,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileNameToUse = filename || fileName;
 
       if (!geoJsonData) {
-        console.log('Request body keys:', Object.keys(req.body));
-        return res.status(400).json({ error: 'No GeoJSON data provided' });
+        console.log("Request body keys:", Object.keys(req.body));
+        return res.status(400).json({ error: "No GeoJSON data provided" });
       }
 
       let parsedGeojson;
       try {
         // Handle different input formats
-        if (typeof geoJsonData === 'string') {
+        if (typeof geoJsonData === "string") {
           // Try to parse as JSON string
           parsedGeojson = JSON.parse(geoJsonData);
-        } else if (typeof geoJsonData === 'object') {
-          // Already parsed object
+        } else if (typeof geoJsonData === "object") {
+          // Already parsed object (fixed format from frontend)
           parsedGeojson = geoJsonData;
         } else {
-          throw new Error('Invalid GeoJSON data format');
+          throw new Error("Invalid GeoJSON data format");
         }
 
-        console.log('✅ Successfully parsed GeoJSON data');
-        console.log('📋 GeoJSON type:', parsedGeojson.type);
-        console.log('📋 Features count:', parsedGeojson.features?.length || 0);
-
+        console.log("✅ Successfully parsed GeoJSON data");
+        console.log("📋 GeoJSON type:", parsedGeojson.type);
+        console.log("📋 Features count:", parsedGeojson.features?.length || 0);
       } catch (parseError) {
-        console.error('❌ JSON parsing error:', parseError);
-        return res.status(400).json({ 
-          error: 'Failed to parse GeoJSON file', 
-          details: parseError instanceof Error ? parseError.message : 'Invalid JSON format'
+        console.error("❌ JSON parsing error:", parseError);
+        return res.status(400).json({
+          error: "Failed to parse GeoJSON file",
+          details:
+            parseError instanceof Error
+              ? parseError.message
+              : "Invalid JSON format",
         });
       }
 
       // Enhanced GeoJSON validation
-      if (!parsedGeojson || typeof parsedGeojson !== 'object') {
-        return res.status(400).json({ error: 'Invalid GeoJSON: root must be an object' });
+      if (!parsedGeojson || typeof parsedGeojson !== "object") {
+        return res
+          .status(400)
+          .json({ error: "Invalid GeoJSON: root must be an object" });
       }
 
-      if (parsedGeojson.type !== 'FeatureCollection') {
-        return res.status(400).json({ 
-          error: `Invalid GeoJSON: expected FeatureCollection, got ${parsedGeojson.type}` 
+      if (parsedGeojson.type !== "FeatureCollection") {
+        return res.status(400).json({
+          error: `Invalid GeoJSON: expected FeatureCollection, got ${parsedGeojson.type}`,
         });
       }
 
       if (!parsedGeojson.features || !Array.isArray(parsedGeojson.features)) {
-        return res.status(400).json({ 
-          error: 'Invalid GeoJSON: missing or invalid features array',
-          details: `Features is ${typeof parsedGeojson.features}, expected array`
+        return res.status(400).json({
+          error: "Invalid GeoJSON: missing or invalid features array",
+          details: `Features is ${typeof parsedGeojson.features}, expected array`,
         });
       }
 
       if (parsedGeojson.features.length === 0) {
-        return res.status(400).json({ error: 'Invalid GeoJSON: features array is empty' });
+        return res
+          .status(400)
+          .json({ error: "Invalid GeoJSON: features array is empty" });
       }
 
-      console.log(`✅ GeoJSON validation passed: ${parsedGeojson.features.length} features found`);
+      // Server-side feature count validation (API limit: 1000 features)
+      if (parsedGeojson.features.length > 1000) {
+        return res.status(413).json({
+          error: "Too many features",
+          details: `Feature count: ${parsedGeojson.features.length} exceeds 1000 limit`,
+          suggestion: "Split your GeoJSON into smaller files with maximum 50-100 features each for optimal processing"
+        });
+      }
+
+      console.log(
+        `✅ GeoJSON validation passed: ${parsedGeojson.features.length} features found`,
+      );
 
       // Remove z-values (3D coordinates) to make it compatible with external APIs
       const cleanedGeojson = {
@@ -3726,15 +4517,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (feature.geometry && feature.geometry.coordinates) {
             const cleanedGeometry = {
               ...feature.geometry,
-              coordinates: removeZValues(feature.geometry.coordinates)
+              coordinates: removeZValues(feature.geometry.coordinates),
             };
             return {
               ...feature,
-              geometry: cleanedGeometry
+              geometry: cleanedGeometry,
             };
           }
           return feature;
-        })
+        }),
       };
 
       // Enhanced validation for different GeoJSON formats
@@ -3745,13 +4536,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         try {
           // Validate feature structure
-          if (!feature || typeof feature !== 'object') {
-            console.warn(`⚠️ Feature ${i + 1}: Invalid feature object, skipping`);
+          if (!feature || typeof feature !== "object") {
+            console.warn(
+              `⚠️ Feature ${i + 1}: Invalid feature object, skipping`,
+            );
             continue;
           }
 
-          if (feature.type !== 'Feature') {
-            console.warn(`⚠️ Feature ${i + 1}: Expected type 'Feature', got '${feature.type}', skipping`);
+          if (feature.type !== "Feature") {
+            console.warn(
+              `⚠️ Feature ${i + 1}: Expected type 'Feature', got '${feature.type}', skipping`,
+            );
             continue;
           }
 
@@ -3763,44 +4558,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const props = feature.properties || {};
 
           // Robustly get plot ID with better fallback
-          const plotId = props.id || props.plot_id || props['.Farmers ID'] || props.Name || props.farmer_id || `PLOT_${String(i + 1).padStart(3, '0')}`;
+          const plotId =
+            props.id ||
+            props.plot_id ||
+            props[".Farmers ID"] ||
+            props.Name ||
+            props.farmer_id ||
+            `PLOT_${String(i + 1).padStart(3, "0")}`;
 
-          console.log(`✅ Processing feature ${i + 1}: plotId="${plotId}", properties=${JSON.stringify(Object.keys(props))}`);
+          console.log(
+            `✅ Processing feature ${i + 1}: plotId="${plotId}", properties=${JSON.stringify(Object.keys(props))}`,
+          );
 
           // Continue processing even if some properties are missing
           // This is more forgiving than before
 
-        // OPTIMIZATION: Skip individual country detection here - will be done in batch later
-        // This saves 93+ individual PostGIS calls during preprocessing phase
-        let detectedCountry = 'Unknown';
+          // OPTIMIZATION: Skip individual country detection here - will be done in batch later
+          // This saves 93+ individual PostGIS calls during preprocessing phase
+          let detectedCountry = "Unknown";
 
-        // Priority 1: Use country_name from API response if available and not "unknown"
-        if (feature.properties?.country_name &&
-            feature.properties.country_name !== 'unknown' &&
-            feature.properties.country_name !== 'Unknown') {
-          detectedCountry = feature.properties.country_name;
-          console.log(`✅ Country from API response: ${detectedCountry}`);
-        }
-        // Priority 2: Fast coordinate-based detection for Indonesian data (no database calls)
-        else {
-          const centroid = getCentroidFromGeometry(feature.geometry);
-          if (centroid && centroid.lat >= -11 && centroid.lat <= 6 && centroid.lng >= 95 && centroid.lng <= 141) {
-            detectedCountry = 'Indonesia';
-            console.log(`🇮🇩 Fast Indonesia detection via coordinates: ${detectedCountry}`);
-          } else if (props['.Distict'] || props['.Aggregator Location']) {
-            detectedCountry = 'Indonesia';
-            console.log(`🇮🇩 Using Indonesian data format fallback: ${detectedCountry}`);
-          } else {
-            detectedCountry = props.country_name || props.country || props.district ||
-                             props.region || props.province || props.kabupaten || 'Indonesia';
-            console.log(`🌍 Using property fallback: ${detectedCountry}`);
+          // Priority 1: Use country_name from API response if available and not "unknown"
+          if (
+            feature.properties?.country_name &&
+            feature.properties.country_name !== "unknown" &&
+            feature.properties.country_name !== "Unknown"
+          ) {
+            detectedCountry = feature.properties.country_name;
+            console.log(`✅ Country from API response: ${detectedCountry}`);
           }
-        }
+          // Priority 2: Fast coordinate-based detection for Indonesian data (no database calls)
+          else {
+            const centroid = getCentroidFromGeometry(feature.geometry);
+            if (
+              centroid &&
+              centroid.lat >= -11 &&
+              centroid.lat <= 6 &&
+              centroid.lng >= 95 &&
+              centroid.lng <= 141
+            ) {
+              detectedCountry = "Indonesia";
+              console.log(
+                `🇮🇩 Fast Indonesia detection via coordinates: ${detectedCountry}`,
+              );
+            } else if (props[".Distict"] || props[".Aggregator Location"]) {
+              detectedCountry = "Indonesia";
+              console.log(
+                `🇮🇩 Using Indonesian data format fallback: ${detectedCountry}`,
+              );
+            } else {
+              detectedCountry =
+                props.country_name ||
+                props.country ||
+                props.district ||
+                props.region ||
+                props.province ||
+                props.kabupaten ||
+                "Indonesia";
+              console.log(`🌍 Using property fallback: ${detectedCountry}`);
+            }
+          }
 
-        // Update feature properties with detected country (will be refined in batch processing)
+          // Update feature properties with detected country (will be refined in batch processing)
           feature.properties.detected_country = detectedCountry;
           validatedFeatures.push(feature);
-
         } catch (featureError) {
           console.error(`❌ Error processing feature ${i + 1}:`, featureError);
           // Continue with next feature instead of failing completely
@@ -3810,81 +4630,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (validatedFeatures.length === 0) {
         return res.status(400).json({
-          error: 'No valid features found after processing',
-          details: 'All features were either invalid or missing required properties (geometry, plot ID)'
+          error: "No valid features found after processing",
+          details:
+            "All features were either invalid or missing required properties (geometry, plot ID)",
         });
       }
 
-      console.log(`✅ Validated ${validatedFeatures.length} out of ${cleanedGeojson.features.length} features`);
+      console.log(
+        `✅ Validated ${validatedFeatures.length} out of ${cleanedGeojson.features.length} features`,
+      );
 
       cleanedGeojson.features = validatedFeatures;
 
-      console.log('=== DEBUGGING FEATURE COUNT ===');
-      console.log('Input features sent to API:', cleanedGeojson.features.length);
+      console.log("=== DEBUGGING FEATURE COUNT ===");
+      console.log(
+        "Input features sent to API:",
+        cleanedGeojson.features.length,
+      );
 
       // Create a proper multipart/form-data request
       const boundary = `----formdata-node-${Date.now()}`;
       const fileContent = JSON.stringify(cleanedGeojson); // Use cleaned GeoJSON
-      const uploadFileName = fileNameToUse || 'plot_boundaries.json';
+      const uploadFileName = fileNameToUse || "plot_boundaries.json";
 
       const formBody = [
         `--${boundary}`,
         `Content-Disposition: form-data; name="file"; filename="${uploadFileName}"`,
-        'Content-Type: application/json',
-        '',
+        "Content-Type: application/json",
+        "",
         fileContent,
-        `--${boundary}--`
-      ].join('\r\n');
+        `--${boundary}--`,
+      ].join("\r\n");
 
       // Call EUDR Multilayer API with enhanced error handling and longer timeout
       let response;
       let analysisResults;
 
       try {
-        console.log('🚀 Sending request to EUDR Multilayer API...');
+        console.log("🚀 Sending request to EUDR Multilayer API...");
         console.log(`📤 Request size: ${formBody.length} bytes`);
 
         // Increase timeout to 60 seconds for large payloads (was 30s)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for large datasets
 
-        response = await fetch('https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson', {
-          method: 'POST',
-          headers: {
-            'Content-Type': `multipart/form-data; boundary=${boundary}`
+        response = await fetch(
+          "https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": `multipart/form-data; boundary=${boundary}`,
+            },
+            body: formBody,
+            signal: controller.signal,
           },
-          body: formBody,
-          signal: controller.signal
-        });
+        );
 
         clearTimeout(timeoutId);
 
-        console.log(`📥 API Response status: ${response.status} ${response.statusText}`);
+        console.log(
+          `📥 API Response status: ${response.status} ${response.statusText}`,
+        );
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('❌ API Error Response:', response.status, errorText);
+          console.error("❌ API Error Response:", response.status, errorText);
           return res.status(response.status).json({
-            error: 'Failed to analyze GeoJSON file',
+            error: "Failed to analyze GeoJSON file",
             details: `API returned ${response.status}: ${errorText}`,
-            apiStatus: response.status
+            apiStatus: response.status,
           });
         }
 
         analysisResults = await response.json();
-        console.log('✅ Successfully received analysis results from API');
-
+        console.log("✅ Successfully received analysis results from API");
       } catch (fetchError) {
-        console.error('❌ Network/API Error:', fetchError);
-        
+        console.error("❌ Network/API Error:", fetchError);
+
         // Enhanced error handling with fallback for timeout
-        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-          console.warn('⏰ External API timeout detected - implementing fallback strategy');
-          
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          console.warn(
+            "⏰ External API timeout detected - implementing fallback strategy",
+          );
+
           // For timeout errors, proceed with local-only analysis using spatial optimizations
           if (validatedFeatures.length > 0) {
-            console.log('🔄 Attempting local-only analysis with spatial optimizations...');
-            
+            console.log(
+              "🔄 Attempting local-only analysis with spatial optimizations...",
+            );
+
             // Create a minimal analysis result structure to continue with batch optimizations
             analysisResults = {
               data: {
@@ -3893,33 +4727,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   properties: {
                     ...feature.properties,
                     // Add minimal required properties for local processing
-                    country_name: feature.properties?.detected_country || 'Indonesia',
-                    deforestation_analysis: 'LOCAL_ONLY', // Flag for local processing
-                    analysis_note: 'External API timeout - using local spatial analysis only'
-                  }
-                }))
+                    country_name:
+                      feature.properties?.detected_country || "Indonesia",
+                    deforestation_analysis: "LOCAL_ONLY", // Flag for local processing
+                    analysis_note:
+                      "External API timeout - using local spatial analysis only",
+                  },
+                })),
               },
               metadata: {
-                source: 'LOCAL_FALLBACK',
+                source: "LOCAL_FALLBACK",
                 timestamp: new Date().toISOString(),
-                note: 'External deforestation API timeout - proceeding with spatial optimization analysis only',
-                performance_mode: 'OPTIMIZED_LOCAL'
-              }
+                note: "External deforestation API timeout - proceeding with spatial optimization analysis only",
+                performance_mode: "OPTIMIZED_LOCAL",
+              },
             };
-            
-            console.log(`🏠 Created local analysis structure for ${analysisResults.data.features.length} features`);
+
+            console.log(
+              `🏠 Created local analysis structure for ${analysisResults.data.features.length} features`,
+            );
             console.log(`🚀 Proceeding with batch spatial optimizations...`);
           } else {
             return res.status(408).json({
-              error: 'Request timeout - analysis is taking longer than expected',
-              details: 'The external analysis service is currently slow. Please try again in a few minutes.',
-              suggestion: 'Consider analyzing smaller batches of plots (< 50 plots) for faster processing'
+              error:
+                "Request timeout - analysis is taking longer than expected",
+              details:
+                "The external analysis service is currently slow. Please try again in a few minutes.",
+              suggestion:
+                "Consider analyzing smaller batches of plots (< 50 plots) for faster processing",
             });
           }
         } else {
           return res.status(500).json({
-            error: 'Failed to communicate with analysis API',
-            details: fetchError instanceof Error ? fetchError.message : 'Unknown network error'
+            error: "Failed to communicate with analysis API",
+            details:
+              fetchError instanceof Error
+                ? fetchError.message
+                : "Unknown network error",
           });
         }
       }
@@ -3927,22 +4771,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log both request and response for debugging
       const inputFeatures = cleanedGeojson.features.length; // Use count from cleaned GeoJSON
       const outputFeatures = analysisResults.data?.features?.length || 0;
-      console.log('=== DEBUGGING FEATURE COUNT ===');
-      console.log('Input features sent to API:', inputFeatures);
-      console.log('Output features received from API:', outputFeatures);
+      console.log("=== DEBUGGING FEATURE COUNT ===");
+      console.log("Input features sent to API:", inputFeatures);
+      console.log("Output features received from API:", outputFeatures);
       console.log(`Processing stats:`, analysisResults.processing_stats);
       console.log(`File info from API:`, analysisResults.file_info);
       console.log(`Analysis summary:`, analysisResults.analysis_summary);
 
       if (inputFeatures !== outputFeatures) {
-        console.log(`⚠️  FEATURE MISMATCH: Sent ${inputFeatures} but received ${outputFeatures}`);
-        console.log(`This appears to be an API-side processing limitation when handling large files.`);
-        console.log(`Recommendation: Split large files into smaller batches (5-10 features each) for complete processing.`);
+        console.log(
+          `⚠️  FEATURE MISMATCH: Sent ${inputFeatures} but received ${outputFeatures}`,
+        );
+        console.log(
+          `This appears to be an API-side processing limitation when handling large files.`,
+        );
+        console.log(
+          `Recommendation: Split large files into smaller batches (5-10 features each) for complete processing.`,
+        );
 
         // Add a warning to the response for users
         analysisResults.warning = {
           message: `Only ${outputFeatures} out of ${inputFeatures} features were processed successfully.`,
-          recommendation: "For better results, split large files into smaller batches of 5-10 features each."
+          recommendation:
+            "For better results, split large files into smaller batches of 5-10 features each.",
         };
       }
 
@@ -3955,63 +4806,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Create a mapping of original plot IDs from the input GeoJSON
         const originalFeatures = cleanedGeojson.features;
-        const originalPlotIds = originalFeatures.map((feature: any, index: number) => {
-          const props = feature.properties || {};
-          return props['.Farmers ID'] || props.id || props.Name || props.plot_id || props.farmer_id || `PLOT_${index + 1}`;
-        });
+        const originalPlotIds = originalFeatures.map(
+          (feature: any, index: number) => {
+            const props = feature.properties || {};
+            return (
+              props[".Farmers ID"] ||
+              props.id ||
+              props.Name ||
+              props.plot_id ||
+              props.farmer_id ||
+              `PLOT_${index + 1}`
+            );
+          },
+        );
 
-        console.log(`📋 Original Plot IDs from input GeoJSON:`, originalPlotIds);
+        console.log(
+          `📋 Original Plot IDs from input GeoJSON:`,
+          originalPlotIds,
+        );
 
         // Process features in parallel for better performance
-        console.log(`🚀 Starting parallel processing of ${analysisResults.data.features.length} features`);
-        
-        const processFeature = async (feature: any, featureIndex: number, countryResults: Record<number, string>, spatialResults: Record<number, {wdpa: any, peatland: any}>) => {
+        console.log(
+          `🚀 Starting parallel processing of ${analysisResults.data.features.length} features`,
+        );
+
+        const processFeature = async (
+          feature: any,
+          featureIndex: number,
+          countryResults: Record<number, string>,
+          spatialResults: Record<number, { wdpa: any; peatland: any }>,
+        ) => {
           console.log(`=== PROCESSING FEATURE ${featureIndex + 1} ===`);
-          console.log(`📋 Available properties:`, Object.keys(feature.properties || {}));
+          console.log(
+            `📋 Available properties:`,
+            Object.keys(feature.properties || {}),
+          );
 
           try {
             // Use the original plot ID from the input GeoJSON based on feature index
-            let plotId = originalPlotIds[featureIndex] || `PLOT_${featureIndex + 1}`;
+            let plotId =
+              originalPlotIds[featureIndex] || `PLOT_${featureIndex + 1}`;
 
-            console.log(`✅ Using original Plot ID: ${plotId} (from input GeoJSON feature ${featureIndex + 1})`);
+            console.log(
+              `✅ Using original Plot ID: ${plotId} (from input GeoJSON feature ${featureIndex + 1})`,
+            );
 
             // If API returned a different plot_id, log it for debugging
-            if (feature.properties?.plot_id && feature.properties.plot_id !== plotId) {
-              console.log(`🔄 API returned different plot_id: ${feature.properties.plot_id}, keeping original: ${plotId}`);
+            if (
+              feature.properties?.plot_id &&
+              feature.properties.plot_id !== plotId
+            ) {
+              console.log(
+                `🔄 API returned different plot_id: ${feature.properties.plot_id}, keeping original: ${plotId}`,
+              );
             }
 
             // Use pre-computed batch country detection results (MAJOR OPTIMIZATION!)
-            let country = countryResults[featureIndex] || feature.properties?.detected_country || 'Unknown';
+            let country =
+              countryResults[featureIndex] ||
+              feature.properties?.detected_country ||
+              "Unknown";
 
             console.log(`🌍 Using batch-detected country: ${country}`);
 
             // Apply additional validation and fallback logic for edge cases only
-            if (!country || country === 'Unknown' || country === 'unknown') {
+            if (!country || country === "Unknown" || country === "unknown") {
               // Check for Indonesian-specific field patterns
-              if (feature.properties?.['.Distict']) {
-                country = 'Indonesia';
+              if (feature.properties?.[".Distict"]) {
+                country = "Indonesia";
                 console.log(`🇮🇩 Detected Indonesia from district field`);
-              } else if (feature.properties?.['.Aggregator Location']) {
-                country = 'Indonesia';
-                console.log(`🇮🇩 Detected Indonesia from aggregator location field`);
-              } else if (feature.properties?.country_name &&
-                        feature.properties.country_name !== 'unknown') {
+              } else if (feature.properties?.[".Aggregator Location"]) {
+                country = "Indonesia";
+                console.log(
+                  `🇮🇩 Detected Indonesia from aggregator location field`,
+                );
+              } else if (
+                feature.properties?.country_name &&
+                feature.properties.country_name !== "unknown"
+              ) {
                 country = feature.properties.country_name;
                 console.log(`🌍 Using country_name from API: ${country}`);
               } else {
-                country = 'Indonesia'; // Default for most palm oil data
+                country = "Indonesia"; // Default for most palm oil data
                 console.log(`🇮🇩 Using Indonesia as final fallback`);
               }
             }
 
             // Enhanced area parsing for Indonesian format
             let area = 0;
-            if (feature.properties?.['.Plot size']) {
+            if (feature.properties?.[".Plot size"]) {
               // Parse Indonesian format: "0.50 Ha", "24.00 Ha", etc.
-              const plotSize = feature.properties['.Plot size'].toString();
+              const plotSize = feature.properties[".Plot size"].toString();
               const areaMatch = plotSize.match(/(\d+\.?\d*)/);
               area = areaMatch ? parseFloat(areaMatch[1]) : 0;
-              console.log(`📏 Plot ${plotId}: Parsed area ${area}ha from "${plotSize}"`);
+              console.log(
+                `📏 Plot ${plotId}: Parsed area ${area}ha from "${plotSize}"`,
+              );
             } else if (feature.properties?.area_ha) {
               area = parseFloat(feature.properties.area_ha);
             } else if (feature.properties?.total_area_hectares) {
@@ -4023,14 +4913,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else {
               // Calculate area from geometry if available
               area = await calculateAreaFromGeometry(feature.geometry);
-              console.log(`📏 Plot ${plotId}: Calculated area ${area}ha from geometry using PostGIS`);
+              console.log(
+                `📏 Plot ${plotId}: Calculated area ${area}ha from geometry using PostGIS`,
+              );
             }
 
             // Get loss percentages from API and convert to actual hectares
-            const totalAreaHa = parseFloat(feature.properties?.total_area_hectares || area.toString() || '1');
-            const gfwLossPercent = parseFloat(feature.properties?.gfw_loss?.gfw_loss_area || '0');
-            const jrcLossPercent = parseFloat(feature.properties?.jrc_loss?.jrc_loss_area || '0');
-            const sbtnLossPercent = parseFloat(feature.properties?.sbtn_loss?.sbtn_loss_area || '0');
+            const totalAreaHa = parseFloat(
+              feature.properties?.total_area_hectares || area.toString() || "1",
+            );
+            const gfwLossPercent = parseFloat(
+              feature.properties?.gfw_loss?.gfw_loss_area || "0",
+            );
+            const jrcLossPercent = parseFloat(
+              feature.properties?.jrc_loss?.jrc_loss_area || "0",
+            );
+            const sbtnLossPercent = parseFloat(
+              feature.properties?.sbtn_loss?.sbtn_loss_area || "0",
+            );
 
             // Calculate actual loss areas in hectares
             const gfwLossArea = gfwLossPercent * totalAreaHa;
@@ -4038,22 +4938,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const sbtnLossArea = sbtnLossPercent * totalAreaHa;
 
             // Calculate OVERALL RISK based on refined logic
-            let overallRisk = 'LOW';
-            let complianceStatus = 'COMPLIANT';
-            
+            let overallRisk = "LOW";
+            let complianceStatus = "COMPLIANT";
+
             // Check if any loss area > 0.01 hectares
-            if (gfwLossArea > 0.01 || jrcLossArea > 0.01 || sbtnLossArea > 0.01) {
-              overallRisk = 'HIGH';
-              complianceStatus = 'NON-COMPLIANT';
-            } 
+            if (
+              gfwLossArea > 0.01 ||
+              jrcLossArea > 0.01 ||
+              sbtnLossArea > 0.01
+            ) {
+              overallRisk = "HIGH";
+              complianceStatus = "NON-COMPLIANT";
+            }
             // Check if any loss area < 0.01 but > 0 (between 0.000 and 0.01)
             else if (gfwLossArea > 0 || jrcLossArea > 0 || sbtnLossArea > 0) {
-              overallRisk = 'MEDIUM';
-              complianceStatus = 'NON-COMPLIANT';
+              overallRisk = "MEDIUM";
+              complianceStatus = "NON-COMPLIANT";
             }
             // If all loss areas = 0.000, keep LOW and COMPLIANT (default values)
 
-            const highRiskDatasets = feature.properties?.overall_compliance?.high_risk_datasets || [];
+            const highRiskDatasets =
+              feature.properties?.overall_compliance?.high_risk_datasets || [];
 
             console.log(`🔍 Plot ${plotId} calculation:`, {
               totalAreaHa,
@@ -4062,103 +4967,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sbtnLossPercent: `${(sbtnLossPercent * 100).toFixed(1)}%`,
               gfwLossArea: `${gfwLossArea.toFixed(4)}ha`,
               jrcLossArea: `${jrcLossArea.toFixed(4)}ha`,
-              sbtnLossArea: `${sbtnLossArea.toFixed(4)}ha`
+              sbtnLossArea: `${sbtnLossArea.toFixed(4)}ha`,
             });
 
             // Perform WDPA protected area analysis
-            let wdpaStatus = 'UNKNOWN';
-            let peatlandStatus = 'UNKNOWN';
-            
+            let wdpaStatus = "UNKNOWN";
+            let peatlandStatus = "UNKNOWN";
+
             try {
               // Initialize WDPA service
               const wdpaService = new WDPAService();
-              
+
               // Extract coordinates for analysis - use centroid for polygons
               let analysisCoords: [number, number];
-              if (feature.geometry?.type === 'Polygon' && feature.geometry.coordinates?.[0]) {
+              if (
+                feature.geometry?.type === "Polygon" &&
+                feature.geometry.coordinates?.[0]
+              ) {
                 // Calculate centroid of polygon
                 const coords = feature.geometry.coordinates[0];
                 const lons = coords.map((coord: number[]) => coord[0]);
                 const lats = coords.map((coord: number[]) => coord[1]);
-                const centroidLon = lons.reduce((a: number, b: number) => a + b, 0) / lons.length;
-                const centroidLat = lats.reduce((a: number, b: number) => a + b, 0) / lats.length;
+                const centroidLon =
+                  lons.reduce((a: number, b: number) => a + b, 0) / lons.length;
+                const centroidLat =
+                  lats.reduce((a: number, b: number) => a + b, 0) / lats.length;
                 analysisCoords = [centroidLon, centroidLat];
-              } else if (feature.properties?.['.Long'] && feature.properties?.['.Lat']) {
-                analysisCoords = [parseFloat(feature.properties['.Long']), parseFloat(feature.properties['.Lat'])];
+              } else if (
+                feature.properties?.[".Long"] &&
+                feature.properties?.[".Lat"]
+              ) {
+                analysisCoords = [
+                  parseFloat(feature.properties[".Long"]),
+                  parseFloat(feature.properties[".Lat"]),
+                ];
               } else {
                 // Use a default coordinate if no geometry available (fallback)
                 analysisCoords = [101.4967, -0.5021]; // Central Indonesia
               }
-              
+
               // OPTIMIZATION: Use pre-computed WDPA intersection results (MAJOR PERFORMANCE BOOST!)
               let wdpaArea = 0; // Initialize WDPA intersection area in hectares
-              if (country === 'Indonesia' || country === 'indonesia') {
+              if (country === "Indonesia" || country === "indonesia") {
                 try {
                   // Get pre-computed WDPA intersection results from batch calculation
                   const wdpaResult = spatialResults[featureIndex]?.wdpa;
                   if (wdpaResult) {
                     wdpaArea = wdpaResult.intersection_area_ha || 0;
                     // Use explicit threshold to handle very small intersections
-                    if (wdpaArea >= 0.0001) { // Minimum 0.0001 hectares (1 square meter)
+                    if (wdpaArea >= 0.0001) {
+                      // Minimum 0.0001 hectares (1 square meter)
                       wdpaStatus = `${wdpaArea.toFixed(4)} ha`;
                       const wdpaNames = wdpaResult.wdpa_names || [];
                       const wdpaCategories = wdpaResult.wdpa_categories || [];
-                      console.log(`🏞️ Plot ${plotId} WDPA intersection (batch): ${wdpaArea.toFixed(4)} hectares with ${wdpaNames.length} protected areas (Categories: ${wdpaCategories.join(', ')})`);
+                      console.log(
+                        `🏞️ Plot ${plotId} WDPA intersection (batch): ${wdpaArea.toFixed(4)} hectares with ${wdpaNames.length} protected areas (Categories: ${wdpaCategories.join(", ")})`,
+                      );
                     } else {
-                      wdpaStatus = 'NOT_PROTECTED';
+                      wdpaStatus = "NOT_PROTECTED";
                     }
                   } else {
-                    console.warn(`⚠️ No WDPA batch result found for feature ${featureIndex}`);
-                    wdpaStatus = 'NOT_PROTECTED';
+                    console.warn(
+                      `⚠️ No WDPA batch result found for feature ${featureIndex}`,
+                    );
+                    wdpaStatus = "NOT_PROTECTED";
                   }
                 } catch (wdpaError) {
-                  console.warn(`⚠️ Error accessing WDPA batch results for plot ${plotId}:`, wdpaError);
-                  wdpaStatus = 'NOT_PROTECTED';
+                  console.warn(
+                    `⚠️ Error accessing WDPA batch results for plot ${plotId}:`,
+                    wdpaError,
+                  );
+                  wdpaStatus = "NOT_PROTECTED";
                 }
               } else {
                 // For non-Indonesia countries, assume not in protected area
-                wdpaStatus = 'NOT_PROTECTED';
+                wdpaStatus = "NOT_PROTECTED";
               }
-              
+
               // OPTIMIZATION: Use pre-computed peatland intersection results (MAJOR PERFORMANCE BOOST!)
               let peatlandArea = 0; // Initialize peatland intersection area in hectares
-              if (country === 'Indonesia' || country === 'indonesia') {
+              if (country === "Indonesia" || country === "indonesia") {
                 try {
                   // Get pre-computed peatland intersection results from batch calculation
                   const peatlandResult = spatialResults[featureIndex]?.peatland;
                   if (peatlandResult) {
                     peatlandArea = peatlandResult.intersection_area_ha || 0;
                     // Use explicit threshold to handle very small intersections
-                    if (peatlandArea >= 0.0001) { // Minimum 0.0001 hectares (1 square meter)
+                    if (peatlandArea >= 0.0001) {
+                      // Minimum 0.0001 hectares (1 square meter)
                       peatlandStatus = `${peatlandArea.toFixed(4)} ha`;
-                      console.log(`🏞️ Plot ${plotId} peatland intersection (batch): ${peatlandArea.toFixed(4)} hectares`);
+                      console.log(
+                        `🏞️ Plot ${plotId} peatland intersection (batch): ${peatlandArea.toFixed(4)} hectares`,
+                      );
                     } else {
-                      peatlandStatus = 'NOT_PEATLAND';
+                      peatlandStatus = "NOT_PEATLAND";
                     }
                   } else {
-                    console.warn(`⚠️ No peatland batch result found for feature ${featureIndex}`);
-                    peatlandStatus = 'NOT_PEATLAND';
+                    console.warn(
+                      `⚠️ No peatland batch result found for feature ${featureIndex}`,
+                    );
+                    peatlandStatus = "NOT_PEATLAND";
                   }
                 } catch (peatlandError) {
-                  console.warn(`⚠️ Error accessing peatland batch results for plot ${plotId}:`, peatlandError);
-                  peatlandStatus = 'NOT_PEATLAND';
+                  console.warn(
+                    `⚠️ Error accessing peatland batch results for plot ${plotId}:`,
+                    peatlandError,
+                  );
+                  peatlandStatus = "NOT_PEATLAND";
                 }
               } else {
                 // For non-Indonesia countries, assume not peatland
-                peatlandStatus = 'NOT_PEATLAND';
+                peatlandStatus = "NOT_PEATLAND";
               }
-              
-              console.log(`🔍 Plot ${plotId} spatial analysis: WDPA=${wdpaStatus}, Peatland=${peatlandStatus}`);
-              
+
+              console.log(
+                `🔍 Plot ${plotId} spatial analysis: WDPA=${wdpaStatus}, Peatland=${peatlandStatus}`,
+              );
             } catch (spatialError) {
-              console.warn(`⚠️ Spatial analysis failed for plot ${plotId}:`, spatialError);
+              console.warn(
+                `⚠️ Spatial analysis failed for plot ${plotId}:`,
+                spatialError,
+              );
               // Keep default 'UNKNOWN' values if analysis fails
             }
 
             // Apply WDPA compliance logic: if WDPA is protected and currently compliant, mark as non-compliant
-            if (wdpaStatus !== 'NOT_PROTECTED' && complianceStatus === 'COMPLIANT') {
-              complianceStatus = 'NON-COMPLIANT';
-              console.log(`🏞️ Plot ${plotId} marked NON-COMPLIANT due to WDPA protected area intersection: ${wdpaStatus}`);
+            if (
+              wdpaStatus !== "NOT_PROTECTED" &&
+              complianceStatus === "COMPLIANT"
+            ) {
+              complianceStatus = "NON-COMPLIANT";
+              console.log(
+                `🏞️ Plot ${plotId} marked NON-COMPLIANT due to WDPA protected area intersection: ${wdpaStatus}`,
+              );
             }
 
             // Create analysis result with comprehensive Indonesian metadata
@@ -4168,9 +5109,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               area: area.toString(),
               overallRisk,
               complianceStatus,
-              gfwLoss: gfwLossArea > 0 ? 'TRUE' : 'FALSE',
-              jrcLoss: jrcLossArea > 0 ? 'TRUE' : 'FALSE',
-              sbtnLoss: sbtnLossArea > 0 ? 'TRUE' : 'FALSE',
+              gfwLoss: gfwLossArea > 0 ? "TRUE" : "FALSE",
+              jrcLoss: jrcLossArea > 0 ? "TRUE" : "FALSE",
+              sbtnLoss: sbtnLossArea > 0 ? "TRUE" : "FALSE",
               gfwLossArea: gfwLossArea.toString(),
               jrcLossArea: jrcLossArea.toString(),
               sbtnLossArea: sbtnLossArea.toString(),
@@ -4180,22 +5121,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
               uploadSession: uploadSession,
               geometry: feature.geometry,
               // Enhanced metadata from Indonesian data
-              farmerName: feature.properties?.['.Farmer Name'] ||
-                         feature.properties?.farmer_name ||
-                         feature.properties?.grower_name || null,
-              aggregatorName: feature.properties?.['.Aggregator Name'] ||
-                             feature.properties?.aggregator ||
-                             feature.properties?.cooperative || null,
-              mappingDate: feature.properties?.['.Mapping date'] ||
-                          feature.properties?.mapping_date ||
-                          feature.properties?.survey_date || null,
+              farmerName:
+                feature.properties?.[".Farmer Name"] ||
+                feature.properties?.farmer_name ||
+                feature.properties?.grower_name ||
+                null,
+              aggregatorName:
+                feature.properties?.[".Aggregator Name"] ||
+                feature.properties?.aggregator ||
+                feature.properties?.cooperative ||
+                null,
+              mappingDate:
+                feature.properties?.[".Mapping date"] ||
+                feature.properties?.mapping_date ||
+                feature.properties?.survey_date ||
+                null,
               // Additional Indonesian-specific fields
-              aggregatorLocation: feature.properties?.['.Aggregator Location'] || null,
-              plotName: feature.properties?.Name || feature.properties?.name || null,
+              aggregatorLocation:
+                feature.properties?.[".Aggregator Location"] || null,
+              plotName:
+                feature.properties?.Name || feature.properties?.name || null,
               coordinates: {
-                longitude: feature.properties?.['.Long'] || null,
-                latitude: feature.properties?.['.Lat'] || null
-              }
+                longitude: feature.properties?.[".Long"] || null,
+                latitude: feature.properties?.[".Lat"] || null,
+              },
             };
 
             // Retry database operations if they fail
@@ -4207,12 +5156,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               } catch (dbError) {
                 retries--;
                 if (retries === 0) throw dbError; // Re-throw on final failure
-                console.log(`🔄 Database retry ${3 - retries}/3 for plot ${plotId}`);
-                await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries))); // Exponential backoff
+                console.log(
+                  `🔄 Database retry ${3 - retries}/3 for plot ${plotId}`,
+                );
+                await new Promise((resolve) =>
+                  setTimeout(resolve, 1000 * (4 - retries)),
+                ); // Exponential backoff
               }
             }
           } catch (err) {
-            const errMessage = err instanceof Error ? err.message : 'Unknown error';
+            const errMessage =
+              err instanceof Error ? err.message : "Unknown error";
             console.log("Could not store analysis result:", errMessage);
           }
         };
@@ -4220,177 +5174,220 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // OPTIMIZATION: Batch country detection and spatial calculations for all features upfront
         const features = analysisResults.data.features;
         const totalFeatures = features.length;
-        
-        console.log(`🚀 Pre-processing ${totalFeatures} features for batch optimizations`);
-        
+
+        console.log(
+          `🚀 Pre-processing ${totalFeatures} features for batch optimizations`,
+        );
+
         // Extract all coordinates for batch country detection
-        const allCoordinates: Array<{lat: number, lng: number, index: number}> = [];
+        const allCoordinates: Array<{
+          lat: number;
+          lng: number;
+          index: number;
+        }> = [];
         features.forEach((feature: any, index: number) => {
           const centroid = getCentroidFromGeometry(feature.geometry);
           if (centroid) {
             allCoordinates.push({
               lat: centroid.lat,
               lng: centroid.lng,
-              index: index
+              index: index,
             });
           }
         });
-        
+
         // Batch country detection - replaces 93 individual PostGIS queries with 1-2 optimized queries
-        console.log(`🗄️ Batch country detection for ${allCoordinates.length} coordinates`);
-        const countryResults = await getBatchCountryFromCoordinates(allCoordinates);
+        console.log(
+          `🗄️ Batch country detection for ${allCoordinates.length} coordinates`,
+        );
+        const countryResults =
+          await getBatchCountryFromCoordinates(allCoordinates);
         console.log(`✅ Batch country detection completed`);
-        
+
         // OPTIMIZATION: Batch WDPA and Peatland spatial calculations
-        console.log(`🗄️ Batch WDPA and peatland spatial calculations for ${totalFeatures} features`);
+        console.log(
+          `🗄️ Batch WDPA and peatland spatial calculations for ${totalFeatures} features`,
+        );
         const spatialResults = await batchSpatialCalculations(features);
         console.log(`✅ Batch spatial calculations completed`);
-        
+
         // Process features in parallel batches for optimal performance
         const BATCH_SIZE = 5; // Process 5 features simultaneously to avoid database overload
-        
-        console.log(`🔧 Processing ${totalFeatures} features in batches of ${BATCH_SIZE}`);
-        
+
+        console.log(
+          `🔧 Processing ${totalFeatures} features in batches of ${BATCH_SIZE}`,
+        );
+
         for (let i = 0; i < totalFeatures; i += BATCH_SIZE) {
           const batch = features.slice(i, i + BATCH_SIZE);
-          const batchPromises = batch.map((feature: any, batchIndex: number) => 
-            processFeature(feature, i + batchIndex, countryResults, spatialResults)
+          const batchPromises = batch.map((feature: any, batchIndex: number) =>
+            processFeature(
+              feature,
+              i + batchIndex,
+              countryResults,
+              spatialResults,
+            ),
           );
-          
+
           try {
             await Promise.all(batchPromises);
-            console.log(`✅ Completed batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(totalFeatures / BATCH_SIZE)} (features ${i + 1}-${Math.min(i + BATCH_SIZE, totalFeatures)})`);
+            console.log(
+              `✅ Completed batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(totalFeatures / BATCH_SIZE)} (features ${i + 1}-${Math.min(i + BATCH_SIZE, totalFeatures)})`,
+            );
           } catch (batchError) {
-            console.error(`❌ Error in batch ${Math.floor(i / BATCH_SIZE) + 1}:`, batchError);
+            console.error(
+              `❌ Error in batch ${Math.floor(i / BATCH_SIZE) + 1}:`,
+              batchError,
+            );
           }
         }
 
-        console.log(`✅ Stored ${totalFeatures} analysis results in database for reactive dashboard (parallel processing completed)`);
+        console.log(
+          `✅ Stored ${totalFeatures} analysis results in database for reactive dashboard (parallel processing completed)`,
+        );
       }
 
       // Return the response directly as it already has the expected structure
       res.json(analysisResults);
-
     } catch (error) {
-      console.error('GeoJSON upload error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("GeoJSON upload error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({
-        error: 'Internal server error during GeoJSON analysis',
-        details: errorMessage
+        error: "Internal server error during GeoJSON analysis",
+        details: errorMessage,
       });
     }
   });
 
   // Get analysis results endpoint for map viewer
-  app.get('/api/analysis-results', async (req, res) => {
+  app.get("/api/analysis-results", async (req, res) => {
     try {
       const results = await storage.getAnalysisResults();
       // Map database fields to frontend expected fields
-      const formattedResults = results.map(result => ({
+      const formattedResults = results.map((result) => ({
         ...result,
         // Map peatlandOverlap back to peatlandStatus for frontend compatibility
-        peatlandStatus: result.peatlandOverlap || 'UNKNOWN',
+        peatlandStatus: result.peatlandOverlap || "UNKNOWN",
         // Map wdpaOverlap back to wdpaStatus for frontend compatibility
-        wdpaStatus: result.wdpaOverlap || 'UNKNOWN'
+        wdpaStatus: result.wdpaOverlap || "UNKNOWN",
       }));
       res.json(formattedResults);
     } catch (error) {
-      console.error('Error fetching analysis results:', error);
-      res.status(500).json({ error: 'Failed to fetch analysis results' });
+      console.error("Error fetching analysis results:", error);
+      res.status(500).json({ error: "Failed to fetch analysis results" });
     }
   });
 
   // Clear analysis results endpoint for dashboard reset
-  app.delete('/api/analysis-results', async (req, res) => {
+  app.delete("/api/analysis-results", async (req, res) => {
     try {
       await storage.clearAnalysisResults();
-      res.json({ success: true, message: 'Analysis results cleared' });
+      res.json({ success: true, message: "Analysis results cleared" });
     } catch (error) {
-      console.error('Error clearing analysis results:', error);
-      res.status(500).json({ error: 'Failed to clear analysis results' });
+      console.error("Error clearing analysis results:", error);
+      res.status(500).json({ error: "Failed to clear analysis results" });
     }
   });
 
   // Update polygon geometry after editing
-  app.patch('/api/analysis-results/:plotId/geometry', async (req, res) => {
+  app.patch("/api/analysis-results/:plotId/geometry", async (req, res) => {
     try {
       const { plotId } = req.params;
       const { coordinates } = req.body;
 
       if (!coordinates || !Array.isArray(coordinates)) {
-        return res.status(400).json({ error: 'Invalid coordinates provided' });
+        return res.status(400).json({ error: "Invalid coordinates provided" });
       }
 
       // Update the geometry in analysis results
-      const result = await storage.updateAnalysisResultGeometry(plotId, coordinates);
+      const result = await storage.updateAnalysisResultGeometry(
+        plotId,
+        coordinates,
+      );
 
       if (!result) {
-        return res.status(404).json({ error: 'Plot not found' });
+        return res.status(404).json({ error: "Plot not found" });
       }
 
       res.json({
         success: true,
         message: `Updated geometry for ${plotId}`,
         plotId,
-        coordinatesCount: coordinates.length
+        coordinatesCount: coordinates.length,
       });
     } catch (error) {
-      console.error('Error updating polygon geometry:', error);
-      res.status(500).json({ error: 'Failed to update polygon geometry' });
+      console.error("Error updating polygon geometry:", error);
+      res.status(500).json({ error: "Failed to update polygon geometry" });
     }
   });
 
   // Update compliance status after verification
-  app.patch('/api/analysis-results/:plotId/compliance-status', async (req, res) => {
-    try {
-      const { plotId } = req.params;
-      const { complianceStatus, verificationType, assessedBy, updatedDate } = req.body;
+  app.patch(
+    "/api/analysis-results/:plotId/compliance-status",
+    async (req, res) => {
+      try {
+        const { plotId } = req.params;
+        const { complianceStatus, verificationType, assessedBy, updatedDate } =
+          req.body;
 
-      if (!complianceStatus) {
-        return res.status(400).json({ error: 'Compliance status is required' });
+        if (!complianceStatus) {
+          return res
+            .status(400)
+            .json({ error: "Compliance status is required" });
+        }
+
+        // Find the analysis result by plotId first
+        const results = await storage.getAnalysisResults();
+        const targetResult = results.find((r) => r.plotId === plotId);
+
+        if (!targetResult) {
+          return res
+            .status(404)
+            .json({ error: "Analysis result not found for plotId: " + plotId });
+        }
+
+        // Update the compliance status and verification details
+        const updates = {
+          complianceStatus,
+          ...(verificationType && { verificationType }),
+          ...(assessedBy && { assessedBy }),
+          ...(updatedDate && { verifiedAt: new Date(updatedDate) }),
+        };
+
+        const updatedResult = await storage.updateAnalysisResult(
+          targetResult.id,
+          updates,
+        );
+
+        if (!updatedResult) {
+          return res
+            .status(404)
+            .json({ error: "Failed to update analysis result" });
+        }
+
+        console.log(
+          `✅ Updated compliance status for ${plotId} to ${complianceStatus}`,
+        );
+
+        res.json({
+          success: true,
+          message: `Updated compliance status for ${plotId} to ${complianceStatus}`,
+          plotId,
+          complianceStatus,
+          updatedResult,
+        });
+      } catch (error) {
+        console.error("Error updating compliance status:", error);
+        res.status(500).json({ error: "Failed to update compliance status" });
       }
-
-      // Find the analysis result by plotId first
-      const results = await storage.getAnalysisResults();
-      const targetResult = results.find(r => r.plotId === plotId);
-
-      if (!targetResult) {
-        return res.status(404).json({ error: 'Analysis result not found for plotId: ' + plotId });
-      }
-
-      // Update the compliance status and verification details
-      const updates = {
-        complianceStatus,
-        ...(verificationType && { verificationType }),
-        ...(assessedBy && { assessedBy }),
-        ...(updatedDate && { verifiedAt: new Date(updatedDate) })
-      };
-
-      const updatedResult = await storage.updateAnalysisResult(targetResult.id, updates);
-
-      if (!updatedResult) {
-        return res.status(404).json({ error: 'Failed to update analysis result' });
-      }
-
-      console.log(`✅ Updated compliance status for ${plotId} to ${complianceStatus}`);
-
-      res.json({
-        success: true,
-        message: `Updated compliance status for ${plotId} to ${complianceStatus}`,
-        plotId,
-        complianceStatus,
-        updatedResult
-      });
-    } catch (error) {
-      console.error('Error updating compliance status:', error);
-      res.status(500).json({ error: 'Failed to update compliance status' });
-    }
-  });
+    },
+  );
 
   // Supply Chain Analytics endpoint
-  app.get('/api/supply-chain/analytics', isAuthenticated, async (req, res) => {
+  app.get("/api/supply-chain/analytics", isAuthenticated, async (req, res) => {
     try {
-      const { range = '6months' } = req.query;
+      const { range = "6months" } = req.query;
 
       // Mock analytics data with renamed external suppliers
       const analyticsData = {
@@ -4400,20 +5397,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             supplierName: "Cooperative 1",
             complianceScore: {
               overallScore: 85,
-              riskLevel: 'low',
+              riskLevel: "low",
               confidence: 0.92,
               factors: [
-                { name: "Documentation", impact: 15, trend: 'improving' },
-                { name: "Geolocation", impact: 10, trend: 'stable' },
-                { name: "Deforestation Risk", impact: -2, trend: 'improving' },
-                { name: "Traceability", impact: 12, trend: 'stable' }
+                { name: "Documentation", impact: 15, trend: "improving" },
+                { name: "Geolocation", impact: 10, trend: "stable" },
+                { name: "Deforestation Risk", impact: -2, trend: "improving" },
+                { name: "Traceability", impact: 12, trend: "stable" },
               ],
               recommendations: [
                 "Maintain current documentation standards",
                 "Continue regular monitoring protocols",
-                "Review quarterly compliance metrics"
+                "Review quarterly compliance metrics",
               ],
-              nextReviewDate: "2024-12-15"
+              nextReviewDate: "2024-12-15",
             },
             trends: [
               { period: "Jan", score: 78, alerts: 2, violations: 0 },
@@ -4421,36 +5418,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
               { period: "Mar", score: 85, alerts: 0, violations: 0 },
               { period: "Apr", score: 84, alerts: 1, violations: 0 },
               { period: "May", score: 87, alerts: 0, violations: 0 },
-              { period: "Jun", score: 85, alerts: 0, violations: 0 }
+              { period: "Jun", score: 85, alerts: 0, violations: 0 },
             ],
             riskFactors: [
               {
                 category: "Location Risk",
-                severity: 'low',
+                severity: "low",
                 description: "Minimal deforestation risk in operational area",
-                mitigation: "Continue quarterly satellite monitoring"
-              }
-            ]
+                mitigation: "Continue quarterly satellite monitoring",
+              },
+            ],
           },
           {
             supplierId: "kud-002",
             supplierName: "KUD 2",
             complianceScore: {
               overallScore: 72,
-              riskLevel: 'medium',
+              riskLevel: "medium",
               confidence: 0.87,
               factors: [
-                { name: "Documentation", impact: 8, trend: 'stable' },
-                { name: "Geolocation", impact: -5, trend: 'declining' },
-                { name: "Deforestation Risk", impact: -8, trend: 'stable' },
-                { name: "Traceability", impact: 5, trend: 'improving' }
+                { name: "Documentation", impact: 8, trend: "stable" },
+                { name: "Geolocation", impact: -5, trend: "declining" },
+                { name: "Deforestation Risk", impact: -8, trend: "stable" },
+                { name: "Traceability", impact: 5, trend: "improving" },
               ],
               recommendations: [
                 "Improve geolocation accuracy for plots",
                 "Enhance documentation processes",
-                "Implement additional monitoring controls"
+                "Implement additional monitoring controls",
               ],
-              nextReviewDate: "2024-11-30"
+              nextReviewDate: "2024-11-30",
             },
             trends: [
               { period: "Jan", score: 75, alerts: 3, violations: 1 },
@@ -4458,42 +5455,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
               { period: "Mar", score: 71, alerts: 3, violations: 1 },
               { period: "Apr", score: 74, alerts: 2, violations: 0 },
               { period: "May", score: 72, alerts: 2, violations: 0 },
-              { period: "Jun", score: 72, alerts: 1, violations: 0 }
+              { period: "Jun", score: 72, alerts: 1, violations: 0 },
             ],
             riskFactors: [
               {
                 category: "Documentation Gap",
-                severity: 'medium',
+                severity: "medium",
                 description: "Some plot records lack complete geolocation data",
-                mitigation: "Conduct field verification within 60 days"
+                mitigation: "Conduct field verification within 60 days",
               },
               {
                 category: "Monitoring",
-                severity: 'low',
+                severity: "low",
                 description: "Infrequent satellite monitoring updates",
-                mitigation: "Increase monitoring frequency to monthly"
-              }
-            ]
+                mitigation: "Increase monitoring frequency to monthly",
+              },
+            ],
           },
           {
             supplierId: "cv-001",
             supplierName: "CV 1",
             complianceScore: {
               overallScore: 91,
-              riskLevel: 'low',
+              riskLevel: "low",
               confidence: 0.95,
               factors: [
-                { name: "Documentation", impact: 18, trend: 'improving' },
-                { name: "Geolocation", impact: 15, trend: 'stable' },
-                { name: "Deforestation Risk", impact: 12, trend: 'improving' },
-                { name: "Traceability", impact: 16, trend: 'improving' }
+                { name: "Documentation", impact: 18, trend: "improving" },
+                { name: "Geolocation", impact: 15, trend: "stable" },
+                { name: "Deforestation Risk", impact: 12, trend: "improving" },
+                { name: "Traceability", impact: 16, trend: "improving" },
               ],
               recommendations: [
                 "Excellent compliance - maintain current standards",
                 "Consider best practice sharing with other suppliers",
-                "Continue leadership in sustainable practices"
+                "Continue leadership in sustainable practices",
               ],
-              nextReviewDate: "2025-01-15"
+              nextReviewDate: "2025-01-15",
             },
             trends: [
               { period: "Jan", score: 88, alerts: 0, violations: 0 },
@@ -4501,29 +5498,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
               { period: "Mar", score: 90, alerts: 0, violations: 0 },
               { period: "Apr", score: 91, alerts: 0, violations: 0 },
               { period: "May", score: 92, alerts: 0, violations: 0 },
-              { period: "Jun", score: 91, alerts: 0, violations: 0 }
+              { period: "Jun", score: 91, alerts: 0, violations: 0 },
             ],
-            riskFactors: []
+            riskFactors: [],
           },
           {
             supplierId: "coop-003",
             supplierName: "Cooperative 3",
             complianceScore: {
               overallScore: 68,
-              riskLevel: 'medium',
+              riskLevel: "medium",
               confidence: 0.83,
               factors: [
-                { name: "Documentation", impact: 5, trend: 'stable' },
-                { name: "Geolocation", impact: -3, trend: 'declining' },
-                { name: "Deforestation Risk", impact: -12, trend: 'declining' },
-                { name: "Traceability", impact: 8, trend: 'improving' }
+                { name: "Documentation", impact: 5, trend: "stable" },
+                { name: "Geolocation", impact: -3, trend: "declining" },
+                { name: "Deforestation Risk", impact: -12, trend: "declining" },
+                { name: "Traceability", impact: 8, trend: "improving" },
               ],
               recommendations: [
                 "Urgent: Address deforestation risk areas",
                 "Improve plot boundary documentation",
-                "Implement enhanced monitoring protocols"
+                "Implement enhanced monitoring protocols",
               ],
-              nextReviewDate: "2024-10-31"
+              nextReviewDate: "2024-10-31",
             },
             trends: [
               { period: "Jan", score: 72, alerts: 4, violations: 2 },
@@ -4531,80 +5528,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
               { period: "Mar", score: 68, alerts: 5, violations: 2 },
               { period: "Apr", score: 69, alerts: 3, violations: 1 },
               { period: "May", score: 67, alerts: 4, violations: 1 },
-              { period: "Jun", score: 68, alerts: 3, violations: 1 }
+              { period: "Jun", score: 68, alerts: 3, violations: 1 },
             ],
             riskFactors: [
               {
                 category: "Deforestation Risk",
-                severity: 'high',
-                description: "Some plots located near high-risk deforestation areas",
-                mitigation: "Immediate field assessment and buffer zone establishment"
+                severity: "high",
+                description:
+                  "Some plots located near high-risk deforestation areas",
+                mitigation:
+                  "Immediate field assessment and buffer zone establishment",
               },
               {
                 category: "Documentation Gap",
-                severity: 'medium',
+                severity: "medium",
                 description: "Incomplete plot boundary records",
-                mitigation: "Complete GPS mapping within 30 days"
-              }
-            ]
-          }
+                mitigation: "Complete GPS mapping within 30 days",
+              },
+            ],
+          },
         ],
         insights: {
-          summary: "Overall supplier network shows good compliance with 75% scoring above 70. Key focus areas include improving documentation accuracy and addressing deforestation risks.",
+          summary:
+            "Overall supplier network shows good compliance with 75% scoring above 70. Key focus areas include improving documentation accuracy and addressing deforestation risks.",
           keyFindings: [
             "CV 1 demonstrates exemplary compliance practices",
             "Cooperative 3 requires immediate attention for deforestation risk",
             "Documentation quality varies significantly across suppliers",
-            "Traceability systems show consistent improvement trends"
+            "Traceability systems show consistent improvement trends",
           ],
           actionItems: [
             "Conduct urgent field assessment for Cooperative 3",
             "Implement standardized documentation training",
             "Share CV 1 best practices across network",
-            "Increase monitoring frequency for medium-risk suppliers"
-          ]
-        }
+            "Increase monitoring frequency for medium-risk suppliers",
+          ],
+        },
       };
 
       res.json(analyticsData);
     } catch (error) {
-      console.error('Error fetching supply chain analytics:', error);
-      res.status(500).json({ error: 'Failed to fetch analytics data' });
+      console.error("Error fetching supply chain analytics:", error);
+      res.status(500).json({ error: "Failed to fetch analytics data" });
     }
   });
 
   // Supply Chain Tier Management endpoint
-  app.post('/api/supply-chain/tiers', isAuthenticated, async (req, res) => {
+  app.post("/api/supply-chain/tiers", isAuthenticated, async (req, res) => {
     try {
       const tierAssignments = req.body;
-      console.log('✅ Received tier assignments for saving:', JSON.stringify(tierAssignments, null, 2));
+      console.log(
+        "✅ Received tier assignments for saving:",
+        JSON.stringify(tierAssignments, null, 2),
+      );
 
       // Validate that tierAssignments is an object
-      if (!tierAssignments || typeof tierAssignments !== 'object') {
-        return res.status(400).json({ error: 'Invalid tier assignments data' });
+      if (!tierAssignments || typeof tierAssignments !== "object") {
+        return res.status(400).json({ error: "Invalid tier assignments data" });
       }
 
       // For now, we'll store it in memory or could extend to database storage later
-      console.log('✅ Supply chain tier configuration saved successfully');
+      console.log("✅ Supply chain tier configuration saved successfully");
 
       res.json({
         success: true,
-        message: 'Supply chain configuration saved successfully!',
+        message: "Supply chain configuration saved successfully!",
         savedAt: new Date().toISOString(),
         tierCount: Object.keys(tierAssignments).length,
-        totalSuppliers: Object.values(tierAssignments).reduce((total: number, tier: any) => total + (Array.isArray(tier) ? tier.length : 0), 0)
+        totalSuppliers: Object.values(tierAssignments).reduce(
+          (total: number, tier: any) =>
+            total + (Array.isArray(tier) ? tier.length : 0),
+          0,
+        ),
       });
-
     } catch (error) {
-      console.error('❌ Error saving supply chain tier configuration:', error);
-      res.status(500).json({ error: 'Failed to save supply chain configuration' });
+      console.error("❌ Error saving supply chain tier configuration:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to save supply chain configuration" });
     }
   });
 
   // Auto-fill suppliers endpoint - fetch all suppliers from data collection forms
-  app.get('/api/suppliers/auto-fill', isAuthenticated, async (req, res) => {
+  app.get("/api/suppliers/auto-fill", isAuthenticated, async (req, res) => {
     try {
-      console.log('📋 Fetching suppliers for auto-fill from data collection forms...');
+      console.log(
+        "📋 Fetching suppliers for auto-fill from data collection forms...",
+      );
 
       // Fetch estate data collection
       const estates = await storage.getEstateDataCollection();
@@ -4616,7 +5626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const suppliers: Array<{
         id: string;
         name: string;
-        type: 'Estate' | 'Mill';
+        type: "Estate" | "Mill";
         groupParentCompany?: string;
         officeAddress?: string;
         plantationAddress?: string;
@@ -4640,11 +5650,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }> = [];
 
       // Add estate suppliers
-      estates.forEach(estate => {
+      estates.forEach((estate) => {
         suppliers.push({
           id: estate.id,
           name: estate.namaSupplier,
-          type: 'Estate',
+          type: "Estate",
           groupParentCompany: estate.namaGroupParentCompany || undefined,
           officeAddress: estate.alamatKantor || undefined,
           plantationAddress: estate.alamatKebun || undefined,
@@ -4659,21 +5669,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           responsiblePersonName: estate.namaPenanggungJawab || undefined,
           responsiblePersonPosition: estate.jabatanPenanggungJawab || undefined,
           responsiblePersonEmail: estate.emailPenanggungJawab || undefined,
-          responsiblePersonPhone: estate.nomorTelefonPenanggungJawab || undefined,
+          responsiblePersonPhone:
+            estate.nomorTelefonPenanggungJawab || undefined,
           internalTeamName: estate.namaTimInternal || undefined,
           internalTeamPosition: estate.jabatanTimInternal || undefined,
           internalTeamEmail: estate.emailTimInternal || undefined,
           internalTeamPhone: estate.nomorTelefonTimInternal || undefined,
-          originalData: estate
+          originalData: estate,
         });
       });
 
       // Add mill suppliers
-      mills.forEach(mill => {
+      mills.forEach((mill) => {
         suppliers.push({
           id: mill.id,
           name: mill.namaPabrik,
-          type: 'Mill',
+          type: "Mill",
           groupParentCompany: mill.namaGroupParentCompany || undefined,
           officeAddress: mill.alamatKantor || undefined,
           plantationAddress: mill.alamatPabrik || undefined,
@@ -4693,89 +5704,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
           internalTeamPosition: mill.jabatanTimInternal || undefined,
           internalTeamEmail: mill.emailTimInternal || undefined,
           internalTeamPhone: mill.nomorTelefonTimInternal || undefined,
-          originalData: mill
+          originalData: mill,
         });
       });
 
-      console.log(`✅ Found ${suppliers.length} suppliers for auto-fill (${estates.length} estates, ${mills.length} mills)`);
+      console.log(
+        `✅ Found ${suppliers.length} suppliers for auto-fill (${estates.length} estates, ${mills.length} mills)`,
+      );
 
       res.json(suppliers);
     } catch (error) {
-      console.error('❌ Error fetching suppliers for auto-fill:', error);
-      res.status(500).json({ error: 'Failed to fetch suppliers for auto-fill' });
+      console.error("❌ Error fetching suppliers for auto-fill:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch suppliers for auto-fill" });
     }
   });
 
   // Supplier Compliance endpoints
-  app.post('/api/supplier-compliance', async (req, res) => {
+  app.post("/api/supplier-compliance", async (req, res) => {
     try {
       const supplierComplianceData = req.body;
-      console.log('Saving supplier compliance data:', supplierComplianceData.namaSupplier);
+      console.log(
+        "Saving supplier compliance data:",
+        supplierComplianceData.namaSupplier,
+      );
 
       // Store the data (you may want to add this to your storage interface)
       // For now, we'll just return success
       res.json({
         success: true,
-        message: 'Supplier compliance data saved successfully',
-        id: Date.now().toString()
+        message: "Supplier compliance data saved successfully",
+        id: Date.now().toString(),
       });
     } catch (error) {
-      console.error('Error saving supplier compliance data:', error);
-      res.status(500).json({ error: 'Failed to save supplier compliance data' });
+      console.error("Error saving supplier compliance data:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to save supplier compliance data" });
     }
   });
 
-  app.get('/api/supplier-compliance', async (req, res) => {
+  app.get("/api/supplier-compliance", async (req, res) => {
     try {
       // Return dummy data for now (in a real implementation, fetch from storage)
       const supplierComplianceData = [
         {
           id: 1,
-          namaSupplier: 'PT Kebun Kelapa Sawit Sejahtera',
+          namaSupplier: "PT Kebun Kelapa Sawit Sejahtera",
           tingkatKepatuhan: 85,
-          statusKepatuhan: 'Compliant',
-          tanggalPenilaian: '15 November 2024',
-          nomorTeleponTimInternal: '+62 811-2345-6789',
-          emailKontak: 'compliance@kebun-sejahtera.co.id',
-          analysisData: null
+          statusKepatuhan: "Compliant",
+          tanggalPenilaian: "15 November 2024",
+          nomorTeleponTimInternal: "+62 811-2345-6789",
+          emailKontak: "compliance@kebun-sejahtera.co.id",
+          analysisData: null,
         },
         {
           id: 2,
-          namaSupplier: 'CV Perkebunan Nusantara',
+          namaSupplier: "CV Perkebunan Nusantara",
           tingkatKepatuhan: 92,
-          statusKepatuhan: 'Highly Compliant',
-          tanggalPenilaian: '18 November 2024',
-          nomorTeleponTimInternal: '+62 812-3456-7890',
-          emailKontak: 'legal@perkebunan-nusantara.co.id',
-          analysisData: null
+          statusKepatuhan: "Highly Compliant",
+          tanggalPenilaian: "18 November 2024",
+          nomorTeleponTimInternal: "+62 812-3456-7890",
+          emailKontak: "legal@perkebunan-nusantara.co.id",
+          analysisData: null,
         },
         {
           id: 3,
-          namaSupplier: 'Koperasi Tani Mandiri',
+          namaSupplier: "Koperasi Tani Mandiri",
           tingkatKepatuhan: 68,
-          statusKepatuhan: 'Partially Compliant',
-          tanggalPenilaian: '20 November 2024',
-          nomorTeleponTimInternal: '+62 813-4567-8901',
-          emailKontak: 'koperasi@tani-mandiri.co.id',
-          analysisData: null
-        }
+          statusKepatuhan: "Partially Compliant",
+          tanggalPenilaian: "20 November 2024",
+          nomorTeleponTimInternal: "+62 813-4567-8901",
+          emailKontak: "koperasi@tani-mandiri.co.id",
+          analysisData: null,
+        },
       ];
 
       res.json(supplierComplianceData);
     } catch (error) {
-      console.error('Error fetching supplier compliance data:', error);
-      res.status(500).json({ error: 'Failed to fetch supplier compliance data' });
+      console.error("Error fetching supplier compliance data:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch supplier compliance data" });
     }
   });
 
   // AI Analysis endpoint for supplier compliance
-  app.post('/api/supplier-compliance/:id/analyze', async (req, res) => {
+  app.post("/api/supplier-compliance/:id/analyze", async (req, res) => {
     try {
       const { id } = req.params;
       const { formData, supplierName } = req.body;
 
       if (!formData || !supplierName) {
-        return res.status(400).json({ error: 'Missing required fields: formData and supplierName' });
+        return res
+          .status(400)
+          .json({
+            error: "Missing required fields: formData and supplierName",
+          });
       }
 
       console.log(`Starting AI analysis for supplier: ${supplierName}`);
@@ -4784,7 +5810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analysis = await openaiService.analyzeSupplierCompliance({
         supplierName,
         formData,
-        analysisType: 'full_analysis'
+        analysisType: "full_analysis",
       });
 
       console.log(`AI analysis completed for supplier: ${supplierName}`);
@@ -4794,28 +5820,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         supplierId: id,
         supplierName,
         analysis,
-        analyzedAt: new Date().toISOString()
+        analyzedAt: new Date().toISOString(),
       });
-
     } catch (error) {
-      console.error('Error analyzing supplier compliance:', error);
+      console.error("Error analyzing supplier compliance:", error);
       res.status(500).json({
-        error: 'Failed to analyze supplier compliance',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: "Failed to analyze supplier compliance",
+        details: error instanceof Error ? error.message : "Unknown error",
       });
     }
   });
 
   // Bulk analysis endpoint
-  app.post('/api/supplier-compliance/analyze-all', async (req, res) => {
+  app.post("/api/supplier-compliance/analyze-all", async (req, res) => {
     try {
       const { supplierData } = req.body;
 
       if (!Array.isArray(supplierData) || supplierData.length === 0) {
-        return res.status(400).json({ error: 'Missing or empty supplierData array' });
+        return res
+          .status(400)
+          .json({ error: "Missing or empty supplierData array" });
       }
 
-      console.log(`Starting bulk AI analysis for ${supplierData.length} suppliers`);
+      console.log(
+        `Starting bulk AI analysis for ${supplierData.length} suppliers`,
+      );
 
       const results = [];
       for (const supplier of supplierData) {
@@ -4823,23 +5852,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const analysis = await openaiService.analyzeSupplierCompliance({
             supplierName: supplier.namaSupplier,
             formData: supplier,
-            analysisType: 'full_analysis'
+            analysisType: "full_analysis",
           });
 
           results.push({
             supplierId: supplier.id || Date.now().toString(),
             supplierName: supplier.namaSupplier,
             analysis,
-            analyzedAt: new Date().toISOString()
+            analyzedAt: new Date().toISOString(),
           });
-
         } catch (error) {
-          console.error(`Error analyzing supplier ${supplier.namaSupplier}:`, error);
+          console.error(
+            `Error analyzing supplier ${supplier.namaSupplier}:`,
+            error,
+          );
           results.push({
             supplierId: supplier.id || Date.now().toString(),
             supplierName: supplier.namaSupplier,
-            error: error instanceof Error ? error.message : 'Unknown error',
-            analyzedAt: new Date().toISOString()
+            error: error instanceof Error ? error.message : "Unknown error",
+            analyzedAt: new Date().toISOString(),
           });
         }
       }
@@ -4849,28 +5880,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         success: true,
         totalAnalyzed: results.length,
-        results
+        results,
       });
-
     } catch (error) {
-      console.error('Error in bulk analysis:', error);
+      console.error("Error in bulk analysis:", error);
       res.status(500).json({
-        error: 'Failed to perform bulk analysis',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: "Failed to perform bulk analysis",
+        details: error instanceof Error ? error.message : "Unknown error",
       });
     }
   });
 
   // PostGIS polygon overlap detection endpoint
-  app.post('/api/polygon-overlap-detection', async (req, res) => {
+  app.post("/api/polygon-overlap-detection", async (req, res) => {
     try {
       const { polygons } = req.body;
 
       if (!Array.isArray(polygons) || polygons.length < 2) {
-        return res.status(400).json({ error: 'At least 2 polygons required for overlap detection' });
+        return res
+          .status(400)
+          .json({
+            error: "At least 2 polygons required for overlap detection",
+          });
       }
 
-      console.log(`Checking overlaps for ${polygons.length} polygons using PostGIS`);
+      console.log(
+        `Checking overlaps for ${polygons.length} polygons using PostGIS`,
+      );
 
       // Enable PostGIS extension if not already enabled
       await db.execute(sql`CREATE EXTENSION IF NOT EXISTS postgis;`);
@@ -4888,7 +5924,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const wkt1 = coordinatesToWKT(polygon1.coordinates);
             const wkt2 = coordinatesToWKT(polygon2.coordinates);
 
-            console.log(`Checking overlap between ${polygon1.plotId} and ${polygon2.plotId}`);
+            console.log(
+              `Checking overlap between ${polygon1.plotId} and ${polygon2.plotId}`,
+            );
 
             // Use PostGIS ST_Intersection to detect overlap
             const result = await db.execute(sql`
@@ -4903,22 +5941,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 ) as intersects
             `);
 
-            const intersectionArea = parseFloat(result.rows[0]?.intersection_area?.toString() || '0');
+            const intersectionArea = parseFloat(
+              result.rows[0]?.intersection_area?.toString() || "0",
+            );
             const intersects = result.rows[0]?.intersects || false;
 
-            console.log(`Intersection area between ${polygon1.plotId} and ${polygon2.plotId}: ${intersectionArea}`);
+            console.log(
+              `Intersection area between ${polygon1.plotId} and ${polygon2.plotId}: ${intersectionArea}`,
+            );
 
             if (intersects && intersectionArea > 0) {
               overlaps.push({
                 polygon1: polygon1.plotId,
                 polygon2: polygon2.plotId,
                 intersectionArea: intersectionArea,
-                intersectionAreaHa: intersectionArea * 111319.9 * 111319.9 / 10000 // Convert to hectares (approximate)
+                intersectionAreaHa:
+                  (intersectionArea * 111319.9 * 111319.9) / 10000, // Convert to hectares (approximate)
               });
-              console.log(`OVERLAP DETECTED: ${polygon1.plotId} overlaps with ${polygon2.plotId}, area: ${intersectionArea}`);
+              console.log(
+                `OVERLAP DETECTED: ${polygon1.plotId} overlaps with ${polygon2.plotId}, area: ${intersectionArea}`,
+              );
             }
           } catch (error) {
-            console.error(`Error checking overlap between ${polygon1.plotId} and ${polygon2.plotId}:`, error);
+            console.error(
+              `Error checking overlap between ${polygon1.plotId} and ${polygon2.plotId}:`,
+              error,
+            );
           }
         }
       }
@@ -4927,26 +5975,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         totalPolygons: polygons.length,
         overlapsDetected: overlaps.length,
-        overlaps: overlaps
+        overlaps: overlaps,
       });
-
     } catch (error) {
-      console.error('Error in PostGIS overlap detection:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("Error in PostGIS overlap detection:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({
-        error: 'Failed to detect overlaps using PostGIS',
-        details: errorMessage
+        error: "Failed to detect overlaps using PostGIS",
+        details: errorMessage,
       });
     }
   });
 
   // Peatland data endpoint for EUDR Map Viewer
-  app.post('/api/peatland-data', isAuthenticated, async (req, res) => {
+  app.post("/api/peatland-data", isAuthenticated, async (req, res) => {
     try {
       const { bounds } = req.body;
 
-      if (!bounds || !bounds.west || !bounds.south || !bounds.east || !bounds.north) {
-        return res.status(400).json({ error: 'Invalid bounds provided' });
+      if (
+        !bounds ||
+        !bounds.west ||
+        !bounds.south ||
+        !bounds.east ||
+        !bounds.north
+      ) {
+        return res.status(400).json({ error: "Invalid bounds provided" });
       }
 
       console.log(`🏞️ Fetching peatland data for bounds:`, bounds);
@@ -4955,13 +6009,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // Try database query first, then fallback to mock data
-        console.log('🏞️ Attempting to query peatland_idn table...');
+        console.log("🏞️ Attempting to query peatland_idn table...");
 
         // Create bounding box for PostGIS query with buffer
         const buffer = 0.5; // Add buffer to catch more features
         const bbox = `POLYGON((${bounds.west - buffer} ${bounds.south - buffer}, ${bounds.east + buffer} ${bounds.south - buffer}, ${bounds.east + buffer} ${bounds.north + buffer}, ${bounds.west - buffer} ${bounds.north + buffer}, ${bounds.west - buffer} ${bounds.south - buffer}))`;
 
-        console.log('🔍 Using PostGIS query with bounding box:', bbox.substring(0, 100) + '...');
+        console.log(
+          "🔍 Using PostGIS query with bounding box:",
+          bbox.substring(0, 100) + "...",
+        );
 
         // Query peatland data from PostGIS database using correct column names from DDL
         const result = await db.execute(sql`
@@ -4987,237 +6044,336 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log(`📊 PostGIS query returned ${result.rows.length} rows`);
 
-        features = result.rows.map((row: any, index: number) => {
-          let geometry;
-          try {
-            geometry = JSON.parse(row.geometry);
+        features = result.rows
+          .map((row: any, index: number) => {
+            let geometry;
+            try {
+              geometry = JSON.parse(row.geometry);
 
-            // Validate geometry
-            if (!geometry || !geometry.coordinates) {
-              console.warn(`⚠️ Feature ${index + 1}: Invalid geometry, skipping`);
+              // Validate geometry
+              if (!geometry || !geometry.coordinates) {
+                console.warn(
+                  `⚠️ Feature ${index + 1}: Invalid geometry, skipping`,
+                );
+                return null;
+              }
+            } catch (error) {
+              console.warn(
+                `⚠️ Feature ${index + 1}: Failed to parse geometry:`,
+                error,
+              );
               return null;
             }
-          } catch (error) {
-            console.warn(`⚠️ Feature ${index + 1}: Failed to parse geometry:`, error);
-            return null;
-          }
 
-          return {
-            type: 'Feature',
-            properties: {
-              Kubah_GBT: row.kubah_classification || 'Unknown',
-              Ekosistem: row.nama_khg || 'Unknown',
-              Province: row.province_name || 'Unknown',
-              Kabupaten: row.kabupaten_name || 'Unknown',
-              Kecamatan: row.kecamatan_name || 'Unknown',
-              Status_KHG: row.status_khg || 'Unknown',
-              Area_Ha: parseFloat(row.area_hectares?.toString() || '0')
-            },
-            geometry: geometry
-          };
-        }).filter(Boolean); // Remove null features
+            return {
+              type: "Feature",
+              properties: {
+                Kubah_GBT: row.kubah_classification || "Unknown",
+                Ekosistem: row.nama_khg || "Unknown",
+                Province: row.province_name || "Unknown",
+                Kabupaten: row.kabupaten_name || "Unknown",
+                Kecamatan: row.kecamatan_name || "Unknown",
+                Status_KHG: row.status_khg || "Unknown",
+                Area_Ha: parseFloat(row.area_hectares?.toString() || "0"),
+              },
+              geometry: geometry,
+            };
+          })
+          .filter(Boolean); // Remove null features
 
-        console.log(`✅ Successfully processed ${features.length} peatland features from database`);
-
+        console.log(
+          `✅ Successfully processed ${features.length} peatland features from database`,
+        );
       } catch (dbError) {
-        console.warn('⚠️ Database query failed, using comprehensive mock peatland data with global coverage:', dbError);
+        console.warn(
+          "⚠️ Database query failed, using comprehensive mock peatland data with global coverage:",
+          dbError,
+        );
 
         // Always provide comprehensive mock data for immediate visibility
         const mockPeatlandAreas = [
           // Riau Province - Central Sumatra - Larger coverage
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              Kubah_GBT: 'Kubah Gambut',
-              Ekosistem: 'Hutan Rawa Gambut',
-              Province: 'Riau',
-              Kabupaten: 'Pelalawan',
-              Kecamatan: 'Kerumutan',
-              Area_Ha: 25420.5
+              Kubah_GBT: "Kubah Gambut",
+              Ekosistem: "Hutan Rawa Gambut",
+              Province: "Riau",
+              Kabupaten: "Pelalawan",
+              Kecamatan: "Kerumutan",
+              Area_Ha: 25420.5,
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[100.0, -0.5], [102.0, -0.5], [102.0, 1.5], [100.0, 1.5], [100.0, -0.5]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [100.0, -0.5],
+                  [102.0, -0.5],
+                  [102.0, 1.5],
+                  [100.0, 1.5],
+                  [100.0, -0.5],
+                ],
+              ],
+            },
           },
           // Jambi Province - Extended coverage
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              Kubah_GBT: 'Non Kubah Gambut',
-              Ekosistem: 'Perkebunan Gambut',
-              Province: 'Jambi',
-              Kabupaten: 'Muaro Jambi',
-              Kecamatan: 'Kumpeh Ulu',
-              Area_Ha: 18750.2
+              Kubah_GBT: "Non Kubah Gambut",
+              Ekosistem: "Perkebunan Gambut",
+              Province: "Jambi",
+              Kabupaten: "Muaro Jambi",
+              Kecamatan: "Kumpeh Ulu",
+              Area_Ha: 18750.2,
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[102.0, -2.2], [104.5, -2.2], [104.5, -0.2], [102.0, -0.2], [102.0, -2.2]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [102.0, -2.2],
+                  [104.5, -2.2],
+                  [104.5, -0.2],
+                  [102.0, -0.2],
+                  [102.0, -2.2],
+                ],
+              ],
+            },
           },
           // Central Kalimantan - Massive coverage
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              Kubah_GBT: 'Kubah Gambut',
-              Ekosistem: 'Hutan Lindung Gambut',
-              Province: 'Kalimantan Tengah',
-              Kabupaten: 'Palangka Raya',
-              Kecamatan: 'Sebangau',
-              Area_Ha: 32150.8
+              Kubah_GBT: "Kubah Gambut",
+              Ekosistem: "Hutan Lindung Gambut",
+              Province: "Kalimantan Tengah",
+              Kabupaten: "Palangka Raya",
+              Kecamatan: "Sebangau",
+              Area_Ha: 32150.8,
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[112.5, -3.0], [115.5, -3.0], [115.5, -0.2], [112.5, -0.2], [112.5, -3.0]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [112.5, -3.0],
+                  [115.5, -3.0],
+                  [115.5, -0.2],
+                  [112.5, -0.2],
+                  [112.5, -3.0],
+                ],
+              ],
+            },
           },
           // South Sumatra - Peatland agriculture
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              Kubah_GBT: 'Non Kubah Gambut',
-              Ekosistem: 'Pertanian Gambut',
-              Province: 'Sumatra Selatan',
-              Kabupaten: 'Ogan Komering Ilir',
-              Kecamatan: 'Mesuji Makmur',
-              Area_Ha: 6420.3
+              Kubah_GBT: "Non Kubah Gambut",
+              Ekosistem: "Pertanian Gambut",
+              Province: "Sumatra Selatan",
+              Kabupaten: "Ogan Komering Ilir",
+              Kecamatan: "Mesuji Makmur",
+              Area_Ha: 6420.3,
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[104.0, -3.0], [105.5, -3.0], [105.5, -2.0], [104.0, -2.0], [104.0, -3.0]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [104.0, -3.0],
+                  [105.5, -3.0],
+                  [105.5, -2.0],
+                  [104.0, -2.0],
+                  [104.0, -3.0],
+                ],
+              ],
+            },
           },
           // West Kalimantan - Additional coverage
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              Kubah_GBT: 'Kubah Gambut',
-              Ekosistem: 'Hutan Rawa Gambut',
-              Province: 'Kalimantan Barat',
-              Kabupaten: 'Ketapang',
-              Kecamatan: 'Kendawangan',
-              Area_Ha: 12800.7
+              Kubah_GBT: "Kubah Gambut",
+              Ekosistem: "Hutan Rawa Gambut",
+              Province: "Kalimantan Barat",
+              Kabupaten: "Ketapang",
+              Kecamatan: "Kendawangan",
+              Area_Ha: 12800.7,
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[109.0, -2.0], [111.0, -2.0], [111.0, -0.5], [109.0, -0.5], [109.0, -2.0]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [109.0, -2.0],
+                  [111.0, -2.0],
+                  [111.0, -0.5],
+                  [109.0, -0.5],
+                  [109.0, -2.0],
+                ],
+              ],
+            },
           },
           // Papua - Eastern coverage
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              Kubah_GBT: 'Non Kubah Gambut',
-              Ekosistem: 'Hutan Gambut Tropis',
-              Province: 'Papua',
-              Kabupaten: 'Merauke',
-              Kecamatan: 'Kimaam',
-              Area_Ha: 9340.2
+              Kubah_GBT: "Non Kubah Gambut",
+              Ekosistem: "Hutan Gambut Tropis",
+              Province: "Papua",
+              Kabupaten: "Merauke",
+              Kecamatan: "Kimaam",
+              Area_Ha: 9340.2,
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[140.0, -8.0], [141.0, -8.0], [141.0, -7.0], [140.0, -7.0], [140.0, -8.0]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [140.0, -8.0],
+                  [141.0, -8.0],
+                  [141.0, -7.0],
+                  [140.0, -7.0],
+                  [140.0, -8.0],
+                ],
+              ],
+            },
           },
           // North Sumatra - Additional visibility
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              Kubah_GBT: 'Kubah Gambut',
-              Ekosistem: 'Hutan Lindung Gambut',
-              Province: 'Sumatra Utara',
-              Kabupaten: 'Labuhan Batu',
-              Kecamatan: 'Panai Hulu',
-              Area_Ha: 7890.5
+              Kubah_GBT: "Kubah Gambut",
+              Ekosistem: "Hutan Lindung Gambut",
+              Province: "Sumatra Utara",
+              Kabupaten: "Labuhan Batu",
+              Kecamatan: "Panai Hulu",
+              Area_Ha: 7890.5,
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[99.0, 1.5], [100.5, 1.5], [100.5, 2.5], [99.0, 2.5], [99.0, 1.5]]]
-            }
-          }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [99.0, 1.5],
+                  [100.5, 1.5],
+                  [100.5, 2.5],
+                  [99.0, 2.5],
+                  [99.0, 1.5],
+                ],
+              ],
+            },
+          },
         ];
 
         // Filter mock data based on bounds
-        features = mockPeatlandAreas.filter(feature => {
-          if (!feature.geometry || !feature.geometry.coordinates || !feature.geometry.coordinates[0]) {
+        features = mockPeatlandAreas.filter((feature) => {
+          if (
+            !feature.geometry ||
+            !feature.geometry.coordinates ||
+            !feature.geometry.coordinates[0]
+          ) {
             return false;
           }
 
           const coords = feature.geometry.coordinates[0];
-          const minLng = Math.min(...coords.map(c => c[0]));
-          const maxLng = Math.max(...coords.map(c => c[0]));
-          const minLat = Math.min(...coords.map(c => c[1]));
-          const maxLat = Math.max(...coords.map(c => c[1]));
+          const minLng = Math.min(...coords.map((c) => c[0]));
+          const maxLng = Math.max(...coords.map((c) => c[0]));
+          const minLat = Math.min(...coords.map((c) => c[1]));
+          const maxLat = Math.max(...coords.map((c) => c[1]));
 
           // Check if polygon intersects with bounds
-          return !(maxLng < bounds.west || minLng > bounds.east || maxLat < bounds.south || minLat > bounds.north);
+          return !(
+            maxLng < bounds.west ||
+            minLng > bounds.east ||
+            maxLat < bounds.south ||
+            minLat > bounds.north
+          );
         });
 
-        console.log(`✅ Using ${features.length} filtered mock peatland features`);
+        console.log(
+          `✅ Using ${features.length} filtered mock peatland features`,
+        );
       }
 
       // Group by classification for logging
       const classifications = features.reduce((acc: any, feature: any) => {
-        const kubahGbt = feature.properties.Kubah_GBT || 'Unknown';
+        const kubahGbt = feature.properties.Kubah_GBT || "Unknown";
         acc[kubahGbt] = (acc[kubahGbt] || 0) + 1;
         return acc;
       }, {});
 
-      console.log('🏞️ Peatland classifications distribution:', classifications);
+      console.log("🏞️ Peatland classifications distribution:", classifications);
 
       res.json({
-        type: 'FeatureCollection',
-        features: features
+        type: "FeatureCollection",
+        features: features,
       });
-
     } catch (error) {
-      console.error('❌ Error in peatland data endpoint:', error);
+      console.error("❌ Error in peatland data endpoint:", error);
 
       // Always return valid GeoJSON even if everything fails
       const fallbackFeatures = [
         {
-          type: 'Feature',
+          type: "Feature",
           properties: {
-            Kubah_GBT: 'Kubah Gambut',
-            Ekosistem: 'Demo Peatland Area (Fallback)',
-            Province: 'Indonesia',
-            Area_Ha: 1000.0
+            Kubah_GBT: "Kubah Gambut",
+            Ekosistem: "Demo Peatland Area (Fallback)",
+            Province: "Indonesia",
+            Area_Ha: 1000.0,
           },
           geometry: {
-            type: 'Polygon',
-            coordinates: [[[101.0, 0.5], [101.5, 0.5], [101.5, 1.0], [101.0, 1.0], [101.0, 0.5]]]
-          }
+            type: "Polygon",
+            coordinates: [
+              [
+                [101.0, 0.5],
+                [101.5, 0.5],
+                [101.5, 1.0],
+                [101.0, 1.0],
+                [101.0, 0.5],
+              ],
+            ],
+          },
         },
         {
-          type: 'Feature',
+          type: "Feature",
           properties: {
-            Kubah_GBT: 'Non Kubah Gambut',
-            Ekosistem: 'Demo Non-Dome Peat (Fallback)',
-            Province: 'Indonesia',
-            Area_Ha: 750.5
+            Kubah_GBT: "Non Kubah Gambut",
+            Ekosistem: "Demo Non-Dome Peat (Fallback)",
+            Province: "Indonesia",
+            Area_Ha: 750.5,
           },
           geometry: {
-            type: 'Polygon',
-            coordinates: [[[102.0, 1.0], [102.5, 1.0], [102.5, 1.5], [102.0, 1.5], [102.0, 1.0]]]
-          }
-        }
+            type: "Polygon",
+            coordinates: [
+              [
+                [102.0, 1.0],
+                [102.5, 1.0],
+                [102.5, 1.5],
+                [102.0, 1.5],
+                [102.0, 1.0],
+              ],
+            ],
+          },
+        },
       ];
 
       res.json({
-        type: 'FeatureCollection',
-        features: fallbackFeatures
+        type: "FeatureCollection",
+        features: fallbackFeatures,
       });
     }
   });
 
   // WDPA data endpoint for EUDR Map Viewer
-  app.post('/api/wdpa-data', isAuthenticated, async (req, res) => {
+  app.post("/api/wdpa-data", isAuthenticated, async (req, res) => {
     try {
       const { bounds } = req.body;
 
-      if (!bounds || !bounds.west || !bounds.south || !bounds.east || !bounds.north) {
-        return res.status(400).json({ error: 'Invalid bounds provided' });
+      if (
+        !bounds ||
+        !bounds.west ||
+        !bounds.south ||
+        !bounds.east ||
+        !bounds.north
+      ) {
+        return res.status(400).json({ error: "Invalid bounds provided" });
       }
 
       console.log(`🏞️ Fetching WDPA data for bounds:`, bounds);
@@ -5226,13 +6382,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       try {
         // Try database query first, then fallback to mock data
-        console.log('🏞️ Attempting to query wdpa_idn table...');
+        console.log("🏞️ Attempting to query wdpa_idn table...");
 
         // Create bounding box for PostGIS query with buffer
         const buffer = 0.5; // Add buffer to catch more features
         const bbox = `POLYGON((${bounds.west - buffer} ${bounds.south - buffer}, ${bounds.east + buffer} ${bounds.south - buffer}, ${bounds.east + buffer} ${bounds.north + buffer}, ${bounds.west - buffer} ${bounds.north + buffer}, ${bounds.west - buffer} ${bounds.south - buffer}))`;
 
-        console.log('🔍 Using PostGIS query with bounding box:', bbox.substring(0, 100) + '...');
+        console.log(
+          "🔍 Using PostGIS query with bounding box:",
+          bbox.substring(0, 100) + "...",
+        );
 
         // Query WDPA data from PostGIS database using actual table columns
         const result = await db.execute(sql`
@@ -5253,157 +6412,225 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log(`📊 PostGIS query returned ${result.rows.length} rows`);
 
-        features = result.rows.map((row: any, index: number) => {
-          let geometry;
-          try {
-            geometry = JSON.parse(row.geometry);
+        features = result.rows
+          .map((row: any, index: number) => {
+            let geometry;
+            try {
+              geometry = JSON.parse(row.geometry);
 
-            // Validate geometry
-            if (!geometry || !geometry.coordinates) {
-              console.warn(`⚠️ Feature ${index + 1}: Invalid geometry, skipping`);
+              // Validate geometry
+              if (!geometry || !geometry.coordinates) {
+                console.warn(
+                  `⚠️ Feature ${index + 1}: Invalid geometry, skipping`,
+                );
+                return null;
+              }
+            } catch (error) {
+              console.warn(
+                `⚠️ Feature ${index + 1}: Failed to parse geometry:`,
+                error,
+              );
               return null;
             }
-          } catch (error) {
-            console.warn(`⚠️ Feature ${index + 1}: Failed to parse geometry:`, error);
-            return null;
-          }
 
-          return {
-            type: 'Feature',
-            properties: {
-              name: row.name || 'Unknown Protected Area',
-              iucn_category: row.iucn_category || 'Unknown',
-              designation: row.designation || 'Unknown'
-            },
-            geometry: geometry
-          };
-        }).filter(Boolean); // Remove null features
+            return {
+              type: "Feature",
+              properties: {
+                name: row.name || "Unknown Protected Area",
+                iucn_category: row.iucn_category || "Unknown",
+                designation: row.designation || "Unknown",
+              },
+              geometry: geometry,
+            };
+          })
+          .filter(Boolean); // Remove null features
 
-        console.log(`✅ Successfully processed ${features.length} WDPA features from database`);
-
+        console.log(
+          `✅ Successfully processed ${features.length} WDPA features from database`,
+        );
       } catch (dbError) {
-        console.warn('⚠️ Database query failed, using comprehensive mock WDPA data with global coverage:', dbError);
+        console.warn(
+          "⚠️ Database query failed, using comprehensive mock WDPA data with global coverage:",
+          dbError,
+        );
 
         // Always provide comprehensive mock data for immediate visibility
         const mockWdpaAreas = [
           // Sumatra Protected Areas
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              name: 'Gunung Leuser National Park',
-              category: 'National Park',
-              designation: 'National Park',
-              iucn_category: 'II',
+              name: "Gunung Leuser National Park",
+              category: "National Park",
+              designation: "National Park",
+              iucn_category: "II",
               area_hectares: 862975.0,
-              status_wdpa: 'Designated',
-              governance_type: 'Federal'
+              status_wdpa: "Designated",
+              governance_type: "Federal",
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[97.0, 3.0], [98.5, 3.0], [98.5, 4.0], [97.0, 4.0], [97.0, 3.0]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [97.0, 3.0],
+                  [98.5, 3.0],
+                  [98.5, 4.0],
+                  [97.0, 4.0],
+                  [97.0, 3.0],
+                ],
+              ],
+            },
           },
           // Java Protected Areas
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              name: 'Ujung Kulon National Park',
-              category: 'National Park',
-              designation: 'National Park',
-              iucn_category: 'II',
+              name: "Ujung Kulon National Park",
+              category: "National Park",
+              designation: "National Park",
+              iucn_category: "II",
               area_hectares: 78619.0,
-              status_wdpa: 'Designated',
-              governance_type: 'Federal'
+              status_wdpa: "Designated",
+              governance_type: "Federal",
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[105.0, -6.8], [105.8, -6.8], [105.8, -6.2], [105.0, -6.2], [105.0, -6.8]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [105.0, -6.8],
+                  [105.8, -6.8],
+                  [105.8, -6.2],
+                  [105.0, -6.2],
+                  [105.0, -6.8],
+                ],
+              ],
+            },
           },
           // Kalimantan Protected Areas
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              name: 'Tanjung Puting National Park',
-              category: 'National Park',
-              designation: 'National Park',
-              iucn_category: 'II',
+              name: "Tanjung Puting National Park",
+              category: "National Park",
+              designation: "National Park",
+              iucn_category: "II",
               area_hectares: 415040.0,
-              status_wdpa: 'Designated',
-              governance_type: 'Federal'
+              status_wdpa: "Designated",
+              governance_type: "Federal",
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[111.5, -3.0], [112.5, -3.0], [112.5, -2.0], [111.5, -2.0], [111.5, -3.0]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [111.5, -3.0],
+                  [112.5, -3.0],
+                  [112.5, -2.0],
+                  [111.5, -2.0],
+                  [111.5, -3.0],
+                ],
+              ],
+            },
           },
           // Sulawesi Protected Areas
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              name: 'Lore Lindu National Park',
-              category: 'National Park', 
-              designation: 'National Park',
-              iucn_category: 'II',
+              name: "Lore Lindu National Park",
+              category: "National Park",
+              designation: "National Park",
+              iucn_category: "II",
               area_hectares: 217991.0,
-              status_wdpa: 'Designated',
-              governance_type: 'Federal'
+              status_wdpa: "Designated",
+              governance_type: "Federal",
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[119.5, -1.5], [120.5, -1.5], [120.5, -0.5], [119.5, -0.5], [119.5, -1.5]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [119.5, -1.5],
+                  [120.5, -1.5],
+                  [120.5, -0.5],
+                  [119.5, -0.5],
+                  [119.5, -1.5],
+                ],
+              ],
+            },
           },
           // Papua Protected Areas
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              name: 'Lorentz National Park',
-              category: 'National Park',
-              designation: 'National Park',
-              iucn_category: 'II',
+              name: "Lorentz National Park",
+              category: "National Park",
+              designation: "National Park",
+              iucn_category: "II",
               area_hectares: 2350000.0,
-              status_wdpa: 'Designated',
-              governance_type: 'Federal'
+              status_wdpa: "Designated",
+              governance_type: "Federal",
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[137.0, -5.0], [139.0, -5.0], [139.0, -3.5], [137.0, -3.5], [137.0, -5.0]]]
-            }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [137.0, -5.0],
+                  [139.0, -5.0],
+                  [139.0, -3.5],
+                  [137.0, -3.5],
+                  [137.0, -5.0],
+                ],
+              ],
+            },
           },
           // Nusa Tenggara Protected Areas
           {
-            type: 'Feature',
+            type: "Feature",
             properties: {
-              name: 'Komodo National Park',
-              category: 'National Park',
-              designation: 'National Park',
-              iucn_category: 'II',
+              name: "Komodo National Park",
+              category: "National Park",
+              designation: "National Park",
+              iucn_category: "II",
               area_hectares: 173300.0,
-              status_wdpa: 'Designated',
-              governance_type: 'Federal'
+              status_wdpa: "Designated",
+              governance_type: "Federal",
             },
             geometry: {
-              type: 'Polygon',
-              coordinates: [[[119.3, -8.7], [119.7, -8.7], [119.7, -8.3], [119.3, -8.3], [119.3, -8.7]]]
-            }
-          }
+              type: "Polygon",
+              coordinates: [
+                [
+                  [119.3, -8.7],
+                  [119.7, -8.7],
+                  [119.7, -8.3],
+                  [119.3, -8.3],
+                  [119.3, -8.7],
+                ],
+              ],
+            },
+          },
         ];
 
         // Filter mock data based on bounds
-        features = mockWdpaAreas.filter(feature => {
-          if (!feature.geometry || !feature.geometry.coordinates || !feature.geometry.coordinates[0]) {
+        features = mockWdpaAreas.filter((feature) => {
+          if (
+            !feature.geometry ||
+            !feature.geometry.coordinates ||
+            !feature.geometry.coordinates[0]
+          ) {
             return false;
           }
 
           const coords = feature.geometry.coordinates[0];
-          const minLng = Math.min(...coords.map(c => c[0]));
-          const maxLng = Math.max(...coords.map(c => c[0]));
-          const minLat = Math.min(...coords.map(c => c[1]));
-          const maxLat = Math.max(...coords.map(c => c[1]));
+          const minLng = Math.min(...coords.map((c) => c[0]));
+          const maxLng = Math.max(...coords.map((c) => c[0]));
+          const minLat = Math.min(...coords.map((c) => c[1]));
+          const maxLat = Math.max(...coords.map((c) => c[1]));
 
           // Check if polygon intersects with bounds
-          return !(maxLng < bounds.west || minLng > bounds.east || maxLat < bounds.south || minLat > bounds.north);
+          return !(
+            maxLng < bounds.west ||
+            minLng > bounds.east ||
+            maxLat < bounds.south ||
+            minLat > bounds.north
+          );
         });
 
         console.log(`✅ Using ${features.length} filtered mock WDPA features`);
@@ -5411,44 +6638,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Group by category for logging
       const categories = features.reduce((acc: any, feature: any) => {
-        const category = feature.properties.category || 'Unknown';
+        const category = feature.properties.category || "Unknown";
         acc[category] = (acc[category] || 0) + 1;
         return acc;
       }, {});
 
-      console.log('🏞️ WDPA categories distribution:', categories);
+      console.log("🏞️ WDPA categories distribution:", categories);
 
       res.json({
-        type: 'FeatureCollection',
-        features: features
+        type: "FeatureCollection",
+        features: features,
       });
-
     } catch (error) {
-      console.error('❌ Error in WDPA data endpoint:', error);
+      console.error("❌ Error in WDPA data endpoint:", error);
 
       // Always return valid GeoJSON even if everything fails
       const fallbackFeatures = [
         {
-          type: 'Feature',
+          type: "Feature",
           properties: {
-            name: 'Demo Protected Area (Fallback)',
-            category: 'National Park',
-            designation: 'National Park',
-            iucn_category: 'II',
+            name: "Demo Protected Area (Fallback)",
+            category: "National Park",
+            designation: "National Park",
+            iucn_category: "II",
             area_hectares: 50000.0,
-            status_wdpa: 'Designated',
-            governance_type: 'Federal'
+            status_wdpa: "Designated",
+            governance_type: "Federal",
           },
           geometry: {
-            type: 'Polygon',
-            coordinates: [[[101.0, 0.5], [101.5, 0.5], [101.5, 1.0], [101.0, 1.0], [101.0, 0.5]]]
-          }
-        }
+            type: "Polygon",
+            coordinates: [
+              [
+                [101.0, 0.5],
+                [101.5, 0.5],
+                [101.5, 1.0],
+                [101.0, 1.0],
+                [101.0, 0.5],
+              ],
+            ],
+          },
+        },
       ];
 
       res.json({
-        type: 'FeatureCollection',
-        features: fallbackFeatures
+        type: "FeatureCollection",
+        features: fallbackFeatures,
       });
     }
   });
@@ -5456,7 +6690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Helper function to convert coordinates array to WKT format
   function coordinatesToWKT(coordinates: any): string {
     if (!coordinates || !coordinates[0]) {
-      throw new Error('Invalid coordinates');
+      throw new Error("Invalid coordinates");
     }
 
     // Handle both Polygon and MultiPolygon geometries
@@ -5467,13 +6701,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const ring = coords[0];
-    const wktCoords = ring.map((coord: any) => `${coord[0]} ${coord[1]}`).join(', ');
+    const wktCoords = ring
+      .map((coord: any) => `${coord[0]} ${coord[1]}`)
+      .join(", ");
     return `POLYGON((${wktCoords}))`;
   }
 
-
   // Helper functions for GeoJSON processing
-  function calculateBoundingBox(coordinates: number[][]): { north: number; south: number; east: number; west: number } {
+  function calculateBoundingBox(coordinates: number[][]): {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  } {
     if (!coordinates || coordinates.length === 0) {
       return { north: 0, south: 0, east: 0, west: 0 };
     }
@@ -5494,12 +6734,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       north: maxLat,
       south: minLat,
       east: maxLng,
-      west: minLng
+      west: minLng,
     };
   }
 
   // Helper function to calculate centroid from coordinates
-  function calculateCentroid(coordinates: number[][]): { lat: number; lng: number } {
+  function calculateCentroid(coordinates: number[][]): {
+    lat: number;
+    lng: number;
+  } {
     if (!coordinates || coordinates.length === 0) {
       return { lat: 0, lng: 0 };
     }
@@ -5514,7 +6757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     return {
       lat: totalLat / coordinates.length,
-      lng: totalLng / coordinates.length
+      lng: totalLng / coordinates.length,
     };
   }
 
@@ -5534,12 +6777,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     area = Math.abs(area) / 2;
-    
+
     // Convert from square degrees to square meters (approximate)
     const earthRadius = 6371000; // meters
-    const latRadians = coordinates[0][1] * Math.PI / 180;
-    const metersPerDegree = earthRadius * Math.PI / 180 * Math.cos(latRadians);
-    
+    const latRadians = (coordinates[0][1] * Math.PI) / 180;
+    const metersPerDegree =
+      ((earthRadius * Math.PI) / 180) * Math.cos(latRadians);
+
     return area * metersPerDegree * metersPerDegree;
   }
 
@@ -5551,7 +6795,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     return coordinates.map((coord: any) => {
       if (Array.isArray(coord)) {
-        if (typeof coord[0] === 'number' && typeof coord[1] === 'number') {
+        if (typeof coord[0] === "number" && typeof coord[1] === "number") {
           // This is a coordinate pair [lng, lat, z] - remove z
           return [coord[0], coord[1]];
         } else {
@@ -5562,7 +6806,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return coord;
     });
   }
-
 
   return httpServer;
 }

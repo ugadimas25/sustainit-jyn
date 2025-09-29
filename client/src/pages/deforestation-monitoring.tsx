@@ -175,11 +175,30 @@ export default function DeforestationMonitoring() {
         throw new Error(`Failed to parse GeoJSON file: ${parseError instanceof Error ? parseError.message : 'Invalid format'}`);
       }
 
-      // Re-stringify after processing
-      const processedGeojsonString = JSON.stringify(geojsonData);
+      // Check file size before upload (API limit: 50MB)
+      const payloadString = JSON.stringify({
+        geojson: geojsonData, // Send object directly, not double-stringified
+        filename: fileName
+      });
+      
+      const fileSizeMB = new Blob([payloadString]).size / (1024 * 1024);
+      console.log(`📏 Payload size: ${fileSizeMB.toFixed(2)} MB`);
+      
+      // API limits: 50MB file size, 1000 features max
+      const MAX_FILE_SIZE_MB = 45; // Use 45MB to have some buffer
+      const MAX_FEATURES = 950; // Use 950 to have some buffer
+      
+      if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        throw new Error(`File too large (${fileSizeMB.toFixed(1)}MB). Maximum allowed: ${MAX_FILE_SIZE_MB}MB. Please split into smaller files.`);
+      }
+      
+      if (geojsonData.features.length > MAX_FEATURES) {
+        throw new Error(`Too many features (${geojsonData.features.length}). Maximum allowed: ${MAX_FEATURES}. Please split into smaller files.`);
+      }
 
       try {
         console.log('🚀 Uploading GeoJSON for EUDR analysis...');
+        console.log(`📊 File stats: ${geojsonData.features.length} features, ${fileSizeMB.toFixed(2)}MB`);
 
         // Use the API base URL for production compatibility
         const apiUrl = `${import.meta.env.VITE_API_BASE_URL || ''}/api/geojson/upload`;
@@ -190,10 +209,7 @@ export default function DeforestationMonitoring() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            geojson: processedGeojsonString,
-            filename: fileName
-          }),
+          body: payloadString, // Use pre-calculated payload
         });
 
         console.log('📡 Response status:', response.status, response.statusText);
@@ -202,14 +218,23 @@ export default function DeforestationMonitoring() {
         if (!response.ok) {
           let errorMessage = `Upload failed with status ${response.status}`;
 
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.error || errorData.details || errorMessage;
-            console.error('❌ Server error details:', errorData);
-          } catch (jsonError) {
-            // If we can't parse the error response, use the status text
-            errorMessage = response.statusText || errorMessage;
-            console.error('❌ Failed to parse error response:', jsonError);
+          // Handle specific HTTP error codes
+          if (response.status === 413) {
+            errorMessage = `File too large for server (${fileSizeMB.toFixed(1)}MB). Try splitting into smaller batches of 20-50 features each.`;
+          } else if (response.status === 408) {
+            errorMessage = `Upload timeout. The file may be too large or connection is slow. Try smaller batches.`;
+          } else if (response.status === 429) {
+            errorMessage = `Server is busy. Please wait a moment and try again.`;
+          } else {
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.error || errorData.details || errorMessage;
+              console.error('❌ Server error details:', errorData);
+            } catch (jsonError) {
+              // If we can't parse the error response, use the status text
+              errorMessage = response.statusText || errorMessage;
+              console.error('❌ Failed to parse error response:', jsonError);
+            }
           }
 
           throw new Error(errorMessage);
