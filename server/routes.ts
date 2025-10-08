@@ -1989,6 +1989,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Supply Chain metrics for dashboard
+  app.get("/api/dashboard/supply-chain-metrics", async (req, res) => {
+    try {
+      const suppliers = await storage.getSuppliers();
+      const supplierLinks = await storage.getSupplierLinks();
+      const shipments = await storage.getShipments();
+
+      // Calculate tier distribution
+      const tierDistribution = suppliers.reduce((acc: Record<string, number>, supplier: any) => {
+        const tier = `Tier ${supplier.tier}`;
+        acc[tier] = (acc[tier] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Calculate compliance by tier
+      const complianceByTier = suppliers.reduce((acc: Record<string, { total: number, compliant: number }>, supplier: any) => {
+        const tier = `Tier ${supplier.tier}`;
+        if (!acc[tier]) {
+          acc[tier] = { total: 0, compliant: 0 };
+        }
+        acc[tier].total++;
+        if (supplier.legalityStatus === 'verified') {
+          acc[tier].compliant++;
+        }
+        return acc;
+      }, {});
+
+      res.json({
+        totalSuppliers: suppliers.length,
+        totalChainLinks: supplierLinks.length,
+        totalShipments: shipments.length,
+        tierDistribution,
+        complianceByTier,
+        verifiedSuppliers: suppliers.filter((s: any) => s.legalityStatus === 'verified').length,
+        pendingSuppliers: suppliers.filter((s: any) => s.legalityStatus === 'pending').length,
+      });
+    } catch (error) {
+      console.error("Error fetching supply chain metrics:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch supply chain metrics",
+        totalSuppliers: 0,
+        totalChainLinks: 0,
+        totalShipments: 0,
+        tierDistribution: {},
+        complianceByTier: {},
+        verifiedSuppliers: 0,
+        pendingSuppliers: 0,
+      });
+    }
+  });
+
+  // DDS Reports metrics for dashboard
+  app.get("/api/dashboard/dds-metrics", async (req, res) => {
+    try {
+      const allReports = await storage.getDdsReports();
+
+      const draftReports = allReports.filter((r: any) => r.status === 'draft').length;
+      const generatedReports = allReports.filter((r: any) => r.status === 'generated').length;
+      const downloadedReports = allReports.filter((r: any) => r.status === 'downloaded').length;
+      const submittedReports = allReports.filter((r: any) => r.status === 'submitted').length;
+
+      res.json({
+        totalReports: allReports.length,
+        draftReports,
+        generatedReports,
+        downloadedReports,
+        submittedReports,
+        recentReports: allReports.slice(0, 5).map((r: any) => ({
+          id: r.id,
+          operatorName: r.operatorName,
+          status: r.status,
+          createdAt: r.createdAt,
+        })),
+      });
+    } catch (error) {
+      console.error("Error fetching DDS metrics:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch DDS metrics",
+        totalReports: 0,
+        draftReports: 0,
+        generatedReports: 0,
+        downloadedReports: 0,
+        submittedReports: 0,
+        recentReports: [],
+      });
+    }
+  });
+
   // Save polygon-supplier association endpoint
   app.post("/api/plots/save-association", isAuthenticated, async (req, res) => {
     try {
