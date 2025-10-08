@@ -33,15 +33,19 @@ function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={() => <Dashboard />} />
+      <ProtectedRoute path="/dashboard" component={() => <Dashboard />} />
+      <ProtectedRoute path="/deforestation-monitoring" component={() => <DeforestationMonitoring />} />
       <ProtectedRoute path="/spatial-analysis" component={() => <DeforestationMonitoring />} />
       <ProtectedRoute path="/map-viewer" component={() => <MapViewer />} />
       <ProtectedRoute path="/edit-polygon" component={() => <EditPolygon />} />
       <ProtectedRoute path="/data-verification" component={() => <DataVerification />} />
       <ProtectedRoute path="/supply-chain-analysis" component={() => <SupplyChainAnalysis />} />
       <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
+      <ProtectedRoute path="/legality-assessment" component={() => <LegalityAssessment />} />
       <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
       <ProtectedRoute path="/risk-analysis" component={() => <RiskAnalysis />} />
       <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
+      <ProtectedRoute path="/unified-supply-chain" component={() => <SupplyChainSimple />} />
       <ProtectedRoute path="/due-diligence-report" component={() => <DueDiligenceReport />} />
       
       {/* Admin Routes */}
