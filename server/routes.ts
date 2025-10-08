@@ -77,7 +77,7 @@ async function initializeDefaultUser() {
   try {
     const existingUser = await storage.getUserByUsername("kpneudr");
     if (!existingUser) {
-      const hashedPassword = await hashPassword("kpneudr");
+      const hashedPassword = await hashPassword("kpneudr2025");
       await storage.createUser({
         username: "kpneudr",
         password: hashedPassword,
@@ -1391,11 +1391,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         typeof step !== "number" ||
         typeof completed !== "boolean"
       ) {
-        return res
-          .status(400)
-          .json({
-            error: "Missing required fields: supplierName, step, completed",
-          });
+        return res.status(400).json({
+          error: "Missing required fields: supplierName, step, completed",
+        });
       }
 
       const progress = await storage.updateSupplierWorkflowStep(
@@ -1488,12 +1486,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(assessment);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res
-          .status(400)
-          .json({
-            error: "Invalid risk assessment data",
-            details: error.errors,
-          });
+        res.status(400).json({
+          error: "Invalid risk assessment data",
+          details: error.errors,
+        });
       } else {
         res.status(500).json({ error: "Failed to create risk assessment" });
       }
@@ -1517,12 +1513,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res
-          .status(400)
-          .json({
-            error: "Invalid risk assessment data",
-            details: error.errors,
-          });
+        res.status(400).json({
+          error: "Invalid risk assessment data",
+          details: error.errors,
+        });
       } else {
         res.status(500).json({ error: "Failed to update risk assessment" });
       }
@@ -1576,12 +1570,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(201).json(item);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          res
-            .status(400)
-            .json({
-              error: "Invalid risk assessment item data",
-              details: error.errors,
-            });
+          res.status(400).json({
+            error: "Invalid risk assessment item data",
+            details: error.errors,
+          });
         } else {
           res
             .status(500)
@@ -1611,12 +1603,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } catch (error) {
         if (error instanceof z.ZodError) {
-          res
-            .status(400)
-            .json({
-              error: "Invalid risk assessment item data",
-              details: error.errors,
-            });
+          res.status(400).json({
+            error: "Invalid risk assessment item data",
+            details: error.errors,
+          });
         } else {
           res
             .status(500)
@@ -2023,11 +2013,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.getAnalysisResultsByPlotIds(plotIds);
 
       if (analysisResultsToUpdate.length === 0) {
-        return res
-          .status(404)
-          .json({
-            error: "No analysis results found for the specified plot IDs",
-          });
+        return res.status(404).json({
+          error: "No analysis results found for the specified plot IDs",
+        });
       }
 
       // Update analysis results with supplier association
@@ -3389,12 +3377,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating dummy DDS PDF:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      res
-        .status(500)
-        .json({
-          error: "Failed to generate dummy DDS PDF",
-          details: errorMessage,
-        });
+      res.status(500).json({
+        error: "Failed to generate dummy DDS PDF",
+        details: errorMessage,
+      });
     }
   });
 
@@ -3425,12 +3411,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error downloading DDS report PDF:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
-      res
-        .status(500)
-        .json({
-          error: "Failed to download DDS report PDF",
-          details: errorMessage,
-        });
+      res.status(500).json({
+        error: "Failed to download DDS report PDF",
+        details: errorMessage,
+      });
     }
   });
 
@@ -4424,12 +4408,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const requestSizeBytes = JSON.stringify(req.body).length;
       const requestSizeMB = requestSizeBytes / (1024 * 1024);
       console.log(`📏 Server received payload: ${requestSizeMB.toFixed(2)} MB`);
-      
+
       if (requestSizeMB > 50) {
         return res.status(413).json({
           error: "Request payload too large",
           details: `Payload size: ${requestSizeMB.toFixed(1)}MB exceeds 50MB limit`,
-          suggestion: "Split your GeoJSON into smaller files with 20-50 features each"
+          suggestion:
+            "Split your GeoJSON into smaller files with 20-50 features each",
         });
       }
 
@@ -4502,7 +4487,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(413).json({
           error: "Too many features",
           details: `Feature count: ${parsedGeojson.features.length} exceeds 1000 limit`,
-          suggestion: "Split your GeoJSON into smaller files with maximum 50-100 features each for optimal processing"
+          suggestion:
+            "Split your GeoJSON into smaller files with maximum 50-100 features each for optimal processing",
         });
       }
 
@@ -4675,7 +4661,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for large datasets
 
         response = await fetch(
-          "https://eudr-multilayer-api.fly.dev/api/v1/upload-geojson",
+          "https://www.global-compliance-system.com/api/v1/upload-geojson",
           {
             method: "POST",
             headers: {
@@ -5797,11 +5783,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { formData, supplierName } = req.body;
 
       if (!formData || !supplierName) {
-        return res
-          .status(400)
-          .json({
-            error: "Missing required fields: formData and supplierName",
-          });
+        return res.status(400).json({
+          error: "Missing required fields: formData and supplierName",
+        });
       }
 
       console.log(`Starting AI analysis for supplier: ${supplierName}`);
@@ -5897,11 +5881,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { polygons } = req.body;
 
       if (!Array.isArray(polygons) || polygons.length < 2) {
-        return res
-          .status(400)
-          .json({
-            error: "At least 2 polygons required for overlap detection",
-          });
+        return res.status(400).json({
+          error: "At least 2 polygons required for overlap detection",
+        });
       }
 
       console.log(

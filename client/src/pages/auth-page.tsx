@@ -13,7 +13,7 @@ import plantationBgImage from "@assets/6194adcbbd9b6_1754556162332.jpg";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
-  const [loginData, setLoginData] = useState({ username: "kpneudr", password: "kpneudr" });
+  const [loginData, setLoginData] = useState({ username: "kpneudr", password: "kpneudr2025" });
   const [registerData, setRegisterData] = useState({ 
     username: "", 
     password: "", 

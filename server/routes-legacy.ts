@@ -42,7 +42,7 @@ async function initializeDefaultUser() {
     const existingUser = await storage.getUserByUsername("kpneudr");
     if (!existingUser) {
       // Create default user
-      const hashedPassword = await hashPassword("kpneudr");
+      const hashedPassword = await hashPassword("kpneudr2025");
       await storage.createUser({
         username: "kpneudr",
         password: hashedPassword,
