@@ -538,7 +538,7 @@ export default function DueDiligenceReport() {
   // Create DDS report mutation
   const createDdsMutation = useMutation({
     mutationFn: async (data: InsertDdsReport) => {
-      return apiRequest('/api/dds-reports', 'POST', data);
+      return apiRequest('POST', '/api/dds-reports', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/dds-reports'] });
@@ -595,7 +595,7 @@ export default function DueDiligenceReport() {
   // Submit to EU Trace mutation
   const submitToEuTraceMutation = useMutation({
     mutationFn: async (reportId: string) => {
-      return apiRequest(`/api/dds-reports/${reportId}/submit`, 'POST');
+      return apiRequest('POST', `/api/dds-reports/${reportId}/submit`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/dds-reports'] });
