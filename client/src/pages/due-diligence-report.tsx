@@ -541,7 +541,7 @@ export default function DueDiligenceReport() {
       return apiRequest('POST', '/api/dds-reports', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/dds-reports'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dds/list'] });
       setShowDdsForm(false);
       toast({
         title: "DDS Report Created",
