@@ -1136,7 +1136,7 @@ export default function DueDiligenceReport() {
                                     >
                                       <Checkbox
                                         checked={selectedHsCodes.includes(hsCode.code)}
-                                        onChange={() => handleHsCodeToggle(hsCode.code)}
+                                        onCheckedChange={() => handleHsCodeToggle(hsCode.code)}
                                         className="mt-0.5"
                                       />
                                       <div className="flex-1 min-w-0">
