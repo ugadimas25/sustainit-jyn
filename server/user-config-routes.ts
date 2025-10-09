@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { storage } from './storage';
 import { 
-  requireAuth, 
+  
   requirePermission, 
   requireRole, 
   requireSystemAdmin, 

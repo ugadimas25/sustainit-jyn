@@ -644,8 +644,9 @@ async function seedUserConfigurationData() {
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
-  await setupAuth(app);
-  await initializeDefaultUser();
+  // Authentication disabled
+  // await setupAuth(app);
+  // await initializeDefaultUser();
   await seedSampleData();
   await seedUserConfigurationData();
 
@@ -656,7 +657,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/user-config", userConfigRoutes);
 
   // GraphQL endpoint for traceability queries
-  app.post("/api/graphql", isAuthenticated, async (req, res) => {
+  app.post("/api/graphql", async (req, res) => {
     try {
       const { query, variables } = req.body;
 
@@ -1069,7 +1070,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Core entity routes
-  app.get("/api/commodities", isAuthenticated, async (req, res) => {
+  app.get("/api/commodities", async (req, res) => {
     try {
       const commodities = await storage.getCommodities();
       res.json(commodities);
@@ -1078,7 +1079,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/parties", isAuthenticated, async (req, res) => {
+  app.get("/api/parties", async (req, res) => {
     try {
       const parties = await storage.getParties();
       res.json(parties);
@@ -1087,7 +1088,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/facilities", isAuthenticated, async (req, res) => {
+  app.get("/api/facilities", async (req, res) => {
     try {
       const facilities = await storage.getFacilities();
       res.json(facilities);
@@ -1096,7 +1097,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/lots", isAuthenticated, async (req, res) => {
+  app.get("/api/lots", async (req, res) => {
     try {
       const lots = await storage.getLots();
       res.json(lots);
@@ -1105,7 +1106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/shipments", isAuthenticated, async (req, res) => {
+  app.get("/api/shipments", async (req, res) => {
     try {
       const shipments = await storage.getShipments();
       res.json(shipments);
@@ -1114,7 +1115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/custody-chains", isAuthenticated, async (req, res) => {
+  app.get("/api/custody-chains", async (req, res) => {
     try {
       const chains = await storage.getCustodyChains();
       res.json(chains);
@@ -1125,7 +1126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Legacy support routes
   // Suppliers endpoints for workflow
-  app.get("/api/suppliers", isAuthenticated, async (req, res) => {
+  app.get("/api/suppliers", async (req, res) => {
     try {
       const suppliers = await storage.getSuppliers();
       res.json(suppliers);
@@ -1134,7 +1135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/suppliers", isAuthenticated, async (req, res) => {
+  app.post("/api/suppliers", async (req, res) => {
     try {
       const validatedData = insertSupplierSchema.parse(req.body);
       const supplier = await storage.createSupplier(
@@ -1152,7 +1153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/suppliers/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/suppliers/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const validatedData = insertSupplierSchema.partial().parse(req.body);
@@ -1176,7 +1177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/suppliers/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/suppliers/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteSupplier(id);
@@ -1191,7 +1192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Supplier links endpoints
-  app.get("/api/supplier-links", isAuthenticated, async (req, res) => {
+  app.get("/api/supplier-links", async (req, res) => {
     try {
       const links = await storage.getSupplierWorkflowLinks();
       res.json(links);
@@ -1200,7 +1201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/supplier-links", isAuthenticated, async (req, res) => {
+  app.post("/api/supplier-links", async (req, res) => {
     try {
       const validatedData = insertSupplierWorkflowLinkSchema.parse(req.body);
       const link = await storage.createSupplierWorkflowLink(validatedData);
@@ -1216,7 +1217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/supplier-links/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/supplier-links/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteSupplierWorkflowLink(id);
@@ -1231,7 +1232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Workflow shipments endpoints
-  app.get("/api/shipments", isAuthenticated, async (req, res) => {
+  app.get("/api/shipments", async (req, res) => {
     try {
       const shipments = await storage.getWorkflowShipments();
       res.json(shipments);
@@ -1240,7 +1241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/shipments", isAuthenticated, async (req, res) => {
+  app.post("/api/shipments", async (req, res) => {
     try {
       const validatedData = insertWorkflowShipmentSchema.parse(req.body);
       const shipment = await storage.createWorkflowShipment(validatedData);
@@ -1256,7 +1257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/shipments/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/shipments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const validatedData = insertWorkflowShipmentSchema
@@ -1279,7 +1280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/shipments/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/shipments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteWorkflowShipment(id);
@@ -1383,7 +1384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Workflow step management endpoints
-  app.post("/api/supplier-workflow-step", isAuthenticated, async (req, res) => {
+  app.post("/api/supplier-workflow-step", async (req, res) => {
     try {
       const { supplierName, step, completed, referenceId } = req.body;
       if (
@@ -1437,7 +1438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Risk Assessment API endpoints based on Excel methodology
-  app.get("/api/risk-assessments", isAuthenticated, async (req, res) => {
+  app.get("/api/risk-assessments", async (req, res) => {
     try {
       const assessments = await storage.getRiskAssessments();
       res.json(assessments);
@@ -1446,7 +1447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/risk-assessments/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/risk-assessments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const assessment = await storage.getRiskAssessment(id);
@@ -1477,7 +1478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
-  app.post("/api/risk-assessments", isAuthenticated, async (req, res) => {
+  app.post("/api/risk-assessments", async (req, res) => {
     try {
       const validatedData = insertRiskAssessmentSchema.parse(req.body);
       const assessment = await storage.createRiskAssessment(
@@ -1496,7 +1497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/risk-assessments/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/risk-assessments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const validatedData = insertRiskAssessmentSchema
@@ -1523,7 +1524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/risk-assessments/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/risk-assessments/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const deleted = await storage.deleteRiskAssessment(id);
@@ -1802,7 +1803,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
-  app.get("/api/mills", isAuthenticated, async (req, res) => {
+  app.get("/api/mills", async (req, res) => {
     try {
       const mills = await storage.getMills();
       res.json(mills);
@@ -1811,7 +1812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/plots", isAuthenticated, async (req, res) => {
+  app.get("/api/plots", async (req, res) => {
     try {
       const plots = await storage.getPlots();
       res.json(plots);
@@ -2103,7 +2104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Save polygon-supplier association endpoint
-  app.post("/api/plots/save-association", isAuthenticated, async (req, res) => {
+  app.post("/api/plots/save-association", async (req, res) => {
     try {
       const { plotIds, supplierId } = req.body;
 
@@ -2469,7 +2470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced DDS Reports routes for PRD implementation
 
   // Get available HS codes for product selection dropdown
-  app.get("/api/dds/hs-codes", isAuthenticated, async (req, res) => {
+  app.get("/api/dds/hs-codes", async (req, res) => {
     try {
       const hsCodes = [
         {
@@ -2542,7 +2543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get scientific names for products dropdown
-  app.get("/api/dds/scientific-names", isAuthenticated, async (req, res) => {
+  app.get("/api/dds/scientific-names", async (req, res) => {
     try {
       const { category } = req.query;
       const scientificNames = {
@@ -2576,7 +2577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Validate GeoJSON data endpoint
-  app.post("/api/dds/validate-geojson", isAuthenticated, async (req, res) => {
+  app.post("/api/dds/validate-geojson", async (req, res) => {
     try {
       const { geojson } = req.body;
 
@@ -2711,7 +2712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get session-based DDS list (PRD requirement for dashboard)
-  app.get("/api/dds/list", isAuthenticated, async (req, res) => {
+  app.get("/api/dds/list", async (req, res) => {
     try {
       const sessionId = req.query.sessionId as string;
       const reports = sessionId
@@ -2739,7 +2740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced DDS creation endpoint for comprehensive form data
-  app.post("/api/dds/create", isAuthenticated, async (req, res) => {
+  app.post("/api/dds/create", async (req, res) => {
     try {
       const validatedData = insertDdsReportSchema.parse(req.body);
 
@@ -2774,7 +2775,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Original DDS reports endpoint (maintained for backward compatibility)
-  app.get("/api/dds-reports", isAuthenticated, async (req, res) => {
+  app.get("/api/dds-reports", async (req, res) => {
     try {
       const reports = await storage.getDdsReports();
       res.json(reports);
@@ -2783,7 +2784,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dds-reports/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/dds-reports/:id", async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (report) {
@@ -2796,7 +2797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/dds-reports", isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports", async (req, res) => {
     try {
       const validatedData = insertDdsReportSchema.parse(req.body);
       const newReport = await storage.createDdsReport(validatedData);
@@ -2812,7 +2813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/dds-reports/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/dds-reports/:id", async (req, res) => {
     try {
       const updates = req.body;
       const updatedReport = await storage.updateDdsReport(
@@ -2830,7 +2831,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DDS Report PDF generation
-  app.post("/api/dds-reports/:id/pdf", isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports/:id/pdf", async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (!report) {
@@ -2855,7 +2856,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate FIXED 4-page DDS PDF document with correct format
-  app.get("/api/generate-fixed-dds-pdf", isAuthenticated, async (req, res) => {
+  app.get("/api/generate-fixed-dds-pdf", async (req, res) => {
     try {
       const { generateFixedDDSPDF } = await import("./pdf-generator-fixed.js");
       const pdfBuffer = generateFixedDDSPDF({});
@@ -2873,7 +2874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate dummy DDS PDF document
-  app.get("/api/generate-dummy-dds-pdf", isAuthenticated, async (req, res) => {
+  app.get("/api/generate-dummy-dds-pdf", async (req, res) => {
     try {
       // Create dummy report data
       const dummyReport = {
@@ -3498,7 +3499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DDS Report Download endpoint
-  app.get("/api/dds/:id/download", isAuthenticated, async (req, res) => {
+  app.get("/api/dds/:id/download", async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (!report) {
@@ -3532,7 +3533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DDS Report EU Trace submission
-  app.post("/api/dds-reports/:id/submit", isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports/:id/submit", async (req, res) => {
     try {
       const report = await storage.getDdsReportById(req.params.id);
       if (!report) {
@@ -3756,7 +3757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Estate Data Collection API routes
-  app.get("/api/estate-data-collection", isAuthenticated, async (req, res) => {
+  app.get("/api/estate-data-collection", async (req, res) => {
     try {
       const estates = await storage.getEstateDataCollection();
       res.json(estates);
@@ -3768,7 +3769,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/estate-data-collection", isAuthenticated, async (req, res) => {
+  app.post("/api/estate-data-collection", async (req, res) => {
     try {
       const { insertEstateDataCollectionSchema } = await import(
         "@shared/schema"
@@ -3817,7 +3818,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mill Data Collection API routes
-  app.get("/api/mill-data-collection", isAuthenticated, async (req, res) => {
+  app.get("/api/mill-data-collection", async (req, res) => {
     try {
       const mills = await storage.getMillDataCollection();
       res.json(mills);
@@ -3846,7 +3847,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   );
 
-  app.post("/api/mill-data-collection", isAuthenticated, async (req, res) => {
+  app.post("/api/mill-data-collection", async (req, res) => {
     try {
       const { insertMillDataCollectionSchema } = await import("@shared/schema");
       const validatedData = insertMillDataCollectionSchema.parse(req.body);
@@ -3890,7 +3891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Object storage endpoints for document uploads
-  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+  app.post("/api/objects/upload", async (req, res) => {
     try {
       const { ObjectStorageService } = await import("./objectStorage");
       const objectStorageService = new ObjectStorageService();
@@ -3903,7 +3904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get list of TIFF files from App Storage
-  app.get("/api/objects/tiff-files", isAuthenticated, async (req, res) => {
+  app.get("/api/objects/tiff-files", async (req, res) => {
     try {
       const { ObjectStorageService } = await import("./objectStorage");
       const objectStorageService = new ObjectStorageService();
@@ -4142,7 +4143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // EUDR Assessment endpoints
-  app.get("/api/eudr-assessments", isAuthenticated, async (req, res) => {
+  app.get("/api/eudr-assessments", async (req, res) => {
     try {
       const assessments = await storage.getEudrAssessments();
       res.json(assessments);
@@ -4152,7 +4153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/eudr-assessments/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/eudr-assessments/:id", async (req, res) => {
     try {
       const assessment = await storage.getEudrAssessment(req.params.id);
       if (assessment) {
@@ -4166,7 +4167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/eudr-assessments", isAuthenticated, async (req, res) => {
+  app.post("/api/eudr-assessments", async (req, res) => {
     try {
       const validatedData = insertEudrAssessmentSchema.parse(req.body);
       const assessment = await storage.createEudrAssessment(
@@ -4183,7 +4184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/eudr-assessments/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/eudr-assessments/:id", async (req, res) => {
     try {
       const validatedData = insertEudrAssessmentSchema
         .partial()
@@ -4203,7 +4204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/eudr-assessments/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/eudr-assessments/:id", async (req, res) => {
     try {
       await storage.deleteEudrAssessment(req.params.id);
       res.status(204).send();
@@ -4625,7 +4626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // GeoJSON upload and analysis endpoint
-  app.post("/api/geojson/upload", isAuthenticated, async (req, res) => {
+  app.post("/api/geojson/upload", async (req, res) => {
     try {
       // Add CORS headers for production
       res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
@@ -5604,7 +5605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   // Supply Chain Analytics endpoint
-  app.get("/api/supply-chain/analytics", isAuthenticated, async (req, res) => {
+  app.get("/api/supply-chain/analytics", async (req, res) => {
     try {
       const { range = "6months" } = req.query;
 
@@ -5793,7 +5794,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Supply Chain Tier Management endpoint
-  app.post("/api/supply-chain/tiers", isAuthenticated, async (req, res) => {
+  app.post("/api/supply-chain/tiers", async (req, res) => {
     try {
       const tierAssignments = req.body;
       console.log(
@@ -5829,7 +5830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auto-fill suppliers endpoint - fetch all suppliers from data collection forms
-  app.get("/api/suppliers/auto-fill", isAuthenticated, async (req, res) => {
+  app.get("/api/suppliers/auto-fill", async (req, res) => {
     try {
       console.log(
         "📋 Fetching suppliers for auto-fill from data collection forms...",
@@ -6204,7 +6205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Peatland data endpoint for EUDR Map Viewer
-  app.post("/api/peatland-data", isAuthenticated, async (req, res) => {
+  app.post("/api/peatland-data", async (req, res) => {
     try {
       const { bounds } = req.body;
 
@@ -6577,7 +6578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // WDPA data endpoint for EUDR Map Viewer
-  app.post("/api/wdpa-data", isAuthenticated, async (req, res) => {
+  app.post("/api/wdpa-data", async (req, res) => {
     try {
       const { bounds } = req.body;
 

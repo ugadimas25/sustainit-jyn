@@ -68,7 +68,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await initializeDefaultUser();
 
   // GraphQL endpoint (simplified for now)
-  app.post('/api/graphql', isAuthenticated, async (req, res) => {
+  app.post('/api/graphql', async (req, res) => {
     try {
       // Import services dynamically to avoid circular dependencies
       const { lineageService } = await import('./lib/lineage-service');
@@ -269,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard API
-  app.get("/api/dashboard/metrics", isAuthenticated, async (req, res) => {
+  app.get("/api/dashboard/metrics", async (req, res) => {
     try {
       const metrics = await storage.calculateDashboardMetrics();
       res.json(metrics);
@@ -280,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Suppliers API
-  app.get("/api/suppliers", isAuthenticated, async (req, res) => {
+  app.get("/api/suppliers", async (req, res) => {
     try {
       const suppliers = await storage.getAllSuppliers();
       res.json(suppliers);
@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/suppliers", isAuthenticated, async (req, res) => {
+  app.post("/api/suppliers", async (req, res) => {
     try {
       const supplierData = insertSupplierSchema.parse(req.body);
       const supplier = await storage.createSupplier(supplierData);
@@ -302,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Plots API
-  app.get("/api/plots", isAuthenticated, async (req, res) => {
+  app.get("/api/plots", async (req, res) => {
     try {
       const plots = await storage.getAllPlots();
       res.json(plots);
@@ -312,7 +312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/plots/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/plots/:id", async (req, res) => {
     try {
       const plot = await storage.getPlot(req.params.id);
       if (!plot) {
@@ -325,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/plots", isAuthenticated, async (req, res) => {
+  app.post("/api/plots", async (req, res) => {
     try {
       const plotData = insertPlotSchema.parse(req.body);
       const plot = await storage.createPlot(plotData);
@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/plots/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/plots/:id", async (req, res) => {
     try {
       const plotData = insertPlotSchema.partial().parse(req.body);
       const plot = await storage.updatePlot(req.params.id, plotData);
@@ -348,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Documents API
-  app.get("/api/plots/:plotId/documents", isAuthenticated, async (req, res) => {
+  app.get("/api/plots/:plotId/documents", async (req, res) => {
     try {
       const documents = await storage.getDocumentsByPlot(req.params.plotId);
       res.json(documents);
@@ -358,7 +358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/documents", isAuthenticated, async (req, res) => {
+  app.post("/api/documents", async (req, res) => {
     try {
       const documentData = insertDocumentSchema.parse(req.body);
       const document = await storage.createDocument(documentData);
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Deforestation Alerts API
-  app.get("/api/alerts", isAuthenticated, async (req, res) => {
+  app.get("/api/alerts", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const alerts = await storage.getRecentAlerts(limit);
@@ -381,7 +381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/plots/:plotId/alerts", isAuthenticated, async (req, res) => {
+  app.get("/api/plots/:plotId/alerts", async (req, res) => {
     try {
       const alerts = await storage.getAlertsByPlot(req.params.plotId);
       res.json(alerts);
@@ -392,7 +392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Global Forest Watch API Integration
-  app.post("/api/gfw/check-deforestation", isAuthenticated, async (req, res) => {
+  app.post("/api/gfw/check-deforestation", async (req, res) => {
     try {
       const { plotId, coordinates } = req.body;
       
@@ -440,7 +440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // WDPA API Integration
-  app.post("/api/wdpa/check-protected-areas", isAuthenticated, async (req, res) => {
+  app.post("/api/wdpa/check-protected-areas", async (req, res) => {
     try {
       const { plotId, coordinates } = req.body;
       
@@ -470,7 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mills API
-  app.get("/api/mills", isAuthenticated, async (req, res) => {
+  app.get("/api/mills", async (req, res) => {
     try {
       const mills = await storage.getAllMills();
       res.json(mills);
@@ -481,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Deliveries API
-  app.post("/api/deliveries", isAuthenticated, async (req, res) => {
+  app.post("/api/deliveries", async (req, res) => {
     try {
       const deliveryData = insertDeliverySchema.parse(req.body);
       const delivery = await storage.createDelivery(deliveryData);
@@ -493,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Shipments API
-  app.get("/api/shipments", isAuthenticated, async (req, res) => {
+  app.get("/api/shipments", async (req, res) => {
     try {
       const shipments = await storage.getAllShipments();
       res.json(shipments);
@@ -503,7 +503,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/shipments/:shipmentId/traceability", isAuthenticated, async (req, res) => {
+  app.get("/api/shipments/:shipmentId/traceability", async (req, res) => {
     try {
       const traceability = await storage.getShipmentTraceability(req.params.shipmentId);
       if (!traceability) {
@@ -516,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/shipments", isAuthenticated, async (req, res) => {
+  app.post("/api/shipments", async (req, res) => {
     try {
       const shipmentData = insertShipmentSchema.parse(req.body);
       const shipment = await storage.createShipment(shipmentData);
@@ -528,7 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DDS Reports API
-  app.get("/api/dds-reports", isAuthenticated, async (req, res) => {
+  app.get("/api/dds-reports", async (req, res) => {
     try {
       const reports = await storage.getAllDDSReports();
       res.json(reports);
@@ -538,7 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/dds-reports", isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports", async (req, res) => {
     try {
       const reportData = insertDDSReportSchema.parse({
         ...req.body,
@@ -552,7 +552,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/dds-reports/:id/generate", isAuthenticated, async (req, res) => {
+  app.post("/api/dds-reports/:id/generate", async (req, res) => {
     try {
       const { id } = req.params;
       const { format } = req.body; // pdf, xml
@@ -578,7 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Satellite Imagery endpoints
-  app.get("/api/satellite-images", isAuthenticated, async (req, res) => {
+  app.get("/api/satellite-images", async (req, res) => {
     try {
       // Mock satellite imagery data for now - in production this would fetch from actual satellite providers
       const sampleImages = [
@@ -651,7 +651,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/satellite-images/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/satellite-images/:id", async (req, res) => {
     try {
       const { id } = req.params;
       // Mock single image lookup - in production would fetch from database
@@ -684,7 +684,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const gfwService = new GFWService();
 
   // Real-time WDPA Protected Area Verification API
-  app.post("/api/wdpa/verify-coordinates", isAuthenticated, async (req, res) => {
+  app.post("/api/wdpa/verify-coordinates", async (req, res) => {
     try {
       const { coordinates } = req.body;
       
@@ -704,7 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get protected area details
-  app.get("/api/wdpa/protected-area/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/wdpa/protected-area/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const protectedArea = await wdpaService.getProtectedAreaDetails(id);
@@ -724,7 +724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search protected areas by region
-  app.get("/api/wdpa/search", isAuthenticated, async (req, res) => {
+  app.get("/api/wdpa/search", async (req, res) => {
     try {
       const { country, province } = req.query;
       
@@ -747,7 +747,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Real-time GFW Forest Analysis API
-  app.post("/api/gfw/forest-analysis", isAuthenticated, async (req, res) => {
+  app.post("/api/gfw/forest-analysis", async (req, res) => {
     try {
       const { coordinates, year } = req.body;
       
@@ -767,7 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get GLAD deforestation alerts
-  app.post("/api/gfw/glad-alerts", isAuthenticated, async (req, res) => {
+  app.post("/api/gfw/glad-alerts", async (req, res) => {
     try {
       const { coordinates, startDate, endDate } = req.body;
       
@@ -787,7 +787,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced plot verification combining WDPA and GFW data
-  app.post("/api/plots/comprehensive-verification", isAuthenticated, async (req, res) => {
+  app.post("/api/plots/comprehensive-verification", async (req, res) => {
     try {
       const { plotId, coordinates } = req.body;
       
@@ -853,7 +853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Deforestation Alerts API (merged satellite imagery and monitoring with GFW integration)
-  app.get("/api/deforestation-alerts", isAuthenticated, async (req, res) => {
+  app.get("/api/deforestation-alerts", async (req, res) => {
     try {
       // Mock deforestation alert data with GFW integration
       const mockAlertData = [
@@ -960,7 +960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update alert verification status
-  app.patch("/api/deforestation-alerts/:id/verify", isAuthenticated, async (req, res) => {
+  app.patch("/api/deforestation-alerts/:id/verify", async (req, res) => {
     try {
       const { id } = req.params;
       const { verificationStatus, notes } = req.body;
@@ -981,7 +981,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Surveys API
-  app.get("/api/surveys", isAuthenticated, async (req, res) => {
+  app.get("/api/surveys", async (req, res) => {
     try {
       const surveys = await storage.getAllSurveys();
       res.json(surveys);
@@ -991,7 +991,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/surveys", isAuthenticated, async (req, res) => {
+  app.post("/api/surveys", async (req, res) => {
     try {
       const surveyData = insertSurveySchema.parse({
         ...req.body,
@@ -1006,7 +1006,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Survey Responses API
-  app.post("/api/survey-responses", isAuthenticated, async (req, res) => {
+  app.post("/api/survey-responses", async (req, res) => {
     try {
       const responseData = insertSurveyResponseSchema.parse({
         ...req.body,
@@ -1021,7 +1021,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Country Map - Plot data with geospatial information
-  app.get("/api/country-map/plots", isAuthenticated, async (req, res) => {
+  app.get("/api/country-map/plots", async (req, res) => {
     try {
       const plots = await storage.getAllPlots();
       const enhancedPlots = plots.map((plot, index) => ({
@@ -1063,7 +1063,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Layer data for WDPA, KLHK, GFW analysis
-  app.get("/api/country-map/layers/:layerType", isAuthenticated, async (req, res) => {
+  app.get("/api/country-map/layers/:layerType", async (req, res) => {
     try {
       const { layerType } = req.params;
       
@@ -1123,7 +1123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Supply Chain Analytics endpoints
-  app.get("/api/supply-chain/analytics", isAuthenticated, async (req, res) => {
+  app.get("/api/supply-chain/analytics", async (req, res) => {
     try {
       const { range = '6months' } = req.query;
       
@@ -1147,7 +1147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/suppliers/:id/compliance-score", isAuthenticated, async (req, res) => {
+  app.get("/api/suppliers/:id/compliance-score", async (req, res) => {
     try {
       const { id } = req.params;
       const supplier = await storage.getSupplier(id);
@@ -1179,7 +1179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Farmer data endpoints
-  app.get("/api/farmers", isAuthenticated, async (req, res) => {
+  app.get("/api/farmers", async (req, res) => {
     try {
       // Mock farmer data based on the detailed structure required
       const mockFarmers = [
@@ -1346,7 +1346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Analysis endpoints
-  app.post("/api/ai/analyze", isAuthenticated, async (req, res) => {
+  app.post("/api/ai/analyze", async (req, res) => {
     try {
       const { query, plotData, alertData, context } = req.body;
       
@@ -1368,7 +1368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/ai/summary", isAuthenticated, async (req, res) => {
+  app.post("/api/ai/summary", async (req, res) => {
     try {
       const { plotData, alertData } = req.body;
       
@@ -1385,7 +1385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI-powered document completion endpoints
-  app.post('/api/ai/suggest-completions', isAuthenticated, async (req, res) => {
+  app.post('/api/ai/suggest-completions', async (req, res) => {
     try {
       const { aiCompletionService } = await import('./lib/ai-completion');
       const partialData = req.body;
@@ -1398,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/validate-document', isAuthenticated, async (req, res) => {
+  app.post('/api/ai/validate-document', async (req, res) => {
     try {
       const { aiCompletionService } = await import('./lib/ai-completion');
       const farmerData = req.body;
@@ -1411,7 +1411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/compliance-summary', isAuthenticated, async (req, res) => {
+  app.post('/api/ai/compliance-summary', async (req, res) => {
     try {
       const { aiCompletionService } = await import('./lib/ai-completion');
       const farmerData = req.body;
@@ -1424,7 +1424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/ai/field-suggestions', isAuthenticated, async (req, res) => {
+  app.post('/api/ai/field-suggestions', async (req, res) => {
     try {
       const { aiCompletionService } = await import('./lib/ai-completion');
       const { fieldName, currentValue, context } = req.body;
