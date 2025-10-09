@@ -1,5 +1,4 @@
 import { useLocation } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 import { 
   BarChart3, 
@@ -79,22 +78,8 @@ export function Sidebar() {
   const [expandedModules, setExpandedModules] = useState<string[]>(['Supply Chain Analysis']);
   const { toast } = useToast();
 
-  // Use real authentication
-  const auth = useAuth();
-  const user = auth?.user;
-  const logoutMutation = auth?.logoutMutation || { mutate: () => {} };
-
-  // Check if user has admin permissions (check actual user role)
-  const isAdmin = user?.role === 'admin' || user?.role === 'system_admin' || user?.role === 'organization_admin';
-  
-  // Combine navigation arrays
-  const allNavigation = isAdmin ? [...navigation, ...adminNavigation] : navigation;
-
-  const handleLogout = () => {
-    if (confirm('Are you sure you want to logout?')) {
-      logoutMutation.mutate();
-    }
-  };
+  // Show all navigation including admin (no authentication required)
+  const allNavigation = [...navigation, ...adminNavigation];
 
   const toggleModule = (moduleName: string) => {
     setExpandedModules(prev => 
@@ -215,19 +200,7 @@ export function Sidebar() {
 
       <div className="flex-1 p-4">
         <div className="space-y-1">
-          {navigation.map(renderNavigationItem)}
-          
-          {/* Admin Navigation Section */}
-          {isAdmin && (
-            <>
-              <div className="my-4">
-                <div className="px-4 py-2">
-                  <div className="h-px bg-gray-300 dark:bg-gray-700"></div>
-                </div>
-              </div>
-              {adminNavigation.map(renderNavigationItem)}
-            </>
-          )}
+          {allNavigation.map(renderNavigationItem)}
         </div>
       </div>
 
@@ -238,21 +211,12 @@ export function Sidebar() {
           </div>
           <div className="ml-3 flex-1">
             <p className="text-sm font-medium text-gray-800" data-testid="text-user-name">
-              {user?.name || 'Admin User'}
+              Admin User
             </p>
             <p className="text-xs text-gray-500" data-testid="text-user-role">
-              {user?.role?.replace('_', ' ') || 'Compliance Officer'}
+              Compliance Officer
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-gray-400 hover:text-gray-600"
-            data-testid="button-logout"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
         </div>
       </div>
     </nav>

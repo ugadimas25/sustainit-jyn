@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import express from "express";
 import { setupAuth, isAuthenticated } from "./auth";
 import { voiceAssistantRouter } from "./routes/voice-assistant";
-import userConfigRoutes from "./user-config-routes";
+// User config routes disabled (authentication removed)
+// import userConfigRoutes from "./user-config-routes";
 import { storage } from "./storage";
 import {
   insertCommoditySchema,
@@ -653,8 +654,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Voice Assistant Routes
   app.use("/api/voice-assistant", voiceAssistantRouter);
 
-  // User Configuration Routes (RBAC System)
-  app.use("/api/user-config", userConfigRoutes);
+  // User Configuration Routes (RBAC System) - Disabled (authentication removed)
+  // app.use("/api/user-config", userConfigRoutes);
 
   // GraphQL endpoint for traceability queries
   app.post("/api/graphql", async (req, res) => {
