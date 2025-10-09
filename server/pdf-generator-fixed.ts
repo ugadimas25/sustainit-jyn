@@ -1,4 +1,4 @@
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import fs from 'fs';
 
 export function generateFixedDDSPDF(reportData: any) {
