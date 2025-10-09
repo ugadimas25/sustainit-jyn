@@ -162,368 +162,27 @@ export default function DueDiligenceReport() {
     }
   }, [selectedHsCodes]);
 
+  // Type for the API response (different from database schema)
+  type DdsReportListItem = {
+    id: string;
+    statementId: string;
+    date: string;
+    product: string;
+    operator: string;
+    status: string;
+    downloadPath: string | null;
+    fileName: string | null;
+    canDownload: boolean;
+  };
+
   // Fetch DDS reports using the required endpoint with fallback
-  const { data: ddsReportsFromList = [], isLoading: loadingDdsList, error: ddsListError } = useQuery<DdsReport[]>({
+  const { data: ddsReportsFromList = [], isLoading: loadingDdsList, error: ddsListError } = useQuery<DdsReportListItem[]>({
     queryKey: ['/api/dds/list'],
     retry: false
   });
 
-  // Dummy DDS data for display when API fails or is empty
-  const dummyDdsReports: DdsReport[] = [
-    {
-      id: 'DDS-2024-001',
-      shipmentId: null,
-      companyInternalRef: null,
-      activity: null,
-      operatorLegalName: 'PT TH Indo Plantations',
-      operatorAddress: 'Jl. Industri No. 123, Jakarta 10120, Indonesia',
-      placeOfActivity: null,
-      operatorCountry: null,
-      operatorIsoCode: null,
-      eoriNumber: null,
-      hsCode: '15190910',
-      productDescription: 'Crude Palm Oil (CPO)',
-      scientificName: 'Elaeis guineensis',
-      commonName: 'African oil palm',
-      producerName: null,
-      netMassKg: "50000",
-      volumeUnit: null,
-      volumeQuantity: null,
-      percentageEstimation: null,
-      supplementaryUnit: null,
-      supplementaryQuantity: null,
-      plotSelectionMethod: null,
-      selectedPlotId: null,
-      plotName: null,
-      totalProducers: null,
-      totalPlots: null,
-      totalProductionArea: null,
-      countryOfHarvest: null,
-      maxIntermediaries: null,
-      traceabilityMethod: null,
-      expectedHarvestDate: null,
-      productionDateRange: null,
-      countryOfProduction: 'Indonesia',
-      geolocationType: null,
-      geolocationCoordinates: null,
-      uploadedGeojson: null,
-      geojsonValidated: false,
-      geojsonValidationErrors: null,
-      plotGeolocations: null,
-      establishmentGeolocations: null,
-      kmlFileName: null,
-      geojsonFilePaths: null,
-      plotBoundingBox: null,
-      plotCentroid: null,
-      plotArea: null,
-      priorDdsReference: null,
-      operatorDeclaration: 'Complies with EUDR requirements',
-      signedBy: 'Ahmad Suharto',
-      signedDate: new Date('2024-01-15'),
-      signatoryFunction: 'Operations Director',
-      digitalSignature: null,
-      signatureType: null,
-      signatureImagePath: null,
-      signatureData: null,
-      status: 'generated',
-      submissionDate: null,
-      euTraceReference: null,
-      pdfDocumentPath: null,
-      pdfFileName: null,
-      sessionId: null,
-      downloadCount: 0,
-      lastDownloaded: null,
-      deforestationRiskLevel: null,
-      legalityStatus: null,
-      complianceScore: null,
-      traceability: null,
-      createdAt: new Date('2024-01-15'),
-      updatedAt: new Date('2024-01-15')
-    },
-    {
-      id: 'DDS-2024-002',
-      shipmentId: null,
-      companyInternalRef: null,
-      activity: null,
-      operatorLegalName: 'KPN Upstream',
-      operatorAddress: 'Jl. Raya Medan-Binjai KM 12, Medan 20241, Indonesia',
-      placeOfActivity: null,
-      operatorCountry: null,
-      operatorIsoCode: null,
-      eoriNumber: null,
-      hsCode: '15119000',
-      productDescription: 'Refined Palm Oil',
-      scientificName: 'Elaeis guineensis',
-      commonName: 'African oil palm',
-      producerName: null,
-      netMassKg: "25000",
-      volumeUnit: null,
-      volumeQuantity: null,
-      percentageEstimation: null,
-      supplementaryUnit: null,
-      supplementaryQuantity: null,
-      plotSelectionMethod: null,
-      selectedPlotId: null,
-      plotName: null,
-      totalProducers: null,
-      totalPlots: null,
-      totalProductionArea: null,
-      countryOfHarvest: null,
-      maxIntermediaries: null,
-      traceabilityMethod: null,
-      expectedHarvestDate: null,
-      productionDateRange: null,
-      countryOfProduction: 'Indonesia',
-      geolocationType: null,
-      geolocationCoordinates: null,
-      uploadedGeojson: null,
-      geojsonValidated: false,
-      geojsonValidationErrors: null,
-      plotGeolocations: null,
-      establishmentGeolocations: null,
-      kmlFileName: null,
-      geojsonFilePaths: null,
-      plotBoundingBox: null,
-      plotCentroid: null,
-      plotArea: null,
-      priorDdsReference: null,
-      operatorDeclaration: 'Verified EUDR compliance',
-      signedBy: 'Budi Santoso',
-      signedDate: new Date('2024-01-18'),
-      signatoryFunction: 'General Manager',
-      digitalSignature: null,
-      signatureType: null,
-      signatureImagePath: null,
-      signatureData: null,
-      status: 'submitted',
-      submissionDate: null,
-      euTraceReference: null,
-      pdfDocumentPath: null,
-      pdfFileName: null,
-      sessionId: null,
-      downloadCount: 0,
-      lastDownloaded: null,
-      deforestationRiskLevel: null,
-      legalityStatus: null,
-      complianceScore: null,
-      traceability: null,
-      createdAt: new Date('2024-01-18'),
-      updatedAt: new Date('2024-01-18')
-    },
-    {
-      id: 'DDS-2024-003',
-      shipmentId: null,
-      companyInternalRef: null,
-      activity: null,
-      operatorLegalName: 'KPN Downstream',
-      operatorAddress: 'Jl. Sudirman No. 45, Surabaya 60271, Indonesia',
-      placeOfActivity: null,
-      operatorCountry: null,
-      operatorIsoCode: null,
-      eoriNumber: null,
-      hsCode: '15132100',
-      productDescription: 'Palm Kernel Oil',
-      scientificName: 'Elaeis guineensis',
-      commonName: 'African oil palm',
-      producerName: null,
-      netMassKg: "15000",
-      volumeUnit: null,
-      volumeQuantity: null,
-      percentageEstimation: null,
-      supplementaryUnit: null,
-      supplementaryQuantity: null,
-      plotSelectionMethod: null,
-      selectedPlotId: null,
-      plotName: null,
-      totalProducers: null,
-      totalPlots: null,
-      totalProductionArea: null,
-      countryOfHarvest: null,
-      maxIntermediaries: null,
-      traceabilityMethod: null,
-      expectedHarvestDate: null,
-      productionDateRange: null,
-      countryOfProduction: 'Indonesia',
-      geolocationType: null,
-      geolocationCoordinates: null,
-      uploadedGeojson: null,
-      geojsonValidated: false,
-      geojsonValidationErrors: null,
-      plotGeolocations: null,
-      establishmentGeolocations: null,
-      kmlFileName: null,
-      geojsonFilePaths: null,
-      plotBoundingBox: null,
-      plotCentroid: null,
-      plotArea: null,
-      priorDdsReference: null,
-      operatorDeclaration: 'EUDR deforestation-free certified',
-      signedBy: 'Sari Dewi',
-      signedDate: new Date('2024-01-22'),
-      signatoryFunction: 'Sustainability Director',
-      digitalSignature: null,
-      signatureType: null,
-      signatureImagePath: null,
-      signatureData: null,
-      status: 'generated',
-      submissionDate: null,
-      euTraceReference: null,
-      pdfDocumentPath: null,
-      pdfFileName: null,
-      sessionId: null,
-      downloadCount: 0,
-      lastDownloaded: null,
-      deforestationRiskLevel: null,
-      legalityStatus: null,
-      complianceScore: null,
-      traceability: null,
-      createdAt: new Date('2024-01-22'),
-      updatedAt: new Date('2024-01-22')
-    },
-    {
-      id: 'DDS-2024-004',
-      shipmentId: null,
-      companyInternalRef: null,
-      activity: null,
-      operatorLegalName: 'PT TH Indo Plantations',
-      operatorAddress: 'Jl. Raya Pekanbaru-Dumai KM 45, Riau 28300, Indonesia',
-      placeOfActivity: null,
-      operatorCountry: null,
-      operatorIsoCode: null,
-      eoriNumber: null,
-      hsCode: '23066990',
-      productDescription: 'Palm Oil Residues',
-      scientificName: 'Elaeis guineensis',
-      commonName: 'African oil palm',
-      producerName: null,
-      netMassKg: "8000",
-      volumeUnit: null,
-      volumeQuantity: null,
-      percentageEstimation: null,
-      supplementaryUnit: null,
-      supplementaryQuantity: null,
-      plotSelectionMethod: null,
-      selectedPlotId: null,
-      plotName: null,
-      totalProducers: null,
-      totalPlots: null,
-      totalProductionArea: null,
-      countryOfHarvest: null,
-      maxIntermediaries: null,
-      traceabilityMethod: null,
-      expectedHarvestDate: null,
-      productionDateRange: null,
-      countryOfProduction: 'Indonesia',
-      geolocationType: null,
-      geolocationCoordinates: null,
-      uploadedGeojson: null,
-      geojsonValidated: false,
-      geojsonValidationErrors: null,
-      plotGeolocations: null,
-      establishmentGeolocations: null,
-      kmlFileName: null,
-      geojsonFilePaths: null,
-      plotBoundingBox: null,
-      plotCentroid: null,
-      plotArea: null,
-      priorDdsReference: null,
-      operatorDeclaration: 'Smallholder compliance verified',
-      signedBy: 'Bambang Suryadi',
-      signedDate: new Date('2024-01-25'),
-      signatoryFunction: 'Estate Manager',
-      digitalSignature: null,
-      signatureType: null,
-      signatureImagePath: null,
-      signatureData: null,
-      status: 'generated',
-      submissionDate: null,
-      euTraceReference: null,
-      pdfDocumentPath: null,
-      pdfFileName: null,
-      sessionId: null,
-      downloadCount: 0,
-      lastDownloaded: null,
-      deforestationRiskLevel: null,
-      legalityStatus: null,
-      complianceScore: null,
-      traceability: null,
-      createdAt: new Date('2024-01-25'),
-      updatedAt: new Date('2024-01-25')
-    },
-    {
-      id: 'DDS-2024-005',
-      shipmentId: null,
-      companyInternalRef: null,
-      activity: null,
-      operatorLegalName: 'KPN Upstream',
-      operatorAddress: 'Jl. Gatot Subroto No. 88, Bandung 40262, Indonesia',
-      placeOfActivity: null,
-      operatorCountry: null,
-      operatorIsoCode: null,
-      eoriNumber: null,
-      hsCode: '38231900',
-      productDescription: 'Industrial Fatty Acids (Palm-based)',
-      scientificName: 'Elaeis guineensis',
-      commonName: 'African oil palm',
-      producerName: null,
-      netMassKg: "12500",
-      volumeUnit: null,
-      volumeQuantity: null,
-      percentageEstimation: null,
-      supplementaryUnit: null,
-      supplementaryQuantity: null,
-      plotSelectionMethod: null,
-      selectedPlotId: null,
-      plotName: null,
-      totalProducers: null,
-      totalPlots: null,
-      totalProductionArea: null,
-      countryOfHarvest: null,
-      maxIntermediaries: null,
-      traceabilityMethod: null,
-      expectedHarvestDate: null,
-      productionDateRange: null,
-      countryOfProduction: 'Indonesia',
-      geolocationType: null,
-      geolocationCoordinates: null,
-      uploadedGeojson: null,
-      geojsonValidated: false,
-      geojsonValidationErrors: null,
-      plotGeolocations: null,
-      establishmentGeolocations: null,
-      kmlFileName: null,
-      geojsonFilePaths: null,
-      plotBoundingBox: null,
-      plotCentroid: null,
-      plotArea: null,
-      priorDdsReference: null,
-      operatorDeclaration: 'Full EUDR compliance achieved',
-      signedBy: 'Indah Permatasari',
-      signedDate: new Date('2024-01-28'),
-      signatoryFunction: 'Head of Compliance',
-      digitalSignature: null,
-      signatureType: null,
-      signatureImagePath: null,
-      signatureData: null,
-      status: 'submitted',
-      submissionDate: null,
-      euTraceReference: null,
-      pdfDocumentPath: null,
-      pdfFileName: null,
-      sessionId: null,
-      downloadCount: 0,
-      lastDownloaded: null,
-      deforestationRiskLevel: null,
-      legalityStatus: null,
-      complianceScore: null,
-      traceability: null,
-      createdAt: new Date('2024-01-28'),
-      updatedAt: new Date('2024-01-28')
-    }
-  ];
-
-  // Fallback to dummy data if real data API fails or is empty
-  const ddsReports = ddsReportsFromList.length > 0 ? ddsReportsFromList : dummyDdsReports;
+  // Use the data from API directly
+  const ddsReports = ddsReportsFromList;
 
   // Fetch shipments for form selection
   const { data: shipments = [] } = useQuery<any[]>({
@@ -2170,176 +1829,49 @@ export default function DueDiligenceReport() {
                           </tr>
                         </thead>
                         <tbody>
-                          {/* Dummy DDS entries as per requirements */}
-                          <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="p-2 font-mono text-sm">DDS-2024-001</td>
-                            <td className="p-2">2024-09-15</td>
-                            <td className="p-2">Crude Palm Oil (CPO)</td>
-                            <td className="p-2">PT BSU 03</td>
-                            <td className="p-2">
-                              <Badge className="bg-green-100 text-green-800">
-                                <div className="flex items-center gap-1">
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Generated
-                                </div>
-                              </Badge>
-                            </td>
-                            <td className="p-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => window.open('/api/generate-dummy-dds-pdf', '_blank')}
-                                data-testid="button-download-dds-001"
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                PDF
-                              </Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="p-2 font-mono text-sm">DDS-2024-002</td>
-                            <td className="p-2">2024-09-12</td>
-                            <td className="p-2">Refined Palm Oil</td>
-                            <td className="p-2">KPN 04</td>
-                            <td className="p-2">
-                              <Badge className="bg-blue-100 text-blue-800">
-                                <div className="flex items-center gap-1">
-                                  <Send className="h-3 w-3" />
-                                  Submitted
-                                </div>
-                              </Badge>
-                            </td>
-                            <td className="p-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => window.open('/api/generate-dummy-dds-pdf', '_blank')}
-                                data-testid="button-download-dds-002"
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                PDF
-                              </Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="p-2 font-mono text-sm">DDS-2024-003</td>
-                            <td className="p-2">2024-09-10</td>
-                            <td className="p-2">Palm Kernel Oil</td>
-                            <td className="p-2">PT THIP 04</td>
-                            <td className="p-2">
-                              <Badge className="bg-green-100 text-green-800">
-                                <div className="flex items-center gap-1">
-                                  <CheckCircle2 className="h-3 w-3" />
-                                  Generated
-                                </div>
-                              </Badge>
-                            </td>
-                            <td className="p-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => window.open('/api/generate-dummy-dds-pdf', '_blank')}
-                                data-testid="button-download-dds-003"
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                PDF
-                              </Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="p-2 font-mono text-sm">DDS-2024-004</td>
-                            <td className="p-2">2024-09-08</td>
-                            <td className="p-2">Palm Oil Residues</td>
-                            <td className="p-2">Riau Growers Cooperative</td>
-                            <td className="p-2">
-                              <Badge className="bg-yellow-100 text-yellow-800">
-                                <div className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  Draft
-                                </div>
-                              </Badge>
-                            </td>
-                            <td className="p-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => window.open('/api/generate-dummy-dds-pdf', '_blank')}
-                                data-testid="button-download-dds-004"
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                PDF
-                              </Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="p-2 font-mono text-sm">DDS-2024-005</td>
-                            <td className="p-2">2024-09-05</td>
-                            <td className="p-2">Industrial Fatty Acids</td>
-                            <td className="p-2">Sime Darby Plantation Berhad</td>
-                            <td className="p-2">
-                              <Badge className="bg-blue-100 text-blue-800">
-                                <div className="flex items-center gap-1">
-                                  <Send className="h-3 w-3" />
-                                  Submitted
-                                </div>
-                              </Badge>
-                            </td>
-                            <td className="p-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => window.open('/api/generate-dummy-dds-pdf', '_blank')}
-                                data-testid="button-download-dds-005"
-                              >
-                                <Download className="h-4 w-4 mr-1" />
-                                PDF
-                              </Button>
-                            </td>
-                          </tr>
-                          {ddsReports.map((report: DdsReport) => (
+                          {ddsReports.map((report) => (
                             <tr key={report.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                              <td className="p-2 font-mono text-sm">DDS-{new Date(report.createdAt).getFullYear()}-{report.id.slice(0, 3)}</td>
-                              <td className="p-2">{new Date(report.createdAt).toLocaleDateString()}</td>
-                              <td className="p-2">{report.productDescription}</td>
-                              <td className="p-2">{report.operatorLegalName}</td>
+                              <td className="p-2 font-mono text-sm">{report.statementId}</td>
+                              <td className="p-2">{new Date(report.date).toLocaleDateString()}</td>
+                              <td className="p-2">{report.product}</td>
+                              <td className="p-2">{report.operator}</td>
                               <td className="p-2">
-                                <Badge className={getStatusColor(report.status)}>
-                                  <div className="flex items-center gap-1">
-                                    {getStatusIcon(report.status)}
-                                    {report.status}
-                                  </div>
-                                </Badge>
+                                {report.status === 'submitted' && (
+                                  <Badge className="bg-blue-100 text-blue-800">
+                                    <div className="flex items-center gap-1">
+                                      <Send className="h-3 w-3" />
+                                      Submitted
+                                    </div>
+                                  </Badge>
+                                )}
+                                {report.status === 'generated' && (
+                                  <Badge className="bg-green-100 text-green-800">
+                                    <div className="flex items-center gap-1">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      Generated
+                                    </div>
+                                  </Badge>
+                                )}
+                                {report.status === 'draft' && (
+                                  <Badge className="bg-yellow-100 text-yellow-800">
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      Draft
+                                    </div>
+                                  </Badge>
+                                )}
                               </td>
                               <td className="p-2">
-                                <div className="flex gap-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => setSelectedReport(report)}
-                                    data-testid={`button-view-${report.id}`}
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => downloadDdsReportMutation.mutate(report.id)}
-                                    disabled={downloadDdsReportMutation.isPending}
-                                    data-testid={`button-pdf-${report.id}`}
-                                  >
-                                    <Download className="h-4 w-4" />
-                                  </Button>
-                                  {report.status === 'draft' && (
-                                    <Button 
-                                      size="sm" 
-                                      onClick={() => submitToEuTraceMutation.mutate(report.id)}
-                                      disabled={submitToEuTraceMutation.isPending}
-                                      data-testid={`button-submit-${report.id}`}
-                                    >
-                                      <Send className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                </div>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => downloadDdsReportMutation.mutate(report.id)}
+                                  disabled={!report.canDownload}
+                                  data-testid={`button-download-dds-${report.statementId}`}
+                                >
+                                  <Download className="h-4 w-4 mr-1" />
+                                  PDF
+                                </Button>
                               </td>
                             </tr>
                           ))}
