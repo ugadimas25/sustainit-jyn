@@ -3,12 +3,8 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/hooks/use-auth";
 import { SupplierProvider } from "@/hooks/use-supplier-context";
-import { ProtectedRoute } from "@/lib/protected-route";
-import { WorkflowGuard } from "@/components/route-guards/WorkflowGuard";
 import NotFound from "@/pages/not-found";
-import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
 import SupplyChainAnalysis from "@/pages/supply-chain-analysis";
@@ -29,32 +25,84 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { VoiceAssistantToggle } from "@/components/voice-assistant/VoiceAssistantToggle";
 
+function PageLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar />
+        <main className="flex-1 overflow-auto pt-16">
+          {children}
+        </main>
+        <VoiceAssistantToggle />
+      </div>
+    </div>
+  );
+}
+
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={() => <Dashboard />} />
-      <ProtectedRoute path="/dashboard" component={() => <Dashboard />} />
-      <ProtectedRoute path="/deforestation-monitoring" component={() => <DeforestationMonitoring />} />
-      <ProtectedRoute path="/spatial-analysis" component={() => <DeforestationMonitoring />} />
-      <ProtectedRoute path="/map-viewer" component={() => <MapViewer />} />
-      <ProtectedRoute path="/edit-polygon" component={() => <EditPolygon />} />
-      <ProtectedRoute path="/data-verification" component={() => <DataVerification />} />
-      <ProtectedRoute path="/supply-chain-analysis" component={() => <SupplyChainAnalysis />} />
-      <ProtectedRoute path="/data-collection" component={() => <LegalityAssessment />} />
-      <ProtectedRoute path="/legality-assessment" component={() => <LegalityAssessment />} />
-      <ProtectedRoute path="/legality-compliance" component={() => <LegalityCompliance />} />
-      <ProtectedRoute path="/risk-analysis" component={() => <RiskAnalysis />} />
-      <ProtectedRoute path="/supply-chain" component={() => <SupplyChainSimple />} />
-      <ProtectedRoute path="/unified-supply-chain" component={() => <SupplyChainSimple />} />
-      <ProtectedRoute path="/due-diligence-report" component={() => <DueDiligenceReport />} />
+      <Route path="/">
+        <PageLayout><Dashboard /></PageLayout>
+      </Route>
+      <Route path="/dashboard">
+        <PageLayout><Dashboard /></PageLayout>
+      </Route>
+      <Route path="/deforestation-monitoring">
+        <PageLayout><DeforestationMonitoring /></PageLayout>
+      </Route>
+      <Route path="/spatial-analysis">
+        <PageLayout><DeforestationMonitoring /></PageLayout>
+      </Route>
+      <Route path="/map-viewer">
+        <PageLayout><MapViewer /></PageLayout>
+      </Route>
+      <Route path="/edit-polygon">
+        <PageLayout><EditPolygon /></PageLayout>
+      </Route>
+      <Route path="/data-verification">
+        <PageLayout><DataVerification /></PageLayout>
+      </Route>
+      <Route path="/supply-chain-analysis">
+        <PageLayout><SupplyChainAnalysis /></PageLayout>
+      </Route>
+      <Route path="/data-collection">
+        <PageLayout><LegalityAssessment /></PageLayout>
+      </Route>
+      <Route path="/legality-assessment">
+        <PageLayout><LegalityAssessment /></PageLayout>
+      </Route>
+      <Route path="/legality-compliance">
+        <PageLayout><LegalityCompliance /></PageLayout>
+      </Route>
+      <Route path="/risk-analysis">
+        <PageLayout><RiskAnalysis /></PageLayout>
+      </Route>
+      <Route path="/supply-chain">
+        <PageLayout><SupplyChainSimple /></PageLayout>
+      </Route>
+      <Route path="/unified-supply-chain">
+        <PageLayout><SupplyChainSimple /></PageLayout>
+      </Route>
+      <Route path="/due-diligence-report">
+        <PageLayout><DueDiligenceReport /></PageLayout>
+      </Route>
       
       {/* Admin Routes */}
-      <ProtectedRoute path="/admin" component={() => <AdminDashboard />} />
-      <ProtectedRoute path="/admin/dashboard" component={() => <AdminDashboard />} />
-      <ProtectedRoute path="/admin/users" component={() => <UserManagement />} />
-      <ProtectedRoute path="/admin/roles" component={() => <RoleManagement />} />
+      <Route path="/admin">
+        <PageLayout><AdminDashboard /></PageLayout>
+      </Route>
+      <Route path="/admin/dashboard">
+        <PageLayout><AdminDashboard /></PageLayout>
+      </Route>
+      <Route path="/admin/users">
+        <PageLayout><UserManagement /></PageLayout>
+      </Route>
+      <Route path="/admin/roles">
+        <PageLayout><RoleManagement /></PageLayout>
+      </Route>
 
-      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -63,14 +111,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SupplierProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </SupplierProvider>
-      </AuthProvider>
+      <SupplierProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </SupplierProvider>
     </QueryClientProvider>
   );
 }
