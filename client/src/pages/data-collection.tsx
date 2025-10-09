@@ -223,11 +223,13 @@ export default function DataCollection() {
   // Mutations for creating data collections
   const createEstateMutation = useMutation({
     mutationFn: (data: any) => apiRequest('/api/estate-data-collection', 'POST', data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/estate-data-collection'] });
       toast({
         title: "Data Estate berhasil disimpan",
-        description: "Data Estate telah berhasil disimpan ke sistem.",
+        description: response.supplierId 
+          ? `Data Estate dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+          : "Data Estate telah berhasil disimpan ke sistem.",
       });
       // Reset form
       setEstateForm({
@@ -244,11 +246,13 @@ export default function DataCollection() {
 
   const createSmallholdersMutation = useMutation({
     mutationFn: (data: any) => apiRequest('/api/traceability-data-collection', 'POST', data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/traceability-data-collection'] });
       toast({
         title: "Data Smallholders berhasil disimpan",
-        description: "Data Smallholders telah berhasil disimpan ke sistem.",
+        description: response.supplierId 
+          ? `Data Smallholders dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+          : "Data Smallholders telah berhasil disimpan ke sistem.",
       });
       // Reset form
       setSmallholdersForm({
@@ -261,11 +265,13 @@ export default function DataCollection() {
 
   const createMillMutation = useMutation({
     mutationFn: (data: any) => apiRequest('/api/mill-data-collection', 'POST', data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/mill-data-collection'] });
       toast({
         title: "Data Mill berhasil disimpan",
-        description: "Data Mill telah berhasil disimpan ke sistem.",
+        description: response.supplierId 
+          ? `Data Mill dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+          : "Data Mill telah berhasil disimpan ke sistem.",
       });
       // Reset form
       setMillForm({
@@ -281,11 +287,13 @@ export default function DataCollection() {
 
   const createKcpMutation = useMutation({
     mutationFn: (data: any) => apiRequest('/api/kcp-data-collection', 'POST', data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/kcp-data-collection'] });
       toast({
         title: "Data KCP berhasil disimpan",
-        description: "Data KCP telah berhasil disimpan ke sistem.",
+        description: response.supplierId 
+          ? `Data KCP dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+          : "Data KCP telah berhasil disimpan ke sistem.",
       });
       // Reset form
       setKcpForm({
@@ -321,11 +329,13 @@ export default function DataCollection() {
 
   const createBulkingMutation = useMutation({
     mutationFn: (data: any) => apiRequest('/api/bulking-data-collection', 'POST', data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/bulking-data-collection'] });
       toast({
         title: "Data Bulking berhasil disimpan",
-        description: "Data Bulking telah berhasil disimpan ke sistem.",
+        description: response.supplierId 
+          ? `Data Bulking dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+          : "Data Bulking telah berhasil disimpan ke sistem.",
       });
       // Reset form
       setBulkingForm({
