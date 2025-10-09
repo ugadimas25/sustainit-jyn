@@ -1249,6 +1249,7 @@ export const insertDdsReportSchema = createInsertSchema(ddsReports).extend({
   signedDate: z.union([z.date(), z.string()]).transform((val) => 
     typeof val === 'string' ? new Date(val) : val
   ).optional(),
+  shipmentId: z.string().transform((val) => val === '' ? null : val).optional().nullable(),
 });
 // Enhanced Zod schemas with mandatory field validation for the 5 form types
 export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection).extend({
