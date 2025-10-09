@@ -29,6 +29,8 @@ Preferred communication style: Simple, everyday language.
     - **Enhanced DDS Reports**: Generation of Due Diligence Statement reports replicating the FarmForce structure with 6 sections, integrated risk analysis, and branding.
     - **Data Persistence**: Dashboard metrics and analysis results persist across page navigation via localStorage and database synchronization.
     - **Results Export**: Comprehensive export options for analysis results (Excel CSV, GeoJSON) with smart naming and filtered output.
+    - **Automated Workflow Integration**: All 5 data collection endpoints (Estate, Mill, Smallholder, KCP, Bulking) automatically create corresponding Supplier records with appropriate tier assignment (Tier 1/2/3) and return supplierId for seamless downstream workflow integration.
+    - **UI Enhancement**: Success notifications display supplierId in toast messages, enabling users to track workflow progression from Data Collection → Spatial Analysis → Legality Assessment → DDS Reports.
 
 ## Database Schema
 - **Database**: PostgreSQL with PostGIS extension (Neon Database).
