@@ -604,6 +604,231 @@ function DashboardContent() {
           </div>
         </div>
 
+        {/* Supply Chain Health Visualization */}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Supply Chain Health</h2>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Tier Distribution Chart */}
+            <Card className="bg-white border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Suppliers by Tier</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Tier 1</span>
+                      <span className="text-sm font-semibold text-gray-900" data-testid="text-tier1-count">
+                        {supplyChainMetrics?.tierDistribution?.tier1Suppliers || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-green-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.totalSuppliers && supplyChainMetrics.totalSuppliers > 0 
+                            ? ((supplyChainMetrics.tierDistribution?.tier1Suppliers || 0) / supplyChainMetrics.totalSuppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Tier 2</span>
+                      <span className="text-sm font-semibold text-gray-900" data-testid="text-tier2-count">
+                        {supplyChainMetrics?.tierDistribution?.tier2Suppliers || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-blue-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.totalSuppliers && supplyChainMetrics.totalSuppliers > 0 
+                            ? ((supplyChainMetrics.tierDistribution?.tier2Suppliers || 0) / supplyChainMetrics.totalSuppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Tier 3</span>
+                      <span className="text-sm font-semibold text-gray-900" data-testid="text-tier3-count">
+                        {supplyChainMetrics?.tierDistribution?.tier3Suppliers || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-purple-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.totalSuppliers && supplyChainMetrics.totalSuppliers > 0 
+                            ? ((supplyChainMetrics.tierDistribution?.tier3Suppliers || 0) / supplyChainMetrics.totalSuppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Compliance by Tier Chart */}
+            <Card className="bg-white border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Compliance by Tier</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Tier 1 Compliant</span>
+                      <span className="text-sm font-semibold text-green-600" data-testid="text-tier1-compliant">
+                        {supplyChainMetrics?.complianceByTier?.tier1Compliant || 0} / {supplyChainMetrics?.tierDistribution?.tier1Suppliers || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-green-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.tierDistribution?.tier1Suppliers && supplyChainMetrics.tierDistribution.tier1Suppliers > 0 
+                            ? ((supplyChainMetrics.complianceByTier?.tier1Compliant || 0) / supplyChainMetrics.tierDistribution.tier1Suppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Tier 2 Compliant</span>
+                      <span className="text-sm font-semibold text-green-600" data-testid="text-tier2-compliant">
+                        {supplyChainMetrics?.complianceByTier?.tier2Compliant || 0} / {supplyChainMetrics?.tierDistribution?.tier2Suppliers || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-green-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.tierDistribution?.tier2Suppliers && supplyChainMetrics.tierDistribution.tier2Suppliers > 0 
+                            ? ((supplyChainMetrics.complianceByTier?.tier2Compliant || 0) / supplyChainMetrics.tierDistribution.tier2Suppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Tier 3 Compliant</span>
+                      <span className="text-sm font-semibold text-green-600" data-testid="text-tier3-compliant">
+                        {supplyChainMetrics?.complianceByTier?.tier3Compliant || 0} / {supplyChainMetrics?.tierDistribution?.tier3Suppliers || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-green-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.tierDistribution?.tier3Suppliers && supplyChainMetrics.tierDistribution.tier3Suppliers > 0 
+                            ? ((supplyChainMetrics.complianceByTier?.tier3Compliant || 0) / supplyChainMetrics.tierDistribution.tier3Suppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 border-t border-gray-200">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-semibold text-gray-900">Overall Compliance Rate</span>
+                      <span className="text-sm font-bold text-green-600" data-testid="text-overall-compliance">
+                        {supplyChainMetrics?.totalSuppliers && supplyChainMetrics.totalSuppliers > 0 
+                          ? ((supplyChainMetrics.verifiedSuppliers / supplyChainMetrics.totalSuppliers * 100).toFixed(1))
+                          : 0}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Linkage Completion Status */}
+            <Card className="bg-white border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Linkage Completion</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Linked Suppliers</span>
+                      <span className="text-sm font-semibold text-green-600" data-testid="text-linked-suppliers">
+                        {supplyChainMetrics?.linkedSuppliers || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-green-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.totalSuppliers && supplyChainMetrics.totalSuppliers > 0 
+                            ? ((supplyChainMetrics.linkedSuppliers || 0) / supplyChainMetrics.totalSuppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Unlinked Suppliers</span>
+                      <span className="text-sm font-semibold text-red-600" data-testid="text-unlinked-suppliers">
+                        {supplyChainMetrics?.totalSuppliers && supplyChainMetrics.linkedSuppliers 
+                          ? supplyChainMetrics.totalSuppliers - supplyChainMetrics.linkedSuppliers 
+                          : 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-red-600 h-2.5 rounded-full" 
+                        style={{ 
+                          width: `${supplyChainMetrics?.totalSuppliers && supplyChainMetrics.totalSuppliers > 0 && supplyChainMetrics.linkedSuppliers 
+                            ? ((supplyChainMetrics.totalSuppliers - supplyChainMetrics.linkedSuppliers) / supplyChainMetrics.totalSuppliers * 100) 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm text-gray-600">Total Chain Links</span>
+                      <span className="text-sm font-semibold text-blue-600" data-testid="text-total-links">
+                        {supplyChainMetrics?.totalChainLinks || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: '100%' }}></div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 border-t border-gray-200">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-semibold text-gray-900">Linkage Completion Rate</span>
+                      <span className="text-sm font-bold text-green-600" data-testid="text-linkage-rate">
+                        {supplyChainMetrics?.totalSuppliers && supplyChainMetrics.totalSuppliers > 0 && supplyChainMetrics.linkedSuppliers 
+                          ? ((supplyChainMetrics.linkedSuppliers / supplyChainMetrics.totalSuppliers * 100).toFixed(1))
+                          : 0}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* Phase 4: Analytics Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Risk Split Donut Chart */}

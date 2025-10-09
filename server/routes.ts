@@ -2016,12 +2016,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return acc;
       }, {});
 
+      // Calculate linked suppliers (suppliers that have at least one link as either source or target)
+      const linkedSupplierIds = new Set([
+        ...supplierLinks.map((link: any) => link.supplierId),
+        ...supplierLinks.map((link: any) => link.linkedSupplierId)
+      ]);
+      const linkedSuppliers = linkedSupplierIds.size;
+
       res.json({
         totalSuppliers: suppliers.length,
         totalChainLinks: supplierLinks.length,
         totalShipments: shipments.length,
-        tierDistribution,
-        complianceByTier,
+        linkedSuppliers,
+        tierDistribution: {
+          tier1Suppliers: tierDistribution['Tier 1'] || 0,
+          tier2Suppliers: tierDistribution['Tier 2'] || 0,
+          tier3Suppliers: tierDistribution['Tier 3'] || 0,
+        },
+        complianceByTier: {
+          tier1Compliant: complianceByTier['Tier 1']?.compliant || 0,
+          tier2Compliant: complianceByTier['Tier 2']?.compliant || 0,
+          tier3Compliant: complianceByTier['Tier 3']?.compliant || 0,
+        },
         verifiedSuppliers: suppliers.filter((s: any) => s.legalityStatus === 'verified').length,
         pendingSuppliers: suppliers.filter((s: any) => s.legalityStatus === 'pending').length,
       });
@@ -2032,8 +2048,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalSuppliers: 0,
         totalChainLinks: 0,
         totalShipments: 0,
-        tierDistribution: {},
-        complianceByTier: {},
+        linkedSuppliers: 0,
+        tierDistribution: {
+          tier1Suppliers: 0,
+          tier2Suppliers: 0,
+          tier3Suppliers: 0,
+        },
+        complianceByTier: {
+          tier1Compliant: 0,
+          tier2Compliant: 0,
+          tier3Compliant: 0,
+        },
         verifiedSuppliers: 0,
         pendingSuppliers: 0,
       });
