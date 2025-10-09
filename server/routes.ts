@@ -2819,12 +2819,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newReport = await storage.createDdsReport(validatedData);
       res.status(201).json(newReport);
     } catch (error) {
+      console.error("❌ Error in POST /api/dds-reports:", error);
       if (error instanceof z.ZodError) {
         res
           .status(400)
           .json({ error: "Invalid DDS report data", details: error.errors });
       } else {
-        res.status(500).json({ error: "Failed to create DDS report" });
+        res.status(500).json({ error: "Failed to create DDS report", details: (error as Error).message });
       }
     }
   });
