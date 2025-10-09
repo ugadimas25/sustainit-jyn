@@ -61,6 +61,7 @@ import { Readable } from "stream";
 import { jsPDF } from "jspdf";
 import * as fs from "fs";
 import * as path from "path";
+import { calculateDdsRiskFromPlots } from "./lib/dds-risk-calculator";
 
 const scryptAsync = promisify(scrypt);
 
@@ -2738,42 +2739,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Auto-calculate deforestation risk and legality status from plot data
-      if (validatedData.plotGeolocations && validatedData.plotGeolocations.length > 0) {
-        // Extract plot IDs from plotGeolocations array
-        const plotIds = validatedData.plotGeolocations.map((geo: string) => {
-          const parts = geo.split(':');
-          return parts[0]; // First part is plotId
-        }).filter(Boolean);
+      const analysisResults = await storage.getAnalysisResults();
+      const riskCalculation = calculateDdsRiskFromPlots(
+        validatedData.plotGeolocations,
+        analysisResults
+      );
 
-        if (plotIds.length > 0) {
-          console.log(`🔍 Auto-calculating risk for ${plotIds.length} plots...`);
-          
-          // Fetch analysis results for these plots
-          const analysisResults = await storage.getAnalysisResults();
-          const relevantResults = analysisResults.filter(result => plotIds.includes(result.plotId));
-          
-          if (relevantResults.length > 0) {
-            // Calculate overall risk level (highest risk takes precedence)
-            const highRiskCount = relevantResults.filter(r => r.overallRisk === 'HIGH').length;
-            const mediumRiskCount = relevantResults.filter(r => r.overallRisk === 'MEDIUM').length;
-            
-            validatedData.deforestationRiskLevel = highRiskCount > 0 ? 'high' : 
-                                                   mediumRiskCount > 0 ? 'medium' : 'low';
-            
-            // Calculate legality status
-            const nonCompliantCount = relevantResults.filter(r => r.complianceStatus === 'NON-COMPLIANT').length;
-            const compliantCount = relevantResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
-            
-            validatedData.legalityStatus = nonCompliantCount > 0 ? 'non-compliant' :
-                                          compliantCount === relevantResults.length ? 'compliant' : 'under-review';
-            
-            // Calculate compliance score (percentage of compliant plots)
-            const compliancePercentage = (compliantCount / relevantResults.length) * 100;
-            validatedData.complianceScore = compliancePercentage.toFixed(1);
-            
-            console.log(`✅ Risk calculated: ${validatedData.deforestationRiskLevel}, Legality: ${validatedData.legalityStatus}, Score: ${validatedData.complianceScore}%`);
-          }
-        }
+      if (riskCalculation) {
+        validatedData.deforestationRiskLevel = riskCalculation.deforestationRiskLevel;
+        validatedData.legalityStatus = riskCalculation.legalityStatus;
+        validatedData.complianceScore = riskCalculation.complianceScore;
       }
 
       // Auto-generate PDF filename
@@ -2829,42 +2804,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertDdsReportSchema.parse(req.body);
       
       // Auto-calculate deforestation risk and legality status from plot data
-      if (validatedData.plotGeolocations && validatedData.plotGeolocations.length > 0) {
-        // Extract plot IDs from plotGeolocations array
-        const plotIds = validatedData.plotGeolocations.map((geo: string) => {
-          const parts = geo.split(':');
-          return parts[0]; // First part is plotId
-        }).filter(Boolean);
+      const analysisResults = await storage.getAnalysisResults();
+      const riskCalculation = calculateDdsRiskFromPlots(
+        validatedData.plotGeolocations,
+        analysisResults
+      );
 
-        if (plotIds.length > 0) {
-          console.log(`🔍 Auto-calculating risk for ${plotIds.length} plots...`);
-          
-          // Fetch analysis results for these plots
-          const analysisResults = await storage.getAnalysisResults();
-          const relevantResults = analysisResults.filter(result => plotIds.includes(result.plotId));
-          
-          if (relevantResults.length > 0) {
-            // Calculate overall risk level (highest risk takes precedence)
-            const highRiskCount = relevantResults.filter(r => r.overallRisk === 'HIGH').length;
-            const mediumRiskCount = relevantResults.filter(r => r.overallRisk === 'MEDIUM').length;
-            
-            validatedData.deforestationRiskLevel = highRiskCount > 0 ? 'high' : 
-                                                   mediumRiskCount > 0 ? 'medium' : 'low';
-            
-            // Calculate legality status
-            const nonCompliantCount = relevantResults.filter(r => r.complianceStatus === 'NON-COMPLIANT').length;
-            const compliantCount = relevantResults.filter(r => r.complianceStatus === 'COMPLIANT').length;
-            
-            validatedData.legalityStatus = nonCompliantCount > 0 ? 'non-compliant' :
-                                          compliantCount === relevantResults.length ? 'compliant' : 'under-review';
-            
-            // Calculate compliance score (percentage of compliant plots)
-            const compliancePercentage = (compliantCount / relevantResults.length) * 100;
-            validatedData.complianceScore = compliancePercentage.toFixed(1);
-            
-            console.log(`✅ Risk calculated: ${validatedData.deforestationRiskLevel}, Legality: ${validatedData.legalityStatus}, Score: ${validatedData.complianceScore}%`);
-          }
-        }
+      if (riskCalculation) {
+        validatedData.deforestationRiskLevel = riskCalculation.deforestationRiskLevel;
+        validatedData.legalityStatus = riskCalculation.legalityStatus;
+        validatedData.complianceScore = riskCalculation.complianceScore;
       }
       
       const newReport = await storage.createDdsReport(validatedData);

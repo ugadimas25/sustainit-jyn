@@ -145,6 +145,64 @@ export function generateFixedDDSPDF(reportData: any) {
     doc.text(`Expected Harvest Date: ${reportData.expectedHarvestDate || 'N/A'}`, 10, yPos + 48);
     doc.text(`Production Date Range: ${reportData.productionDateRange || 'N/A'}`, 10, yPos + 56);
 
+    // Risk and Compliance Summary (Auto-calculated from Analysis Results)
+    yPos += 70;
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Risk and Compliance Summary', 10, yPos);
+    
+    yPos += 10;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    
+    // Deforestation Risk Level
+    doc.setFont('helvetica', 'bold');
+    doc.text('Deforestation Risk Level:', 10, yPos);
+    doc.setFont('helvetica', 'normal');
+    const riskLevel = (reportData.deforestationRiskLevel || 'N/A').toUpperCase();
+    const riskColor = riskLevel === 'HIGH' ? [220, 38, 38] : 
+                      riskLevel === 'MEDIUM' ? [234, 179, 8] : 
+                      riskLevel === 'LOW' ? [34, 197, 94] : [0, 0, 0];
+    doc.setTextColor(riskColor[0], riskColor[1], riskColor[2]);
+    doc.text(riskLevel, 80, yPos);
+    doc.setTextColor(0, 0, 0);
+    
+    yPos += 8;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Legality Status:', 10, yPos);
+    doc.setFont('helvetica', 'normal');
+    const legalityStatus = (reportData.legalityStatus || 'N/A').toUpperCase();
+    const statusColor = legalityStatus === 'NON-COMPLIANT' ? [220, 38, 38] :
+                        legalityStatus === 'COMPLIANT' ? [34, 197, 94] : [234, 179, 8];
+    doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+    doc.text(legalityStatus, 80, yPos);
+    doc.setTextColor(0, 0, 0);
+    
+    yPos += 8;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Compliance Score:', 10, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${reportData.complianceScore || 'N/A'}${reportData.complianceScore ? '%' : ''}`, 80, yPos);
+    
+    // Plot-level Risk Analysis (if plotGeolocations available)
+    if (reportData.plotGeolocations && reportData.plotGeolocations.length > 0) {
+      yPos += 15;
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Plot-Level Risk Analysis:', 10, yPos);
+      
+      yPos += 8;
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Total Plots Analyzed: ${reportData.plotGeolocations.length}`, 10, yPos);
+      doc.text(`Auto-calculated from spatial analysis results`, 10, yPos + 6);
+    }
+
     // ======================================================
     // PAGE 2 - EUDR COMPLIANCE DECISION TREE (Halaman 2 EUDR Compliance Decision Tree GAMBAR TERLAMPIR)
     // ======================================================
