@@ -3774,10 +3774,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "@shared/schema"
       );
       const validatedData = insertEstateDataCollectionSchema.parse(req.body);
+      
+      // Create estate data collection
       const estate = await storage.createEstateDataCollection(
         validatedData as import("@shared/schema").InsertEstateDataCollection,
       );
-      res.status(201).json(estate);
+      
+      // Automatically create corresponding Supplier entry for workflow integration
+      const supplier = await storage.createSupplier({
+        name: validatedData.namaSupplier || `Estate-${estate.id}`,
+        companyName: validatedData.namaSupplier || `Estate ${estate.id}`,
+        businessType: "Estate",
+        supplierType: "Estate",
+        contactPerson: validatedData.namaPenanggungJawab || "",
+        email: validatedData.emailPenanggungJawab || "",
+        phone: validatedData.nomorTelefonPenanggungJawab || "",
+        address: validatedData.alamatKantor || validatedData.alamatKebun || "",
+        tier: 1, // Estates are typically Tier 1
+        legalityStatus: "pending",
+        legalityScore: 0,
+        certifications: [],
+        registrationNumber: validatedData.izinBerusaha || "",
+      });
+      
+      res.status(201).json({
+        ...estate,
+        supplierId: supplier.id,
+        message: "Estate data collected and supplier created successfully"
+      });
     } catch (error) {
       console.error("Error creating estate data collection:", error);
       if (error instanceof z.ZodError) {
@@ -3826,10 +3850,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { insertMillDataCollectionSchema } = await import("@shared/schema");
       const validatedData = insertMillDataCollectionSchema.parse(req.body);
+      
+      // Create mill data collection
       const mill = await storage.createMillDataCollection(
         validatedData as import("@shared/schema").InsertMillDataCollection,
       );
-      res.status(201).json(mill);
+      
+      // Automatically create corresponding Supplier entry for workflow integration
+      const supplier = await storage.createSupplier({
+        name: validatedData.namaPabrik || `Mill-${mill.id}`,
+        companyName: validatedData.namaPabrik || `Mill ${mill.id}`,
+        businessType: "Mill",
+        supplierType: "Mill",
+        contactPerson: validatedData.namaPenanggungJawab || "",
+        email: validatedData.emailPenanggungJawab || "",
+        phone: validatedData.nomorTelefonPenanggungJawab || "",
+        address: validatedData.alamatKantor || "",
+        tier: 1, // Mills are typically Tier 1
+        legalityStatus: "pending",
+        legalityScore: 0,
+        certifications: [],
+        registrationNumber: validatedData.umlId || "",
+      });
+      
+      res.status(201).json({
+        ...mill,
+        supplierId: supplier.id,
+        message: "Mill data collected and supplier created successfully"
+      });
     } catch (error) {
       console.error("Error creating mill data collection:", error);
       if (error instanceof z.ZodError) {
@@ -3941,10 +3989,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertTraceabilityDataCollectionSchema.parse(
         req.body,
       );
+      
+      // Create traceability/smallholder data collection
       const collection = await storage.createTraceabilityDataCollection(
         validatedData as import("@shared/schema").InsertTraceabilityDataCollection,
       );
-      res.status(201).json(collection);
+      
+      // Automatically create corresponding Supplier entry for workflow integration
+      const supplier = await storage.createSupplier({
+        name: validatedData.pemegangDO || `Smallholder-${collection.id}`,
+        companyName: validatedData.pemegangDO || `Smallholder ${collection.id}`,
+        businessType: "Smallholder",
+        supplierType: "Smallholder",
+        contactPerson: validatedData.pemegangDO || "",
+        email: "",
+        phone: "",
+        address: validatedData.alamatPemegangDO || validatedData.lokasiUsaha || "",
+        tier: 3, // Smallholders are typically Tier 3
+        legalityStatus: "pending",
+        legalityScore: 0,
+        certifications: [],
+        registrationNumber: validatedData.nib || validatedData.nomorDO || "",
+      });
+      
+      res.status(201).json({
+        ...collection,
+        supplierId: supplier.id,
+        message: "Smallholder data collected and supplier created successfully"
+      });
     } catch (error) {
       console.error("Error creating traceability data collection:", error);
       if (error instanceof z.ZodError) {
@@ -3972,10 +4044,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { insertKcpDataCollectionSchema } = await import("@shared/schema");
       const validatedData = insertKcpDataCollectionSchema.parse(req.body);
+      
+      // Create KCP data collection
       const collection = await storage.createKcpDataCollection(
         validatedData as import("@shared/schema").InsertKcpDataCollection,
       );
-      res.status(201).json(collection);
+      
+      // Automatically create corresponding Supplier entry for workflow integration
+      const supplier = await storage.createSupplier({
+        name: validatedData.namaKCP || `KCP-${collection.id}`,
+        companyName: validatedData.namaKCP || `KCP ${collection.id}`,
+        businessType: "KCP",
+        supplierType: "KCP",
+        contactPerson: validatedData.namaPenanggungJawab || "",
+        email: validatedData.emailPenanggungJawab || "",
+        phone: (validatedData as any).nomorTelefonPenanggungJawab || "",
+        address: validatedData.alamatKantor || "",
+        tier: 2, // KCPs are typically Tier 2
+        legalityStatus: "pending",
+        legalityScore: 0,
+        certifications: [],
+        registrationNumber: "",
+      });
+      
+      res.status(201).json({
+        ...collection,
+        supplierId: supplier.id,
+        message: "KCP data collected and supplier created successfully"
+      });
     } catch (error) {
       console.error("Error creating KCP data collection:", error);
       if (error instanceof z.ZodError) {
@@ -4005,10 +4101,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "@shared/schema"
       );
       const validatedData = insertBulkingDataCollectionSchema.parse(req.body);
+      
+      // Create bulking data collection
       const collection = await storage.createBulkingDataCollection(
         validatedData as import("@shared/schema").InsertBulkingDataCollection,
       );
-      res.status(201).json(collection);
+      
+      // Automatically create corresponding Supplier entry for workflow integration
+      const supplier = await storage.createSupplier({
+        name: validatedData.alamatBulking || `Bulking-${collection.id}`,
+        companyName: `Bulking ${collection.id}`,
+        businessType: "Bulking",
+        supplierType: "Bulking",
+        contactPerson: validatedData.namaPenanggungJawab || "",
+        email: validatedData.emailPenanggungJawab || "",
+        phone: validatedData.nomorTelefonPenanggungJawab || "",
+        address: validatedData.alamatKantor || validatedData.alamatBulking || "",
+        tier: 2, // Bulking stations are typically Tier 2
+        legalityStatus: "pending",
+        legalityScore: 0,
+        certifications: [],
+        registrationNumber: "",
+      });
+      
+      res.status(201).json({
+        ...collection,
+        supplierId: supplier.id,
+        message: "Bulking data collected and supplier created successfully"
+      });
     } catch (error) {
       console.error("Error creating bulking data collection:", error);
       if (error instanceof z.ZodError) {
