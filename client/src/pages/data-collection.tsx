@@ -9,10 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { ObjectUploader } from '@/components/ObjectUploader';
-import { FileText, Upload, Satellite, Plus, Trash2 } from 'lucide-react';
+import { FileText, Upload, Satellite, Plus, Trash2, Eye } from 'lucide-react';
 import type { UploadResult } from '@uppy/core';
 import { 
   insertEstateDataCollectionSchema, 
@@ -30,6 +31,27 @@ import {
 export default function DataCollection() {
   const [supplierType, setSupplierType] = useState('');
   const { toast } = useToast();
+
+  // Fetch submitted data collections
+  const { data: estateData = [] as any[] } = useQuery({
+    queryKey: ['/api/estate-data-collection'],
+  });
+
+  const { data: millData = [] as any[] } = useQuery({
+    queryKey: ['/api/mill-data-collection'],
+  });
+
+  const { data: smallholderData = [] as any[] } = useQuery({
+    queryKey: ['/api/traceability-data-collection'],
+  });
+
+  const { data: kcpData = [] as any[] } = useQuery({
+    queryKey: ['/api/kcp-data-collection'],
+  });
+
+  const { data: bulkingData = [] as any[] } = useQuery({
+    queryKey: ['/api/bulking-data-collection'],
+  });
 
   // Form states for all collection types
   const [estateForm, setEstateForm] = useState({
@@ -2431,6 +2453,213 @@ export default function DataCollection() {
               </form>
             </CardContent>
           </Card>
+        )}
+
+        {/* Submitted Data Tables */}
+        {(estateData.length > 0 || millData.length > 0 || smallholderData.length > 0 || kcpData.length > 0 || bulkingData.length > 0) && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Submitted Data Collections</h2>
+
+            {/* Estate Data Table */}
+            {estateData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Estate Data Collection Records</CardTitle>
+                  <CardDescription>All submitted estate data collections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table data-testid="table-estate-records">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Supplier Name</TableHead>
+                          <TableHead>Contact Person</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Office Address</TableHead>
+                          <TableHead>Created</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {estateData.map((record: any) => (
+                          <TableRow key={record.id} data-testid={`row-estate-${record.id}`}>
+                            <TableCell className="font-mono text-xs">{record.id.slice(0, 8)}...</TableCell>
+                            <TableCell className="font-medium">{record.namaSupplier || '-'}</TableCell>
+                            <TableCell>{record.namaPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.emailPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.nomorTeleponPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.alamatKantor || '-'}</TableCell>
+                            <TableCell>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '-'}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Mill Data Table */}
+            {millData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mill Data Collection Records</CardTitle>
+                  <CardDescription>All submitted mill data collections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table data-testid="table-mill-records">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Mill Name</TableHead>
+                          <TableHead>UML ID</TableHead>
+                          <TableHead>Contact Person</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Phone</TableHead>
+                          <TableHead>Created</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {millData.map((record: any) => (
+                          <TableRow key={record.id} data-testid={`row-mill-${record.id}`}>
+                            <TableCell className="font-mono text-xs">{record.id.slice(0, 8)}...</TableCell>
+                            <TableCell className="font-medium">{record.namaPabrik || '-'}</TableCell>
+                            <TableCell>{record.umlId || '-'}</TableCell>
+                            <TableCell>{record.namaPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.emailPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.nomorTeleponPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '-'}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Smallholder/Traceability Data Table */}
+            {smallholderData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Smallholder/Traceability Data Records</CardTitle>
+                  <CardDescription>All submitted traceability data collections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table data-testid="table-smallholder-records">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>DO Number</TableHead>
+                          <TableHead>DO Holder</TableHead>
+                          <TableHead>Address</TableHead>
+                          <TableHead>Business Location</TableHead>
+                          <TableHead>NIB</TableHead>
+                          <TableHead>Created</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {smallholderData.map((record: any) => (
+                          <TableRow key={record.id} data-testid={`row-smallholder-${record.id}`}>
+                            <TableCell className="font-mono text-xs">{record.id}</TableCell>
+                            <TableCell className="font-medium">{record.nomorDO || '-'}</TableCell>
+                            <TableCell>{record.pemegangDO || '-'}</TableCell>
+                            <TableCell>{record.alamatPemegangDO || '-'}</TableCell>
+                            <TableCell>{record.lokasiUsaha || '-'}</TableCell>
+                            <TableCell>{record.nib || '-'}</TableCell>
+                            <TableCell>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '-'}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* KCP Data Table */}
+            {kcpData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>KCP Data Collection Records</CardTitle>
+                  <CardDescription>All submitted KCP data collections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table data-testid="table-kcp-records">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>KCP Name</TableHead>
+                          <TableHead>Facility ID</TableHead>
+                          <TableHead>Contact Person</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Address</TableHead>
+                          <TableHead>Created</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {kcpData.map((record: any) => (
+                          <TableRow key={record.id} data-testid={`row-kcp-${record.id}`}>
+                            <TableCell className="font-mono text-xs">{record.id}</TableCell>
+                            <TableCell className="font-medium">{record.namaKCP || '-'}</TableCell>
+                            <TableCell>{record.ublFacilityId || '-'}</TableCell>
+                            <TableCell>{record.namaPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.emailPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.alamatKantor || '-'}</TableCell>
+                            <TableCell>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '-'}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Bulking Data Table */}
+            {bulkingData.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bulking Data Collection Records</CardTitle>
+                  <CardDescription>All submitted bulking data collections</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table data-testid="table-bulking-records">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Facility Name</TableHead>
+                          <TableHead>Facility ID</TableHead>
+                          <TableHead>Contact Person</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Address</TableHead>
+                          <TableHead>Created</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bulkingData.map((record: any) => (
+                          <TableRow key={record.id} data-testid={`row-bulking-${record.id}`}>
+                            <TableCell className="font-mono text-xs">{record.id}</TableCell>
+                            <TableCell className="font-medium">{record.namaFasilitasBulking || '-'}</TableCell>
+                            <TableCell>{record.ublFacilityId || '-'}</TableCell>
+                            <TableCell>{record.namaPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.emailPenanggungJawab || '-'}</TableCell>
+                            <TableCell>{record.alamatKantor || '-'}</TableCell>
+                            <TableCell>{record.createdAt ? new Date(record.createdAt).toLocaleDateString() : '-'}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {/* View Consolidated Results CTA - Show when any supplier type is selected */}
