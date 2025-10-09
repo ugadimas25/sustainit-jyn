@@ -714,6 +714,11 @@ export default function DueDiligenceReport() {
   const [showPlotSelector, setShowPlotSelector] = useState(false);
   const [tempSelectedPlots, setTempSelectedPlots] = useState<Set<string>>(new Set());
   
+  // State for plot filters
+  const [plotFilterRisk, setPlotFilterRisk] = useState<string>('all');
+  const [plotFilterCompliance, setPlotFilterCompliance] = useState<string>('all');
+  const [plotFilterCountry, setPlotFilterCountry] = useState<string>('all');
+  
   // State for supplier legality selection popup
   const [showSupplierSelector, setShowSupplierSelector] = useState(false);
   const [tempSelectedSuppliers, setTempSelectedSuppliers] = useState<Set<string>>(new Set());
@@ -726,6 +731,19 @@ export default function DueDiligenceReport() {
     queryKey: ['/api/analysis-results'],
     enabled: showPlotSelector,
   });
+  
+  // Filter analysis results based on selected filters
+  const filteredAnalysisResults = analysisResults.filter(plot => {
+    if (plotFilterRisk !== 'all' && plot.overallRisk !== plotFilterRisk) return false;
+    if (plotFilterCompliance !== 'all' && plot.complianceStatus !== plotFilterCompliance) return false;
+    if (plotFilterCountry !== 'all' && plot.country !== plotFilterCountry) return false;
+    return true;
+  });
+  
+  // Get unique countries from analysis results for filter dropdown (filter out falsy values)
+  const availableCountries = Array.from(
+    new Set(analysisResults.map((plot: any) => plot.country).filter((country): country is string => !!country))
+  );
 
   // Fetch supplier compliance data for supplier selection
   const { data: supplierComplianceData = [] } = useQuery<any[]>({
@@ -757,6 +775,12 @@ export default function DueDiligenceReport() {
   const clearPlotSelection = () => {
     setSelectedPlots([]);
     setTempSelectedPlots(new Set());
+  };
+  
+  const clearPlotFilters = () => {
+    setPlotFilterRisk('all');
+    setPlotFilterCompliance('all');
+    setPlotFilterCountry('all');
   };
 
   const handleSupplierSelection = (supplierId: string, checked: boolean) => {
@@ -1486,10 +1510,70 @@ export default function DueDiligenceReport() {
                                 </DialogHeader>
                                 <div className="flex flex-col h-full">
                                   <div className="mb-4">
-                                    <p className="text-sm text-gray-600">
+                                    <p className="text-sm text-gray-600 mb-3">
                                       Select plots from the deforestation risk analysis results below. 
                                       Selected plots will be added to your DDS report.
                                     </p>
+                                    
+                                    {/* Filter Controls */}
+                                    <div className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                                      <div>
+                                        <Label className="text-xs">Risk Level</Label>
+                                        <Select value={plotFilterRisk} onValueChange={setPlotFilterRisk}>
+                                          <SelectTrigger className="h-9 text-sm" data-testid="filter-risk">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="all">All Risks</SelectItem>
+                                            <SelectItem value="LOW">Low</SelectItem>
+                                            <SelectItem value="MEDIUM">Medium</SelectItem>
+                                            <SelectItem value="HIGH">High</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      
+                                      <div>
+                                        <Label className="text-xs">Compliance</Label>
+                                        <Select value={plotFilterCompliance} onValueChange={setPlotFilterCompliance}>
+                                          <SelectTrigger className="h-9 text-sm" data-testid="filter-compliance">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="all">All Status</SelectItem>
+                                            <SelectItem value="COMPLIANT">Compliant</SelectItem>
+                                            <SelectItem value="NON-COMPLIANT">Non-Compliant</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      
+                                      <div>
+                                        <Label className="text-xs">Country</Label>
+                                        <Select value={plotFilterCountry} onValueChange={setPlotFilterCountry}>
+                                          <SelectTrigger className="h-9 text-sm" data-testid="filter-country">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="all">All Countries</SelectItem>
+                                            {availableCountries.map((country) => (
+                                              <SelectItem key={country} value={country}>{country}</SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+                                      
+                                      <div className="flex items-end">
+                                        <Button 
+                                          type="button"
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={clearPlotFilters}
+                                          className="h-9 w-full"
+                                          data-testid="button-clear-filters"
+                                        >
+                                          Clear Filters
+                                        </Button>
+                                      </div>
+                                    </div>
                                   </div>
                                   
                                   <div className="flex-1 overflow-y-auto border rounded-lg">
@@ -1498,13 +1582,17 @@ export default function DueDiligenceReport() {
                                         <tr>
                                           <th className="w-10 px-3 py-2 text-left">
                                             <Checkbox
-                                              checked={tempSelectedPlots.size === analysisResults.length && analysisResults.length > 0}
+                                              checked={filteredAnalysisResults.length > 0 && filteredAnalysisResults.every(plot => tempSelectedPlots.has(plot.plotId))}
                                               onCheckedChange={(checked) => {
+                                                const newSelection = new Set(tempSelectedPlots);
                                                 if (checked) {
-                                                  setTempSelectedPlots(new Set(analysisResults.map(r => r.plotId)));
+                                                  // Add all filtered plots
+                                                  filteredAnalysisResults.forEach(plot => newSelection.add(plot.plotId));
                                                 } else {
-                                                  setTempSelectedPlots(new Set());
+                                                  // Remove only filtered plots, preserve others
+                                                  filteredAnalysisResults.forEach(plot => newSelection.delete(plot.plotId));
                                                 }
+                                                setTempSelectedPlots(newSelection);
                                               }}
                                               data-testid="checkbox-select-all-plots"
                                             />
@@ -1517,7 +1605,7 @@ export default function DueDiligenceReport() {
                                         </tr>
                                       </thead>
                                       <tbody>
-                                        {analysisResults.map((plot) => (
+                                        {filteredAnalysisResults.map((plot) => (
                                           <tr key={plot.plotId} className="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
                                             <td className="px-3 py-2">
                                               <Checkbox
@@ -1550,7 +1638,10 @@ export default function DueDiligenceReport() {
                                   
                                   <div className="flex justify-between items-center pt-4 border-t">
                                     <p className="text-sm text-gray-600">
-                                      {tempSelectedPlots.size} of {analysisResults.length} plots selected
+                                      {tempSelectedPlots.size} of {filteredAnalysisResults.length} plots selected
+                                      {filteredAnalysisResults.length !== analysisResults.length && (
+                                        <span className="ml-2 text-gray-400">({analysisResults.length} total)</span>
+                                      )}
                                     </p>
                                     <div className="flex space-x-2">
                                       <Button 
