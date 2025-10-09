@@ -1245,7 +1245,11 @@ export const insertSupplierWorkflowLinkSchema = createInsertSchema(supplierWorkf
 export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments);
 export const insertMillSchema = createInsertSchema(mills);
 export const insertAnalysisResultSchema = createInsertSchema(analysisResults);
-export const insertDdsReportSchema = createInsertSchema(ddsReports);
+export const insertDdsReportSchema = createInsertSchema(ddsReports).extend({
+  signedDate: z.union([z.date(), z.string()]).transform((val) => 
+    typeof val === 'string' ? new Date(val) : val
+  ).optional(),
+});
 // Enhanced Zod schemas with mandatory field validation for the 5 form types
 export const insertEstateDataCollectionSchema = createInsertSchema(estateDataCollection).extend({
   namaSupplier: z.string().min(1, "Supplier name is required"),
