@@ -1501,82 +1501,82 @@ export default function DueDiligenceReport() {
                                   Select Plots from Analysis
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-                                <DialogHeader>
+                              <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col">
+                                <DialogHeader className="flex-shrink-0">
                                   <DialogTitle>Select Plots for DDS Report</DialogTitle>
                                   <DialogDescription>
                                     Select plots from the deforestation risk analysis results below. Selected plots will be added to your DDS report with their geolocations.
                                   </DialogDescription>
                                 </DialogHeader>
-                                <div className="flex flex-col h-full">
-                                  <div className="mb-4">
-                                    <p className="text-sm text-gray-600 mb-3">
-                                      Select plots from the deforestation risk analysis results below. 
-                                      Selected plots will be added to your DDS report.
-                                    </p>
+                                
+                                <div className="flex-shrink-0 mb-4">
+                                  <p className="text-sm text-gray-600 mb-3">
+                                    Select plots from the deforestation risk analysis results below. 
+                                    Selected plots will be added to your DDS report.
+                                  </p>
+                                  
+                                  {/* Filter Controls */}
+                                  <div className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                                    <div>
+                                      <Label className="text-xs">Risk Level</Label>
+                                      <Select value={plotFilterRisk} onValueChange={setPlotFilterRisk}>
+                                        <SelectTrigger className="h-9 text-sm" data-testid="filter-risk">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="all">All Risks</SelectItem>
+                                          <SelectItem value="LOW">Low</SelectItem>
+                                          <SelectItem value="MEDIUM">Medium</SelectItem>
+                                          <SelectItem value="HIGH">High</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
                                     
-                                    {/* Filter Controls */}
-                                    <div className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                                      <div>
-                                        <Label className="text-xs">Risk Level</Label>
-                                        <Select value={plotFilterRisk} onValueChange={setPlotFilterRisk}>
-                                          <SelectTrigger className="h-9 text-sm" data-testid="filter-risk">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="all">All Risks</SelectItem>
-                                            <SelectItem value="LOW">Low</SelectItem>
-                                            <SelectItem value="MEDIUM">Medium</SelectItem>
-                                            <SelectItem value="HIGH">High</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      
-                                      <div>
-                                        <Label className="text-xs">Compliance</Label>
-                                        <Select value={plotFilterCompliance} onValueChange={setPlotFilterCompliance}>
-                                          <SelectTrigger className="h-9 text-sm" data-testid="filter-compliance">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="all">All Status</SelectItem>
-                                            <SelectItem value="COMPLIANT">Compliant</SelectItem>
-                                            <SelectItem value="NON-COMPLIANT">Non-Compliant</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      
-                                      <div>
-                                        <Label className="text-xs">Country</Label>
-                                        <Select value={plotFilterCountry} onValueChange={setPlotFilterCountry}>
-                                          <SelectTrigger className="h-9 text-sm" data-testid="filter-country">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="all">All Countries</SelectItem>
-                                            {availableCountries.map((country) => (
-                                              <SelectItem key={country} value={country}>{country}</SelectItem>
-                                            ))}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                      
-                                      <div className="flex items-end">
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={clearPlotFilters}
-                                          className="h-9 w-full"
-                                          data-testid="button-clear-filters"
-                                        >
-                                          Clear Filters
-                                        </Button>
-                                      </div>
+                                    <div>
+                                      <Label className="text-xs">Compliance</Label>
+                                      <Select value={plotFilterCompliance} onValueChange={setPlotFilterCompliance}>
+                                        <SelectTrigger className="h-9 text-sm" data-testid="filter-compliance">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="all">All Status</SelectItem>
+                                          <SelectItem value="COMPLIANT">Compliant</SelectItem>
+                                          <SelectItem value="NON-COMPLIANT">Non-Compliant</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    
+                                    <div>
+                                      <Label className="text-xs">Country</Label>
+                                      <Select value={plotFilterCountry} onValueChange={setPlotFilterCountry}>
+                                        <SelectTrigger className="h-9 text-sm" data-testid="filter-country">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="all">All Countries</SelectItem>
+                                          {availableCountries.map((country) => (
+                                            <SelectItem key={country} value={country}>{country}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    
+                                    <div className="flex items-end">
+                                      <Button 
+                                        type="button"
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={clearPlotFilters}
+                                        className="h-9 w-full"
+                                        data-testid="button-clear-filters"
+                                      >
+                                        Clear Filters
+                                      </Button>
                                     </div>
                                   </div>
-                                  
-                                  <div className="flex-1 overflow-y-auto border rounded-lg">
+                                </div>
+                                
+                                <div className="flex-1 min-h-0 overflow-y-auto border rounded-lg">
                                     <table className="w-full text-sm">
                                       <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
                                         <tr>
@@ -1634,33 +1634,32 @@ export default function DueDiligenceReport() {
                                         ))}
                                       </tbody>
                                     </table>
-                                  </div>
-                                  
-                                  <div className="flex justify-between items-center pt-4 border-t">
-                                    <p className="text-sm text-gray-600">
-                                      {tempSelectedPlots.size} of {filteredAnalysisResults.length} plots selected
-                                      {filteredAnalysisResults.length !== analysisResults.length && (
-                                        <span className="ml-2 text-gray-400">({analysisResults.length} total)</span>
-                                      )}
-                                    </p>
-                                    <div className="flex space-x-2">
-                                      <Button 
-                                        type="button" 
-                                        variant="outline" 
-                                        onClick={() => setShowPlotSelector(false)}
-                                        data-testid="button-cancel-selection"
-                                      >
-                                        Cancel
-                                      </Button>
-                                      <Button 
-                                        type="button" 
-                                        onClick={confirmPlotSelection}
-                                        disabled={tempSelectedPlots.size === 0}
-                                        data-testid="button-confirm-selection"
-                                      >
-                                        Confirm Selection ({tempSelectedPlots.size})
-                                      </Button>
-                                    </div>
+                                </div>
+                                
+                                <div className="flex-shrink-0 flex justify-between items-center pt-4 border-t mt-4">
+                                  <p className="text-sm text-gray-600">
+                                    {tempSelectedPlots.size} of {filteredAnalysisResults.length} plots selected
+                                    {filteredAnalysisResults.length !== analysisResults.length && (
+                                      <span className="ml-2 text-gray-400">({analysisResults.length} total)</span>
+                                    )}
+                                  </p>
+                                  <div className="flex space-x-2">
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      onClick={() => setShowPlotSelector(false)}
+                                      data-testid="button-cancel-selection"
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button 
+                                      type="button" 
+                                      onClick={confirmPlotSelection}
+                                      disabled={tempSelectedPlots.size === 0}
+                                      data-testid="button-confirm-selection"
+                                    >
+                                      Confirm Selection ({tempSelectedPlots.size})
+                                    </Button>
                                   </div>
                                 </div>
                               </DialogContent>
