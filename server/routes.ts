@@ -2718,7 +2718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: report.status,
         downloadPath: report.pdfDocumentPath,
         fileName: report.pdfFileName,
-        canDownload: report.status !== "draft",
+        canDownload: true,
       }));
 
       res.json(formattedReports);
