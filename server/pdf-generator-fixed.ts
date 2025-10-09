@@ -3,15 +3,17 @@ import fs from 'fs';
 
 export function generateFixedDDSPDF(reportData: any) {
   try {
-    console.log('🔧 Generating FIXED 4-page DDS PDF with correct format...');
+    console.log('🔧 Generating FIXED 4-page DDS PDF with actual report data...');
+    console.log('📊 Report data received:', JSON.stringify(reportData, null, 2));
 
     // Create new PDF document
     const doc = new jsPDF();
     const currentDate = new Date().toLocaleDateString('en-GB');
+    const reportDate = reportData.signedDate ? new Date(reportData.signedDate).toLocaleDateString('en-GB') : currentDate;
     let yPos = 70;
 
     // ======================================================
-    // PAGE 1 - DDS CREATION FORM INPUT (Halaman 1 ikuti isian formulir DDS creation)
+    // PAGE 1 - DDS CREATION FORM INPUT (Actual form data from reportData)
     // ======================================================
     
     doc.setFontSize(16);
@@ -22,21 +24,21 @@ export function generateFixedDDSPDF(reportData: any) {
     doc.setFont('helvetica', 'normal');
     doc.text('-------------------------------------------------------------------------------------------------------------', 10, 30);
     doc.text('Page 1 of 4 - DDS Creation Form Input', 10, 40);
-    doc.text('Status: SUBMITTED', 150, 40);
-    doc.text(`Created On: ${currentDate}`, 10, 50);
+    doc.text(`Status: ${(reportData.status || 'SUBMITTED').toUpperCase()}`, 150, 40);
+    doc.text(`Created On: ${reportDate}`, 10, 50);
 
-    // DDS Form Data
+    // DDS Form Data - Using actual reportData
     yPos = 70;
     doc.setFont('helvetica', 'bold');
     doc.text('1. Company Internal Ref:', 10, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('DDS-2024-KPN-001', 80, yPos);
+    doc.text(reportData.companyInternalRef || reportData.id || 'N/A', 80, yPos);
 
     yPos += 10;
     doc.setFont('helvetica', 'bold');
     doc.text('2. Activity:', 10, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('Import of Palm Oil Products', 50, yPos);
+    doc.text(reportData.activity || 'Placing on the market', 50, yPos);
 
     // Operator Information
     yPos += 20;
@@ -47,13 +49,13 @@ export function generateFixedDDSPDF(reportData: any) {
     doc.setFont('helvetica', 'bold');
     doc.text('Name:', 15, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('PT THIP', 40, yPos);
+    doc.text(reportData.operatorLegalName || 'N/A', 40, yPos);
 
     yPos += 10;
     doc.setFont('helvetica', 'bold');
     doc.text('Address:', 15, yPos);
     doc.setFont('helvetica', 'normal');
-    const address = 'Jl. Sudirman No. 123, Jakarta 12345, Indonesia';
+    const address = reportData.operatorAddress || 'N/A';
     const addressLines = doc.splitTextToSize(address, 140);
     doc.text(addressLines, 45, yPos);
     yPos += addressLines.length * 5;
@@ -62,7 +64,16 @@ export function generateFixedDDSPDF(reportData: any) {
     doc.setFont('helvetica', 'bold');
     doc.text('Country:', 15, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('Indonesia', 45, yPos);
+    doc.text(reportData.operatorCountry || reportData.countryOfProduction || 'Indonesia', 45, yPos);
+
+    // EORI Number if available
+    if (reportData.eoriNumber) {
+      yPos += 8;
+      doc.setFont('helvetica', 'bold');
+      doc.text('EORI Number:', 15, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(reportData.eoriNumber, 60, yPos);
+    }
 
     // Commodity Section
     yPos += 20;
@@ -79,29 +90,43 @@ export function generateFixedDDSPDF(reportData: any) {
 
     yPos += 10;
     doc.setFont('helvetica', 'normal');
-    doc.text('Crude Palm Oil (CPO)', 10, yPos);
-    doc.text('2150.000', 70, yPos);
-    doc.text('5%', 120, yPos);
-    doc.text('MT', 150, yPos);
+    doc.text(reportData.productDescription || 'N/A', 10, yPos);
+    doc.text(reportData.netMassKg ? parseFloat(reportData.netMassKg).toFixed(3) : '0.000', 70, yPos);
+    doc.text(reportData.percentageEstimation ? `${reportData.percentageEstimation}%` : 'N/A', 120, yPos);
+    doc.text(reportData.supplementaryUnit || 'KG', 150, yPos);
 
     yPos += 15;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('Scientific Name:', 10, yPos);
+    doc.text('HS Code:', 10, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('Elaeis guineensis', 60, yPos);
+    doc.text(reportData.hsCode || 'N/A', 40, yPos);
 
     yPos += 8;
     doc.setFont('helvetica', 'bold');
-    doc.text('Producer Name:', 10, yPos);
+    doc.text('Scientific Name:', 10, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('PT BSU Growers', 60, yPos);
+    doc.text(reportData.scientificName || 'Elaeis guineensis', 60, yPos);
+
+    yPos += 8;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Common Name:', 10, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(reportData.commonName || 'African oil palm', 60, yPos);
+
+    if (reportData.producerName) {
+      yPos += 8;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Producer Name:', 10, yPos);
+      doc.setFont('helvetica', 'normal');
+      doc.text(reportData.producerName, 60, yPos);
+    }
 
     yPos += 8;
     doc.setFont('helvetica', 'bold');
     doc.text('Country of Production:', 10, yPos);
     doc.setFont('helvetica', 'normal');
-    doc.text('Indonesia', 80, yPos);
+    doc.text(reportData.countryOfProduction || 'Indonesia', 80, yPos);
 
     // Summary Plot Information
     yPos += 20;
@@ -111,14 +136,14 @@ export function generateFixedDDSPDF(reportData: any) {
     yPos += 10;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Total Producers: 15', 10, yPos);
-    doc.text('Total Plots: 45', 10, yPos + 8);
-    doc.text('Total Production Area (ha): 1250.50', 10, yPos + 16);
-    doc.text('Country of Harvest: Indonesia', 10, yPos + 24);
-    doc.text('Max. Intermediaries: 2', 10, yPos + 32);
-    doc.text('Traceability Method: GPS Coordinates + Plot Mapping', 10, yPos + 40);
-    doc.text('Expected Harvest Date: 2024-12-31', 10, yPos + 48);
-    doc.text('Production Date Range: January 2024 - December 2024', 10, yPos + 56);
+    doc.text(`Total Producers: ${reportData.totalProducers || 'N/A'}`, 10, yPos);
+    doc.text(`Total Plots: ${reportData.totalPlots || reportData.plotGeolocations?.length || 'N/A'}`, 10, yPos + 8);
+    doc.text(`Total Production Area (ha): ${reportData.totalProductionArea || 'N/A'}`, 10, yPos + 16);
+    doc.text(`Country of Harvest: ${reportData.countryOfHarvest || reportData.countryOfProduction || 'Indonesia'}`, 10, yPos + 24);
+    doc.text(`Max. Intermediaries: ${reportData.maxIntermediaries || 'N/A'}`, 10, yPos + 32);
+    doc.text(`Traceability Method: ${reportData.traceabilityMethod || 'GPS Coordinates + Plot Mapping'}`, 10, yPos + 40);
+    doc.text(`Expected Harvest Date: ${reportData.expectedHarvestDate || 'N/A'}`, 10, yPos + 48);
+    doc.text(`Production Date Range: ${reportData.productionDateRange || 'N/A'}`, 10, yPos + 56);
 
     // ======================================================
     // PAGE 2 - EUDR COMPLIANCE DECISION TREE (Halaman 2 EUDR Compliance Decision Tree GAMBAR TERLAMPIR)
