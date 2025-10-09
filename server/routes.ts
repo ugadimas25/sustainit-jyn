@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
-import { setupAuth, isAuthenticated } from "./auth";
+// Authentication disabled - imports removed
+// import { setupAuth, isAuthenticated } from "./auth";
 import { voiceAssistantRouter } from "./routes/voice-assistant";
 // User config routes disabled (authentication removed)
 // import userConfigRoutes from "./user-config-routes";
@@ -1298,7 +1299,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Supplier Assessment Progress endpoints
   app.get(
     "/api/supplier-assessment-progress",
-    isAuthenticated,
     async (req, res) => {
       try {
         const progress = await storage.getSupplierAssessmentProgress();
@@ -1313,7 +1313,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/supplier-assessment-progress/:supplierName",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { supplierName } = req.params;
@@ -1333,7 +1332,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post(
     "/api/supplier-assessment-progress",
-    isAuthenticated,
     async (req, res) => {
       try {
         const validatedData = insertSupplierAssessmentProgressSchema.parse(
@@ -1356,7 +1354,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put(
     "/api/supplier-assessment-progress/:id",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { id } = req.params;
@@ -1416,7 +1413,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/supplier-step-access/:supplierName/:step",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { supplierName, step } = req.params;
@@ -1464,7 +1460,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/risk-assessments/supplier/:supplierId",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { supplierId } = req.params;
@@ -1542,7 +1537,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Risk Assessment Items endpoints
   app.get(
     "/api/risk-assessments/:assessmentId/items",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { assessmentId } = req.params;
@@ -1558,7 +1552,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post(
     "/api/risk-assessments/:assessmentId/items",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { assessmentId } = req.params;
@@ -1587,7 +1580,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put(
     "/api/risk-assessment-items/:id",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { id } = req.params;
@@ -1620,7 +1612,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete(
     "/api/risk-assessment-items/:id",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { id } = req.params;
@@ -1641,7 +1632,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Risk scoring and reporting endpoints based on Excel methodology
   app.get(
     "/api/risk-assessments/:assessmentId/score",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { assessmentId } = req.params;
@@ -1655,7 +1645,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/risk-assessments/:assessmentId/report",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { assessmentId } = req.params;
@@ -1670,7 +1659,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Excel-based risk template initialization endpoint
   app.post(
     "/api/risk-assessments/:assessmentId/init-excel-template",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { assessmentId } = req.params;
@@ -2429,7 +2417,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Shipment traceability endpoint
   app.get(
     "/api/shipments/:shipmentId/traceability",
-    isAuthenticated,
     async (req, res) => {
       try {
         const { shipmentId } = req.params;
@@ -3565,7 +3552,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // KML upload endpoint for DDS polygon data
   app.post(
     "/api/dds-reports/:id/upload-kml",
-    isAuthenticated,
     async (req, res) => {
       try {
         const report = await storage.getDdsReportById(req.params.id);
@@ -3607,7 +3593,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate GeoJSON files for verified deforestation-free polygons
   app.post(
     "/api/dds-reports/:id/generate-geojson",
-    isAuthenticated,
     async (req, res) => {
       try {
         const report = await storage.getDdsReportById(req.params.id);
@@ -3712,7 +3697,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Download generated GeoJSON files
   app.get(
     "/api/dds-reports/:id/geojson/:fileName",
-    isAuthenticated,
     async (req, res) => {
       try {
         const report = await storage.getDdsReportById(req.params.id);
@@ -3831,7 +3815,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(
     "/api/mill-data-collection/:id",
-    isAuthenticated,
     async (req, res) => {
       try {
         const mill = await storage.getMillDataCollectionById(req.params.id);
