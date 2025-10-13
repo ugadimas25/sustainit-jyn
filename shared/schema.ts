@@ -632,6 +632,7 @@ export const ddsReports = pgTable("dds_reports", {
   supplierFactoryName: text("supplier_factory_name"),
   supplierContact: text("supplier_contact"), // PIC (Person In Charge)
   supplierContactEmail: text("supplier_contact_email"),
+  supplierPostalCode: text("supplier_postal_code"),
 
   // Customer/Buyer Company Information (for PDF template)
   customerLegalName: text("customer_legal_name"),
@@ -640,6 +641,7 @@ export const ddsReports = pgTable("dds_reports", {
   customerFactoryName: text("customer_factory_name"),
   customerContact: text("customer_contact"), // PIC (Person In Charge)
   customerContactEmail: text("customer_contact_email"),
+  customerPostalCode: text("customer_postal_code"),
 
   // Product details (PRD Section 2)
   hsCode: text("hs_code").notNull(), // Harmonized System code from dropdown

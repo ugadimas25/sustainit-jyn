@@ -113,12 +113,12 @@ export function generateKPNDDSPDF(reportData: any) {
 
     yPos += 15;
     doc.setFont('helvetica', 'bold');
-    doc.text('Supplier Factory Name', col1X, yPos);
+    doc.text('Supplier Name', col1X, yPos);
     doc.setFont('helvetica', 'normal');
     doc.text(reportData.supplierFactoryName || '[Not provided]', col1X, yPos + 5);
 
     doc.setFont('helvetica', 'bold');
-    doc.text('Customer Factory Name', col2X, yPos);
+    doc.text('Customer Name', col2X, yPos);
     doc.setFont('helvetica', 'normal');
     doc.text(reportData.customerFactoryName || '[Not provided]', col2X, yPos + 5);
 
@@ -143,6 +143,17 @@ export function generateKPNDDSPDF(reportData: any) {
     doc.text('Customer Contact Email', col2X, yPos);
     doc.setFont('helvetica', 'normal');
     doc.text(reportData.customerContactEmail || '[Not provided]', col2X, yPos + 5);
+
+    yPos += 15;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Supplier Postal Code', col1X, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(reportData.supplierPostalCode || '[Not provided]', col1X, yPos + 5);
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Customer Postal Code', col2X, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(reportData.customerPostalCode || '[Not provided]', col2X, yPos + 5);
 
     // Product Information Section
     yPos += 25;

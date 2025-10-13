@@ -157,12 +157,14 @@ export default function DueDiligenceReport() {
     supplierFactoryName: '',
     supplierContact: '',
     supplierContactEmail: '',
+    supplierPostalCode: '',
     customerLegalName: '',
     customerAddress: '',
     customerFactoryCode: '',
     customerFactoryName: '',
     customerContact: '',
     customerContactEmail: '',
+    customerPostalCode: '',
     productDescription: '',
     producerName: '',
     netMassKg: '',
@@ -464,12 +466,14 @@ export default function DueDiligenceReport() {
       supplierFactoryName: 'Riau Palm Processing Mill',
       supplierContact: 'Ahmad Suryanto',
       supplierContactEmail: 'ahmad.suryanto@supplier.com',
+      supplierPostalCode: '28000',
       customerLegalName: 'European Palm Oil Distributors BV',
       customerAddress: 'Havenstraat 45, 3011 Rotterdam, Netherlands',
       customerFactoryCode: 'CUST-EU-001',
       customerFactoryName: 'Rotterdam Distribution Center',
       customerContact: 'Jan van der Berg',
       customerContactEmail: 'j.vandenberg@customer.eu',
+      customerPostalCode: '3011',
       productDescription: 'Crude Palm Oil (CPO), sustainably sourced, RSPO certified',
       producerName: 'PT Riau Sustainable Plantations',
       netMassKg: '25000',
@@ -909,7 +913,7 @@ export default function DueDiligenceReport() {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="supplierFactoryName">Factory Name</Label>
+                              <Label htmlFor="supplierFactoryName">Name</Label>
                               <Input 
                                 id="supplierFactoryName" 
                                 name="supplierFactoryName"
@@ -940,6 +944,17 @@ export default function DueDiligenceReport() {
                                 type="email"
                                 placeholder="john@supplier.com"
                                 data-testid="input-supplier-email"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="supplierPostalCode">Postal Code</Label>
+                              <Input 
+                                id="supplierPostalCode" 
+                                name="supplierPostalCode"
+                                value={formData.supplierPostalCode}
+                                onChange={(e) => updateFormField('supplierPostalCode', e.target.value)}
+                                placeholder="12345"
+                                data-testid="input-supplier-postal-code"
                               />
                             </div>
                           </div>
@@ -982,7 +997,7 @@ export default function DueDiligenceReport() {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="customerFactoryName">Factory Name</Label>
+                              <Label htmlFor="customerFactoryName">Name</Label>
                               <Input 
                                 id="customerFactoryName" 
                                 name="customerFactoryName"
@@ -1013,6 +1028,17 @@ export default function DueDiligenceReport() {
                                 type="email"
                                 placeholder="jane@customer.com"
                                 data-testid="input-customer-email"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="customerPostalCode">Postal Code</Label>
+                              <Input 
+                                id="customerPostalCode" 
+                                name="customerPostalCode"
+                                value={formData.customerPostalCode}
+                                onChange={(e) => updateFormField('customerPostalCode', e.target.value)}
+                                placeholder="12345"
+                                data-testid="input-customer-postal-code"
                               />
                             </div>
                           </div>
