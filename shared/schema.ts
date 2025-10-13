@@ -627,6 +627,20 @@ export const ddsReports = pgTable("dds_reports", {
   operatorIsoCode: text("operator_iso_code"),
   eoriNumber: text("eori_number"),
 
+  // Supplier/Seller Company Information (for PDF template)
+  supplierFactoryCode: text("supplier_factory_code"),
+  supplierFactoryName: text("supplier_factory_name"),
+  supplierContact: text("supplier_contact"), // PIC (Person In Charge)
+  supplierContactEmail: text("supplier_contact_email"),
+
+  // Customer/Buyer Company Information (for PDF template)
+  customerLegalName: text("customer_legal_name"),
+  customerAddress: text("customer_address"),
+  customerFactoryCode: text("customer_factory_code"),
+  customerFactoryName: text("customer_factory_name"),
+  customerContact: text("customer_contact"), // PIC (Person In Charge)
+  customerContactEmail: text("customer_contact_email"),
+
   // Product details (PRD Section 2)
   hsCode: text("hs_code").notNull(), // Harmonized System code from dropdown
   productDescription: text("product_description").notNull(),
