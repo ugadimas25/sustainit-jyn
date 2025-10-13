@@ -405,55 +405,63 @@ export default function DueDiligenceReport() {
     setSelectedDeforestationRisk('LOW');
     setSelectedLegalityStatus('COMPLIANT');
     
+    // Helper function to safely set input value
+    const setInputValue = (selector: string, value: string) => {
+      const element = document.querySelector(selector) as HTMLInputElement | HTMLTextAreaElement;
+      if (element) {
+        element.value = value;
+      }
+    };
+    
     // Set form values by finding and filling inputs
     const form = document.querySelector('form') as HTMLFormElement;
     if (form) {
       // Operator Details
-      (form.querySelector('#companyInternalRef') as HTMLInputElement).value = 'KPN-DDS-2024-001';
-      (form.querySelector('#activity') as HTMLInputElement).value = 'Import';
-      (form.querySelector('#operatorLegalName') as HTMLInputElement).value = 'KPN Palm Oil Industries Ltd.';
-      (form.querySelector('#operatorAddress') as HTMLInputElement).value = 'Jl. Sudirman No. 123, Jakarta 12190, Indonesia';
-      (form.querySelector('#operatorCountry') as HTMLInputElement).value = 'Indonesia';
-      (form.querySelector('#operatorIsoCode') as HTMLInputElement).value = 'ID';
-      (form.querySelector('#eoriNumber') as HTMLInputElement).value = 'ID123456789';
+      setInputValue('#companyInternalRef', 'KPN-DDS-2024-001');
+      setInputValue('#activity', 'Import');
+      setInputValue('#operatorLegalName', 'KPN Palm Oil Industries Ltd.');
+      setInputValue('#operatorAddress', 'Jl. Sudirman No. 123, Jakarta 12190, Indonesia');
+      setInputValue('#operatorCountry', 'Indonesia');
+      setInputValue('#operatorIsoCode', 'ID');
+      setInputValue('#eoriNumber', 'ID123456789');
       
       // Supplier Details
-      (form.querySelector('#supplierFactoryCode') as HTMLInputElement).value = 'SUP-CPO-001';
-      (form.querySelector('#supplierFactoryName') as HTMLInputElement).value = 'Riau Palm Processing Mill';
-      (form.querySelector('#supplierContact') as HTMLInputElement).value = 'Ahmad Suryanto';
-      (form.querySelector('#supplierContactEmail') as HTMLInputElement).value = 'ahmad.suryanto@supplier.com';
+      setInputValue('#supplierFactoryCode', 'SUP-CPO-001');
+      setInputValue('#supplierFactoryName', 'Riau Palm Processing Mill');
+      setInputValue('#supplierContact', 'Ahmad Suryanto');
+      setInputValue('#supplierContactEmail', 'ahmad.suryanto@supplier.com');
       
       // Customer Details
-      (form.querySelector('#customerLegalName') as HTMLInputElement).value = 'European Palm Oil Distributors BV';
-      (form.querySelector('#customerAddress') as HTMLInputElement).value = 'Havenstraat 45, 3011 Rotterdam, Netherlands';
-      (form.querySelector('#customerFactoryCode') as HTMLInputElement).value = 'CUST-EU-001';
-      (form.querySelector('#customerFactoryName') as HTMLInputElement).value = 'Rotterdam Distribution Center';
-      (form.querySelector('#customerContact') as HTMLInputElement).value = 'Jan van der Berg';
-      (form.querySelector('#customerContactEmail') as HTMLInputElement).value = 'j.vandenberg@customer.eu';
+      setInputValue('#customerLegalName', 'European Palm Oil Distributors BV');
+      setInputValue('#customerAddress', 'Havenstraat 45, 3011 Rotterdam, Netherlands');
+      setInputValue('#customerFactoryCode', 'CUST-EU-001');
+      setInputValue('#customerFactoryName', 'Rotterdam Distribution Center');
+      setInputValue('#customerContact', 'Jan van der Berg');
+      setInputValue('#customerContactEmail', 'j.vandenberg@customer.eu');
       
       // Product Details
-      (form.querySelector('#productDescription') as HTMLTextAreaElement).value = 'Crude Palm Oil (CPO), sustainably sourced, RSPO certified';
-      (form.querySelector('#producerName') as HTMLInputElement).value = 'PT Riau Sustainable Plantations';
-      (form.querySelector('#netMassKg') as HTMLInputElement).value = '25000';
-      (form.querySelector('#percentageEstimation') as HTMLInputElement).value = '100';
-      (form.querySelector('#supplementaryUnit') as HTMLInputElement).value = 'Liters';
-      (form.querySelector('#supplementaryQuantity') as HTMLInputElement).value = '28000';
+      setInputValue('#productDescription', 'Crude Palm Oil (CPO), sustainably sourced, RSPO certified');
+      setInputValue('#producerName', 'PT Riau Sustainable Plantations');
+      setInputValue('#netMassKg', '25000');
+      setInputValue('#percentageEstimation', '100');
+      setInputValue('#supplementaryUnit', 'Liters');
+      setInputValue('#supplementaryQuantity', '28000');
       
       // Geolocation Details
-      (form.querySelector('#totalProducers') as HTMLInputElement).value = '15';
-      (form.querySelector('#totalPlots') as HTMLInputElement).value = '48';
-      (form.querySelector('#totalProductionArea') as HTMLInputElement).value = '1250.5';
-      (form.querySelector('#countryOfHarvest') as HTMLInputElement).value = 'Indonesia';
-      (form.querySelector('#maxIntermediaries') as HTMLInputElement).value = '2';
+      setInputValue('#totalProducers', '15');
+      setInputValue('#totalPlots', '48');
+      setInputValue('#totalProductionArea', '1250.5');
+      setInputValue('#countryOfHarvest', 'Indonesia');
+      setInputValue('#maxIntermediaries', '2');
       
       // Compliance Details
-      (form.querySelector('#traceabilityMethod') as HTMLInputElement).value = 'GPS mapping + Blockchain verification';
-      (form.querySelector('#expectedHarvestDate') as HTMLInputElement).value = '2024-06-15';
-      (form.querySelector('#productionDateRange') as HTMLInputElement).value = 'January 2024 - March 2024';
-      (form.querySelector('#operatorDeclaration') as HTMLTextAreaElement).value = 'I hereby declare that all information provided in this Due Diligence Statement is true and accurate to the best of my knowledge. The commodities described herein comply with all EUDR requirements and regulations.';
-      (form.querySelector('#signedBy') as HTMLInputElement).value = 'Dr. Bambang Wijaya';
-      (form.querySelector('#signedDate') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
-      (form.querySelector('#signatoryFunction') as HTMLInputElement).value = 'Chief Sustainability Officer';
+      setInputValue('#traceabilityMethod', 'GPS mapping + Blockchain verification');
+      setInputValue('#expectedHarvestDate', '2024-06-15');
+      setInputValue('#productionDateRange', 'January 2024 - March 2024');
+      setInputValue('#operatorDeclaration', 'I hereby declare that all information provided in this Due Diligence Statement is true and accurate to the best of my knowledge. The commodities described herein comply with all EUDR requirements and regulations.');
+      setInputValue('#signedBy', 'Dr. Bambang Wijaya');
+      setInputValue('#signedDate', new Date().toISOString().split('T')[0]);
+      setInputValue('#signatoryFunction', 'Chief Sustainability Officer');
     }
     
     toast({
