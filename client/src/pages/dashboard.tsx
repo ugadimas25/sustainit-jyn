@@ -270,8 +270,7 @@ function DashboardContent() {
           </div>
           <div className="flex items-center space-x-4">
             <Button 
-              variant="outline" 
-              className="gap-2" 
+              className="gap-2 bg-kpn-red hover:bg-kpn-red-dark text-white" 
               onClick={handleExportCompliance}
               data-testid="button-export-compliance"
             >
@@ -286,22 +285,22 @@ function DashboardContent() {
 
         {/* Navigation Tabs */}
         <div className="flex space-x-8 mb-8 border-b">
-          <button className="pb-2 text-sm font-medium border-b-2 border-green-600 text-green-600">
+          <button className="pb-2 text-sm font-medium border-b-2 border-kpn-red text-kpn-red">
             Summary
           </button>
         </div>
 
         {/* Plot Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Plot</h2>
+          <h2 className="text-lg font-semibold text-kpn-red mb-6 border-l-4 border-kpn-red pl-3">Plot</h2>
           
           {/* Plot Statistics Grid - 4 columns matching the screenshot */}
           <div className="grid grid-cols-4 gap-6 mb-8">
             {/* Row 1 - Basic Plot Counts */}
-            <Card className="bg-white border border-gray-200">
+            <Card className="bg-white border-l-4 border-l-kpn-red border-t border-r border-b border-gray-200">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="text-gray-400">
+                  <div className="text-kpn-red">
                     <MapPin className="w-5 h-5" />
                   </div>
                 </div>
@@ -310,10 +309,10 @@ function DashboardContent() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200">
+            <Card className="bg-white border-l-4 border-l-kpn-red border-t border-r border-b border-gray-200">
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="text-gray-400">
+                  <div className="text-kpn-red">
                     <CheckCircle className="w-5 h-5" />
                   </div>
                 </div>
@@ -322,56 +321,56 @@ function DashboardContent() {
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('highRisk')}>
+            <Card className="bg-white border-l-4 border-l-kpn-red border-t border-r border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('highRisk')}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="text-gray-400">
+                  <div className="text-kpn-red">
                     <AlertTriangle className="w-5 h-5" />
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-2">Total high risk plot</p>
                 <div className="flex justify-between items-end">
                   <p className="text-3xl font-bold text-gray-900" data-testid="text-high-risk-plots">{displayMetrics.highRiskPlots || 0}</p>
-                  <span className="text-xs text-blue-600 font-medium">Details</span>
+                  <span className="text-xs text-kpn-red font-medium">Details</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('mediumRisk')}>
+            <Card className="bg-white border-l-4 border-l-kpn-red border-t border-r border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('mediumRisk')}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="text-gray-400">
+                  <div className="text-kpn-red">
                     <Clock className="w-5 h-5" />
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-2">Total medium risk plot</p>
                 <div className="flex justify-between items-end">
                   <p className="text-3xl font-bold text-gray-900" data-testid="text-medium-risk-plots">{displayMetrics.mediumRiskPlots || 0}</p>
-                  <span className="text-xs text-blue-600 font-medium">Details</span>
+                  <span className="text-xs text-kpn-red font-medium">Details</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Row 2 - Deforestation and Compliance */}
-            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('deforested')}>
+            <Card className="bg-white border-l-4 border-l-kpn-red border-t border-r border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('deforested')}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="text-gray-400">
+                  <div className="text-kpn-red">
                     <XCircle className="w-5 h-5" />
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-2">Deforested plot (after 31 Dec 2020)</p>
                 <div className="flex justify-between items-end">
                   <p className="text-3xl font-bold text-gray-900" data-testid="text-deforested-plots">{displayMetrics.deforestedPlots || 0}</p>
-                  <span className="text-xs text-blue-600 font-medium">Details</span>
+                  <span className="text-xs text-kpn-red font-medium">Details</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('noPermit')}>
+            <Card className="bg-white border-l-4 border-l-kpn-red border-t border-r border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setSelectedModal('noPermit')}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="text-gray-400">
+                  <div className="text-kpn-red">
                     <XCircle className="w-5 h-5" />
                   </div>
                 </div>
@@ -424,7 +423,7 @@ function DashboardContent() {
 
         {/* Supply Chain Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Supply Chain</h2>
+          <h2 className="text-lg font-semibold text-kpn-red mb-6 border-l-4 border-kpn-red pl-3">Supply Chain</h2>
           
           <div className="grid grid-cols-4 gap-6 mb-4">
             <Card className="bg-white border border-gray-200">
@@ -467,7 +466,7 @@ function DashboardContent() {
 
         {/* DDS Reports Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Due Diligence Statements</h2>
+          <h2 className="text-lg font-semibold text-kpn-red mb-6 border-l-4 border-kpn-red pl-3">Due Diligence Statements</h2>
           
           <div className="grid grid-cols-5 gap-6 mb-4">
             <Card className="bg-white border border-gray-200">
@@ -519,15 +518,15 @@ function DashboardContent() {
 
         {/* Quick Actions Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h2>
+          <h2 className="text-lg font-semibold text-kpn-red mb-6 border-l-4 border-kpn-red pl-3">Quick Actions</h2>
           
           <div className="grid grid-cols-5 gap-6">
             <a href="/data-collection" className="block" data-testid="link-data-collection">
-              <Card className="bg-white border border-gray-200 hover:border-green-500 hover:shadow-md transition-all cursor-pointer">
+              <Card className="bg-white border border-gray-200 hover:border-kpn-red hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-3">
-                    <div className="p-3 bg-green-100 rounded-full">
-                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-3 bg-kpn-red-light rounded-full">
+                      <svg className="w-6 h-6 text-kpn-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
@@ -539,11 +538,11 @@ function DashboardContent() {
             </a>
 
             <a href="/deforestation-monitoring" className="block" data-testid="link-spatial-analysis">
-              <Card className="bg-white border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all cursor-pointer">
+              <Card className="bg-white border border-gray-200 hover:border-kpn-red hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-3">
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-3 bg-kpn-red-light rounded-full">
+                      <svg className="w-6 h-6 text-kpn-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                       </svg>
                     </div>
@@ -555,11 +554,11 @@ function DashboardContent() {
             </a>
 
             <a href="/legality-assessment" className="block" data-testid="link-legality">
-              <Card className="bg-white border border-gray-200 hover:border-yellow-500 hover:shadow-md transition-all cursor-pointer">
+              <Card className="bg-white border border-gray-200 hover:border-kpn-red hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-3">
-                    <div className="p-3 bg-yellow-100 rounded-full">
-                      <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-3 bg-kpn-red-light rounded-full">
+                      <svg className="w-6 h-6 text-kpn-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
                     </div>
@@ -571,11 +570,11 @@ function DashboardContent() {
             </a>
 
             <a href="/due-diligence-report" className="block" data-testid="link-dds-reports">
-              <Card className="bg-white border border-gray-200 hover:border-purple-500 hover:shadow-md transition-all cursor-pointer">
+              <Card className="bg-white border border-gray-200 hover:border-kpn-red hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-3">
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-3 bg-kpn-red-light rounded-full">
+                      <svg className="w-6 h-6 text-kpn-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
@@ -587,11 +586,11 @@ function DashboardContent() {
             </a>
 
             <a href="/unified-supply-chain" className="block" data-testid="link-supply-chain">
-              <Card className="bg-white border border-gray-200 hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer">
+              <Card className="bg-white border border-gray-200 hover:border-kpn-red hover:shadow-md transition-all cursor-pointer">
                 <CardContent className="p-6 text-center">
                   <div className="flex justify-center mb-3">
-                    <div className="p-3 bg-indigo-100 rounded-full">
-                      <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="p-3 bg-kpn-red-light rounded-full">
+                      <svg className="w-6 h-6 text-kpn-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
@@ -606,7 +605,7 @@ function DashboardContent() {
 
         {/* Supply Chain Health Visualization */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">Supply Chain Health</h2>
+          <h2 className="text-lg font-semibold text-kpn-red mb-6 border-l-4 border-kpn-red pl-3">Supply Chain Health</h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Tier Distribution Chart */}

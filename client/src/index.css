@@ -96,6 +96,15 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 
+  /* Red accent borders for cards */
+  .card-red-accent {
+    border-top: 3px solid var(--kpn-red);
+  }
+
+  .card-red-accent-left {
+    border-left: 4px solid var(--kpn-red);
+  }
+
   /* Custom utility classes for KPN Compliance Platform - Red & White Theme */
   .bg-kpn-red {
     background-color: var(--kpn-red);
