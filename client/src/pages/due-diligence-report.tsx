@@ -2052,8 +2052,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="operatorDeclaration">Operator Declaration *</Label>
                           <Textarea 
                             id="operatorDeclaration" 
-                            name="operatorDeclaration" 
-                            defaultValue="I hereby declare that I have exercised due diligence in accordance with Regulation (EU) 2023/1115 and that the risk is negligible for the products covered by this due diligence statement."
+                            name="operatorDeclaration"
+                            value={formData.operatorDeclaration || "I hereby declare that I have exercised due diligence in accordance with Regulation (EU) 2023/1115 and that the risk is negligible for the products covered by this due diligence statement."}
+                            onChange={(e) => updateFormField('operatorDeclaration', e.target.value)}
                             required 
                             rows={4}
                             data-testid="textarea-declaration"
@@ -2064,7 +2065,9 @@ export default function DueDiligenceReport() {
                             <Label htmlFor="signedBy">Signed By *</Label>
                             <Input 
                               id="signedBy" 
-                              name="signedBy" 
+                              name="signedBy"
+                              value={formData.signedBy}
+                              onChange={(e) => updateFormField('signedBy', e.target.value)}
                               required 
                               data-testid="input-signed-by"
                             />
@@ -2073,7 +2076,9 @@ export default function DueDiligenceReport() {
                             <Label htmlFor="signatoryFunction">Function *</Label>
                             <Input 
                               id="signatoryFunction" 
-                              name="signatoryFunction" 
+                              name="signatoryFunction"
+                              value={formData.signatoryFunction}
+                              onChange={(e) => updateFormField('signatoryFunction', e.target.value)}
                               placeholder="Managing Director"
                               required 
                               data-testid="input-signatory-function"
@@ -2083,7 +2088,9 @@ export default function DueDiligenceReport() {
                             <Label htmlFor="signedDate">Signed Date *</Label>
                             <Input 
                               id="signedDate" 
-                              name="signedDate" 
+                              name="signedDate"
+                              value={formData.signedDate}
+                              onChange={(e) => updateFormField('signedDate', e.target.value)}
                               type="date" 
                               required 
                               data-testid="input-signed-date"
