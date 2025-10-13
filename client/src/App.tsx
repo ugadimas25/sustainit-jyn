@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SupplierProvider } from "@/hooks/use-supplier-context";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import PlotMapping from "@/pages/plot-mapping";
@@ -41,6 +43,23 @@ function PageLayout({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kpn-red mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
+
   return (
     <Switch>
       <Route path="/">
@@ -114,12 +133,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SupplierProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </SupplierProvider>
+      <AuthProvider>
+        <SupplierProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </SupplierProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

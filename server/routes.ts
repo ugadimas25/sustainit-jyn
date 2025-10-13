@@ -1,11 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
-// Authentication disabled - imports removed
-// import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { voiceAssistantRouter } from "./routes/voice-assistant";
-// User config routes disabled (authentication removed)
-// import userConfigRoutes from "./user-config-routes";
 import { storage } from "./storage";
 import {
   insertCommoditySchema,
@@ -78,17 +75,20 @@ async function initializeDefaultUser() {
   }
 
   try {
-    const existingUser = await storage.getUserByUsername("kpneudr");
+    // Create new credentials (kpncompliance2025/kpncompliance2025)
+    const existingUser = await storage.getUserByUsername("kpncompliance2025");
     if (!existingUser) {
-      const hashedPassword = await hashPassword("kpneudr2025");
+      const hashedPassword = await hashPassword("kpncompliance2025");
       await storage.createUser({
-        username: "kpneudr",
+        username: "kpncompliance2025",
         password: hashedPassword,
         role: "admin",
-        name: "KPN Compliance Administrator",
-        email: "admin@kpn.com",
+        name: "KPN Compliance Administrator 2025",
+        email: "compliance@kpn.com",
       });
-      console.log("✓ Default user 'kpneudr' created successfully");
+      console.log("✓ Default user 'kpncompliance2025' created successfully");
+    } else {
+      console.log("✓ Default user 'kpncompliance2025' already exists");
     }
   } catch (error) {
     console.error("Error initializing default user:", error);
@@ -647,17 +647,13 @@ async function seedUserConfigurationData() {
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
-  // Authentication disabled
-  // await setupAuth(app);
-  // await initializeDefaultUser();
+  await setupAuth(app);
+  await initializeDefaultUser();
   await seedSampleData();
   await seedUserConfigurationData();
 
   // Voice Assistant Routes
   app.use("/api/voice-assistant", voiceAssistantRouter);
-
-  // User Configuration Routes (RBAC System) - Disabled (authentication removed)
-  // app.use("/api/user-config", userConfigRoutes);
 
   // GraphQL endpoint for traceability queries
   app.post("/api/graphql", async (req, res) => {
