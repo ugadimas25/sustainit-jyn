@@ -234,6 +234,18 @@ export default function AuthPage() {
           <div className="mt-6 text-center text-sm text-gray-500">
             <p>EU Deforestation Regulation Compliance System</p>
             <p className="mt-1">Version 1.0 • Secure Access</p>
+            <p className="mt-3">
+              Developed by{" "}
+              <a 
+                href="https://sustainit.id/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-kpn-red hover:text-kpn-red-dark font-medium transition-colors"
+                data-testid="link-sustainit"
+              >
+                sustainIT
+              </a>
+            </p>
           </div>
         </div>
       </div>
