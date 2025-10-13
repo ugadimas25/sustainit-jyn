@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, Plus, Download, Send, Eye, CheckCircle2, Clock, AlertTriangle,
-  Building, Package, MapPin, Link2, Signature, Globe, Shield, ChevronDown, X, BarChart3
+  Building, Package, MapPin, Link2, Signature, Globe, Shield, ChevronDown, X, BarChart3, Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -219,11 +219,27 @@ export default function DueDiligenceReport() {
   // Download DDS report using new endpoint
   const downloadDdsReportMutation = useMutation({
     mutationFn: async (reportId: string) => {
+      // Show preparing toast
+      toast({
+        title: "Preparing Download",
+        description: "Generating PDF with flowcharts and data...",
+      });
+
       const response = await fetch(`/api/dds/${reportId}/download`, {
         method: 'GET',
         credentials: 'include'
       });
       if (!response.ok) throw new Error('Failed to download DDS report');
+      
+      // Get file size from response
+      const contentLength = response.headers.get('content-length');
+      const fileSizeMB = contentLength ? (parseInt(contentLength) / (1024 * 1024)).toFixed(2) : 'Unknown';
+      
+      // Show ready to download toast with file size
+      toast({
+        title: "Ready to Download",
+        description: `PDF ready (${fileSizeMB} MB). Starting download...`,
+      });
       
       // Create blob and download
       const blob = await response.blob();
@@ -235,11 +251,13 @@ export default function DueDiligenceReport() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      
+      return { fileSizeMB };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
-        title: "Download Started",
-        description: "DDS report PDF download has been initiated.",
+        title: "Download Complete",
+        description: `DDS report PDF (${data.fileSizeMB} MB) has been downloaded successfully.`,
       });
     },
     onError: (error: Error) => {
@@ -1991,11 +2009,15 @@ export default function DueDiligenceReport() {
                                   size="sm" 
                                   variant="outline"
                                   onClick={() => downloadDdsReportMutation.mutate(report.id)}
-                                  disabled={!report.canDownload}
+                                  disabled={!report.canDownload || downloadDdsReportMutation.isPending}
                                   data-testid={`button-download-dds-${report.statementId}`}
                                 >
-                                  <Download className="h-4 w-4 mr-1" />
-                                  PDF
+                                  {downloadDdsReportMutation.isPending ? (
+                                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                  ) : (
+                                    <Download className="h-4 w-4 mr-1" />
+                                  )}
+                                  {downloadDdsReportMutation.isPending ? 'Preparing...' : 'PDF'}
                                 </Button>
                               </td>
                             </tr>
@@ -2644,8 +2666,12 @@ export default function DueDiligenceReport() {
                     onClick={() => downloadDdsReportMutation.mutate(selectedReport.id)}
                     disabled={downloadDdsReportMutation.isPending}
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export PDF
+                    {downloadDdsReportMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    {downloadDdsReportMutation.isPending ? 'Preparing PDF...' : 'Export PDF'}
                   </Button>
                   {selectedReport.status === 'draft' && (
                     <Button 
