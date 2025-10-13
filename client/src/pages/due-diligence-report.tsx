@@ -143,6 +143,46 @@ export default function DueDiligenceReport() {
   const [selectedScientificName, setSelectedScientificName] = useState<string>("");
   const [selectedCommonName, setSelectedCommonName] = useState<string>("");
   const [signatureData, setSignatureData] = useState<SignatureData | null>(null);
+  
+  // Form field states for autofill
+  const [formData, setFormData] = useState({
+    companyInternalRef: '',
+    activity: '',
+    operatorLegalName: '',
+    operatorAddress: '',
+    operatorCountry: '',
+    operatorIsoCode: '',
+    eoriNumber: '',
+    supplierFactoryCode: '',
+    supplierFactoryName: '',
+    supplierContact: '',
+    supplierContactEmail: '',
+    customerLegalName: '',
+    customerAddress: '',
+    customerFactoryCode: '',
+    customerFactoryName: '',
+    customerContact: '',
+    customerContactEmail: '',
+    productDescription: '',
+    producerName: '',
+    netMassKg: '',
+    percentageEstimation: '',
+    supplementaryUnit: '',
+    supplementaryQuantity: '',
+    totalProducers: '',
+    totalPlots: '',
+    totalProductionArea: '',
+    countryOfHarvest: '',
+    maxIntermediaries: '',
+    traceabilityMethod: '',
+    expectedHarvestDate: '',
+    productionDateRange: '',
+    operatorDeclaration: '',
+    signedBy: '',
+    signedDate: '',
+    signatoryFunction: ''
+  });
+  
   const { toast } = useToast();
 
   // Auto-populate scientific name and common name when HS codes are selected
@@ -397,6 +437,11 @@ export default function DueDiligenceReport() {
     setSelectedHsCodes(prev => prev.filter(c => c !== code));
   };
 
+  // Helper to update form data
+  const updateFormField = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   // Fill form with sample data for testing
   const fillSampleData = () => {
     // Set basic required fields
@@ -405,64 +450,44 @@ export default function DueDiligenceReport() {
     setSelectedDeforestationRisk('LOW');
     setSelectedLegalityStatus('COMPLIANT');
     
-    // Helper function to safely set input value
-    const setInputValue = (selector: string, value: string) => {
-      const element = document.querySelector(selector) as HTMLInputElement | HTMLTextAreaElement;
-      if (element) {
-        element.value = value;
-      }
-    };
-    
-    // Set form values by finding and filling inputs
-    const form = document.querySelector('form') as HTMLFormElement;
-    if (form) {
-      // Operator Details
-      setInputValue('#companyInternalRef', 'KPN-DDS-2024-001');
-      setInputValue('#activity', 'Import');
-      setInputValue('#operatorLegalName', 'KPN Palm Oil Industries Ltd.');
-      setInputValue('#operatorAddress', 'Jl. Sudirman No. 123, Jakarta 12190, Indonesia');
-      setInputValue('#operatorCountry', 'Indonesia');
-      setInputValue('#operatorIsoCode', 'ID');
-      setInputValue('#eoriNumber', 'ID123456789');
-      
-      // Supplier Details
-      setInputValue('#supplierFactoryCode', 'SUP-CPO-001');
-      setInputValue('#supplierFactoryName', 'Riau Palm Processing Mill');
-      setInputValue('#supplierContact', 'Ahmad Suryanto');
-      setInputValue('#supplierContactEmail', 'ahmad.suryanto@supplier.com');
-      
-      // Customer Details
-      setInputValue('#customerLegalName', 'European Palm Oil Distributors BV');
-      setInputValue('#customerAddress', 'Havenstraat 45, 3011 Rotterdam, Netherlands');
-      setInputValue('#customerFactoryCode', 'CUST-EU-001');
-      setInputValue('#customerFactoryName', 'Rotterdam Distribution Center');
-      setInputValue('#customerContact', 'Jan van der Berg');
-      setInputValue('#customerContactEmail', 'j.vandenberg@customer.eu');
-      
-      // Product Details
-      setInputValue('#productDescription', 'Crude Palm Oil (CPO), sustainably sourced, RSPO certified');
-      setInputValue('#producerName', 'PT Riau Sustainable Plantations');
-      setInputValue('#netMassKg', '25000');
-      setInputValue('#percentageEstimation', '100');
-      setInputValue('#supplementaryUnit', 'Liters');
-      setInputValue('#supplementaryQuantity', '28000');
-      
-      // Geolocation Details
-      setInputValue('#totalProducers', '15');
-      setInputValue('#totalPlots', '48');
-      setInputValue('#totalProductionArea', '1250.5');
-      setInputValue('#countryOfHarvest', 'Indonesia');
-      setInputValue('#maxIntermediaries', '2');
-      
-      // Compliance Details
-      setInputValue('#traceabilityMethod', 'GPS mapping + Blockchain verification');
-      setInputValue('#expectedHarvestDate', '2024-06-15');
-      setInputValue('#productionDateRange', 'January 2024 - March 2024');
-      setInputValue('#operatorDeclaration', 'I hereby declare that all information provided in this Due Diligence Statement is true and accurate to the best of my knowledge. The commodities described herein comply with all EUDR requirements and regulations.');
-      setInputValue('#signedBy', 'Dr. Bambang Wijaya');
-      setInputValue('#signedDate', new Date().toISOString().split('T')[0]);
-      setInputValue('#signatoryFunction', 'Chief Sustainability Officer');
-    }
+    // Set all form data using React state
+    setFormData({
+      companyInternalRef: 'KPN-DDS-2024-001',
+      activity: 'Import',
+      operatorLegalName: 'KPN Palm Oil Industries Ltd.',
+      operatorAddress: 'Jl. Sudirman No. 123, Jakarta 12190, Indonesia',
+      operatorCountry: 'Indonesia',
+      operatorIsoCode: 'ID',
+      eoriNumber: 'ID123456789',
+      supplierFactoryCode: 'SUP-CPO-001',
+      supplierFactoryName: 'Riau Palm Processing Mill',
+      supplierContact: 'Ahmad Suryanto',
+      supplierContactEmail: 'ahmad.suryanto@supplier.com',
+      customerLegalName: 'European Palm Oil Distributors BV',
+      customerAddress: 'Havenstraat 45, 3011 Rotterdam, Netherlands',
+      customerFactoryCode: 'CUST-EU-001',
+      customerFactoryName: 'Rotterdam Distribution Center',
+      customerContact: 'Jan van der Berg',
+      customerContactEmail: 'j.vandenberg@customer.eu',
+      productDescription: 'Crude Palm Oil (CPO), sustainably sourced, RSPO certified',
+      producerName: 'PT Riau Sustainable Plantations',
+      netMassKg: '25000',
+      percentageEstimation: '100',
+      supplementaryUnit: 'Liters',
+      supplementaryQuantity: '28000',
+      totalProducers: '15',
+      totalPlots: '48',
+      totalProductionArea: '1250.5',
+      countryOfHarvest: 'Indonesia',
+      maxIntermediaries: '2',
+      traceabilityMethod: 'GPS mapping + Blockchain verification',
+      expectedHarvestDate: '2024-06-15',
+      productionDateRange: 'January 2024 - March 2024',
+      operatorDeclaration: 'I hereby declare that all information provided in this Due Diligence Statement is true and accurate to the best of my knowledge. The commodities described herein comply with all EUDR requirements and regulations.',
+      signedBy: 'Dr. Bambang Wijaya',
+      signedDate: new Date().toISOString().split('T')[0],
+      signatoryFunction: 'Chief Sustainability Officer'
+    });
     
     toast({
       title: "Sample Data Loaded",
@@ -775,6 +800,8 @@ export default function DueDiligenceReport() {
                           <Input 
                             id="companyInternalRef" 
                             name="companyInternalRef" 
+                            value={formData.companyInternalRef}
+                            onChange={(e) => updateFormField('companyInternalRef', e.target.value)}
                             placeholder="KPN-2024-001"
                             required 
                             data-testid="input-company-ref"
@@ -797,7 +824,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="operatorLegalName">Legal Name *</Label>
                           <Input 
                             id="operatorLegalName" 
-                            name="operatorLegalName" 
+                            name="operatorLegalName"
+                            value={formData.operatorLegalName}
+                            onChange={(e) => updateFormField('operatorLegalName', e.target.value)}
                             required 
                             data-testid="input-operator-name"
                           />
@@ -806,7 +835,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="operatorAddress">Address *</Label>
                           <Input 
                             id="operatorAddress" 
-                            name="operatorAddress" 
+                            name="operatorAddress"
+                            value={formData.operatorAddress}
+                            onChange={(e) => updateFormField('operatorAddress', e.target.value)}
                             required 
                             data-testid="input-operator-address"
                           />
