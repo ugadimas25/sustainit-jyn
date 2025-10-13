@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf';
 import fs from 'fs';
+import path from 'path';
 
 // Template structure for KPN EUDR DDS based on attached template
 export function generateKPNDDSPDF(reportData: any) {
@@ -12,6 +13,36 @@ export function generateKPNDDSPDF(reportData: any) {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const centerX = pageWidth / 2;
+    
+    // Load flowchart images
+    const baseDir = path.resolve(process.cwd(), 'attached_assets');
+    const image1Path = path.join(baseDir, 'LCC flowchart_1760324955725.png');
+    const image2Path = path.join(baseDir, 'kpn lcc flowchart_1760324955726.png');
+    const image3Path = path.join(baseDir, 'eudr general method_1760324955727.png');
+    
+    let image1Base64 = '';
+    let image2Base64 = '';
+    let image3Base64 = '';
+    
+    try {
+      if (fs.existsSync(image1Path)) {
+        image1Base64 = `data:image/png;base64,${fs.readFileSync(image1Path).toString('base64')}`;
+      } else {
+        console.warn('⚠️ Flowchart image not found: LCC flowchart_1760324955725.png');
+      }
+      if (fs.existsSync(image2Path)) {
+        image2Base64 = `data:image/png;base64,${fs.readFileSync(image2Path).toString('base64')}`;
+      } else {
+        console.warn('⚠️ Flowchart image not found: kpn lcc flowchart_1760324955726.png');
+      }
+      if (fs.existsSync(image3Path)) {
+        image3Base64 = `data:image/png;base64,${fs.readFileSync(image3Path).toString('base64')}`;
+      } else {
+        console.warn('⚠️ Flowchart image not found: eudr general method_1760324955727.png');
+      }
+    } catch (err) {
+      console.warn('⚠️ Error loading flowchart images:', err);
+    }
     
     // Parse data
     const reportDate = reportData.signedDate ? new Date(reportData.signedDate).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB');
@@ -325,6 +356,14 @@ export function generateKPNDDSPDF(reportData: any) {
     doc.text('METHODOLOGY', centerX, yPos, { align: 'center' });
 
     yPos += 15;
+    
+    // Add EUDR Compliance Risk Analysis flowchart
+    if (image1Base64) {
+      const imgWidth = pageWidth - (2 * margin);
+      const imgHeight = 120;
+      doc.addImage(image1Base64, 'PNG', margin, yPos, imgWidth, imgHeight);
+      yPos += imgHeight + 10;
+    }
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const methodology = [
@@ -389,6 +428,14 @@ export function generateKPNDDSPDF(reportData: any) {
     doc.text('RISK MITIGATION MEASURES & VERIFICATION', centerX, yPos, { align: 'center' });
 
     yPos += 15;
+    
+    // Add KPN Land Cover Change Monitoring flowchart
+    if (image2Base64) {
+      const imgWidth = pageWidth - (2 * margin);
+      const imgHeight = 110;
+      doc.addImage(image2Base64, 'PNG', margin, yPos, imgWidth, imgHeight);
+      yPos += imgHeight + 10;
+    }
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('Risk Mitigation Process:', margin, yPos);
@@ -456,6 +503,14 @@ export function generateKPNDDSPDF(reportData: any) {
     doc.text('SUPPORTING INFORMATION (Link to File Library)', centerX, yPos, { align: 'center' });
 
     yPos += 20;
+    
+    // Add EUDR General Method flowchart
+    if (image3Base64) {
+      const imgWidth = pageWidth - (2 * margin);
+      const imgHeight = 90;
+      doc.addImage(image3Base64, 'PNG', margin, yPos, imgWidth, imgHeight);
+      yPos += imgHeight + 15;
+    }
     doc.setFontSize(10);
     
     // Table header
