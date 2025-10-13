@@ -2963,9 +2963,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "DDS report not found" });
       }
 
-      // Generate PDF for download
-      const { generateFixedDDSPDF } = await import("./pdf-generator-fixed.js");
-      const pdfBuffer = generateFixedDDSPDF(report);
+      // Generate PDF for download using KPN EUDR template
+      const { generateKPNDDSPDF } = await import("./pdf-generator-kpn-template.js");
+      const pdfBuffer = generateKPNDDSPDF(report);
 
       // Set response headers for file download
       const filename = `dds-report-${report.id}-${new Date().toISOString().split("T")[0]}.pdf`;
