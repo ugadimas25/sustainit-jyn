@@ -899,7 +899,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="supplierFactoryCode">Factory Code</Label>
                               <Input 
                                 id="supplierFactoryCode" 
-                                name="supplierFactoryCode" 
+                                name="supplierFactoryCode"
+                                value={formData.supplierFactoryCode}
+                                onChange={(e) => updateFormField('supplierFactoryCode', e.target.value)}
                                 placeholder="SUP-001"
                                 data-testid="input-supplier-factory-code"
                               />
@@ -908,7 +910,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="supplierFactoryName">Factory Name</Label>
                               <Input 
                                 id="supplierFactoryName" 
-                                name="supplierFactoryName" 
+                                name="supplierFactoryName"
+                                value={formData.supplierFactoryName}
+                                onChange={(e) => updateFormField('supplierFactoryName', e.target.value)}
                                 placeholder="Main Processing Facility"
                                 data-testid="input-supplier-factory-name"
                               />
@@ -917,7 +921,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="supplierContact">Contact Person (PIC)</Label>
                               <Input 
                                 id="supplierContact" 
-                                name="supplierContact" 
+                                name="supplierContact"
+                                value={formData.supplierContact}
+                                onChange={(e) => updateFormField('supplierContact', e.target.value)}
                                 placeholder="John Doe"
                                 data-testid="input-supplier-contact"
                               />
@@ -926,7 +932,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="supplierContactEmail">Contact Email</Label>
                               <Input 
                                 id="supplierContactEmail" 
-                                name="supplierContactEmail" 
+                                name="supplierContactEmail"
+                                value={formData.supplierContactEmail}
+                                onChange={(e) => updateFormField('supplierContactEmail', e.target.value)}
                                 type="email"
                                 placeholder="john@supplier.com"
                                 data-testid="input-supplier-email"
@@ -942,7 +950,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="customerLegalName">Legal Name</Label>
                               <Input 
                                 id="customerLegalName" 
-                                name="customerLegalName" 
+                                name="customerLegalName"
+                                value={formData.customerLegalName}
+                                onChange={(e) => updateFormField('customerLegalName', e.target.value)}
                                 placeholder="Customer Company Ltd"
                                 data-testid="input-customer-name"
                               />
@@ -951,7 +961,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="customerAddress">Address</Label>
                               <Input 
                                 id="customerAddress" 
-                                name="customerAddress" 
+                                name="customerAddress"
+                                value={formData.customerAddress}
+                                onChange={(e) => updateFormField('customerAddress', e.target.value)}
                                 placeholder="Customer address"
                                 data-testid="input-customer-address"
                               />
@@ -960,7 +972,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="customerFactoryCode">Factory Code</Label>
                               <Input 
                                 id="customerFactoryCode" 
-                                name="customerFactoryCode" 
+                                name="customerFactoryCode"
+                                value={formData.customerFactoryCode}
+                                onChange={(e) => updateFormField('customerFactoryCode', e.target.value)}
                                 placeholder="CUST-001"
                                 data-testid="input-customer-factory-code"
                               />
@@ -969,7 +983,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="customerFactoryName">Factory Name</Label>
                               <Input 
                                 id="customerFactoryName" 
-                                name="customerFactoryName" 
+                                name="customerFactoryName"
+                                value={formData.customerFactoryName}
+                                onChange={(e) => updateFormField('customerFactoryName', e.target.value)}
                                 placeholder="Customer Processing Unit"
                                 data-testid="input-customer-factory-name"
                               />
@@ -978,7 +994,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="customerContact">Contact Person (PIC)</Label>
                               <Input 
                                 id="customerContact" 
-                                name="customerContact" 
+                                name="customerContact"
+                                value={formData.customerContact}
+                                onChange={(e) => updateFormField('customerContact', e.target.value)}
                                 placeholder="Jane Smith"
                                 data-testid="input-customer-contact"
                               />
@@ -987,7 +1005,9 @@ export default function DueDiligenceReport() {
                               <Label htmlFor="customerContactEmail">Contact Email</Label>
                               <Input 
                                 id="customerContactEmail" 
-                                name="customerContactEmail" 
+                                name="customerContactEmail"
+                                value={formData.customerContactEmail}
+                                onChange={(e) => updateFormField('customerContactEmail', e.target.value)}
                                 type="email"
                                 placeholder="jane@customer.com"
                                 data-testid="input-customer-email"
