@@ -1135,7 +1135,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="productDescription">Product Description *</Label>
                           <Textarea 
                             id="productDescription" 
-                            name="productDescription" 
+                            name="productDescription"
+                            value={formData.productDescription}
+                            onChange={(e) => updateFormField('productDescription', e.target.value)}
                             placeholder="Crude palm oil (CPO), organic certified"
                             required 
                             data-testid="textarea-product-description"
@@ -1179,23 +1181,25 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="producerName">Producer Name</Label>
                           <Input 
                             id="producerName" 
-                            name="producerName" 
+                            name="producerName"
+                            value={formData.producerName}
+                            onChange={(e) => updateFormField('producerName', e.target.value)}
                             placeholder="Producer/Supplier name"
                             data-testid="input-producer-name"
                           />
                         </div>
                         <div>
                           <Label htmlFor="countryOfProduction">Country of Production *</Label>
-                          <Select name="countryOfProduction" required>
+                          <Select value={selectedCountry} onValueChange={setSelectedCountry} name="countryOfProduction" required>
                             <SelectTrigger data-testid="select-country-production">
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="ID">Indonesia</SelectItem>
-                              <SelectItem value="MY">Malaysia</SelectItem>
-                              <SelectItem value="TH">Thailand</SelectItem>
-                              <SelectItem value="BR">Brazil</SelectItem>
-                              <SelectItem value="NG">Nigeria</SelectItem>
+                              <SelectItem value="Indonesia">Indonesia</SelectItem>
+                              <SelectItem value="Malaysia">Malaysia</SelectItem>
+                              <SelectItem value="Thailand">Thailand</SelectItem>
+                              <SelectItem value="Brazil">Brazil</SelectItem>
+                              <SelectItem value="Nigeria">Nigeria</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1203,7 +1207,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="netMassKg">Net Mass (kg) *</Label>
                           <Input 
                             id="netMassKg" 
-                            name="netMassKg" 
+                            name="netMassKg"
+                            value={formData.netMassKg}
+                            onChange={(e) => updateFormField('netMassKg', e.target.value)}
                             type="number" 
                             step="0.001" 
                             required 
@@ -1214,7 +1220,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="percentageEstimation">% Est. or Deviation</Label>
                           <Input 
                             id="percentageEstimation" 
-                            name="percentageEstimation" 
+                            name="percentageEstimation"
+                            value={formData.percentageEstimation}
+                            onChange={(e) => updateFormField('percentageEstimation', e.target.value)}
                             type="number" 
                             step="0.1" 
                             min="0" 
@@ -1227,7 +1235,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="supplementaryUnit">Supplementary Unit</Label>
                           <Input 
                             id="supplementaryUnit" 
-                            name="supplementaryUnit" 
+                            name="supplementaryUnit"
+                            value={formData.supplementaryUnit}
+                            onChange={(e) => updateFormField('supplementaryUnit', e.target.value)}
                             placeholder="liters, pieces"
                             data-testid="input-supplementary-unit"
                           />
@@ -1236,7 +1246,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="supplementaryQuantity">Supplementary Quantity</Label>
                           <Input 
                             id="supplementaryQuantity" 
-                            name="supplementaryQuantity" 
+                            name="supplementaryQuantity"
+                            value={formData.supplementaryQuantity}
+                            onChange={(e) => updateFormField('supplementaryQuantity', e.target.value)}
                             type="number" 
                             step="0.001"
                             data-testid="input-supplementary-quantity"
