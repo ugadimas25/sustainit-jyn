@@ -809,14 +809,14 @@ export default function DueDiligenceReport() {
                         </div>
                         <div>
                           <Label htmlFor="activity">Activity *</Label>
-                          <Select name="activity" required>
+                          <Select value={formData.activity} onValueChange={(value) => updateFormField('activity', value)} name="activity" required>
                             <SelectTrigger data-testid="select-activity">
                               <SelectValue placeholder="Select activity" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="placing-on-market">Placing on the market</SelectItem>
-                              <SelectItem value="making-available">Making available on the market</SelectItem>
-                              <SelectItem value="export">Export</SelectItem>
+                              <SelectItem value="Import">Import</SelectItem>
+                              <SelectItem value="Export">Export</SelectItem>
+                              <SelectItem value="Placing on Market">Placing on Market</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -844,16 +844,16 @@ export default function DueDiligenceReport() {
                         </div>
                         <div>
                           <Label htmlFor="operatorCountry">Country *</Label>
-                          <Select name="operatorCountry" required>
+                          <Select value={formData.operatorCountry} onValueChange={(value) => updateFormField('operatorCountry', value)} name="operatorCountry" required>
                             <SelectTrigger data-testid="select-operator-country">
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="ID">Indonesia</SelectItem>
-                              <SelectItem value="MY">Malaysia</SelectItem>
-                              <SelectItem value="TH">Thailand</SelectItem>
-                              <SelectItem value="SG">Singapore</SelectItem>
-                              <SelectItem value="EU">European Union</SelectItem>
+                              <SelectItem value="Indonesia">Indonesia</SelectItem>
+                              <SelectItem value="Malaysia">Malaysia</SelectItem>
+                              <SelectItem value="Thailand">Thailand</SelectItem>
+                              <SelectItem value="Singapore">Singapore</SelectItem>
+                              <SelectItem value="European Union">European Union</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -861,7 +861,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="operatorIsoCode">ISO Code *</Label>
                           <Input 
                             id="operatorIsoCode" 
-                            name="operatorIsoCode" 
+                            name="operatorIsoCode"
+                            value={formData.operatorIsoCode}
+                            onChange={(e) => updateFormField('operatorIsoCode', e.target.value)}
                             placeholder="ID-001"
                             required 
                             data-testid="input-operator-iso"
@@ -871,7 +873,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="eoriNumber">EORI Number (for EU imports/exports)</Label>
                           <Input 
                             id="eoriNumber" 
-                            name="eoriNumber" 
+                            name="eoriNumber"
+                            value={formData.eoriNumber}
+                            onChange={(e) => updateFormField('eoriNumber', e.target.value)}
                             placeholder="GB123456789000"
                             data-testid="input-eori-number"
                           />
