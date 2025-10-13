@@ -299,6 +299,16 @@ export default function DueDiligenceReport() {
       operatorCountry: formData.get('operatorCountry') as string || undefined,
       operatorIsoCode: formData.get('operatorIsoCode') as string || undefined,
       eoriNumber: formData.get('eoriNumber') as string || undefined,
+      supplierFactoryCode: formData.get('supplierFactoryCode') as string || undefined,
+      supplierFactoryName: formData.get('supplierFactoryName') as string || undefined,
+      supplierContact: formData.get('supplierContact') as string || undefined,
+      supplierContactEmail: formData.get('supplierContactEmail') as string || undefined,
+      customerLegalName: formData.get('customerLegalName') as string || undefined,
+      customerAddress: formData.get('customerAddress') as string || undefined,
+      customerFactoryCode: formData.get('customerFactoryCode') as string || undefined,
+      customerFactoryName: formData.get('customerFactoryName') as string || undefined,
+      customerContact: formData.get('customerContact') as string || undefined,
+      customerContactEmail: formData.get('customerContactEmail') as string || undefined,
       hsCode: formData.getAll('hsCode').join(','),
       productDescription: formData.get('productDescription') as string,
       scientificName: formData.get('scientificName') as string || undefined,
@@ -731,6 +741,121 @@ export default function DueDiligenceReport() {
                             placeholder="GB123456789000"
                             data-testid="input-eori-number"
                           />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Supplier & Customer Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Building className="h-5 w-5" />
+                          Supplier & Customer Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm">Supplier/Seller Information</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="supplierFactoryCode">Factory Code</Label>
+                              <Input 
+                                id="supplierFactoryCode" 
+                                name="supplierFactoryCode" 
+                                placeholder="SUP-001"
+                                data-testid="input-supplier-factory-code"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="supplierFactoryName">Factory Name</Label>
+                              <Input 
+                                id="supplierFactoryName" 
+                                name="supplierFactoryName" 
+                                placeholder="Main Processing Facility"
+                                data-testid="input-supplier-factory-name"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="supplierContact">Contact Person (PIC)</Label>
+                              <Input 
+                                id="supplierContact" 
+                                name="supplierContact" 
+                                placeholder="John Doe"
+                                data-testid="input-supplier-contact"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="supplierContactEmail">Contact Email</Label>
+                              <Input 
+                                id="supplierContactEmail" 
+                                name="supplierContactEmail" 
+                                type="email"
+                                placeholder="john@supplier.com"
+                                data-testid="input-supplier-email"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="border-t pt-3 space-y-3">
+                          <h4 className="font-medium text-sm">Customer/Buyer Information</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="customerLegalName">Legal Name</Label>
+                              <Input 
+                                id="customerLegalName" 
+                                name="customerLegalName" 
+                                placeholder="Customer Company Ltd"
+                                data-testid="input-customer-name"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="customerAddress">Address</Label>
+                              <Input 
+                                id="customerAddress" 
+                                name="customerAddress" 
+                                placeholder="Customer address"
+                                data-testid="input-customer-address"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="customerFactoryCode">Factory Code</Label>
+                              <Input 
+                                id="customerFactoryCode" 
+                                name="customerFactoryCode" 
+                                placeholder="CUST-001"
+                                data-testid="input-customer-factory-code"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="customerFactoryName">Factory Name</Label>
+                              <Input 
+                                id="customerFactoryName" 
+                                name="customerFactoryName" 
+                                placeholder="Customer Processing Unit"
+                                data-testid="input-customer-factory-name"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="customerContact">Contact Person (PIC)</Label>
+                              <Input 
+                                id="customerContact" 
+                                name="customerContact" 
+                                placeholder="Jane Smith"
+                                data-testid="input-customer-contact"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="customerContactEmail">Contact Email</Label>
+                              <Input 
+                                id="customerContactEmail" 
+                                name="customerContactEmail" 
+                                type="email"
+                                placeholder="jane@customer.com"
+                                data-testid="input-customer-email"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
