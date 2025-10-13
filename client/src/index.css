@@ -3,38 +3,40 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --background: hsl(0, 0%, 98%);
+  --foreground: hsl(0, 0%, 15%);
+  --muted: hsl(0, 0%, 96%);
+  --muted-foreground: hsl(0, 0%, 45%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(0, 0%, 15%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
+  --card-foreground: hsl(0, 0%, 15%);
+  --border: hsl(0, 0%, 90%);
+  --input: hsl(0, 0%, 96%);
+  --primary: hsl(0, 85%, 50%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(0, 0%, 96%);
+  --secondary-foreground: hsl(0, 0%, 15%);
+  --accent: hsl(0, 85%, 97%);
+  --accent-foreground: hsl(0, 85%, 50%);
   --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(0, 85%, 50%);
   --radius: 0.5rem;
 
-  /* KPN Compliance Platform Custom Colors */
-  --kpn-red: hsl(0, 89%, 42%); /* #DC2626 */
-  --kpn-green: hsl(142, 71%, 45%); /* #16A34A */
-  --kpn-white: hsl(0, 0%, 100%); /* #FFFFFF */
-  --forest: hsl(142, 36%, 28%);
-  --forest-light: hsl(142, 49%, 53%);
-  --forest-dark: hsl(142, 43%, 20%);
+  /* KPN Compliance Platform Custom Colors - Red & White Theme */
+  --kpn-red: hsl(0, 85%, 50%); /* Primary red */
+  --kpn-red-dark: hsl(0, 75%, 42%); /* Darker red */
+  --kpn-red-light: hsl(0, 85%, 97%); /* Light red background */
+  --kpn-white: hsl(0, 0%, 100%); /* Pure white */
+  --kpn-gray: hsl(0, 0%, 45%); /* Gray text */
+  --forest: hsl(0, 75%, 42%);
+  --forest-light: hsl(0, 85%, 95%);
+  --forest-dark: hsl(0, 70%, 35%);
   --alert: hsl(14, 100%, 59%);
   --warning: hsl(39, 100%, 50%);
-  --critical: hsl(4, 90%, 58%);
-  --professional: hsl(207, 90%, 54%);
+  --critical: hsl(0, 85%, 50%);
+  --professional: hsl(0, 85%, 50%);
   --neutral-bg: hsl(0, 0%, 98%);
   --neutral-border: hsl(0, 0%, 88%);
 }
@@ -94,17 +96,33 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 
-  /* Custom utility classes for KPN Compliance Platform */
+  /* Custom utility classes for KPN Compliance Platform - Red & White Theme */
   .bg-kpn-red {
     background-color: var(--kpn-red);
   }
 
-  .bg-kpn-green {
-    background-color: var(--kpn-green);
+  .bg-kpn-red-dark {
+    background-color: var(--kpn-red-dark);
+  }
+
+  .bg-kpn-red-light {
+    background-color: var(--kpn-red-light);
   }
 
   .bg-kpn-white {
     background-color: var(--kpn-white);
+  }
+
+  .text-kpn-red {
+    color: var(--kpn-red);
+  }
+
+  .text-kpn-red-dark {
+    color: var(--kpn-red-dark);
+  }
+
+  .text-kpn-gray {
+    color: var(--kpn-gray);
   }
 
   .bg-forest {

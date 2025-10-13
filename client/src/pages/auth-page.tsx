@@ -45,7 +45,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex">
       {/* Hero Section */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-forest to-forest-dark relative">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-kpn-red to-kpn-red-dark relative">
         <div className="absolute inset-0 opacity-30">
           <img 
             src={plantationBgImage} 
@@ -105,7 +105,7 @@ export default function AuthPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-forest rounded-xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-kpn-red rounded-xl flex items-center justify-center mx-auto mb-4">
               <Leaf className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Welcome to KPN Compliance Platform</h2>
@@ -152,7 +152,7 @@ export default function AuthPage() {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full bg-forest hover:bg-forest-dark"
+                      className="w-full bg-kpn-red hover:bg-kpn-red-dark"
                       disabled={loginMutation.isPending}
                       data-testid="button-login"
                     >
@@ -218,7 +218,7 @@ export default function AuthPage() {
                     </div>
                     <Button 
                       type="submit" 
-                      className="w-full bg-forest hover:bg-forest-dark"
+                      className="w-full bg-kpn-red hover:bg-kpn-red-dark"
                       disabled={registerMutation.isPending}
                       data-testid="button-register"
                     >

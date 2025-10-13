@@ -117,7 +117,7 @@ export function ComplianceChart() {
       />
       <div className="mt-4 flex justify-center space-x-6">
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-forest-light rounded-full mr-2"></div>
+          <div className="w-3 h-3 bg-kpn-red rounded-full mr-2"></div>
           <span className="text-sm text-gray-600">Compliant</span>
         </div>
         <div className="flex items-center">

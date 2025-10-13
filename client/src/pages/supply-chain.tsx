@@ -37,7 +37,7 @@ function SupplyChainFlow({ shipmentId }: SupplyChainFlowProps) {
       <div className="flex items-center justify-between">
         {/* Farm Plots */}
         <div className="text-center">
-          <div className="w-16 h-16 bg-forest rounded-lg flex items-center justify-center mb-2">
+          <div className="w-16 h-16 bg-kpn-red rounded-lg flex items-center justify-center mb-2">
             <MapPin className="text-white text-xl" />
           </div>
           <h4 className="font-medium text-gray-800 text-sm">Farm Plots</h4>
@@ -78,7 +78,7 @@ function SupplyChainFlow({ shipmentId }: SupplyChainFlowProps) {
 
         {/* Mill Processing */}
         <div className="text-center">
-          <div className="w-16 h-16 bg-professional rounded-lg flex items-center justify-center mb-2">
+          <div className="w-16 h-16 bg-kpn-red rounded-lg flex items-center justify-center mb-2">
             <Factory className="text-white text-xl" />
           </div>
           <h4 className="font-medium text-gray-800 text-sm">Mill Processing</h4>
@@ -99,7 +99,7 @@ function SupplyChainFlow({ shipmentId }: SupplyChainFlowProps) {
 
         {/* Export */}
         <div className="text-center">
-          <div className="w-16 h-16 bg-forest-dark rounded-lg flex items-center justify-center mb-2">
+          <div className="w-16 h-16 bg-kpn-red-dark rounded-lg flex items-center justify-center mb-2">
             <Ship className="text-white text-xl" />
           </div>
           <h4 className="font-medium text-gray-800 text-sm">Export</h4>
@@ -407,7 +407,7 @@ export default function SupplyChain() {
                   <Card>
                     <CardContent className="pt-6">
                       <div className="flex items-center">
-                        <MapPin className="h-8 w-8 text-forest" />
+                        <MapPin className="h-8 w-8 text-kpn-red" />
                         <div className="ml-4">
                           <p className="text-sm font-medium text-gray-600">Active Plots</p>
                           <p className="text-2xl font-bold text-gray-900">247</p>

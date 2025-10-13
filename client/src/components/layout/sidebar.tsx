@@ -112,8 +112,8 @@ export function Sidebar() {
           <div
             className={`w-full rounded-lg flex items-center transition-colors duration-200 ${
               hasActiveSubModule
-                ? 'bg-forest text-white' 
-                : 'text-gray-700 hover:bg-forest hover:text-white'
+                ? 'bg-kpn-red text-white' 
+                : 'text-gray-700 hover:bg-kpn-red hover:text-white'
             }`}
           >
             {/* Main clickable area for navigation */}
@@ -172,8 +172,8 @@ export function Sidebar() {
           onClick={() => item.href ? setLocation(item.href) : undefined}
           className={`w-full text-left px-4 py-3 rounded-lg flex items-center transition-colors duration-200 ${
             isActive 
-              ? 'bg-forest text-white' 
-              : 'text-gray-700 hover:bg-forest hover:text-white'
+              ? 'bg-kpn-red text-white' 
+              : 'text-gray-700 hover:bg-kpn-red hover:text-white'
           }`}
           data-testid={item.testId}
         >
@@ -186,14 +186,14 @@ export function Sidebar() {
 
   return (
     <nav className="w-64 bg-white shadow-lg border-r border-neutral-border flex flex-col">
-      <div className="p-6 border-b border-neutral-border">
+      <div className="p-6 border-b border-neutral-border bg-white">
         <div className="flex items-center">
-          <div className="w-10 h-10 bg-forest rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-kpn-red rounded-lg flex items-center justify-center">
             <Leaf className="w-5 h-5 text-white" />
           </div>
           <div className="ml-3">
             <h2 className="font-bold text-gray-800">KPN Compliance</h2>
-            <p className="text-sm text-gray-500">Compliance Platform</p>
+            <p className="text-sm text-kpn-gray">Compliance Platform</p>
           </div>
         </div>
       </div>
@@ -269,7 +269,7 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
       disabled={false}
       className={`w-full text-left px-4 py-2 rounded-lg flex items-center transition-colors duration-200 text-sm ${
         isActive 
-          ? 'bg-forest-light text-forest font-medium' 
+          ? 'bg-kpn-red-light text-kpn-red font-medium' 
           : (isAccessible || subModule.step === 2)
           ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
           : 'text-gray-400 cursor-not-allowed'
@@ -279,7 +279,7 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center">
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-kpn-red rounded-full animate-spin" />
           ) : (!isAccessible && subModule.step !== 2) ? (
             <Lock className="w-4 h-4 opacity-50" />
           ) : (
@@ -289,7 +289,7 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
         </div>
         <span className={`text-xs px-2 py-1 rounded-full ${
           isActive 
-            ? 'bg-forest text-white' 
+            ? 'bg-kpn-red text-white' 
             : (isAccessible || subModule.step === 2)
             ? 'bg-gray-200 text-gray-700'
             : 'bg-gray-100 text-gray-400'
