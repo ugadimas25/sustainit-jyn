@@ -513,15 +513,28 @@ export function generateKPNDDSPDF(reportData: any) {
     }
     doc.setFontSize(10);
     
+    // Table configuration
+    const tableStartY = yPos;
+    const col1Width = 105;
+    const col2Width = pageWidth - margin - col1Width - margin;
+    const rowHeight = 10;
+    
+    // Draw table header background
+    doc.setFillColor(240, 240, 240);
+    doc.rect(margin, yPos, col1Width, rowHeight, 'F');
+    doc.rect(margin + col1Width, yPos, col2Width, rowHeight, 'F');
+    
     // Table header
     doc.setFont('helvetica', 'bold');
-    doc.text('Document Type', margin, yPos);
-    doc.text('Link to File', 120, yPos);
+    doc.text('Document Type', margin + 2, yPos + 7);
+    doc.text('Link to File', margin + col1Width + 2, yPos + 7);
     
-    yPos += 2;
-    doc.line(margin, yPos, pageWidth - margin, yPos); // Horizontal line
+    // Draw header borders
+    doc.setDrawColor(0, 0, 0);
+    doc.rect(margin, yPos, col1Width, rowHeight);
+    doc.rect(margin + col1Width, yPos, col2Width, rowHeight);
     
-    yPos += 8;
+    yPos += rowHeight;
     doc.setFont('helvetica', 'normal');
     
     // Supporting documents
@@ -554,17 +567,24 @@ export function generateKPNDDSPDF(reportData: any) {
         yPos = 20;
       }
       
-      const typeLines = doc.splitTextToSize(doc_item.type, 100);
-      doc.text(typeLines, margin, yPos);
+      const typeLines = doc.splitTextToSize(doc_item.type, col1Width - 4);
+      const linkLines = doc.splitTextToSize(doc_item.link, col2Width - 4);
+      const cellHeight = Math.max(typeLines.length, linkLines.length) * 6 + 4;
+      
+      // Draw cell borders
+      doc.rect(margin, yPos, col1Width, cellHeight);
+      doc.rect(margin + col1Width, yPos, col2Width, cellHeight);
+      
+      // Add text content
+      doc.text(typeLines, margin + 2, yPos + 6);
       
       doc.setFont('helvetica', 'italic');
       doc.setTextColor(0, 0, 255); // Blue color for links
-      const linkLines = doc.splitTextToSize(doc_item.link, 70);
-      doc.text(linkLines, 120, yPos);
+      doc.text(linkLines, margin + col1Width + 2, yPos + 6);
       doc.setTextColor(0, 0, 0); // Reset to black
       doc.setFont('helvetica', 'normal');
       
-      yPos += Math.max(typeLines.length, linkLines.length) * 6 + 8;
+      yPos += cellHeight;
     });
 
     // Page number
