@@ -180,7 +180,8 @@ export default function DueDiligenceReport() {
     operatorDeclaration: '',
     signedBy: '',
     signedDate: '',
-    signatoryFunction: ''
+    signatoryFunction: '',
+    priorDdsReference: ''
   });
   
   const { toast } = useToast();
@@ -486,7 +487,8 @@ export default function DueDiligenceReport() {
       operatorDeclaration: 'I hereby declare that all information provided in this Due Diligence Statement is true and accurate to the best of my knowledge. The commodities described herein comply with all EUDR requirements and regulations.',
       signedBy: 'Dr. Bambang Wijaya',
       signedDate: new Date().toISOString().split('T')[0],
-      signatoryFunction: 'Chief Sustainability Officer'
+      signatoryFunction: 'Chief Sustainability Officer',
+      priorDdsReference: 'DDS-2024-000789'
     });
     
     toast({
@@ -2031,7 +2033,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="priorDdsReference">Reference Number (for SME operators)</Label>
                           <Input 
                             id="priorDdsReference" 
-                            name="priorDdsReference" 
+                            name="priorDdsReference"
+                            value={formData.priorDdsReference}
+                            onChange={(e) => updateFormField('priorDdsReference', e.target.value)}
                             placeholder="DDS-2024-001234"
                             data-testid="input-prior-dds"
                           />
