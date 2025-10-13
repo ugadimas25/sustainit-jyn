@@ -46,15 +46,16 @@ export default function AuthPage() {
     <div className="min-h-screen flex">
       {/* Hero Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-kpn-red to-kpn-red-dark relative">
-        <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0">
           <img 
             src={plantationBgImage} 
             alt="Palm oil plantation with dirt road through green palm trees" 
             className="w-full h-full object-cover"
           />
         </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
-          <div className="w-20 h-20 bg-white bg-opacity-10 rounded-xl flex items-center justify-center mb-8 p-3">
+          <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-8 p-3 shadow-lg">
             <img 
               src={kpnLogoDataUrl} 
               alt="KPN Corp Plantation Division Logo" 
@@ -62,39 +63,39 @@ export default function AuthPage() {
               data-testid="img-kpn-logo-auth"
             />
           </div>
-          <h1 className="text-4xl font-bold mb-4">KPN Compliance Platform</h1>
-          <p className="text-xl mb-8 text-green-100">
+          <h1 className="text-4xl font-bold mb-4 drop-shadow-lg">KPN Compliance Platform</h1>
+          <p className="text-xl mb-8 text-white/95 drop-shadow-md">
             Comprehensive supply chain compliance monitoring for EU Deforestation Regulation
           </p>
           
           <div className="space-y-6">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">Legal Compliance</h3>
-                <p className="text-green-100">Automated legality verification and document management</p>
+                <h3 className="font-semibold drop-shadow-md">Legal Compliance</h3>
+                <p className="text-white/90 drop-shadow-sm">Automated legality verification and document management</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md">
                 <Satellite className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">Deforestation Monitoring</h3>
-                <p className="text-green-100">Real-time satellite alerts via Global Forest Watch integration</p>
+                <h3 className="font-semibold drop-shadow-md">Deforestation Monitoring</h3>
+                <p className="text-white/90 drop-shadow-sm">Real-time satellite alerts via Global Forest Watch integration</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md">
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold">Supply Chain Traceability</h3>
-                <p className="text-green-100">Complete plot-to-export tracking and DDS report generation</p>
+                <h3 className="font-semibold drop-shadow-md">Supply Chain Traceability</h3>
+                <p className="text-white/90 drop-shadow-sm">Complete plot-to-export tracking and DDS report generation</p>
               </div>
             </div>
           </div>
