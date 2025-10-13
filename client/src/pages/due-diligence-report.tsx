@@ -397,6 +397,71 @@ export default function DueDiligenceReport() {
     setSelectedHsCodes(prev => prev.filter(c => c !== code));
   };
 
+  // Fill form with sample data for testing
+  const fillSampleData = () => {
+    // Set basic required fields
+    setSelectedHsCodes(['1511.10', '1511.90']);
+    setSelectedCountry('Indonesia');
+    setSelectedDeforestationRisk('LOW');
+    setSelectedLegalityStatus('COMPLIANT');
+    
+    // Set form values by finding and filling inputs
+    const form = document.querySelector('form') as HTMLFormElement;
+    if (form) {
+      // Operator Details
+      (form.querySelector('#companyInternalRef') as HTMLInputElement).value = 'KPN-DDS-2024-001';
+      (form.querySelector('#activity') as HTMLInputElement).value = 'Import';
+      (form.querySelector('#operatorLegalName') as HTMLInputElement).value = 'KPN Palm Oil Industries Ltd.';
+      (form.querySelector('#operatorAddress') as HTMLInputElement).value = 'Jl. Sudirman No. 123, Jakarta 12190, Indonesia';
+      (form.querySelector('#operatorCountry') as HTMLInputElement).value = 'Indonesia';
+      (form.querySelector('#operatorIsoCode') as HTMLInputElement).value = 'ID';
+      (form.querySelector('#eoriNumber') as HTMLInputElement).value = 'ID123456789';
+      
+      // Supplier Details
+      (form.querySelector('#supplierFactoryCode') as HTMLInputElement).value = 'SUP-CPO-001';
+      (form.querySelector('#supplierFactoryName') as HTMLInputElement).value = 'Riau Palm Processing Mill';
+      (form.querySelector('#supplierContact') as HTMLInputElement).value = 'Ahmad Suryanto';
+      (form.querySelector('#supplierContactEmail') as HTMLInputElement).value = 'ahmad.suryanto@supplier.com';
+      
+      // Customer Details
+      (form.querySelector('#customerLegalName') as HTMLInputElement).value = 'European Palm Oil Distributors BV';
+      (form.querySelector('#customerAddress') as HTMLInputElement).value = 'Havenstraat 45, 3011 Rotterdam, Netherlands';
+      (form.querySelector('#customerFactoryCode') as HTMLInputElement).value = 'CUST-EU-001';
+      (form.querySelector('#customerFactoryName') as HTMLInputElement).value = 'Rotterdam Distribution Center';
+      (form.querySelector('#customerContact') as HTMLInputElement).value = 'Jan van der Berg';
+      (form.querySelector('#customerContactEmail') as HTMLInputElement).value = 'j.vandenberg@customer.eu';
+      
+      // Product Details
+      (form.querySelector('#productDescription') as HTMLTextAreaElement).value = 'Crude Palm Oil (CPO), sustainably sourced, RSPO certified';
+      (form.querySelector('#producerName') as HTMLInputElement).value = 'PT Riau Sustainable Plantations';
+      (form.querySelector('#netMassKg') as HTMLInputElement).value = '25000';
+      (form.querySelector('#percentageEstimation') as HTMLInputElement).value = '100';
+      (form.querySelector('#supplementaryUnit') as HTMLInputElement).value = 'Liters';
+      (form.querySelector('#supplementaryQuantity') as HTMLInputElement).value = '28000';
+      
+      // Geolocation Details
+      (form.querySelector('#totalProducers') as HTMLInputElement).value = '15';
+      (form.querySelector('#totalPlots') as HTMLInputElement).value = '48';
+      (form.querySelector('#totalProductionArea') as HTMLInputElement).value = '1250.5';
+      (form.querySelector('#countryOfHarvest') as HTMLInputElement).value = 'Indonesia';
+      (form.querySelector('#maxIntermediaries') as HTMLInputElement).value = '2';
+      
+      // Compliance Details
+      (form.querySelector('#traceabilityMethod') as HTMLInputElement).value = 'GPS mapping + Blockchain verification';
+      (form.querySelector('#expectedHarvestDate') as HTMLInputElement).value = '2024-06-15';
+      (form.querySelector('#productionDateRange') as HTMLInputElement).value = 'January 2024 - March 2024';
+      (form.querySelector('#operatorDeclaration') as HTMLTextAreaElement).value = 'I hereby declare that all information provided in this Due Diligence Statement is true and accurate to the best of my knowledge. The commodities described herein comply with all EUDR requirements and regulations.';
+      (form.querySelector('#signedBy') as HTMLInputElement).value = 'Dr. Bambang Wijaya';
+      (form.querySelector('#signedDate') as HTMLInputElement).value = new Date().toISOString().split('T')[0];
+      (form.querySelector('#signatoryFunction') as HTMLInputElement).value = 'Chief Sustainability Officer';
+    }
+    
+    toast({
+      title: "Sample Data Loaded",
+      description: "Form has been filled with sample data. Please add a signature to complete.",
+    });
+  };
+
   // State for plot selection popup
   const [showPlotSelector, setShowPlotSelector] = useState(false);
   const [tempSelectedPlots, setTempSelectedPlots] = useState<Set<string>>(new Set());
@@ -673,7 +738,19 @@ export default function DueDiligenceReport() {
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Create Due Diligence Report</DialogTitle>
+                    <div className="flex justify-between items-center">
+                      <DialogTitle>Create Due Diligence Report</DialogTitle>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={fillSampleData}
+                        data-testid="button-fill-sample-data"
+                      >
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Fill Sample Data
+                      </Button>
+                    </div>
                   </DialogHeader>
                   <form onSubmit={handleDdsSubmit} className="space-y-6">
                     {/* Operator Details */}
