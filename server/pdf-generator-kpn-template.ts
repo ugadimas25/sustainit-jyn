@@ -17,7 +17,7 @@ export function generateKPNDDSPDF(reportData: any) {
     // Load flowchart images
     const baseDir = path.resolve(process.cwd(), 'attached_assets');
     const image1Path = path.join(baseDir, 'eudr general method_1760325387529.png'); // Page 2: EUDR General Method
-    const image2Path = path.join(baseDir, 'kpn lcc flowchart_1760324955726.png');  // Page 3: KPN LCC
+    const image2Path = path.join(baseDir, 'kpn lcc flowchart_1760325477815.png');  // Page 3: KPN LCC
     const image3Path = path.join(baseDir, 'LCC flowchart_1760324955725.png');      // Page 4: LCC flowchart
     
     let image1Base64 = '';
@@ -33,7 +33,7 @@ export function generateKPNDDSPDF(reportData: any) {
       if (fs.existsSync(image2Path)) {
         image2Base64 = `data:image/png;base64,${fs.readFileSync(image2Path).toString('base64')}`;
       } else {
-        console.warn('⚠️ Flowchart image not found: kpn lcc flowchart_1760324955726.png');
+        console.warn('⚠️ Flowchart image not found: kpn lcc flowchart_1760325477815.png');
       }
       if (fs.existsSync(image3Path)) {
         image3Base64 = `data:image/png;base64,${fs.readFileSync(image3Path).toString('base64')}`;
