@@ -1270,7 +1270,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="totalProducers">Total Producers</Label>
                           <Input 
                             id="totalProducers" 
-                            name="totalProducers" 
+                            name="totalProducers"
+                            value={formData.totalProducers}
+                            onChange={(e) => updateFormField('totalProducers', e.target.value)}
                             type="number" 
                             min="0"
                             placeholder="0"
@@ -1281,7 +1283,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="totalPlots">Total Plots</Label>
                           <Input 
                             id="totalPlots" 
-                            name="totalPlots" 
+                            name="totalPlots"
+                            value={formData.totalPlots}
+                            onChange={(e) => updateFormField('totalPlots', e.target.value)}
                             type="number" 
                             min="0"
                             placeholder="0"
@@ -1292,7 +1296,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="totalProductionArea">Total Production Area (ha)</Label>
                           <Input 
                             id="totalProductionArea" 
-                            name="totalProductionArea" 
+                            name="totalProductionArea"
+                            value={formData.totalProductionArea}
+                            onChange={(e) => updateFormField('totalProductionArea', e.target.value)}
                             type="number" 
                             step="0.01" 
                             min="0"
@@ -1302,16 +1308,16 @@ export default function DueDiligenceReport() {
                         </div>
                         <div>
                           <Label htmlFor="countryOfHarvest">Country of Harvest *</Label>
-                          <Select name="countryOfHarvest" required>
+                          <Select value={formData.countryOfHarvest} onValueChange={(value) => updateFormField('countryOfHarvest', value)} name="countryOfHarvest" required>
                             <SelectTrigger data-testid="select-country-harvest">
                               <SelectValue placeholder="Select country" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="ID">Indonesia</SelectItem>
-                              <SelectItem value="MY">Malaysia</SelectItem>
-                              <SelectItem value="TH">Thailand</SelectItem>
-                              <SelectItem value="BR">Brazil</SelectItem>
-                              <SelectItem value="NG">Nigeria</SelectItem>
+                              <SelectItem value="Indonesia">Indonesia</SelectItem>
+                              <SelectItem value="Malaysia">Malaysia</SelectItem>
+                              <SelectItem value="Thailand">Thailand</SelectItem>
+                              <SelectItem value="Brazil">Brazil</SelectItem>
+                              <SelectItem value="Nigeria">Nigeria</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1319,7 +1325,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="maxIntermediaries">Max. Number of Intermediaries</Label>
                           <Input 
                             id="maxIntermediaries" 
-                            name="maxIntermediaries" 
+                            name="maxIntermediaries"
+                            value={formData.maxIntermediaries}
+                            onChange={(e) => updateFormField('maxIntermediaries', e.target.value)}
                             type="number" 
                             min="0"
                             placeholder="0"
@@ -1328,11 +1336,12 @@ export default function DueDiligenceReport() {
                         </div>
                         <div>
                           <Label htmlFor="traceabilityMethod">Traceability Method *</Label>
-                          <Select name="traceabilityMethod" required>
+                          <Select value={formData.traceabilityMethod} onValueChange={(value) => updateFormField('traceabilityMethod', value)} name="traceabilityMethod" required>
                             <SelectTrigger data-testid="select-traceability-method">
                               <SelectValue placeholder="Select method" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="GPS mapping + Blockchain verification">GPS mapping + Blockchain verification</SelectItem>
                               <SelectItem value="mass-balance">Mass Balance</SelectItem>
                               <SelectItem value="segregated">Segregated</SelectItem>
                               <SelectItem value="identity-preserved">Identity Preserved</SelectItem>
@@ -1344,7 +1353,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="expectedHarvestDate">Expected Harvest Date</Label>
                           <Input 
                             id="expectedHarvestDate" 
-                            name="expectedHarvestDate" 
+                            name="expectedHarvestDate"
+                            value={formData.expectedHarvestDate}
+                            onChange={(e) => updateFormField('expectedHarvestDate', e.target.value)}
                             type="date"
                             data-testid="input-expected-harvest-date"
                           />
@@ -1353,7 +1364,9 @@ export default function DueDiligenceReport() {
                           <Label htmlFor="productionDateRange">Production Date Range</Label>
                           <Input 
                             id="productionDateRange" 
-                            name="productionDateRange" 
+                            name="productionDateRange"
+                            value={formData.productionDateRange}
+                            onChange={(e) => updateFormField('productionDateRange', e.target.value)}
                             placeholder="January 2024 - March 2024"
                             data-testid="input-production-date-range"
                           />
