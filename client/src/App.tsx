@@ -88,6 +88,9 @@ function Router() {
       <Route path="/due-diligence-report">
         <PageLayout><DueDiligenceReport /></PageLayout>
       </Route>
+      <Route path="/dds-reports">
+        <PageLayout><DueDiligenceReport /></PageLayout>
+      </Route>
       
       {/* Admin Routes */}
       <Route path="/admin">
