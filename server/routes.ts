@@ -46,8 +46,9 @@ import {
   exportDataSchema,
   plotSummarySchema,
 } from "@shared/schema";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { db } from "./db";
+import { roles, organizations, userRoles } from "@shared/schema";
 import { openaiService } from "./lib/openai-service";
 import { WDPAService } from "./lib/wdpa-service";
 import { z } from "zod";
@@ -92,6 +93,100 @@ async function initializeDefaultUser() {
     }
   } catch (error) {
     console.error("Error initializing default user:", error);
+  }
+}
+
+async function createSampleUsers() {
+  if (process.env.NODE_ENV !== "development") {
+    return;
+  }
+
+  try {
+    // Get role IDs
+    const superAdminRole = await db.query.roles.findFirst({
+      where: eq(roles.name, "Super Admin"),
+    });
+    const creatorRole = await db.query.roles.findFirst({
+      where: eq(roles.name, "Creator"),
+    });
+    const approverRole = await db.query.roles.findFirst({
+      where: eq(roles.name, "Approver"),
+    });
+
+    // Get PT THIP organization
+    const ptThipOrg = await db.query.organizations.findFirst({
+      where: eq(organizations.slug, "pt-thip"),
+    });
+
+    if (!superAdminRole || !creatorRole || !approverRole || !ptThipOrg) {
+      console.error("Missing required roles or organization for sample users");
+      return;
+    }
+
+    // Create Super Admin sample user
+    const superAdminExists = await storage.getUserByUsername("super_admin");
+    if (!superAdminExists) {
+      const hashedPassword = await hashPassword("password123");
+      const superAdminUser = await storage.createUser({
+        username: "super_admin",
+        password: hashedPassword,
+        role: "admin",
+        name: "Super Admin Test User",
+        email: "superadmin@test.com",
+      });
+
+      await db.insert(userRoles).values({
+        userId: superAdminUser.id,
+        roleId: superAdminRole.id,
+        organizationId: ptThipOrg.id,
+      });
+
+      console.log("✓ Created sample user: super_admin (password: password123)");
+    }
+
+    // Create Creator sample user
+    const creatorExists = await storage.getUserByUsername("creator_user");
+    if (!creatorExists) {
+      const hashedPassword = await hashPassword("password123");
+      const creatorUser = await storage.createUser({
+        username: "creator_user",
+        password: hashedPassword,
+        role: "user",
+        name: "Creator Test User",
+        email: "creator@test.com",
+      });
+
+      await db.insert(userRoles).values({
+        userId: creatorUser.id,
+        roleId: creatorRole.id,
+        organizationId: ptThipOrg.id,
+      });
+
+      console.log("✓ Created sample user: creator_user (password: password123)");
+    }
+
+    // Create Approver sample user
+    const approverExists = await storage.getUserByUsername("approver_user");
+    if (!approverExists) {
+      const hashedPassword = await hashPassword("password123");
+      const approverUser = await storage.createUser({
+        username: "approver_user",
+        password: hashedPassword,
+        role: "user",
+        name: "Approver Test User",
+        email: "approver@test.com",
+      });
+
+      await db.insert(userRoles).values({
+        userId: approverUser.id,
+        roleId: approverRole.id,
+        organizationId: ptThipOrg.id,
+      });
+
+      console.log("✓ Created sample user: approver_user (password: password123)");
+    }
+  } catch (error) {
+    console.error("Error creating sample users:", error);
   }
 }
 
@@ -738,6 +833,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await initializeDefaultUser();
   await seedSampleData();
   await seedUserConfigurationData();
+  await createSampleUsers();
 
   // Voice Assistant Routes
   app.use("/api/voice-assistant", voiceAssistantRouter);
