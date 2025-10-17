@@ -27,6 +27,8 @@ export const organizationStatusEnum = pgEnum("organization_status", ["active", "
 export const groupStatusEnum = pgEnum("group_status", ["active", "inactive"]);
 export const permissionEffectEnum = pgEnum("permission_effect", ["allow", "deny"]);
 export const auditActionEnum = pgEnum("audit_action", ["create", "update", "delete", "login", "logout", "access_granted", "access_denied", "permission_changed", "role_assigned", "group_joined", "group_left"]);
+export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approved", "rejected", "cancelled"]);
+export const approvalEntityTypeEnum = pgEnum("approval_entity_type", ["estate_data", "mill_data", "smallholder_data", "kcp_data", "bulking_data", "spatial_analysis", "legality_assessment", "risk_assessment", "supply_chain_linkage", "dds_report"]);
 
 // Legal Compliance Form Enums (matching DOCX template exactly)
 export const yesNoEnum = pgEnum("yes_no", ["YA", "TIDAK"]);
@@ -202,6 +204,45 @@ export const auditLogs = pgTable("audit_logs", {
   sessionId: text("session_id"),
   correlationId: varchar("correlation_id"), // For tracking related actions
   metadata: jsonb("metadata"), // Additional context
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Approval Requests - track when Creators submit data for approval
+export const approvalRequests = pgTable("approval_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizationId: varchar("organization_id").references(() => organizations.id).notNull(),
+  entityType: approvalEntityTypeEnum("entity_type").notNull(), // Type of data being approved
+  entityId: varchar("entity_id").notNull(), // ID of the entity (e.g., estate_data_id, supplier_id)
+  entityName: text("entity_name"), // Human-readable name for reference
+  supplierId: varchar("supplier_id").references(() => suppliers.id), // Link to supplier if applicable
+  status: approvalStatusEnum("status").default("pending").notNull(),
+  submittedBy: varchar("submitted_by").references(() => users.id).notNull(), // Creator who submitted
+  submittedAt: timestamp("submitted_at").defaultNow().notNull(),
+  reviewedBy: varchar("reviewed_by").references(() => users.id), // Approver who reviewed
+  reviewedAt: timestamp("reviewed_at"),
+  comments: text("comments"), // Comments from submitter
+  reviewNotes: text("review_notes"), // Notes from approver
+  metadata: jsonb("metadata").$type<{
+    workflowStage?: string; // e.g., "data_collection", "spatial_analysis"
+    previousStage?: string;
+    nextStage?: string;
+    dataSnapshot?: any; // Store snapshot of data at submission time
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Approval History - track all approval actions for audit trail
+export const approvalHistory = pgTable("approval_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  approvalRequestId: varchar("approval_request_id").references(() => approvalRequests.id).notNull(),
+  action: text("action").notNull(), // "submitted", "approved", "rejected", "modified", "cancelled"
+  actorUserId: varchar("actor_user_id").references(() => users.id).notNull(),
+  previousStatus: approvalStatusEnum("previous_status"),
+  newStatus: approvalStatusEnum("new_status").notNull(),
+  notes: text("notes"),
+  changes: jsonb("changes"), // Track what was modified if action is "modified"
+  ipAddress: text("ip_address"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -1240,6 +1281,10 @@ export type Mill = typeof mills.$inferSelect;
 export type InsertMill = typeof mills.$inferInsert;
 export type AnalysisResult = typeof analysisResults.$inferSelect;
 export type InsertAnalysisResult = typeof analysisResults.$inferInsert;
+export type ApprovalRequest = typeof approvalRequests.$inferSelect;
+export type InsertApprovalRequest = typeof approvalRequests.$inferInsert;
+export type ApprovalHistory = typeof approvalHistory.$inferSelect;
+export type InsertApprovalHistory = typeof approvalHistory.$inferInsert;
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users);
@@ -1261,6 +1306,8 @@ export const insertSupplierWorkflowLinkSchema = createInsertSchema(supplierWorkf
 export const insertWorkflowShipmentSchema = createInsertSchema(workflowShipments);
 export const insertMillSchema = createInsertSchema(mills);
 export const insertAnalysisResultSchema = createInsertSchema(analysisResults);
+export const insertApprovalRequestSchema = createInsertSchema(approvalRequests).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertApprovalHistorySchema = createInsertSchema(approvalHistory).omit({ id: true, createdAt: true });
 export const insertDdsReportSchema = createInsertSchema(ddsReports).extend({
   signedDate: z.union([z.date(), z.string()]).transform((val) => 
     typeof val === 'string' ? new Date(val) : val
