@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import plantationBgImage from "@assets/6194adcbbd9b6_1754556162332.jpg";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
+  const { hasAnyPermission, isLoading: permissionsLoading } = usePermissions();
   const [loginData, setLoginData] = useState({ username: "kpncompliance2025", password: "kpncompliance2025" });
   const [registerData, setRegisterData] = useState({ 
     username: "", 
@@ -23,7 +25,12 @@ export default function AuthPage() {
   });
 
   // Redirect if already logged in
-  if (user) {
+  if (user && !permissionsLoading) {
+    // Check if user has admin permissions - redirect to User Management
+    if (hasAnyPermission(['user_management.view_users', 'user_management.create_users'])) {
+      return <Redirect to="/admin/users" />;
+    }
+    // Otherwise redirect to dashboard
     return <Redirect to="/" />;
   }
 

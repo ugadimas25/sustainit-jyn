@@ -48,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       // Invalidate and refetch user data to get fresh role derivation from /api/user
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      // Also invalidate permissions to get fresh permissions for the logged-in user
+      queryClient.invalidateQueries({ queryKey: ["/api/user/permissions"] });
     },
     onError: (error: Error) => {
       toast({
