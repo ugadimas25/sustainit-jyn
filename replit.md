@@ -23,6 +23,11 @@ Preferred communication style: Simple, everyday language.
 - **Database ORM**: Drizzle ORM.
 - **File Upload**: Uppy.js integration.
 - **API Design**: RESTful API endpoints with error handling.
+- **Role-Based Access Control (RBAC)**: Comprehensive permission system with 3 user types:
+    - **Superadmin**: Full system access with all permissions (56 permissions total)
+    - **Creator**: Data input role - can input data from Data Collection → Spatial Analysis → Legality Compliance → Risk Assessment → Supply Chain Linkage → DDS Reports. Data must be approved before proceeding to next stage (21 permissions)
+    - **Approver**: Data review and approval role - can process, delete, modify, analyze or review data inputted by Creator (40 permissions)
+- **Approval Workflow**: Complete approval request and history tracking system for Creator → Approver workflow with status tracking (pending, approved, rejected, cancelled)
 - **Technical Implementations**:
     - **EUDR Multilayer API Integration**: Real-time deforestation analysis using an external API for GFW, JRC, and SBTN datasets.
     - **EUDR Assessment Backend Integration**: Full database persistence for 8 EUDR legality indicators with comprehensive API endpoints and document storage.
