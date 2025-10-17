@@ -24,7 +24,7 @@ Preferred communication style: Simple, everyday language.
 - **File Upload**: Uppy.js integration.
 - **API Design**: RESTful API endpoints with error handling.
 - **Role-Based Access Control (RBAC)**: Comprehensive permission system with 3 user types and menu access control:
-    - **Superadmin**: Full system access with all permissions (56 permissions total)
+    - **Super Admin**: Full system access with all permissions (56 permissions total)
     - **Creator**: Data input role - can input data from Data Collection → Spatial Analysis → Legality Compliance → Risk Assessment → Supply Chain Linkage → DDS Reports. Data must be approved before proceeding to next stage (21 permissions)
     - **Approver**: Data review and approval role - can process, delete, modify, analyze or review data inputted by Creator (40 permissions)
     - **Menu Access Control**: Dynamic sidebar navigation that filters menu items based on user permissions with real-time updates and loading indicators

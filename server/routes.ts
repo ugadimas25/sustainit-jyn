@@ -313,11 +313,10 @@ async function seedUserConfigurationData() {
   try {
     console.log("🔧 Seeding User Configuration data...");
 
-    // 1. Create default system organization
-    const existingOrgs = await storage.getOrganizations();
-    let systemOrg;
+    // 1. Create default system organization (fetch by slug for robustness)
+    let systemOrg = await storage.getOrganizationBySlug("kpn-system-admin");
 
-    if (existingOrgs.length === 0) {
+    if (!systemOrg) {
       systemOrg = await storage.createOrganization({
         name: "KPN System Administration",
         slug: "kpn-system-admin",
@@ -342,8 +341,46 @@ async function seedUserConfigurationData() {
         status: "active",
       });
       console.log("✓ Created default system organization");
-    } else {
-      systemOrg = existingOrgs[0];
+    }
+
+    // 1b. Create company organizations (PT THIP and PT BSU)
+    const companies = [
+      {
+        name: "PT THIP",
+        slug: "pt-thip",
+        description: "PT THIP - KPN Plantation Division Company",
+        settings: {
+          features: ["compliance_monitoring", "supply_chain", "analytics"],
+          branding: { primaryColor: "#dc2626", logo: null },
+          security: {
+            passwordPolicy: { minLength: 8, requireNumbers: true },
+            sessionTimeout: 3600,
+          },
+        },
+        status: "active" as const,
+      },
+      {
+        name: "PT BSU",
+        slug: "pt-bsu",
+        description: "PT BSU - KPN Plantation Division Company",
+        settings: {
+          features: ["compliance_monitoring", "supply_chain", "analytics"],
+          branding: { primaryColor: "#dc2626", logo: null },
+          security: {
+            passwordPolicy: { minLength: 8, requireNumbers: true },
+            sessionTimeout: 3600,
+          },
+        },
+        status: "active" as const,
+      },
+    ];
+
+    for (const companyData of companies) {
+      const existingCompany = await storage.getOrganizationBySlug(companyData.slug);
+      if (!existingCompany) {
+        await storage.createOrganization(companyData);
+        console.log(`✓ Created company organization: ${companyData.name}`);
+      }
     }
 
     // 2. Create system permissions organized by modules
@@ -489,8 +526,8 @@ async function seedUserConfigurationData() {
     // 3. Create default roles with appropriate permissions
     const defaultRoles = [
       {
-        name: "Superadmin",
-        description: "Full system access - can perform all activities owned by Role Access Creator and Approver",
+        name: "Super Admin",
+        description: "Full system access - can create users and perform all activities owned by Role Access Creator and Approver",
         permissions: Object.keys(createdPermissions), // All permissions
         isSystem: true,
       },
@@ -622,9 +659,9 @@ async function seedUserConfigurationData() {
       }
     }
 
-    // 4. Assign Superadmin role to default admin user (ROBUST VERSION)
+    // 4. Assign Super Admin role to default admin user (ROBUST VERSION)
     const adminUser = await storage.getUserByUsername("kpneudr");
-    if (adminUser && systemOrg && createdRoles["Superadmin"]) {
+    if (adminUser && systemOrg && createdRoles["Super Admin"]) {
       // ALWAYS ensure user is in system organization
       let existingUserOrg = await storage.getUserOrganizations(adminUser.id);
       const isInSystemOrg = existingUserOrg.some(
@@ -651,26 +688,26 @@ async function seedUserConfigurationData() {
         }
       }
 
-      // ALWAYS ensure Superadmin role is assigned
+      // ALWAYS ensure Super Admin role is assigned
       const existingUserRoles = await storage.getUserRoles(
         adminUser.id,
         systemOrg.id,
       );
       const hasAdminRole = existingUserRoles.some(
-        (r) => r.roleId === createdRoles["Superadmin"].id,
+        (r) => r.roleId === createdRoles["Super Admin"].id,
       );
 
       if (!hasAdminRole) {
         await storage.assignUserRole({
           userId: adminUser.id,
-          roleId: createdRoles["Superadmin"].id,
+          roleId: createdRoles["Super Admin"].id,
           organizationId: systemOrg.id,
         });
         console.log(
-          "✓ Assigned Superadmin role to default admin user",
+          "✓ Assigned Super Admin role to default admin user",
         );
       } else {
-        console.log("✓ Admin user already has Superadmin role");
+        console.log("✓ Admin user already has Super Admin role");
       }
 
       // VERIFY and LOG final state
@@ -684,7 +721,7 @@ async function seedUserConfigurationData() {
       );
     } else {
       console.error(
-        `❌ SEEDING ERROR: Missing adminUser(${!!adminUser}) or systemOrg(${!!systemOrg}) or Superadmin role(${!!createdRoles["Superadmin"]})`,
+        `❌ SEEDING ERROR: Missing adminUser(${!!adminUser}) or systemOrg(${!!systemOrg}) or Super Admin role(${!!createdRoles["Super Admin"]})`,
       );
     }
 
