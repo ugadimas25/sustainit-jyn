@@ -15,6 +15,17 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+
+// Platform modules
+const PLATFORM_MODULES = [
+  { id: "dashboard", name: "Dashboard" },
+  { id: "deforestation_monitoring", name: "Deforestation Monitoring" },
+  { id: "data_collection", name: "Data Collection" },
+  { id: "legality_compliance", name: "Legality Compliance" },
+  { id: "supply_chain", name: "Supply Chain" },
+  { id: "dds_reports", name: "DDS Reports" },
+] as const;
 
 // User form schema
 const createUserSchema = z.object({
@@ -24,6 +35,8 @@ const createUserSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   role: z.string().optional(),
   status: z.enum(["active", "inactive", "locked"]).default("active"),
+  modules: z.array(z.string()).default([]),
+  companies: z.array(z.string()).min(1, "Select at least one company affiliation"),
 });
 
 const editUserSchema = createUserSchema.omit({ password: true }).extend({
@@ -192,6 +205,8 @@ export default function UserManagement() {
       name: editingUser.name,
       role: editingUser.role || "none",
       status: editingUser.status,
+      modules: [],
+      companies: [],
     } : {
       username: "",
       email: "",
@@ -199,6 +214,8 @@ export default function UserManagement() {
       password: "",
       role: "none",
       status: "active",
+      modules: [],
+      companies: [],
     },
   });
 
@@ -269,7 +286,7 @@ export default function UserManagement() {
               Add User
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle data-testid="dialog-title">
                 {editingUser ? 'Edit User' : 'Create New User'}
@@ -384,6 +401,114 @@ export default function UserManagement() {
                     </FormItem>
                   )}
                 />
+
+                {/* Platform Modules Selection */}
+                <FormField
+                  control={form.control}
+                  name="modules"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Platform Modules</FormLabel>
+                      <div className="space-y-2">
+                        {PLATFORM_MODULES.map((module) => (
+                          <FormField
+                            key={module.id}
+                            control={form.control}
+                            name="modules"
+                            render={({ field }) => {
+                              return (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value?.includes(module.id)}
+                                      onCheckedChange={(checked) => {
+                                        return checked
+                                          ? field.onChange([...field.value, module.id])
+                                          : field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== module.id
+                                              )
+                                            )
+                                      }}
+                                      data-testid={`checkbox-module-${module.id}`}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                    {module.name}
+                                  </FormLabel>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Company Affiliation Selection */}
+                <FormField
+                  control={form.control}
+                  name="companies"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Company Affiliation *</FormLabel>
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="companies"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes("pt-thip")}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, "pt-thip"])
+                                      : field.onChange(
+                                          field.value?.filter((value) => value !== "pt-thip")
+                                        )
+                                  }}
+                                  data-testid="checkbox-company-pt-thip"
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                PT THIP
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="companies"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes("pt-bsu")}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, "pt-bsu"])
+                                      : field.onChange(
+                                          field.value?.filter((value) => value !== "pt-bsu")
+                                        )
+                                  }}
+                                  data-testid="checkbox-company-pt-bsu"
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal cursor-pointer">
+                                PT BSU
+                              </FormLabel>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <DialogFooter>
                   <Button 
                     type="button" 
