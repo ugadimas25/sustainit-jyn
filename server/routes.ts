@@ -2840,6 +2840,416 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== APPROVAL WORKFLOW ENDPOINTS ====================
+  
+  // Submit data for approval (Creator role)
+  app.post("/api/approvals", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+
+      // Check if user has submit permission
+      const userOrgs = await storage.getUserOrganizations(userId);
+      if (userOrgs.length === 0) {
+        return res.status(400).json({ error: "User not assigned to any organization" });
+      }
+
+      let hasSubmitPermission = false;
+      for (const userOrg of userOrgs) {
+        const userRoles = await storage.getUserRoles(userId, userOrg.organizationId);
+        for (const userRole of userRoles) {
+          const rolePerms = await storage.getRolePermissions(userRole.roleId);
+          for (const rolePerm of rolePerms) {
+            const perm = await storage.getPermission(rolePerm.permissionId);
+            if (perm && `${perm.module}.${perm.action}` === 'approval_workflow.submit_for_approval') {
+              hasSubmitPermission = true;
+              break;
+            }
+          }
+          if (hasSubmitPermission) break;
+        }
+        if (hasSubmitPermission) break;
+      }
+
+      if (!hasSubmitPermission) {
+        return res.status(403).json({ error: "You do not have permission to submit approval requests" });
+      }
+
+      const { entityType, entityId, entityName, supplierId, comments, metadata } = req.body;
+
+      const approvalRequest = await storage.createApprovalRequest({
+        organizationId: userOrgs[0].organizationId,
+        entityType,
+        entityId,
+        entityName,
+        supplierId,
+        status: "pending",
+        submittedBy: userId,
+        comments,
+        metadata,
+      });
+
+      // Create history entry
+      await storage.createApprovalHistory({
+        approvalRequestId: approvalRequest.id,
+        action: "submitted",
+        actorUserId: userId,
+        newStatus: "pending",
+        notes: comments,
+      });
+
+      res.json(approvalRequest);
+    } catch (error: any) {
+      console.error("Error creating approval request:", error);
+      res.status(500).send(error.message || "Failed to create approval request");
+    }
+  });
+
+  // Get approval requests (filtered by user role)
+  app.get("/api/approvals", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+
+      // Check if user has any approval workflow permission
+      const userOrgs = await storage.getUserOrganizations(userId);
+      let hasApprovalAccess = false;
+
+      for (const userOrg of userOrgs) {
+        const userRoles = await storage.getUserRoles(userId, userOrg.organizationId);
+        for (const userRole of userRoles) {
+          const rolePerms = await storage.getRolePermissions(userRole.roleId);
+          for (const rolePerm of rolePerms) {
+            const perm = await storage.getPermission(rolePerm.permissionId);
+            if (perm && perm.module === 'approval_workflow') {
+              hasApprovalAccess = true;
+              break;
+            }
+          }
+          if (hasApprovalAccess) break;
+        }
+        if (hasApprovalAccess) break;
+      }
+
+      if (!hasApprovalAccess) {
+        return res.status(403).json({ error: "You do not have permission to view approval requests" });
+      }
+
+      const { status, entityType } = req.query;
+
+      const orgIds = userOrgs.map(org => org.organizationId);
+
+      // Get all approval requests for user's organizations
+      const allRequests = await storage.getApprovalRequests();
+      
+      let filteredRequests = allRequests.filter(req => orgIds.includes(req.organizationId));
+
+      // Filter by status if provided
+      if (status) {
+        filteredRequests = filteredRequests.filter(req => req.status === status);
+      }
+
+      // Filter by entity type if provided
+      if (entityType) {
+        filteredRequests = filteredRequests.filter(req => req.entityType === entityType);
+      }
+
+      res.json(filteredRequests);
+    } catch (error: any) {
+      console.error("Error fetching approval requests:", error);
+      res.status(500).send(error.message || "Failed to fetch approval requests");
+    }
+  });
+
+  // Get specific approval request
+  app.get("/api/approvals/:id", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+      const { id } = req.params;
+
+      const approvalRequest = await storage.getApprovalRequest(id);
+      if (!approvalRequest) {
+        return res.status(404).json({ error: "Approval request not found" });
+      }
+
+      // Verify user has access to this organization's data
+      const userOrgs = await storage.getUserOrganizations(userId);
+      const hasAccess = userOrgs.some(org => org.organizationId === approvalRequest.organizationId);
+
+      if (!hasAccess) {
+        return res.status(403).json({ error: "You do not have access to this approval request" });
+      }
+
+      res.json(approvalRequest);
+    } catch (error: any) {
+      console.error("Error fetching approval request:", error);
+      res.status(500).send(error.message || "Failed to fetch approval request");
+    }
+  });
+
+  // Approve request (Approver role)
+  app.patch("/api/approvals/:id/approve", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+
+      // Check if user has approval permission
+      const userOrgs = await storage.getUserOrganizations(userId);
+      let hasApprovePermission = false;
+
+      for (const userOrg of userOrgs) {
+        const userRoles = await storage.getUserRoles(userId, userOrg.organizationId);
+        for (const userRole of userRoles) {
+          const rolePerms = await storage.getRolePermissions(userRole.roleId);
+          for (const rolePerm of rolePerms) {
+            const perm = await storage.getPermission(rolePerm.permissionId);
+            if (perm && `${perm.module}.${perm.action}` === 'approval_workflow.approve_data') {
+              hasApprovePermission = true;
+              break;
+            }
+          }
+          if (hasApprovePermission) break;
+        }
+        if (hasApprovePermission) break;
+      }
+
+      if (!hasApprovePermission) {
+        return res.status(403).json({ error: "You do not have permission to approve requests" });
+      }
+
+      const { id } = req.params;
+      const { reviewNotes } = req.body;
+
+      const approvalRequest = await storage.getApprovalRequest(id);
+      if (!approvalRequest) {
+        return res.status(404).json({ error: "Approval request not found" });
+      }
+
+      // Update approval request
+      const updated = await storage.updateApprovalRequest(id, {
+        status: "approved",
+        reviewedBy: userId,
+        reviewedAt: new Date(),
+        reviewNotes,
+      });
+
+      // Create history entry
+      await storage.createApprovalHistory({
+        approvalRequestId: id,
+        action: "approved",
+        actorUserId: userId,
+        previousStatus: approvalRequest.status,
+        newStatus: "approved",
+        notes: reviewNotes,
+      });
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error approving request:", error);
+      res.status(500).send(error.message || "Failed to approve request");
+    }
+  });
+
+  // Reject request (Approver role) - Returns data to Draft status
+  app.patch("/api/approvals/:id/reject", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+
+      // Check if user has reject permission
+      const userOrgs = await storage.getUserOrganizations(userId);
+      let hasRejectPermission = false;
+
+      for (const userOrg of userOrgs) {
+        const userRoles = await storage.getUserRoles(userId, userOrg.organizationId);
+        for (const userRole of userRoles) {
+          const rolePerms = await storage.getRolePermissions(userRole.roleId);
+          for (const rolePerm of rolePerms) {
+            const perm = await storage.getPermission(rolePerm.permissionId);
+            if (perm && `${perm.module}.${perm.action}` === 'approval_workflow.reject_data') {
+              hasRejectPermission = true;
+              break;
+            }
+          }
+          if (hasRejectPermission) break;
+        }
+        if (hasRejectPermission) break;
+      }
+
+      if (!hasRejectPermission) {
+        return res.status(403).json({ error: "You do not have permission to reject requests" });
+      }
+
+      const { id } = req.params;
+      const { reviewNotes } = req.body;
+
+      const approvalRequest = await storage.getApprovalRequest(id);
+      if (!approvalRequest) {
+        return res.status(404).json({ error: "Approval request not found" });
+      }
+
+      // Update approval request to rejected
+      const updated = await storage.updateApprovalRequest(id, {
+        status: "rejected",
+        reviewedBy: userId,
+        reviewedAt: new Date(),
+        reviewNotes,
+      });
+
+      // TODO: Update the actual entity (supplier, estate, etc.) status to "draft"
+      // This will be implemented based on entityType
+
+      // Create history entry
+      await storage.createApprovalHistory({
+        approvalRequestId: id,
+        action: "rejected",
+        actorUserId: userId,
+        previousStatus: approvalRequest.status,
+        newStatus: "rejected",
+        notes: reviewNotes,
+      });
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error rejecting request:", error);
+      res.status(500).send(error.message || "Failed to reject request");
+    }
+  });
+
+  // Edit/modify request (Approver role)
+  app.patch("/api/approvals/:id/modify", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      const { reviewNotes, changes } = req.body;
+      const userId = (req.user as any).id;
+
+      const approvalRequest = await storage.getApprovalRequest(id);
+      if (!approvalRequest) {
+        return res.status(404).json({ error: "Approval request not found" });
+      }
+
+      // Update approval request
+      const updated = await storage.updateApprovalRequest(id, {
+        reviewedBy: userId,
+        reviewedAt: new Date(),
+        reviewNotes,
+      });
+
+      // Create history entry
+      await storage.createApprovalHistory({
+        approvalRequestId: id,
+        action: "modified",
+        actorUserId: userId,
+        previousStatus: approvalRequest.status,
+        newStatus: approvalRequest.status,
+        notes: reviewNotes,
+        changes,
+      });
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error modifying request:", error);
+      res.status(500).send(error.message || "Failed to modify request");
+    }
+  });
+
+  // Delete request (Approver role)
+  app.delete("/api/approvals/:id", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+
+      // Check if user has review/delete permission
+      const userOrgs = await storage.getUserOrganizations(userId);
+      let hasDeletePermission = false;
+
+      for (const userOrg of userOrgs) {
+        const userRoles = await storage.getUserRoles(userId, userOrg.organizationId);
+        for (const userRole of userRoles) {
+          const rolePerms = await storage.getRolePermissions(userRole.roleId);
+          for (const rolePerm of rolePerms) {
+            const perm = await storage.getPermission(rolePerm.permissionId);
+            if (perm && `${perm.module}.${perm.action}` === 'approval_workflow.review_data') {
+              hasDeletePermission = true;
+              break;
+            }
+          }
+          if (hasDeletePermission) break;
+        }
+        if (hasDeletePermission) break;
+      }
+
+      if (!hasDeletePermission) {
+        return res.status(403).json({ error: "You do not have permission to delete requests" });
+      }
+
+      const { id } = req.params;
+
+      const approvalRequest = await storage.getApprovalRequest(id);
+      if (!approvalRequest) {
+        return res.status(404).json({ error: "Approval request not found" });
+      }
+
+      // Create history entry before deletion
+      await storage.createApprovalHistory({
+        approvalRequestId: id,
+        action: "deleted",
+        actorUserId: userId,
+        previousStatus: approvalRequest.status,
+        newStatus: "cancelled",
+        notes: "Approval request deleted by approver",
+      });
+
+      // Delete the approval request
+      await storage.deleteApprovalRequest(id);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting approval request:", error);
+      res.status(500).send(error.message || "Failed to delete approval request");
+    }
+  });
+
+  // Get approval history for a request
+  app.get("/api/approvals/:id/history", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      const history = await storage.getApprovalHistory(id);
+
+      res.json(history);
+    } catch (error: any) {
+      console.error("Error fetching approval history:", error);
+      res.status(500).send(error.message || "Failed to fetch approval history");
+    }
+  });
+
   // Get current user's companies
   app.get("/api/user/companies", async (req, res) => {
     try {

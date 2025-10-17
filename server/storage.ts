@@ -36,7 +36,9 @@ import {
   userPermissions, type UserPermission, type InsertUserPermission,
   userRoles, type UserRole, type InsertUserRole,
   userModules, type UserModule, type InsertUserModule,
-  auditLogs, type AuditLog, type InsertAuditLog
+  auditLogs, type AuditLog, type InsertAuditLog,
+  approvalRequests, type ApprovalRequest, type InsertApprovalRequest,
+  approvalHistory, type ApprovalHistory, type InsertApprovalHistory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql, inArray, isNull } from "drizzle-orm";
@@ -239,6 +241,18 @@ export interface IStorage {
   // Risk scoring and classification utilities
   calculateRiskScore(assessmentId: string): Promise<{ overallScore: number; riskClassification: string; }>;
   generateRiskReport(assessmentId: string): Promise<any>;
+
+  // Approval Workflow management
+  getApprovalRequests(): Promise<ApprovalRequest[]>;
+  getApprovalRequest(id: string): Promise<ApprovalRequest | undefined>;
+  getApprovalRequestsByStatus(status: string): Promise<ApprovalRequest[]>;
+  createApprovalRequest(insertApprovalRequest: InsertApprovalRequest): Promise<ApprovalRequest>;
+  updateApprovalRequest(id: string, updates: Partial<ApprovalRequest>): Promise<ApprovalRequest | undefined>;
+  deleteApprovalRequest(id: string): Promise<boolean>;
+  
+  // Approval History management
+  getApprovalHistory(approvalRequestId: string): Promise<ApprovalHistory[]>;
+  createApprovalHistory(insertApprovalHistory: InsertApprovalHistory): Promise<ApprovalHistory>;
 
   // ========================================
   // DASHBOARD COMPLIANCE PRD - PHASE 1: FILTERED AGGREGATION METHODS
@@ -1614,6 +1628,49 @@ export class DatabaseStorage implements IStorage {
     }
 
     return recommendations;
+  }
+
+  // Approval Workflow methods implementation
+  async getApprovalRequests(): Promise<ApprovalRequest[]> {
+    return await db.select().from(approvalRequests).orderBy(desc(approvalRequests.submittedAt));
+  }
+
+  async getApprovalRequest(id: string): Promise<ApprovalRequest | undefined> {
+    const [request] = await db.select().from(approvalRequests).where(eq(approvalRequests.id, id));
+    return request;
+  }
+
+  async getApprovalRequestsByStatus(status: string): Promise<ApprovalRequest[]> {
+    return await db.select().from(approvalRequests).where(eq(approvalRequests.status, status as any)).orderBy(desc(approvalRequests.submittedAt));
+  }
+
+  async createApprovalRequest(insertApprovalRequest: InsertApprovalRequest): Promise<ApprovalRequest> {
+    const [request] = await db.insert(approvalRequests).values(insertApprovalRequest).returning();
+    return request;
+  }
+
+  async updateApprovalRequest(id: string, updates: Partial<ApprovalRequest>): Promise<ApprovalRequest | undefined> {
+    const [request] = await db.update(approvalRequests).set(updates).where(eq(approvalRequests.id, id)).returning();
+    return request;
+  }
+
+  async deleteApprovalRequest(id: string): Promise<boolean> {
+    try {
+      await db.delete(approvalRequests).where(eq(approvalRequests.id, id));
+      return true;
+    } catch (error) {
+      console.error("Error deleting approval request:", error);
+      return false;
+    }
+  }
+
+  async getApprovalHistory(approvalRequestId: string): Promise<ApprovalHistory[]> {
+    return await db.select().from(approvalHistory).where(eq(approvalHistory.approvalRequestId, approvalRequestId)).orderBy(desc(approvalHistory.createdAt));
+  }
+
+  async createApprovalHistory(insertApprovalHistory: InsertApprovalHistory): Promise<ApprovalHistory> {
+    const [history] = await db.insert(approvalHistory).values(insertApprovalHistory).returning();
+    return history;
   }
 
   // ========================================

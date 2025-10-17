@@ -24,6 +24,7 @@ import DueDiligenceReport from "@/pages/due-diligence-report";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
 import UserManagement from "@/pages/admin/user-management";
 import RoleManagement from "@/pages/admin/role-management";
+import ApprovalsPage from "@/pages/approvals";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { VoiceAssistantToggle } from "@/components/voice-assistant/VoiceAssistantToggle";
@@ -110,6 +111,9 @@ function Router() {
       </Route>
       <Route path="/dds-reports">
         <PageLayout><DueDiligenceReport /></PageLayout>
+      </Route>
+      <Route path="/approvals">
+        <PageLayout><ApprovalsPage /></PageLayout>
       </Route>
       
       {/* Admin Routes */}

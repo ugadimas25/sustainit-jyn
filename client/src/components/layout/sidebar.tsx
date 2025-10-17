@@ -108,6 +108,13 @@ const navigation: NavigationItem[] = [
     testId: 'nav-due-diligence-report',
     permissions: ['dds_reports.view_dds', 'dds_reports.generate_dds']
   },
+  { 
+    name: 'Approvals', 
+    href: '/approvals', 
+    icon: UserCheck, 
+    testId: 'nav-approvals',
+    permissions: ['approval_workflow.submit_for_approval', 'approval_workflow.approve_data', 'approval_workflow.reject_data', 'approval_workflow.review_data']
+  },
 ];
 
 // Admin navigation (only for users with admin permissions)
