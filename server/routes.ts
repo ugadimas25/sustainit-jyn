@@ -386,6 +386,28 @@ async function seedUserConfigurationData() {
         { action: "view_analytics", description: "View analytics and reports" },
         { action: "export_data", description: "Export dashboard data" },
       ],
+      data_collection: [
+        { action: "input_estate_data", description: "Input Estate data" },
+        { action: "input_mill_data", description: "Input Mill data" },
+        { action: "input_smallholder_data", description: "Input Smallholder data" },
+        { action: "input_kcp_data", description: "Input KCP data" },
+        { action: "input_bulking_data", description: "Input Bulking data" },
+      ],
+      spatial_analysis: [
+        { action: "run_spatial_analysis", description: "Run spatial analysis" },
+        { action: "view_spatial_results", description: "View spatial analysis results" },
+        { action: "export_spatial_data", description: "Export spatial data" },
+      ],
+      legality_compliance: [
+        { action: "view_legality", description: "View legality assessment" },
+        { action: "input_legality_data", description: "Input legality assessment data" },
+        { action: "edit_legality_data", description: "Edit legality assessment data" },
+      ],
+      risk_assessment: [
+        { action: "view_risk", description: "View risk assessment" },
+        { action: "input_risk_data", description: "Input risk assessment data" },
+        { action: "edit_risk_data", description: "Edit risk assessment data" },
+      ],
       supply_chain_management: [
         { action: "view_suppliers", description: "View supplier information" },
         { action: "create_suppliers", description: "Add new suppliers" },
@@ -395,6 +417,19 @@ async function seedUserConfigurationData() {
           action: "manage_traceability",
           description: "Manage supply chain traceability",
         },
+        { action: "manage_linkage", description: "Manage supply chain linkage" },
+      ],
+      dds_reports: [
+        { action: "view_dds", description: "View DDS reports" },
+        { action: "generate_dds", description: "Generate DDS reports" },
+        { action: "export_dds", description: "Export DDS reports" },
+      ],
+      approval_workflow: [
+        { action: "submit_for_approval", description: "Submit data for approval" },
+        { action: "approve_data", description: "Approve submitted data" },
+        { action: "reject_data", description: "Reject submitted data" },
+        { action: "review_data", description: "Review submitted data" },
+        { action: "modify_submitted_data", description: "Modify submitted data" },
       ],
       compliance_monitoring: [
         { action: "view_compliance", description: "View compliance status" },
@@ -454,89 +489,104 @@ async function seedUserConfigurationData() {
     // 3. Create default roles with appropriate permissions
     const defaultRoles = [
       {
-        name: "system_admin",
-        description: "Full system access with all permissions",
+        name: "Superadmin",
+        description: "Full system access - can perform all activities owned by Role Access Creator and Approver",
         permissions: Object.keys(createdPermissions), // All permissions
+        isSystem: true,
       },
       {
-        name: "organization_admin",
-        description: "Organization-level administration",
+        name: "Creator",
+        description: "Data input role - can input data from Data Collection, Spatial Analysis, Legality Compliance, Risk Assessment, Supply Chain Linkage, to DDS Reports. Data must be approved before proceeding to next stage.",
         permissions: [
-          "user_management.view_users",
-          "user_management.create_users",
-          "user_management.edit_users",
-          "user_management.manage_roles",
-          "role_permission_management.view_roles",
-          "role_permission_management.assign_permissions",
+          // Dashboard access
           "dashboard_analytics.view_dashboard",
           "dashboard_analytics.view_analytics",
+          // Data Collection - input only
+          "data_collection.input_estate_data",
+          "data_collection.input_mill_data",
+          "data_collection.input_smallholder_data",
+          "data_collection.input_kcp_data",
+          "data_collection.input_bulking_data",
+          // Spatial Analysis - run and view
+          "spatial_analysis.run_spatial_analysis",
+          "spatial_analysis.view_spatial_results",
+          "spatial_analysis.export_spatial_data",
+          // Legality Compliance - input only
+          "legality_compliance.view_legality",
+          "legality_compliance.input_legality_data",
+          // Risk Assessment - input only
+          "risk_assessment.view_risk",
+          "risk_assessment.input_risk_data",
+          // Supply Chain - view and manage linkage
+          "supply_chain_management.view_suppliers",
+          "supply_chain_management.manage_linkage",
+          // DDS Reports - view and generate
+          "dds_reports.view_dds",
+          "dds_reports.generate_dds",
+          // Approval workflow - submit only
+          "approval_workflow.submit_for_approval",
+          // Deforestation monitoring - view only
+          "deforestation_monitoring.view_plots",
+          "deforestation_monitoring.view_alerts",
+        ],
+        isSystem: false,
+      },
+      {
+        name: "Approver",
+        description: "Data review and approval role - can process, delete, modify, analyze or review data that has been inputted by Creator",
+        permissions: [
+          // Dashboard access
+          "dashboard_analytics.view_dashboard",
+          "dashboard_analytics.view_analytics",
+          "dashboard_analytics.export_data",
+          // Data Collection - view and edit
+          "data_collection.input_estate_data",
+          "data_collection.input_mill_data",
+          "data_collection.input_smallholder_data",
+          "data_collection.input_kcp_data",
+          "data_collection.input_bulking_data",
+          // Spatial Analysis - all permissions
+          "spatial_analysis.run_spatial_analysis",
+          "spatial_analysis.view_spatial_results",
+          "spatial_analysis.export_spatial_data",
+          // Legality Compliance - full access
+          "legality_compliance.view_legality",
+          "legality_compliance.input_legality_data",
+          "legality_compliance.edit_legality_data",
+          // Risk Assessment - full access
+          "risk_assessment.view_risk",
+          "risk_assessment.input_risk_data",
+          "risk_assessment.edit_risk_data",
+          // Supply Chain - full management
           "supply_chain_management.view_suppliers",
           "supply_chain_management.create_suppliers",
           "supply_chain_management.edit_suppliers",
-          "compliance_monitoring.view_compliance",
-          "compliance_monitoring.create_assessments",
-          "deforestation_monitoring.view_plots",
-          "deforestation_monitoring.create_plots",
-          "deforestation_monitoring.analyze_deforestation",
-        ],
-      },
-      {
-        name: "User Manager",
-        description: "User account management and basic operations",
-        permissions: [
-          "user_management.view_users",
-          "user_management.create_users",
-          "user_management.edit_users",
-          "user_management.manage_roles",
-          "dashboard_analytics.view_dashboard",
-          "supply_chain_management.view_suppliers",
-          "compliance_monitoring.view_compliance",
-          "deforestation_monitoring.view_plots",
-        ],
-      },
-      {
-        name: "Supply Chain Manager",
-        description: "Supply chain and traceability management",
-        permissions: [
-          "dashboard_analytics.view_dashboard",
-          "dashboard_analytics.view_analytics",
-          "supply_chain_management.view_suppliers",
-          "supply_chain_management.create_suppliers",
-          "supply_chain_management.edit_suppliers",
+          "supply_chain_management.delete_suppliers",
           "supply_chain_management.manage_traceability",
-          "compliance_monitoring.view_compliance",
-          "compliance_monitoring.create_assessments",
-          "deforestation_monitoring.view_plots",
-          "deforestation_monitoring.create_plots",
-          "deforestation_monitoring.analyze_deforestation",
-        ],
-      },
-      {
-        name: "Compliance Officer",
-        description: "Compliance monitoring and assessment",
-        permissions: [
-          "dashboard_analytics.view_dashboard",
-          "dashboard_analytics.view_analytics",
-          "supply_chain_management.view_suppliers",
+          "supply_chain_management.manage_linkage",
+          // DDS Reports - full access
+          "dds_reports.view_dds",
+          "dds_reports.generate_dds",
+          "dds_reports.export_dds",
+          // Approval workflow - approve, reject, review, modify
+          "approval_workflow.approve_data",
+          "approval_workflow.reject_data",
+          "approval_workflow.review_data",
+          "approval_workflow.modify_submitted_data",
+          // Compliance monitoring - full access
           "compliance_monitoring.view_compliance",
           "compliance_monitoring.create_assessments",
           "compliance_monitoring.edit_assessments",
           "compliance_monitoring.generate_reports",
           "compliance_monitoring.view_audit_logs",
+          // Deforestation monitoring - full access
           "deforestation_monitoring.view_plots",
+          "deforestation_monitoring.create_plots",
+          "deforestation_monitoring.edit_plots",
           "deforestation_monitoring.analyze_deforestation",
           "deforestation_monitoring.view_alerts",
         ],
-      },
-      {
-        name: "Regular User",
-        description: "Basic access with read permissions",
-        permissions: [
-          "dashboard_analytics.view_dashboard",
-          "supply_chain_management.view_suppliers",
-          "compliance_monitoring.view_compliance",
-          "deforestation_monitoring.view_plots",
-        ],
+        isSystem: false,
       },
     ];
 
@@ -551,7 +601,7 @@ async function seedUserConfigurationData() {
           name: roleData.name,
           description: roleData.description,
           organizationId: systemOrg.id,
-          isSystem: roleData.name === "system_admin",
+          isSystem: roleData.isSystem || false,
         });
 
         // Assign permissions to role
@@ -572,9 +622,9 @@ async function seedUserConfigurationData() {
       }
     }
 
-    // 4. Assign System Administrator role to default admin user (ROBUST VERSION)
+    // 4. Assign Superadmin role to default admin user (ROBUST VERSION)
     const adminUser = await storage.getUserByUsername("kpneudr");
-    if (adminUser && systemOrg && createdRoles["system_admin"]) {
+    if (adminUser && systemOrg && createdRoles["Superadmin"]) {
       // ALWAYS ensure user is in system organization
       let existingUserOrg = await storage.getUserOrganizations(adminUser.id);
       const isInSystemOrg = existingUserOrg.some(
@@ -601,26 +651,26 @@ async function seedUserConfigurationData() {
         }
       }
 
-      // ALWAYS ensure system admin role is assigned
+      // ALWAYS ensure Superadmin role is assigned
       const existingUserRoles = await storage.getUserRoles(
         adminUser.id,
         systemOrg.id,
       );
       const hasAdminRole = existingUserRoles.some(
-        (r) => r.roleId === createdRoles["system_admin"].id,
+        (r) => r.roleId === createdRoles["Superadmin"].id,
       );
 
       if (!hasAdminRole) {
         await storage.assignUserRole({
           userId: adminUser.id,
-          roleId: createdRoles["system_admin"].id,
+          roleId: createdRoles["Superadmin"].id,
           organizationId: systemOrg.id,
         });
         console.log(
-          "✓ Assigned System Administrator role to default admin user",
+          "✓ Assigned Superadmin role to default admin user",
         );
       } else {
-        console.log("✓ Admin user already has System Administrator role");
+        console.log("✓ Admin user already has Superadmin role");
       }
 
       // VERIFY and LOG final state
@@ -634,7 +684,7 @@ async function seedUserConfigurationData() {
       );
     } else {
       console.error(
-        `❌ SEEDING ERROR: Missing adminUser(${!!adminUser}) or systemOrg(${!!systemOrg}) or system_admin role(${!!createdRoles["system_admin"]})`,
+        `❌ SEEDING ERROR: Missing adminUser(${!!adminUser}) or systemOrg(${!!systemOrg}) or Superadmin role(${!!createdRoles["Superadmin"]})`,
       );
     }
 
