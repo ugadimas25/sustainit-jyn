@@ -32,6 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Approval Workflow**: Complete approval request and history tracking system for Creator → Approver workflow with status tracking (pending, approved, rejected, cancelled)
 - **User Management**: Full CRUD API for user configuration (`/api/user-config/*`) with password validation, lock/unlock functionality, and role assignment. Only Super Admin can create users.
 - **Company Affiliations**: PT THIP and PT BSU company organizations for multi-company user management and data segregation
+- **Company Switcher**: Dynamic company toggle for users affiliated with multiple companies (PT THIP/PT BSU). UI component with dropdown selection, localStorage persistence, and context-based state management. Single-company users see static company display.
 - **Technical Implementations**:
     - **EUDR Multilayer API Integration**: Real-time deforestation analysis using an external API for GFW, JRC, and SBTN datasets.
     - **EUDR Assessment Backend Integration**: Full database persistence for 8 EUDR legality indicators with comprehensive API endpoints and document storage.
