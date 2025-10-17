@@ -186,6 +186,16 @@ export const userRoles = pgTable("user_roles", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// User-Module access for platform features
+export const userModules = pgTable("user_modules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  module: text("module").notNull(), // dashboard, deforestation_monitoring, data_collection, etc.
+  enabled: boolean("enabled").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Audit logs for compliance and security
 export const auditLogs = pgTable("audit_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -2248,6 +2258,15 @@ export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
 });
 export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
 export type UserRole = typeof userRoles.$inferSelect;
+
+// User Modules
+export const insertUserModuleSchema = createInsertSchema(userModules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertUserModule = z.infer<typeof insertUserModuleSchema>;
+export type UserModule = typeof userModules.$inferSelect;
 
 // Audit Logs
 export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({

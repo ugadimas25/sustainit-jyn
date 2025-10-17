@@ -2555,19 +2555,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Only Super Admin can create users" });
       }
 
-      const { password, ...userData } = req.body;
+      const { password, modules, companies, role, ...userData } = req.body;
       
       // Validate required password field
       if (!password || typeof password !== 'string' || password.trim().length === 0) {
         return res.status(400).json({ error: "Password is required and must be a non-empty string" });
       }
+
+      // Validate company affiliation
+      if (!companies || !Array.isArray(companies) || companies.length === 0) {
+        return res.status(400).json({ error: "At least one company affiliation is required" });
+      }
       
       const hashedPassword = await hashPassword(password);
       
+      // Create the user
       const user = await storage.createUserEnhanced({
         ...userData,
         password: hashedPassword,
       });
+
+      // Get company organizations
+      const orgs = await storage.getOrganizations();
+      const companyOrgs = orgs.filter(org => 
+        companies.includes(org.slug || '') && (org.slug === 'pt-thip' || org.slug === 'pt-bsu')
+      );
+
+      // Add user to selected companies
+      for (const org of companyOrgs) {
+        await storage.addUserToOrganization({
+          userId: user.id,
+          organizationId: org.id,
+          status: 'active',
+          isDefault: companyOrgs.indexOf(org) === 0, // First company is default
+        });
+
+        // Assign role to user in this organization if role is provided
+        if (role && role !== 'none') {
+          await storage.assignRole({
+            userId: user.id,
+            roleId: role,
+            organizationId: org.id,
+          });
+        }
+      }
+
+      // Store module access (as user metadata - we can add this to user table or use a separate table)
+      // For now, we'll just log it - you can extend this to store in a user_modules table
+      if (modules && Array.isArray(modules)) {
+        console.log(`User ${user.username} granted access to modules:`, modules);
+        // TODO: Store module access in database
+      }
       
       res.json(user);
     } catch (error: any) {

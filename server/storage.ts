@@ -35,6 +35,7 @@ import {
   groupPermissions, type GroupPermission, type InsertGroupPermission,
   userPermissions, type UserPermission, type InsertUserPermission,
   userRoles, type UserRole, type InsertUserRole,
+  userModules, type UserModule, type InsertUserModule,
   auditLogs, type AuditLog, type InsertAuditLog
 } from "@shared/schema";
 import { db } from "./db";
