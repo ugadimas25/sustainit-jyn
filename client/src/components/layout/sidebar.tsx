@@ -158,7 +158,7 @@ export function Sidebar() {
   const [location, setLocation] = useLocation();
   const [expandedModules, setExpandedModules] = useState<string[]>(['Supply Chain Analysis']);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const { hasAnyPermission, isLoading: permissionsLoading } = usePermissions();
 
   // Filter navigation based on user permissions (creates new objects to avoid mutation)
@@ -328,18 +328,29 @@ export function Sidebar() {
       </div>
 
       <div className="p-4 border-t border-neutral-border bg-white">
-        <div className="flex items-center">
-          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-gray-600" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center flex-1">
+            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-gray-600" />
+            </div>
+            <div className="ml-3 flex-1">
+              <p className="text-sm font-medium text-gray-800" data-testid="text-user-name">
+                {user?.name || user?.username || 'User'}
+              </p>
+              <p className="text-xs text-gray-500" data-testid="text-user-role">
+                {user?.email || 'No email'}
+              </p>
+            </div>
           </div>
-          <div className="ml-3 flex-1">
-            <p className="text-sm font-medium text-gray-800" data-testid="text-user-name">
-              {user?.name || user?.username || 'User'}
-            </p>
-            <p className="text-xs text-gray-500" data-testid="text-user-role">
-              {user?.email || 'No email'}
-            </p>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => logoutMutation.mutate()}
+            className="text-gray-600 hover:text-red-600 hover:bg-red-50"
+            data-testid="button-logout"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     </nav>
