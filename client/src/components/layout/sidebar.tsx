@@ -23,6 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useSupplierStepAccess } from "@/hooks/use-supplier-context";
+import { useAuth } from "@/hooks/use-auth";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface SubModule {
   name: string;
@@ -30,6 +32,7 @@ interface SubModule {
   icon: any;
   step: number;
   testId: string;
+  permissions?: string[];
 }
 
 interface NavigationItem {
@@ -38,37 +41,107 @@ interface NavigationItem {
   icon: any;
   testId: string;
   subModules?: SubModule[];
+  permissions?: string[];
 }
 
 const navigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/', icon: BarChart3, testId: 'nav-dashboard' },
+  { 
+    name: 'Dashboard', 
+    href: '/', 
+    icon: BarChart3, 
+    testId: 'nav-dashboard',
+    permissions: ['dashboard_analytics.view_dashboard']
+  },
   { 
     name: 'Supply Chain Analysis', 
     href: '/supply-chain-analysis', 
     icon: Users, 
     testId: 'nav-supply-chain-analysis',
+    permissions: ['data_collection.input_estate_data', 'data_collection.view_estate_data'],
     subModules: [
-      { name: '1. Data Collection', href: '/data-collection', icon: Shield, step: 1, testId: 'nav-supply-chain-analysis-step-1' },
-      { name: '2. Spatial Analysis', href: '/spatial-analysis', icon: Satellite, step: 2, testId: 'nav-supply-chain-analysis-step-2' },
-      { name: '3. Legality Compliance', href: '/legality-compliance', icon: Scale, step: 3, testId: 'nav-supply-chain-analysis-step-3' },
-      { name: '4. Risk Analysis', href: '/risk-analysis', icon: AlertTriangle, step: 4, testId: 'nav-supply-chain-analysis-step-4' },
+      { 
+        name: '1. Data Collection', 
+        href: '/data-collection', 
+        icon: Shield, 
+        step: 1, 
+        testId: 'nav-supply-chain-analysis-step-1',
+        permissions: ['data_collection.input_estate_data', 'data_collection.view_estate_data']
+      },
+      { 
+        name: '2. Spatial Analysis', 
+        href: '/spatial-analysis', 
+        icon: Satellite, 
+        step: 2, 
+        testId: 'nav-supply-chain-analysis-step-2',
+        permissions: ['spatial_analysis.run_spatial_analysis', 'spatial_analysis.view_spatial_results']
+      },
+      { 
+        name: '3. Legality Compliance', 
+        href: '/legality-compliance', 
+        icon: Scale, 
+        step: 3, 
+        testId: 'nav-supply-chain-analysis-step-3',
+        permissions: ['legality_compliance.input_legality_data', 'legality_compliance.view_legality']
+      },
+      { 
+        name: '4. Risk Analysis', 
+        href: '/risk-analysis', 
+        icon: AlertTriangle, 
+        step: 4, 
+        testId: 'nav-supply-chain-analysis-step-4',
+        permissions: ['risk_assessment.input_risk_data', 'risk_assessment.view_risk']
+      },
     ]
   },
-  { name: 'Supply Chain Linkage', href: '/supply-chain', icon: Link, testId: 'nav-supply-chain' },
-  { name: 'Due Diligence Report', href: '/due-diligence-report', icon: FileText, testId: 'nav-due-diligence-report' },
+  { 
+    name: 'Supply Chain Linkage', 
+    href: '/supply-chain', 
+    icon: Link, 
+    testId: 'nav-supply-chain',
+    permissions: ['supply_chain_management.view_suppliers', 'supply_chain_management.manage_linkage']
+  },
+  { 
+    name: 'Due Diligence Report', 
+    href: '/due-diligence-report', 
+    icon: FileText, 
+    testId: 'nav-due-diligence-report',
+    permissions: ['dds_reports.view_dds', 'dds_reports.generate_dds']
+  },
 ];
 
-// Admin navigation (only for admin users)
+// Admin navigation (only for users with admin permissions)
 const adminNavigation: NavigationItem[] = [
   { 
     name: 'System Administration', 
     href: '/admin', 
     icon: Settings, 
     testId: 'nav-admin',
+    permissions: ['user_management.view_users', 'role_management.view_roles'],
     subModules: [
-      { name: 'Admin Dashboard', href: '/admin/dashboard', icon: BarChart3, step: 1, testId: 'nav-admin-dashboard' },
-      { name: 'User Management', href: '/admin/users', icon: Users, step: 2, testId: 'nav-admin-users' },
-      { name: 'Role Management', href: '/admin/roles', icon: Shield, step: 3, testId: 'nav-admin-roles' },
+      { 
+        name: 'Admin Dashboard', 
+        href: '/admin/dashboard', 
+        icon: BarChart3, 
+        step: 1, 
+        testId: 'nav-admin-dashboard',
+        permissions: ['user_management.view_users']
+      },
+      { 
+        name: 'User Management', 
+        href: '/admin/users', 
+        icon: Users, 
+        step: 2, 
+        testId: 'nav-admin-users',
+        permissions: ['user_management.view_users']
+      },
+      { 
+        name: 'Role Management', 
+        href: '/admin/roles', 
+        icon: Shield, 
+        step: 3, 
+        testId: 'nav-admin-roles',
+        permissions: ['role_management.view_roles']
+      },
     ]
   },
 ];
@@ -77,9 +150,41 @@ export function Sidebar() {
   const [location, setLocation] = useLocation();
   const [expandedModules, setExpandedModules] = useState<string[]>(['Supply Chain Analysis']);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { hasAnyPermission, isLoading: permissionsLoading } = usePermissions();
 
-  // Show all navigation including admin (no authentication required)
-  const allNavigation = [...navigation, ...adminNavigation];
+  // Filter navigation based on user permissions (creates new objects to avoid mutation)
+  const filterNavigationByPermissions = (items: NavigationItem[]): NavigationItem[] => {
+    if (permissionsLoading) return [];
+    
+    return items
+      .filter(item => {
+        // If no permissions required, show to all
+        if (!item.permissions || item.permissions.length === 0) return true;
+        
+        // Check if user has any of the required permissions
+        return hasAnyPermission(item.permissions);
+      })
+      .map(item => {
+        // Create a new item object to avoid mutating the original
+        const newItem = { ...item };
+        
+        // If has submodules, filter them and create a new array
+        if (newItem.subModules) {
+          newItem.subModules = newItem.subModules.filter(sub => {
+            if (!sub.permissions || sub.permissions.length === 0) return true;
+            return hasAnyPermission(sub.permissions);
+          });
+        }
+        
+        return newItem;
+      });
+  };
+
+  const allNavigation = [
+    ...filterNavigationByPermissions(navigation),
+    ...filterNavigationByPermissions(adminNavigation)
+  ];
 
   const toggleModule = (moduleName: string) => {
     setExpandedModules(prev => 
@@ -200,7 +305,13 @@ export function Sidebar() {
 
       <div className="flex-1 p-4">
         <div className="space-y-1">
-          {allNavigation.map(renderNavigationItem)}
+          {permissionsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-gray-300 border-t-kpn-red rounded-full animate-spin" />
+            </div>
+          ) : (
+            allNavigation.map(renderNavigationItem)
+          )}
         </div>
       </div>
 
@@ -211,10 +322,10 @@ export function Sidebar() {
           </div>
           <div className="ml-3 flex-1">
             <p className="text-sm font-medium text-gray-800" data-testid="text-user-name">
-              Admin User
+              {user?.name || user?.username || 'User'}
             </p>
             <p className="text-xs text-gray-500" data-testid="text-user-role">
-              Compliance Officer
+              {user?.email || 'No email'}
             </p>
           </div>
         </div>

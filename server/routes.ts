@@ -2599,6 +2599,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get current user's permissions
+  app.get("/api/user/permissions", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+      const permissions: string[] = [];
+
+      // Get user's organizations
+      const userOrgs = await storage.getUserOrganizations(userId);
+
+      for (const userOrg of userOrgs) {
+        // Get user's roles in this organization
+        const userRoles = await storage.getUserRoles(userId, userOrg.organizationId);
+
+        for (const userRole of userRoles) {
+          // Get role permissions
+          const rolePerms = await storage.getRolePermissions(userRole.roleId);
+
+          for (const rolePerm of rolePerms) {
+            const perm = await storage.getPermission(rolePerm.permissionId);
+            if (perm) {
+              const permString = `${perm.module}.${perm.action}`;
+              if (!permissions.includes(permString)) {
+                permissions.push(permString);
+              }
+            }
+          }
+        }
+      }
+
+      res.json({ permissions });
+    } catch (error: any) {
+      console.error("Error fetching user permissions:", error);
+      res.status(500).send(error.message || "Failed to fetch permissions");
+    }
+  });
+
   app.get("/api/alerts", async (req, res) => {
     try {
       // Mock alerts for now
