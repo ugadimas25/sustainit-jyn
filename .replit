@@ -64,10 +64,6 @@ externalPort = 3001
 localPort = 43881
 externalPort = 3003
 
-[[ports]]
-localPort = 44245
-externalPort = 5000
-
 [agent]
 integrations = ["javascript_object_storage:1.0.0"]
 

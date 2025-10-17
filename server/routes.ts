@@ -2452,6 +2452,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Configuration API Routes
+  // Get all users
+  app.get("/api/user-config/users", async (req, res) => {
+    try {
+      const users = await storage.getUsersEnhanced();
+      
+      // Get organizations and roles for each user
+      const usersWithDetails = await Promise.all(users.map(async (user) => {
+        const organizations = await storage.getUserOrganizations(user.id);
+        const orgDetails = await Promise.all(organizations.map(async (userOrg) => {
+          const org = await storage.getOrganization(userOrg.organizationId);
+          const roles = await storage.getUserRoles(user.id, userOrg.organizationId);
+          const roleDetails = await Promise.all(roles.map(r => storage.getRole(r.roleId)));
+          return {
+            organizationId: userOrg.organizationId,
+            organizationName: org?.name || '',
+            role: roleDetails[0]?.name || 'No Role'
+          };
+        }));
+        
+        return {
+          ...user,
+          organizations: orgDetails
+        };
+      }));
+      
+      res.json(usersWithDetails);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      res.status(500).send(error.message || "Failed to fetch users");
+    }
+  });
+
+  // Create new user
+  app.post("/api/user-config/users", async (req, res) => {
+    try {
+      const { password, ...userData } = req.body;
+      
+      // Validate required password field
+      if (!password || typeof password !== 'string' || password.trim().length === 0) {
+        return res.status(400).json({ error: "Password is required and must be a non-empty string" });
+      }
+      
+      const hashedPassword = await hashPassword(password);
+      
+      const user = await storage.createUserEnhanced({
+        ...userData,
+        password: hashedPassword,
+      });
+      
+      res.json(user);
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      res.status(500).send(error.message || "Failed to create user");
+    }
+  });
+
+  // Update user
+  app.put("/api/user-config/users/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { password, ...updates } = req.body;
+      
+      // Validate password if provided
+      if (password !== undefined && (typeof password !== 'string' || password.trim().length === 0)) {
+        return res.status(400).json({ error: "Password must be a non-empty string if provided" });
+      }
+      
+      const updateData = password 
+        ? { ...updates, password: await hashPassword(password) }
+        : updates;
+      
+      const user = await storage.updateUserEnhanced(id, updateData);
+      
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+      
+      res.json(user);
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+      res.status(500).send(error.message || "Failed to update user");
+    }
+  });
+
+  // Delete user
+  app.delete("/api/user-config/users/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deactivateUser(id);
+      
+      if (!success) {
+        return res.status(404).send("User not found");
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      res.status(500).send(error.message || "Failed to delete user");
+    }
+  });
+
+  // Lock user
+  app.post("/api/user-config/users/:id/lock", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.lockUser(id);
+      
+      if (!success) {
+        return res.status(404).send("User not found");
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error locking user:", error);
+      res.status(500).send(error.message || "Failed to lock user");
+    }
+  });
+
+  // Unlock user
+  app.post("/api/user-config/users/:id/unlock", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.unlockUser(id);
+      
+      if (!success) {
+        return res.status(404).send("User not found");
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error unlocking user:", error);
+      res.status(500).send(error.message || "Failed to unlock user");
+    }
+  });
+
+  // Get all roles
+  app.get("/api/user-config/roles", async (req, res) => {
+    try {
+      const roles = await storage.getRoles();
+      res.json(roles);
+    } catch (error: any) {
+      console.error("Error fetching roles:", error);
+      res.status(500).send(error.message || "Failed to fetch roles");
+    }
+  });
+
   app.get("/api/alerts", async (req, res) => {
     try {
       // Mock alerts for now
