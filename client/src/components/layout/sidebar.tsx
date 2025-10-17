@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSupplierStepAccess } from "@/hooks/use-supplier-context";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermissions } from "@/hooks/use-permissions";
+import { CompanySwitcher } from "@/components/company-switcher";
 
 interface SubModule {
   name: string;
@@ -301,6 +302,10 @@ export function Sidebar() {
             <p className="text-sm text-kpn-gray">Compliance Platform</p>
           </div>
         </div>
+      </div>
+
+      <div className="px-4 py-3 border-b border-neutral-border bg-white">
+        <CompanySwitcher />
       </div>
 
       <div className="flex-1 p-4">

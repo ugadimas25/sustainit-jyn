@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SupplierProvider } from "@/hooks/use-supplier-context";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { CompanyProvider } from "@/hooks/use-company";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
@@ -134,12 +135,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SupplierProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </SupplierProvider>
+        <CompanyProvider>
+          <SupplierProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </SupplierProvider>
+        </CompanyProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

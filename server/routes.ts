@@ -2706,6 +2706,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get current user's companies
+  app.get("/api/user/companies", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+      const userOrgs = await storage.getUserOrganizations(userId);
+      
+      // Get only company organizations (PT THIP, PT BSU)
+      const companies = await Promise.all(
+        userOrgs.map(async (userOrg) => {
+          const org = await storage.getOrganization(userOrg.organizationId);
+          if (org && (org.slug === 'pt-thip' || org.slug === 'pt-bsu')) {
+            return {
+              organizationId: org.id,
+              organizationName: org.name,
+              organizationSlug: org.slug,
+            };
+          }
+          return null;
+        })
+      );
+
+      const filteredCompanies = companies.filter((c) => c !== null);
+      res.json(filteredCompanies);
+    } catch (error: any) {
+      console.error("Error fetching user companies:", error);
+      res.status(500).send(error.message || "Failed to fetch companies");
+    }
+  });
+
   app.get("/api/alerts", async (req, res) => {
     try {
       // Mock alerts for now
