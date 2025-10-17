@@ -2522,9 +2522,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new user
+  // Create new user (Super Admin only)
   app.post("/api/user-config/users", async (req, res) => {
     try {
+      // Check if user is authenticated
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Check if user has permission to create users (Super Admin only)
+      const userId = (req.user as any).id;
+      const userOrgs = await storage.getUserOrganizations(userId);
+      let hasCreatePermission = false;
+
+      for (const userOrg of userOrgs) {
+        const userRoles = await storage.getUserRoles(userId, userOrg.organizationId);
+        for (const userRole of userRoles) {
+          const rolePerms = await storage.getRolePermissions(userRole.roleId);
+          for (const rolePerm of rolePerms) {
+            const perm = await storage.getPermission(rolePerm.permissionId);
+            if (perm && perm.module === 'user_management' && perm.action === 'create_users') {
+              hasCreatePermission = true;
+              break;
+            }
+          }
+          if (hasCreatePermission) break;
+        }
+        if (hasCreatePermission) break;
+      }
+
+      if (!hasCreatePermission) {
+        return res.status(403).json({ error: "Only Super Admin can create users" });
+      }
+
       const { password, ...userData } = req.body;
       
       // Validate required password field

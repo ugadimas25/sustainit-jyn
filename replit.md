@@ -30,7 +30,8 @@ Preferred communication style: Simple, everyday language.
     - **Menu Access Control**: Dynamic sidebar navigation that filters menu items based on user permissions with real-time updates and loading indicators
     - **Permission System**: API endpoint (`/api/user/permissions`) aggregates all user permissions across organizations and roles; frontend hook (`usePermissions`) provides permission checking utilities
 - **Approval Workflow**: Complete approval request and history tracking system for Creator → Approver workflow with status tracking (pending, approved, rejected, cancelled)
-- **User Management**: Full CRUD API for user configuration (`/api/user-config/*`) with password validation, lock/unlock functionality, and role assignment
+- **User Management**: Full CRUD API for user configuration (`/api/user-config/*`) with password validation, lock/unlock functionality, and role assignment. Only Super Admin can create users.
+- **Company Affiliations**: PT THIP and PT BSU company organizations for multi-company user management and data segregation
 - **Technical Implementations**:
     - **EUDR Multilayer API Integration**: Real-time deforestation analysis using an external API for GFW, JRC, and SBTN datasets.
     - **EUDR Assessment Backend Integration**: Full database persistence for 8 EUDR legality indicators with comprehensive API endpoints and document storage.
