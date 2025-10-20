@@ -1,47 +1,65 @@
 # Production Login Credentials
 
-## Default Admin User (Works in ALL Environments)
+## All Login Credentials (Works in ALL Environments)
 
-This user is automatically created when the application starts for the first time:
+The following users are automatically created when the application starts:
 
+### Main Admin User
 **Username:** `kpncompliance2025`  
 **Password:** `kpncompliance2025`  
-**Role:** Admin (full system access)
+**Role:** Admin (legacy system admin)
 
-### Important Notes
-
-1. **This user is created automatically** on first deployment to production
-2. **Change the password immediately** after first login for security
-3. This admin user can create other users through the "Manage Users" menu
-4. The admin has access to all system features and permissions
+### Test Users for Role-Based Testing
+| Username | Password | Role | Permissions |
+|----------|----------|------|-------------|
+| **super_admin** | password123 | Super Admin | Full system access - can create users |
+| **creator_user** | password123 | Creator | Data input only - needs approval |
+| **approver_user** | password123 | Approver | Review & approve Creator's data |
 
 ---
 
-## Test Users (Development Environment Only)
+## Important Security Notes
 
-The following test users are ONLY available in the development environment:
+⚠️ **PRODUCTION SECURITY CHECKLIST:**
 
-| Username | Password | Role | Environment |
-|----------|----------|------|-------------|
-| kpncompliance2025 | kpncompliance2025 | Admin | ALL (Dev + Prod) |
-| super_admin | password123 | Super Admin | Development Only |
-| creator_user | password123 | Creator | Development Only |
-| approver_user | password123 | Approver | Development Only |
+1. ✅ **All 4 users are now enabled in production** for testing
+2. ⚠️ **These use simple passwords** - meant for initial testing only
+3. 🔒 **After testing, you should:**
+   - Create real production users with strong passwords
+   - Delete or disable these test accounts
+   - Or at minimum, change their passwords
+
+---
+
+## User Affiliations
+
+All users are automatically affiliated with:
+- **Organization:** PT THIP
+- **Status:** Active
+- **Default Company:** PT THIP
 
 ---
 
 ## For Production Deployment
 
-1. **First Login:** Use `kpncompliance2025` / `kpncompliance2025`
-2. **Create Real Users:** Navigate to Admin → Manage Users
-3. **Assign Roles:** Assign appropriate roles (Super Admin, Creator, Approver)
-4. **Security:** Change or disable the default admin credentials after setup
+### Initial Setup
+1. **First Login:** Use any of the 4 accounts above
+2. **Test Role Permissions:** Verify each role works correctly
+3. **Create Real Users:** Navigate to Admin → Manage Users
+4. **Assign Production Roles:** Create actual users for your team
+5. **Cleanup Test Accounts:** Delete or secure test accounts
+
+### Role Responsibilities
+- **Super Admin:** System configuration, user management, full access
+- **Creator:** Data entry - plots, suppliers, assessments (requires approval)
+- **Approver:** Review and approve/reject Creator submissions
 
 ---
 
 ## Troubleshooting
 
 If login fails on the published version:
-- Wait 30 seconds for the server to fully initialize
-- The default user is created automatically on first server startup
-- Check deployment logs for "Default user 'kpncompliance2025' created successfully"
+- Wait 30-60 seconds for the server to fully initialize
+- Users are created automatically on first server startup
+- Check deployment logs for user creation messages
+- All 4 users should be created in both dev and production

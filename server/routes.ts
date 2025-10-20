@@ -93,10 +93,9 @@ async function initializeDefaultUser() {
 }
 
 async function createSampleUsers() {
-  if (process.env.NODE_ENV !== "development") {
-    return;
-  }
-
+  // Create test users in all environments (development AND production)
+  // Note: These users have simple passwords for testing purposes
+  
   try {
     // Get role IDs
     const superAdminRole = await db.query.roles.findFirst({
