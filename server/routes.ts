@@ -135,13 +135,44 @@ async function createSampleUsers() {
         email: "superadmin@test.com",
       });
 
-      await db.insert(userRoles).values({
+      // Add to organization
+      await storage.addUserToOrganization({
+        userId: superAdminUser.id,
+        organizationId: ptThipOrg.id,
+        status: "active",
+        isDefault: true,
+      });
+
+      // Assign role
+      await storage.assignUserRole({
         userId: superAdminUser.id,
         roleId: superAdminRole.id,
         organizationId: ptThipOrg.id,
       });
 
       console.log("✓ Created sample user: super_admin (password: password123)");
+    } else {
+      // Ensure existing user is properly set up
+      const userOrgs = await storage.getUserOrganizations(superAdminExists.id);
+      if (!userOrgs.some(org => org.organizationId === ptThipOrg.id)) {
+        await storage.addUserToOrganization({
+          userId: superAdminExists.id,
+          organizationId: ptThipOrg.id,
+          status: "active",
+          isDefault: true,
+        });
+        console.log("✓ Added super_admin to PT THIP organization");
+      }
+
+      const userRolesData = await storage.getUserRoles(superAdminExists.id, ptThipOrg.id);
+      if (!userRolesData.some(r => r.roleId === superAdminRole.id)) {
+        await storage.assignUserRole({
+          userId: superAdminExists.id,
+          roleId: superAdminRole.id,
+          organizationId: ptThipOrg.id,
+        });
+        console.log("✓ Assigned Super Admin role to super_admin");
+      }
     }
 
     // Create Creator sample user
@@ -156,7 +187,16 @@ async function createSampleUsers() {
         email: "creator@test.com",
       });
 
-      await db.insert(userRoles).values({
+      // Add to organization
+      await storage.addUserToOrganization({
+        userId: creatorUser.id,
+        organizationId: ptThipOrg.id,
+        status: "active",
+        isDefault: true,
+      });
+
+      // Assign role
+      await storage.assignUserRole({
         userId: creatorUser.id,
         roleId: creatorRole.id,
         organizationId: ptThipOrg.id,
@@ -177,7 +217,16 @@ async function createSampleUsers() {
         email: "approver@test.com",
       });
 
-      await db.insert(userRoles).values({
+      // Add to organization
+      await storage.addUserToOrganization({
+        userId: approverUser.id,
+        organizationId: ptThipOrg.id,
+        status: "active",
+        isDefault: true,
+      });
+
+      // Assign role
+      await storage.assignUserRole({
         userId: approverUser.id,
         roleId: approverRole.id,
         organizationId: ptThipOrg.id,
