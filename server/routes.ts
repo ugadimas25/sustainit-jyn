@@ -4155,6 +4155,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/estate-data-collection/:id", async (req, res) => {
+    try {
+      const estate = await storage.getEstateDataCollectionById(req.params.id);
+      if (!estate) {
+        return res.status(404).json({ error: "Estate data collection not found" });
+      }
+      res.json(estate);
+    } catch (error) {
+      console.error("Error fetching estate data collection:", error);
+      res.status(500).json({ error: "Failed to fetch estate data collection" });
+    }
+  });
+
   app.post("/api/estate-data-collection", async (req, res) => {
     try {
       const { insertEstateDataCollectionSchema } = await import(
@@ -4367,6 +4380,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/traceability-data-collection/:id", async (req, res) => {
+    try {
+      const collection = await storage.getTraceabilityDataCollectionById(req.params.id);
+      if (!collection) {
+        return res.status(404).json({ error: "Traceability data collection not found" });
+      }
+      res.json(collection);
+    } catch (error) {
+      console.error("Error fetching traceability data collection:", error);
+      res.status(500).json({ error: "Failed to fetch traceability data collection" });
+    }
+  });
+
   app.post("/api/traceability-data-collection", async (req, res) => {
     try {
       const { insertTraceabilityDataCollectionSchema } = await import(
@@ -4426,6 +4452,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/kcp-data-collection/:id", async (req, res) => {
+    try {
+      const collection = await storage.getKcpDataCollectionById(req.params.id);
+      if (!collection) {
+        return res.status(404).json({ error: "KCP data collection not found" });
+      }
+      res.json(collection);
+    } catch (error) {
+      console.error("Error fetching KCP data collection:", error);
+      res.status(500).json({ error: "Failed to fetch KCP data collection" });
+    }
+  });
+
   app.post("/api/kcp-data-collection", async (req, res) => {
     try {
       const { insertKcpDataCollectionSchema } = await import("@shared/schema");
@@ -4478,6 +4517,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res
         .status(500)
         .json({ error: "Failed to fetch bulking data collections" });
+    }
+  });
+
+  app.get("/api/bulking-data-collection/:id", async (req, res) => {
+    try {
+      const collection = await storage.getBulkingDataCollectionById(req.params.id);
+      if (!collection) {
+        return res.status(404).json({ error: "Bulking data collection not found" });
+      }
+      res.json(collection);
+    } catch (error) {
+      console.error("Error fetching bulking data collection:", error);
+      res.status(500).json({ error: "Failed to fetch bulking data collection" });
     }
   });
 

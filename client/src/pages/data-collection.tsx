@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,6 +30,11 @@ import {
 
 export default function DataCollection() {
   const [supplierType, setSupplierType] = useState('');
+  const [revisionMode, setRevisionMode] = useState<{
+    approvalId: string;
+    entityId: string;
+    entityType: string;
+  } | null>(null);
   const { toast } = useToast();
 
   // Fetch submitted data collections
@@ -52,6 +57,110 @@ export default function DataCollection() {
   const { data: bulkingData = [] as any[] } = useQuery({
     queryKey: ['/api/bulking-data-collection'],
   });
+
+  // Check for revision mode on component mount
+  useEffect(() => {
+    const revisingApprovalId = localStorage.getItem('revising_approval_id');
+    const revisingEntityId = localStorage.getItem('revising_entity_id');
+    const revisingEntityType = localStorage.getItem('revising_entity_type');
+
+    if (revisingApprovalId && revisingEntityId && revisingEntityType) {
+      setRevisionMode({
+        approvalId: revisingApprovalId,
+        entityId: revisingEntityId,
+        entityType: revisingEntityType
+      });
+
+      // Set supplier type based on entity type
+      if (revisingEntityType === 'estate_data') {
+        setSupplierType('estate');
+        loadEstateData(revisingEntityId);
+      } else if (revisingEntityType === 'mill_data') {
+        setSupplierType('mill');
+        loadMillData(revisingEntityId);
+      } else if (revisingEntityType === 'smallholder_data') {
+        setSupplierType('smallholders');
+        loadSmallholderData(revisingEntityId);
+      } else if (revisingEntityType === 'kcp_data') {
+        setSupplierType('kcp');
+        loadKcpData(revisingEntityId);
+      } else if (revisingEntityType === 'bulking_data') {
+        setSupplierType('bulking');
+        loadBulkingData(revisingEntityId);
+      }
+
+      toast({
+        title: "Revision Mode",
+        description: "Loading existing data for revision. Update the form and submit to complete your revision.",
+      });
+    }
+  }, []);
+
+  // Load functions for each entity type
+  const loadEstateData = async (entityId: string) => {
+    try {
+      const data = await apiRequest(`/api/estate-data-collection/${entityId}`, 'GET');
+      setEstateForm(data);
+    } catch (error) {
+      toast({
+        title: "Error Loading Data",
+        description: "Failed to load estate data for revision.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadMillData = async (entityId: string) => {
+    try {
+      const data = await apiRequest(`/api/mill-data-collection/${entityId}`, 'GET');
+      setMillForm(data);
+    } catch (error) {
+      toast({
+        title: "Error Loading Data",
+        description: "Failed to load mill data for revision.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadSmallholderData = async (entityId: string) => {
+    try {
+      const data = await apiRequest(`/api/traceability-data-collection/${entityId}`, 'GET');
+      setSmallholdersForm(data);
+    } catch (error) {
+      toast({
+        title: "Error Loading Data",
+        description: "Failed to load smallholder data for revision.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadKcpData = async (entityId: string) => {
+    try {
+      const data = await apiRequest(`/api/kcp-data-collection/${entityId}`, 'GET');
+      setKcpForm(data);
+    } catch (error) {
+      toast({
+        title: "Error Loading Data",
+        description: "Failed to load KCP data for revision.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadBulkingData = async (entityId: string) => {
+    try {
+      const data = await apiRequest(`/api/bulking-data-collection/${entityId}`, 'GET');
+      setBulkingForm(data);
+    } catch (error) {
+      toast({
+        title: "Error Loading Data",
+        description: "Failed to load bulking data for revision.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Form states for all collection types
   const [estateForm, setEstateForm] = useState({
@@ -244,15 +353,41 @@ export default function DataCollection() {
 
   // Mutations for creating data collections
   const createEstateMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/estate-data-collection', 'POST', data),
+    mutationFn: async (data: any) => {
+      // If in revision mode, call the revise endpoint
+      if (revisionMode && revisionMode.entityType === 'estate_data') {
+        return apiRequest(`/api/approvals/${revisionMode.approvalId}/revise`, 'POST', {
+          entity_name: data.namaSupplier,
+          comments: 'Data revised and resubmitted for approval'
+        });
+      }
+      // Otherwise, create new record
+      return apiRequest('/api/estate-data-collection', 'POST', data);
+    },
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/estate-data-collection'] });
-      toast({
-        title: "Data Estate berhasil disimpan",
-        description: response.supplierId 
-          ? `Data Estate dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
-          : "Data Estate telah berhasil disimpan ke sistem.",
-      });
+      queryClient.invalidateQueries({ queryKey: ['/api/approvals'] });
+      
+      // Clear revision mode and localStorage
+      if (revisionMode) {
+        localStorage.removeItem('revising_approval_id');
+        localStorage.removeItem('revising_entity_id');
+        localStorage.removeItem('revising_entity_type');
+        setRevisionMode(null);
+        
+        toast({
+          title: "Revision Submitted",
+          description: "Your revised data has been resubmitted for approval.",
+        });
+      } else {
+        toast({
+          title: "Data Estate berhasil disimpan",
+          description: response.supplierId 
+            ? `Data Estate dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+            : "Data Estate telah berhasil disimpan ke sistem.",
+        });
+      }
+      
       // Reset form
       setEstateForm({
         namaSupplier: '', namaGroup: '', aktaPendirianPerusahaan: '', aktaPerubahan: '', izinBerusaha: '',
@@ -263,6 +398,9 @@ export default function DataCollection() {
         daftarKebun: [{ no: 1, namaKebun: '', alamat: '', koordinatLongitude: '', koordinatLatitude: '', 
         polygonKebun: '', luasLahan: '', tahunTanam: '', jenisBibit: '', produksiTBS1TahunTerakhir: '' }]
       });
+      
+      // Reset supplier type
+      setSupplierType('');
     },
   });
 
@@ -531,6 +669,28 @@ export default function DataCollection() {
             Sistem pengumpulan data komprehensif untuk kepatuhan EUDR dengan kemampuan unggah dokumen
           </p>
         </div>
+
+        {/* Revision Mode Banner */}
+        {revisionMode && (
+          <Card className="border-blue-500 bg-blue-50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-blue-500 p-2">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-blue-900">Revision Mode Active</h3>
+                  <p className="text-sm text-blue-700 mt-1">
+                    You are revising a rejected submission. Update the form fields as needed and submit to resubmit for approval.
+                  </p>
+                  <p className="text-xs text-blue-600 mt-2">
+                    Approval ID: {revisionMode.approvalId} | Entity Type: {revisionMode.entityType}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Supplier Type Selection */}
         <Card>
@@ -902,7 +1062,9 @@ export default function DataCollection() {
 
                 <div className="flex justify-end">
                   <Button type="submit" disabled={createEstateMutation.isPending} data-testid="button-submit-estate">
-                    {createEstateMutation.isPending ? 'Menyimpan...' : 'Simpan Data Estate'}
+                    {createEstateMutation.isPending 
+                      ? (revisionMode ? 'Resubmitting...' : 'Menyimpan...') 
+                      : (revisionMode ? 'Resubmit for Approval' : 'Simpan Data Estate')}
                   </Button>
                 </div>
               </form>
