@@ -70,11 +70,7 @@ async function hashPassword(password: string) {
 }
 
 async function initializeDefaultUser() {
-  // Only create default user in development environment
-  if (process.env.NODE_ENV !== "development") {
-    return;
-  }
-
+  // Create default admin user in all environments (development AND production)
   try {
     // Create new credentials (kpncompliance2025/kpncompliance2025)
     const existingUser = await storage.getUserByUsername("kpncompliance2025");
