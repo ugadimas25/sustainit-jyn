@@ -34,6 +34,7 @@ interface SubModule {
   step: number;
   testId: string;
   permissions?: string[];
+  highlight?: boolean;
 }
 
 interface NavigationItem {
@@ -121,32 +122,25 @@ const navigation: NavigationItem[] = [
 const adminNavigation: NavigationItem[] = [
   { 
     name: 'System Administration', 
-    href: '/admin', 
+    href: '/admin/dashboard', 
     icon: Settings, 
     testId: 'nav-admin',
     permissions: ['user_management.view_users', 'role_management.view_roles'],
     subModules: [
       { 
-        name: 'Admin Dashboard', 
-        href: '/admin/dashboard', 
-        icon: BarChart3, 
-        step: 1, 
-        testId: 'nav-admin-dashboard',
-        permissions: ['user_management.view_users']
-      },
-      { 
-        name: 'User Management', 
+        name: 'Manage Users', 
         href: '/admin/users', 
         icon: Users, 
-        step: 2, 
+        step: 1, 
         testId: 'nav-admin-users',
-        permissions: ['user_management.view_users']
+        permissions: ['user_management.view_users'],
+        highlight: true
       },
       { 
-        name: 'Role Management', 
+        name: 'Manage Roles', 
         href: '/admin/roles', 
         icon: Shield, 
-        step: 3, 
+        step: 2, 
         testId: 'nav-admin-roles',
         permissions: ['role_management.view_roles']
       },
@@ -371,6 +365,9 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
 
   const hasAccess = accessData?.hasAccess ?? (subModule.step === 1 || subModule.step === 2 || subModule.step === 3 || subModule.step === 4); // Default to allow all steps
   const isAccessible = !isLoading && hasAccess;
+  
+  // Check if this is a highlighted menu item
+  const isHighlighted = (subModule as any).highlight === true;
 
   const handleClick = () => {
     if (isLoading) return;
@@ -404,6 +401,8 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
       className={`w-full text-left px-4 py-2 rounded-lg flex items-center transition-colors duration-200 text-sm ${
         isActive 
           ? 'bg-kpn-red-light text-kpn-red font-medium' 
+          : isHighlighted
+          ? 'bg-blue-50 text-blue-700 font-medium border border-blue-300 hover:bg-blue-100'
           : (isAccessible || subModule.step === 2)
           ? 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
           : 'text-gray-400 cursor-not-allowed'
@@ -417,19 +416,28 @@ function WorkflowStepButton({ subModule, isActive, onNavigate, setLocation }: Wo
           ) : (!isAccessible && subModule.step !== 2) ? (
             <Lock className="w-4 h-4 opacity-50" />
           ) : (
-            <subModule.icon className="w-4 h-4" />
+            <subModule.icon className={`w-4 h-4 ${isHighlighted ? 'text-blue-700' : ''}`} />
           )}
-          <span className="ml-3">{subModule.name}</span>
+          <span className="ml-3 flex items-center gap-2">
+            {subModule.name}
+            {isHighlighted && !isActive && (
+              <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-semibold">
+                Featured
+              </span>
+            )}
+          </span>
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full ${
-          isActive 
-            ? 'bg-kpn-red text-white' 
-            : (isAccessible || subModule.step === 2)
-            ? 'bg-gray-200 text-gray-700'
-            : 'bg-gray-100 text-gray-400'
-        }`}>
-          {isLoading ? '...' : (hasAccess || subModule.step === 2) ? 'Available' : 'Locked'}
-        </span>
+        {!isHighlighted && (
+          <span className={`text-xs px-2 py-1 rounded-full ${
+            isActive 
+              ? 'bg-kpn-red text-white' 
+              : (isAccessible || subModule.step === 2)
+              ? 'bg-gray-200 text-gray-700'
+              : 'bg-gray-100 text-gray-400'
+          }`}>
+            {isLoading ? '...' : (hasAccess || subModule.step === 2) ? 'Available' : 'Locked'}
+          </span>
+        )}
       </div>
     </button>
   );

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Users, Shield, Building, Activity, AlertTriangle, CheckCircle, Clock, Lock } from "lucide-react";
+import { Users, UserPlus, Shield, Activity, CheckCircle, Lock, AlertCircle, Eye } from "lucide-react";
 import { useLocation } from "wouter";
 
 interface AdminStats {
@@ -14,9 +14,6 @@ interface AdminStats {
   totalRoles: number;
   systemRoles: number;
   customRoles: number;
-  totalOrganizations: number;
-  totalPermissions: number;
-  recentActivity: number;
 }
 
 interface RecentUser {
@@ -26,15 +23,6 @@ interface RecentUser {
   email: string;
   status: string;
   createdAt: string;
-}
-
-interface AuditLogEntry {
-  id: string;
-  action: string;
-  resource: string;
-  userName: string;
-  timestamp: string;
-  details: string;
 }
 
 export default function AdminDashboard() {
@@ -50,318 +38,291 @@ export default function AdminDashboard() {
     queryKey: ['/api/user-config/admin/recent-users'],
   });
 
-  // Fetch recent audit logs
-  const { data: recentAudits = [] } = useQuery<AuditLogEntry[]>({
-    queryKey: ['/api/user-config/admin/recent-audits'],
-  });
-
-  const StatCard = ({ 
-    title, 
-    value, 
-    description, 
-    icon: Icon, 
-    trend, 
-    onClick 
-  }: {
-    title: string;
-    value: number | string;
-    description: string;
-    icon: any;
-    trend?: 'up' | 'down' | 'neutral';
-    onClick?: () => void;
-  }) => (
-    <Card className={onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""} onClick={onClick}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </CardContent>
-    </Card>
-  );
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-600">
+            <CheckCircle className="w-3 h-3 mr-1" />Active
+          </Badge>
+        );
       case 'locked':
-        return <Badge variant="destructive"><Lock className="w-3 h-3 mr-1" />Locked</Badge>;
+        return (
+          <Badge variant="destructive">
+            <Lock className="w-3 h-3 mr-1" />Locked
+          </Badge>
+        );
       case 'inactive':
-        return <Badge variant="secondary">Inactive</Badge>;
+        return (
+          <Badge variant="secondary">
+            <AlertCircle className="w-3 h-3 mr-1" />Inactive
+          </Badge>
+        );
       default:
         return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
-  const getActionColor = (action: string) => {
-    switch (action.toLowerCase()) {
-      case 'create':
-        return 'text-green-600';
-      case 'update':
-        return 'text-blue-600';
-      case 'delete':
-        return 'text-red-600';
-      case 'login':
-        return 'text-purple-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
   if (statsLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6" data-testid="admin-dashboard-loading">
-        <div className="text-center py-8">
-          <Activity className="w-8 h-8 animate-pulse mx-auto mb-4" />
-          <p>Loading admin dashboard...</p>
+      <div className="flex-1 overflow-auto p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="text-center py-8">
+            <Activity className="w-8 h-8 animate-pulse mx-auto mb-4" />
+            <p>Loading dashboard...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6" data-testid="admin-dashboard-page">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="page-title">Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
-          System administration overview and management
-        </p>
-      </div>
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header with CTA */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold" data-testid="page-title">
+              System Administration
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Manage users, roles, and system settings
+            </p>
+          </div>
+          <Button
+            onClick={() => setLocation('/admin/users')}
+            size="lg"
+            className="gap-2"
+            data-testid="button-manage-users"
+          >
+            <UserPlus className="w-5 h-5" />
+            Manage Users
+          </Button>
+        </div>
 
-      {/* Statistics Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4" data-testid="stats-grid">
-        <StatCard
-          title="Total Users"
-          value={stats?.totalUsers || 0}
-          description={`${stats?.activeUsers || 0} active, ${stats?.lockedUsers || 0} locked`}
-          icon={Users}
-          onClick={() => setLocation('/admin/users')}
-        />
-        <StatCard
-          title="System Roles"
-          value={stats?.totalRoles || 0}
-          description={`${stats?.systemRoles || 0} system, ${stats?.customRoles || 0} custom`}
-          icon={Shield}
-          onClick={() => setLocation('/admin/roles')}
-        />
-        <StatCard
-          title="Organizations"
-          value={stats?.totalOrganizations || 0}
-          description="Active organizations"
-          icon={Building}
-          onClick={() => setLocation('/admin/organizations')}
-        />
-        <StatCard
-          title="Recent Activity"
-          value={stats?.recentActivity || 0}
-          description="Actions in last 24 hours"
-          icon={Activity}
-          onClick={() => setLocation('/admin/audit-logs')}
-        />
-      </div>
-
-      {/* Content Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Users */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Recent Users
-              </CardTitle>
-              <CardDescription>
-                Latest user registrations
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setLocation('/admin/users')}>
-              View All
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recentUsers.length === 0 ? (
-              <div className="text-center py-8" data-testid="no-recent-users">
-                <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">No recent users</p>
-              </div>
-            ) : (
-              <Table data-testid="recent-users-table">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recentUsers.map((user) => (
-                    <TableRow key={user.id} data-testid={`recent-user-${user.id}`}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">@{user.username}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(user.status)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span className="text-sm">
-                            {new Date(user.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                Recent Activity
-              </CardTitle>
-              <CardDescription>
-                Latest system actions
-              </CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setLocation('/admin/audit-logs')}>
-              View All
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recentAudits.length === 0 ? (
-              <div className="text-center py-8" data-testid="no-recent-activity">
-                <Activity className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">No recent activity</p>
-              </div>
-            ) : (
-              <div className="space-y-3" data-testid="recent-activity-list">
-                {recentAudits.map((audit) => (
-                  <div key={audit.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg" data-testid={`audit-${audit.id}`}>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-medium ${getActionColor(audit.action)}`}>
-                          {audit.action.toUpperCase()}
-                        </span>
-                        <span className="text-sm">{audit.resource}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        by {audit.userName}
-                      </p>
-                      {audit.details && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {audit.details}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(audit.timestamp).toLocaleTimeString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* System Health Alert */}
-      {stats && (stats.unverifiedUsers > 0 || stats.lockedUsers > 5) && (
-        <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/50">
+        {/* User Management Metrics - Highlighted */}
+        <Card className="border-2 border-blue-200 bg-blue-50/50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
-              <AlertTriangle className="w-5 h-5" />
-              System Attention Required
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Users className="w-6 h-6 text-blue-600" />
+              User Management Overview
             </CardTitle>
+            <CardDescription>
+              Quick insights into your user base
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2 text-sm">
-              {stats.unverifiedUsers > 0 && (
-                <p>
-                  <strong>{stats.unverifiedUsers}</strong> users have unverified email addresses
-                </p>
-              )}
-              {stats.lockedUsers > 5 && (
-                <p>
-                  <strong>{stats.lockedUsers}</strong> user accounts are currently locked
-                </p>
-              )}
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-4xl font-bold text-blue-600">{stats?.totalUsers || 0}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Active Users</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-bold text-green-600">{stats?.activeUsers || 0}</p>
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Locked Users</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-bold text-red-600">{stats?.lockedUsers || 0}</p>
+                  <Lock className="w-5 h-5 text-red-600" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Unverified</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-bold text-yellow-600">{stats?.unverifiedUsers || 0}</p>
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2 mt-4">
-              <Button 
-                variant="outline" 
-                size="sm" 
+            
+            <div className="mt-6 flex gap-3">
+              <Button
                 onClick={() => setLocation('/admin/users')}
-                data-testid="button-review-users"
+                className="flex-1"
+                data-testid="button-view-all-users"
               >
-                Review Users
+                <Users className="w-4 h-4 mr-2" />
+                View All Users
+              </Button>
+              <Button
+                onClick={() => setLocation('/admin/users')}
+                variant="outline"
+                className="flex-1"
+                data-testid="button-create-user"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Create New User
               </Button>
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Common administrative tasks
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation('/admin/users')}
-              data-testid="button-manage-users"
-              className="justify-start"
-            >
-              <Users className="w-4 h-4 mr-2" />
-              Manage Users
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation('/admin/roles')}
-              data-testid="button-manage-roles"
-              className="justify-start"
-            >
-              <Shield className="w-4 h-4 mr-2" />
-              Manage Roles
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation('/admin/organizations')}
-              data-testid="button-manage-orgs"
-              className="justify-start"
-            >
-              <Building className="w-4 h-4 mr-2" />
-              Organizations
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation('/admin/audit-logs')}
-              data-testid="button-view-audits"
-              className="justify-start"
-            >
-              <Activity className="w-4 h-4 mr-2" />
-              Audit Logs
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Secondary Features */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Recent Users */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Recent Users
+                </CardTitle>
+                <CardDescription>
+                  Latest user accounts created
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation('/admin/users')}
+                data-testid="button-view-all-recent"
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                View All
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {recentUsers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No recent users
+                </p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentUsers.slice(0, 5).map((user) => (
+                      <TableRow key={user.id} data-testid={`recent-user-${user.id}`}>
+                        <TableCell className="font-medium">{user.username}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {user.email}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(user.status)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Role Management */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Role Management
+                </CardTitle>
+                <CardDescription>
+                  System and custom roles
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation('/admin/roles')}
+                data-testid="button-view-roles"
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                Manage
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div>
+                    <p className="font-medium">System Roles</p>
+                    <p className="text-sm text-muted-foreground">
+                      Pre-defined platform roles
+                    </p>
+                  </div>
+                  <div className="text-3xl font-bold">{stats?.systemRoles || 0}</div>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div>
+                    <p className="font-medium">Total Roles</p>
+                    <p className="text-sm text-muted-foreground">
+                      All available roles
+                    </p>
+                  </div>
+                  <div className="text-3xl font-bold">{stats?.totalRoles || 0}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common administrative tasks</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-3">
+              <Button
+                variant="outline"
+                className="justify-start h-auto py-4"
+                onClick={() => setLocation('/admin/users')}
+                data-testid="quick-action-users"
+              >
+                <div className="flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    <span className="font-semibold">User Management</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Create, edit, and manage users
+                  </span>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start h-auto py-4"
+                onClick={() => setLocation('/admin/roles')}
+                data-testid="quick-action-roles"
+              >
+                <div className="flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    <span className="font-semibold">Role Management</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Configure roles and permissions
+                  </span>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start h-auto py-4"
+                onClick={() => setLocation('/admin/users')}
+                data-testid="quick-action-create"
+              >
+                <div className="flex-col items-start gap-1">
+                  <div className="flex items-center gap-2">
+                    <UserPlus className="w-4 h-4" />
+                    <span className="font-semibold">Create New User</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Add a new user to the system
+                  </span>
+                </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
