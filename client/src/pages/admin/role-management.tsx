@@ -53,6 +53,10 @@ export default function RoleManagement() {
   const [expandedModules, setExpandedModules] = useState<string[]>([]);
   const { toast } = useToast();
 
+  // Strict 3-role system enforcement
+  const ALLOWED_ROLES = ["Super Admin", "Creator", "Approver"];
+  const isSystemRole = (roleName: string) => ALLOWED_ROLES.includes(roleName);
+
   // Fetch roles
   const { data: roles = [], isLoading: rolesLoading } = useQuery<Role[]>({
     queryKey: ['/api/user-config/roles'],
@@ -280,19 +284,56 @@ export default function RoleManagement() {
 
   return (
     <div className="container mx-auto p-6 space-y-6" data-testid="role-management-page">
+      {/* 3-Role System Banner */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-blue-500 rounded-lg">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-blue-900 mb-2">Fixed 3-Role System</h3>
+              <p className="text-sm text-blue-800 mb-3">
+                This system operates with exactly <strong>3 predefined roles</strong> to maintain security and compliance standards. 
+                New roles cannot be created, and system roles cannot be deleted.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-3 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-1">Super Admin</h4>
+                  <p className="text-xs text-blue-700">Full system access - can create users and perform all activities</p>
+                </div>
+                <div className="bg-white p-3 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-1">Creator</h4>
+                  <p className="text-xs text-blue-700">Data input role - submits data for approval workflow</p>
+                </div>
+                <div className="bg-white p-3 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-1">Approver</h4>
+                  <p className="text-xs text-blue-700">Data review role - approves, rejects, and modifies submitted data</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold" data-testid="page-title">Role Management</h1>
           <p className="text-muted-foreground mt-2">
-            Manage user roles and their associated permissions
+            View and configure the 3 system roles and their permissions
           </p>
         </div>
         <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingRole(null); form.reset(); }} data-testid="button-create-role">
+            <Button 
+              disabled 
+              title="Role creation is disabled - system operates with 3 fixed roles only"
+              data-testid="button-create-role"
+              className="opacity-50 cursor-not-allowed"
+            >
               <Plus className="w-4 h-4 mr-2" />
-              Add Role
+              Add Role (Disabled)
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
@@ -367,10 +408,10 @@ export default function RoleManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
-            System Roles ({roles.length})
+            System Roles ({roles.length}/3)
           </CardTitle>
           <CardDescription>
-            Configure roles and their associated permissions
+            The 3 fixed system roles with their permissions. System roles are protected and cannot be edited or deleted.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -434,11 +475,13 @@ export default function RoleManagement() {
                           variant="outline" 
                           size="sm" 
                           onClick={() => handleManagePermissions(role)}
+                          title="View and configure role permissions"
                           data-testid={`button-permissions-${role.id}`}
                         >
-                          <Shield className="w-4 h-4" />
+                          <Shield className="w-4 h-4 mr-1" />
+                          Permissions
                         </Button>
-                        {!role.isSystemRole && (
+                        {!isSystemRole(role.name) ? (
                           <>
                             <Button 
                               variant="outline" 
@@ -458,6 +501,10 @@ export default function RoleManagement() {
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </>
+                        ) : (
+                          <Badge variant="secondary" className="ml-2">
+                            Protected
+                          </Badge>
                         )}
                       </div>
                     </TableCell>

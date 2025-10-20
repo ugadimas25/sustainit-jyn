@@ -27,7 +27,12 @@ Preferred communication style: Simple, everyday language.
     - **Super Admin**: Full system access with all permissions (56 permissions total). Only role that can create users.
     - **Creator**: Data input role - can input data from Data Collection → Spatial Analysis → Legality Compliance → Risk Assessment → Supply Chain Linkage → DDS Reports. Data must be approved before proceeding to next stage (21 permissions)
     - **Approver**: Data review and approval role - can process, delete, modify, analyze or review data inputted by Creator (40 permissions)
-    - **Role Cleanup**: System automatically maintains only these 3 roles. Legacy roles (System Administrator, Organization Administrator, etc.) have been permanently removed.
+    - **Role Enforcement**: System strictly enforces 3-role limit:
+        - Automated cleanup on startup removes legacy roles (Compliance Officer, Regular User, Supply Chain Manager, etc.)
+        - Role creation disabled in UI with clear messaging
+        - System roles are protected and cannot be edited or deleted
+        - Role Management UI displays prominent banner explaining 3-role system
+        - Only permissions can be configured for the 3 fixed roles
     - **Menu Access Control**: Dynamic sidebar navigation that filters menu items based on user permissions with real-time updates and loading indicators
     - **Permission System**: API endpoint (`/api/user/permissions`) aggregates all user permissions across organizations and roles; frontend hook (`usePermissions`) provides permission checking utilities
 - **Approval Workflow**: Complete approval request and history tracking system for Creator → Approver workflow with status tracking (pending, approved, rejected, cancelled)

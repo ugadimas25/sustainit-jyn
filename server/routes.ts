@@ -48,7 +48,7 @@ import {
 } from "@shared/schema";
 import { sql, eq } from "drizzle-orm";
 import { db } from "./db";
-import { roles, organizations, userRoles } from "@shared/schema";
+import { roles, organizations, userRoles, rolePermissions } from "@shared/schema";
 import { openaiService } from "./lib/openai-service";
 import { WDPAService } from "./lib/wdpa-service";
 import { z } from "zod";
@@ -821,6 +821,33 @@ async function seedUserConfigurationData() {
     }
 
     console.log("✓ User Configuration seeding completed successfully");
+
+    // 5. CLEANUP: Remove any roles that aren't the 3 allowed system roles
+    const allowedRoleNames = ["Super Admin", "Creator", "Approver"];
+    const allRoles = await storage.getRoles();
+    
+    for (const role of allRoles) {
+      if (!allowedRoleNames.includes(role.name)) {
+        // Check if role has users assigned
+        const roleUsersCount = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(userRoles)
+          .where(eq(userRoles.roleId, role.id));
+        
+        const hasUsers = roleUsersCount[0]?.count > 0;
+        
+        if (!hasUsers) {
+          // Safe to delete - no users assigned
+          await db.delete(rolePermissions).where(eq(rolePermissions.roleId, role.id));
+          await db.delete(roles).where(eq(roles.id, role.id));
+          console.log(`✓ Removed legacy role: ${role.name}`);
+        } else {
+          console.log(`⚠️  Warning: Legacy role "${role.name}" has users assigned - manual cleanup required`);
+        }
+      }
+    }
+
+    console.log("✓ Role system cleaned up - only 3 allowed roles remain");
   } catch (error) {
     console.error("Error seeding User Configuration data:", error);
   }
