@@ -405,34 +405,89 @@ export default function DataCollection() {
   });
 
   const createSmallholdersMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/traceability-data-collection', 'POST', data),
+    mutationFn: async (data: any) => {
+      // If in revision mode, call the revise endpoint
+      if (revisionMode && revisionMode.entityType === 'smallholder_data') {
+        return apiRequest(`/api/approvals/${revisionMode.approvalId}/revise`, 'POST', {
+          entity_name: data.pemegangDO,
+          comments: 'Data revised and resubmitted for approval'
+        });
+      }
+      // Otherwise, create new record
+      return apiRequest('/api/traceability-data-collection', 'POST', data);
+    },
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/traceability-data-collection'] });
-      toast({
-        title: "Data Smallholders berhasil disimpan",
-        description: response.supplierId 
-          ? `Data Smallholders dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
-          : "Data Smallholders telah berhasil disimpan ke sistem.",
-      });
+      queryClient.invalidateQueries({ queryKey: ['/api/approvals'] });
+      
+      // Clear revision mode and localStorage
+      if (revisionMode) {
+        localStorage.removeItem('revising_approval_id');
+        localStorage.removeItem('revising_entity_id');
+        localStorage.removeItem('revising_entity_type');
+        setRevisionMode(null);
+        
+        toast({
+          title: "Revision Submitted",
+          description: "Your revised data has been resubmitted for approval.",
+        });
+      } else {
+        toast({
+          title: "Data Smallholders berhasil disimpan",
+          description: response.supplierId 
+            ? `Data Smallholders dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+            : "Data Smallholders telah berhasil disimpan ke sistem.",
+        });
+      }
+      
       // Reset form
       setSmallholdersForm({
         nomorDO: '', pemegangDO: '', alamatPemegangDO: '', lokasiUsaha: '', aktaPendirianUsaha: '',
         nib: '', npwp: '', luasLahanTertanamPetaniSupplier: '', volumeTBS: '',
         daftarPetaniPemasokTBS: [{ no: 1, namaPetani: '', alamatTempatTinggal: '', lokasiKebun: '', luas: '', stdb: '', sppl: '', nomorObjekPajakPBB: '', longitude: '', latitude: '', polygon: '', tahunTanam: '' }]
       });
+      
+      // Reset supplier type
+      setSupplierType('');
     },
   });
 
   const createMillMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/mill-data-collection', 'POST', data),
+    mutationFn: async (data: any) => {
+      // If in revision mode, call the revise endpoint
+      if (revisionMode && revisionMode.entityType === 'mill_data') {
+        return apiRequest(`/api/approvals/${revisionMode.approvalId}/revise`, 'POST', {
+          entity_name: data.namaPabrik,
+          comments: 'Data revised and resubmitted for approval'
+        });
+      }
+      // Otherwise, create new record
+      return apiRequest('/api/mill-data-collection', 'POST', data);
+    },
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/mill-data-collection'] });
-      toast({
-        title: "Data Mill berhasil disimpan",
-        description: response.supplierId 
-          ? `Data Mill dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
-          : "Data Mill telah berhasil disimpan ke sistem.",
-      });
+      queryClient.invalidateQueries({ queryKey: ['/api/approvals'] });
+      
+      // Clear revision mode and localStorage
+      if (revisionMode) {
+        localStorage.removeItem('revising_approval_id');
+        localStorage.removeItem('revising_entity_id');
+        localStorage.removeItem('revising_entity_type');
+        setRevisionMode(null);
+        
+        toast({
+          title: "Revision Submitted",
+          description: "Your revised data has been resubmitted for approval.",
+        });
+      } else {
+        toast({
+          title: "Data Mill berhasil disimpan",
+          description: response.supplierId 
+            ? `Data Mill dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+            : "Data Mill telah berhasil disimpan ke sistem.",
+        });
+      }
+      
       // Reset form
       setMillForm({
         umlId: '', namaPabrik: '', namaGroup: '', alamatKantor: '', alamatPabrik: '', koordinatPabrik: '', koordinatKantor: '',
@@ -442,19 +497,48 @@ export default function DataCollection() {
         namaTimInternal: '', jabatanTimInternal: '', emailTimInternal: '', nomorTeleponTimInternal: '',
         asalTBS: [{ no: 1, namaEstateKebun: '', alamat: '', koordinat: '', luasLahan: '', jenisSupplierTBS: '', volumeTBS: '', persentase: '' }]
       });
+      
+      // Reset supplier type
+      setSupplierType('');
     },
   });
 
   const createKcpMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/kcp-data-collection', 'POST', data),
+    mutationFn: async (data: any) => {
+      // If in revision mode, call the revise endpoint
+      if (revisionMode && revisionMode.entityType === 'kcp_data') {
+        return apiRequest(`/api/approvals/${revisionMode.approvalId}/revise`, 'POST', {
+          entity_name: data.namaKCP,
+          comments: 'Data revised and resubmitted for approval'
+        });
+      }
+      // Otherwise, create new record
+      return apiRequest('/api/kcp-data-collection', 'POST', data);
+    },
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/kcp-data-collection'] });
-      toast({
-        title: "Data KCP berhasil disimpan",
-        description: response.supplierId 
-          ? `Data KCP dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
-          : "Data KCP telah berhasil disimpan ke sistem.",
-      });
+      queryClient.invalidateQueries({ queryKey: ['/api/approvals'] });
+      
+      // Clear revision mode and localStorage
+      if (revisionMode) {
+        localStorage.removeItem('revising_approval_id');
+        localStorage.removeItem('revising_entity_id');
+        localStorage.removeItem('revising_entity_type');
+        setRevisionMode(null);
+        
+        toast({
+          title: "Revision Submitted",
+          description: "Your revised data has been resubmitted for approval.",
+        });
+      } else {
+        toast({
+          title: "Data KCP berhasil disimpan",
+          description: response.supplierId 
+            ? `Data KCP dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+            : "Data KCP telah berhasil disimpan ke sistem.",
+        });
+      }
+      
       // Reset form
       setKcpForm({
         ublFacilityId: '',
@@ -484,19 +568,48 @@ export default function DataCollection() {
         emailTimInternal: '',
         nomorTeleponTimInternal: ''
       });
+      
+      // Reset supplier type
+      setSupplierType('');
     },
   });
 
   const createBulkingMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/bulking-data-collection', 'POST', data),
+    mutationFn: async (data: any) => {
+      // If in revision mode, call the revise endpoint
+      if (revisionMode && revisionMode.entityType === 'bulking_data') {
+        return apiRequest(`/api/approvals/${revisionMode.approvalId}/revise`, 'POST', {
+          entity_name: data.namaFasilitasBulking,
+          comments: 'Data revised and resubmitted for approval'
+        });
+      }
+      // Otherwise, create new record
+      return apiRequest('/api/bulking-data-collection', 'POST', data);
+    },
     onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/bulking-data-collection'] });
-      toast({
-        title: "Data Bulking berhasil disimpan",
-        description: response.supplierId 
-          ? `Data Bulking dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
-          : "Data Bulking telah berhasil disimpan ke sistem.",
-      });
+      queryClient.invalidateQueries({ queryKey: ['/api/approvals'] });
+      
+      // Clear revision mode and localStorage
+      if (revisionMode) {
+        localStorage.removeItem('revising_approval_id');
+        localStorage.removeItem('revising_entity_id');
+        localStorage.removeItem('revising_entity_type');
+        setRevisionMode(null);
+        
+        toast({
+          title: "Revision Submitted",
+          description: "Your revised data has been resubmitted for approval.",
+        });
+      } else {
+        toast({
+          title: "Data Bulking berhasil disimpan",
+          description: response.supplierId 
+            ? `Data Bulking dan Supplier telah berhasil dibuat. Supplier ID: ${response.supplierId}` 
+            : "Data Bulking telah berhasil disimpan ke sistem.",
+        });
+      }
+      
       // Reset form
       setBulkingForm({
         ublFacilityId: '',
@@ -523,6 +636,9 @@ export default function DataCollection() {
         emailTimInternal: '',
         nomorTeleponTimInternal: ''
       });
+      
+      // Reset supplier type
+      setSupplierType('');
     },
   });
 
@@ -1411,7 +1527,9 @@ export default function DataCollection() {
 
                 <div className="flex justify-end">
                   <Button type="submit" disabled={createSmallholdersMutation.isPending} data-testid="button-submit-smallholders">
-                    {createSmallholdersMutation.isPending ? 'Menyimpan...' : 'Simpan Data Smallholders'}
+                    {createSmallholdersMutation.isPending 
+                      ? (revisionMode ? 'Resubmitting...' : 'Menyimpan...') 
+                      : (revisionMode ? 'Resubmit for Approval' : 'Simpan Data Smallholders')}
                   </Button>
                 </div>
               </form>
@@ -1923,7 +2041,9 @@ export default function DataCollection() {
 
                 <div className="flex justify-end">
                   <Button type="submit" disabled={createMillMutation.isPending} data-testid="button-submit-mill">
-                    {createMillMutation.isPending ? 'Menyimpan...' : 'Simpan Data Mill'}
+                    {createMillMutation.isPending 
+                      ? (revisionMode ? 'Resubmitting...' : 'Menyimpan...') 
+                      : (revisionMode ? 'Resubmit for Approval' : 'Simpan Data Mill')}
                   </Button>
                 </div>
               </form>
@@ -2284,7 +2404,9 @@ export default function DataCollection() {
 
                 <div className="flex justify-end">
                   <Button type="submit" disabled={createKcpMutation.isPending} data-testid="button-submit-kcp">
-                    {createKcpMutation.isPending ? 'Menyimpan...' : 'Simpan Data KCP'}
+                    {createKcpMutation.isPending 
+                      ? (revisionMode ? 'Resubmitting...' : 'Menyimpan...') 
+                      : (revisionMode ? 'Resubmit for Approval' : 'Simpan Data KCP')}
                   </Button>
                 </div>
               </form>
@@ -2609,7 +2731,9 @@ export default function DataCollection() {
 
                 <div className="flex justify-end">
                   <Button type="submit" disabled={createBulkingMutation.isPending} data-testid="button-submit-bulking">
-                    {createBulkingMutation.isPending ? 'Menyimpan...' : 'Simpan Data Bulking'}
+                    {createBulkingMutation.isPending 
+                      ? (revisionMode ? 'Resubmitting...' : 'Menyimpan...') 
+                      : (revisionMode ? 'Resubmit for Approval' : 'Simpan Data Bulking')}
                   </Button>
                 </div>
               </form>
