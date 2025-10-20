@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,11 +48,10 @@ export default function ApprovalsPage() {
   const { user } = useAuth();
   const { hasPermission } = usePermissions();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [selectedRequest, setSelectedRequest] = useState<ApprovalRequest | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
-  const [actionDialog, setActionDialog] = useState<"approve" | "reject" | "delete" | "edit" | null>(null);
-  const [editEntityName, setEditEntityName] = useState("");
-  const [editComments, setEditComments] = useState("");
+  const [actionDialog, setActionDialog] = useState<"approve" | "reject" | "delete" | null>(null);
 
   // Fetch approval requests
   const { data: requests, isLoading } = useQuery<ApprovalRequest[]>({
@@ -132,37 +132,10 @@ export default function ApprovalsPage() {
     },
   });
 
-  // Edit/Revise mutation (Creator revising rejected submissions)
-  const reviseMutation = useMutation({
-    mutationFn: async ({ id, entityName, comments }: { id: string; entityName: string; comments: string }) =>
-      fetch(`/api/approvals/${id}/revise`, {
-        method: "PATCH",
-        body: JSON.stringify({ entityName, comments }),
-        headers: { "Content-Type": "application/json" },
-      }).then(r => r.json()),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/approvals"] });
-      toast({
-        title: "Submission Revised",
-        description: "Your submission has been updated and resubmitted for approval.",
-      });
-      closeDialog();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete request",
-        variant: "destructive",
-      });
-    },
-  });
-
   const closeDialog = () => {
     setActionDialog(null);
     setSelectedRequest(null);
     setReviewNotes("");
-    setEditEntityName("");
-    setEditComments("");
   };
 
   const handleAction = () => {
@@ -174,11 +147,43 @@ export default function ApprovalsPage() {
       rejectMutation.mutate({ id: selectedRequest.id, notes: reviewNotes });
     } else if (actionDialog === "delete") {
       deleteMutation.mutate(selectedRequest.id);
-    } else if (actionDialog === "edit") {
-      reviseMutation.mutate({ 
-        id: selectedRequest.id, 
-        entityName: editEntityName, 
-        comments: editComments 
+    }
+  };
+
+  // Navigate to the appropriate form for editing rejected submissions
+  const handleReviseSubmission = (request: ApprovalRequest) => {
+    // Store the approval request ID in localStorage for the form to pick up
+    localStorage.setItem('revising_approval_id', request.id);
+    localStorage.setItem('revising_entity_id', request.entityId);
+    localStorage.setItem('revising_entity_type', request.entityType);
+
+    // Map entity types to their respective pages
+    const entityTypeToRoute: Record<string, string> = {
+      estate_data: '/data-collection?type=estate',
+      mill_data: '/data-collection?type=mill',
+      smallholder_data: '/data-collection?type=smallholder',
+      kcp_data: '/data-collection?type=kcp',
+      bulking_data: '/data-collection?type=bulking',
+      spatial_analysis: '/spatial-analysis',
+      legality_assessment: '/legality-compliance',
+      risk_assessment: '/risk-analysis',
+      supply_chain_linkage: '/supply-chain',
+      dds_report: '/due-diligence-report',
+    };
+
+    const route = entityTypeToRoute[request.entityType];
+    
+    if (route) {
+      toast({
+        title: "Opening Form",
+        description: "Redirecting you to edit your submission...",
+      });
+      setLocation(route);
+    } else {
+      toast({
+        title: "Error",
+        description: "Cannot find the form for this entity type.",
+        variant: "destructive",
       });
     }
   };
@@ -340,12 +345,7 @@ export default function ApprovalsPage() {
                             size="sm"
                             variant="outline"
                             className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
-                            onClick={() => {
-                              setSelectedRequest(request);
-                              setEditEntityName(request.entityName || "");
-                              setEditComments(request.comments || "");
-                              setActionDialog("edit");
-                            }}
+                            onClick={() => handleReviseSubmission(request)}
                             data-testid={`button-edit-${request.id}`}
                           >
                             <Edit className="w-4 h-4 mr-1" />
@@ -379,13 +379,11 @@ export default function ApprovalsPage() {
               {actionDialog === "approve" && "Approve Request"}
               {actionDialog === "reject" && "Reject Request"}
               {actionDialog === "delete" && "Delete Request"}
-              {actionDialog === "edit" && "Revise Submission"}
             </DialogTitle>
             <DialogDescription>
               {actionDialog === "approve" && "Add notes to approve this request. The data will move to the next stage."}
               {actionDialog === "reject" && "Add notes to reject this request. The data will return to draft status for the creator to revise."}
               {actionDialog === "delete" && "Are you sure you want to delete this approval request? This action cannot be undone."}
-              {actionDialog === "edit" && "Update your submission details and resubmit for approval."}
             </DialogDescription>
           </DialogHeader>
 
@@ -405,47 +403,18 @@ export default function ApprovalsPage() {
             </div>
           )}
 
-          {actionDialog === "edit" && (
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="entity-name">Entity Name</Label>
-                <Textarea
-                  id="entity-name"
-                  placeholder="Enter entity name..."
-                  value={editEntityName}
-                  onChange={(e) => setEditEntityName(e.target.value)}
-                  className="min-h-[60px]"
-                  data-testid="textarea-entity-name"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="edit-comments">Comments / Revisions Made</Label>
-                <Textarea
-                  id="edit-comments"
-                  placeholder="Describe the changes you made..."
-                  value={editComments}
-                  onChange={(e) => setEditComments(e.target.value)}
-                  className="min-h-[100px]"
-                  data-testid="textarea-edit-comments"
-                />
-              </div>
-            </div>
-          )}
-
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog} data-testid="button-cancel">
               Cancel
             </Button>
             <Button
               onClick={handleAction}
-              disabled={approveMutation.isPending || rejectMutation.isPending || deleteMutation.isPending || reviseMutation.isPending}
+              disabled={approveMutation.isPending || rejectMutation.isPending || deleteMutation.isPending}
               className={
                 actionDialog === "approve"
                   ? "bg-green-600 hover:bg-green-700"
                   : actionDialog === "reject"
                   ? "bg-red-600 hover:bg-red-700"
-                  : actionDialog === "edit"
-                  ? "bg-blue-600 hover:bg-blue-700"
                   : ""
               }
               data-testid={`button-confirm-${actionDialog}`}
@@ -453,7 +422,6 @@ export default function ApprovalsPage() {
               {actionDialog === "approve" && "Approve"}
               {actionDialog === "reject" && "Reject"}
               {actionDialog === "delete" && "Delete"}
-              {actionDialog === "edit" && "Revise & Resubmit"}
             </Button>
           </DialogFooter>
         </DialogContent>
