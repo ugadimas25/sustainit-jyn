@@ -3233,6 +3233,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Revise rejected request (Creator role - edit their own rejected submissions)
+  app.patch("/api/approvals/:id/revise", async (req, res) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const userId = (req.user as any).id;
+      const { id } = req.params;
+      const { entityName, comments, metadata } = req.body;
+
+      const approvalRequest = await storage.getApprovalRequest(id);
+      if (!approvalRequest) {
+        return res.status(404).json({ error: "Approval request not found" });
+      }
+
+      // Verify user is the original submitter
+      if (approvalRequest.submittedBy !== userId) {
+        return res.status(403).json({ error: "You can only revise your own submissions" });
+      }
+
+      // Verify request was rejected
+      if (approvalRequest.status !== "rejected") {
+        return res.status(400).json({ error: "You can only revise rejected submissions" });
+      }
+
+      // Update the approval request and resubmit it
+      const updated = await storage.updateApprovalRequest(id, {
+        entityName,
+        comments,
+        metadata,
+        status: "pending", // Reset to pending after revision
+        reviewedBy: null,
+        reviewedAt: null,
+        reviewNotes: null,
+        submittedAt: new Date(), // Update submission time
+      });
+
+      // Create history entry
+      await storage.createApprovalHistory({
+        approvalRequestId: id,
+        action: "revised",
+        actorUserId: userId,
+        previousStatus: "rejected",
+        newStatus: "pending",
+        notes: `Submission revised and resubmitted: ${comments || 'No additional notes'}`,
+      });
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error revising request:", error);
+      res.status(500).send(error.message || "Failed to revise request");
+    }
+  });
+
   // Get approval history for a request
   app.get("/api/approvals/:id/history", async (req, res) => {
     try {
