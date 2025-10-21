@@ -47,6 +47,11 @@ Preferred communication style: Simple, everyday language.
     - **Results Export**: Comprehensive export options for analysis results (Excel CSV, GeoJSON) with smart naming and filtered output.
     - **Automated Workflow Integration**: All 5 data collection endpoints (Estate, Mill, Smallholder, KCP, Bulking) automatically create corresponding Supplier records with appropriate tier assignment (Tier 1/2/3) and return supplierId for seamless downstream workflow integration.
     - **UI Enhancement**: Success notifications display supplierId in toast messages, enabling users to track workflow progression from Data Collection → Spatial Analysis → Legality Assessment → DDS Reports.
+    - **Legal Compliance Form (Form_05)**: Complete implementation matching official document structure with three main sections:
+        - **Bagian 1 (General Information)**: Company details, supplier information, internal team contacts
+        - **Bagian 2 (Forest and Peatland Protection)**: 6 questions (2.1-2.6) covering forest/peatland policies, workshops, SOPs, peat planting details (with luas/tahun fields), and implementation evidence
+        - **Bagian 3 (Legal Compliance)**: 13 sections (3.1-3.13) covering land rights, environmental protection, labor management, community relations, and human rights with comprehensive document upload and evidence tracking
+        - Database schema with 100+ fields using custom enums (yes_no, yes_no_na, jenis_supplier) for standardized responses
 
 ## Database Schema
 - **Database**: PostgreSQL with PostGIS extension (Neon Database).
