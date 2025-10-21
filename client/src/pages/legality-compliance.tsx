@@ -36,6 +36,132 @@ interface Section {
   items: SectionItem[];
 }
 
+// Bagian 2: Perlindungan Hutan dan Gambut (Forest and Peatland Protection)
+const FOREST_PEATLAND_PROTECTION_SECTIONS: Section[] = [
+  {
+    id: '2.1',
+    title: '2.1 Kebijakan Perlindungan Hutan dan Gambut',
+    items: [
+      {
+        key: 'kebijakanPerlindunganHutanGambut',
+        label: 'Apakah memiliki kebijakan yang mencakup: Perlindungan hutan dan Perlindungan gambut',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'kebijakanPerlindunganHutanGambutKeterangan',
+        documentKey: 'kebijakanPerlindunganHutanGambutDokumen',
+        explanation: 'Lampirkan Dokumen : (dalam Bentuk Google Drive Jika Kebijakan Tidak Terpublikasi di Website Perusahaan)'
+      }
+    ]
+  },
+  {
+    id: '2.2',
+    title: '2.2 Workshop NDPE',
+    items: [
+      {
+        key: 'workshopNDPE',
+        label: 'Apakah telah mengikuti lokakarya (workshop) terkait komitmen kebijakan NDPE',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'workshopNDPEKeterangan'
+      }
+    ]
+  },
+  {
+    id: '2.3',
+    title: '2.3 Prosedur Perlindungan Hutan',
+    items: [
+      {
+        key: 'sopPengelolaanAreaKonservasi',
+        label: 'Apakah Perusahaan memiliki SOP identifikasi Pengelolaan Area Konservasi (Nilai Konservasi Tinggi/NKT dan Stock Karbon Tinggi/SKT)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopPengelolaanAreaKonservasiKeterangan'
+      },
+      {
+        key: 'sopPembukaanLahanKonservasi',
+        label: 'Apakah Perusahaan memiliki SOP Pembukaan lahan, Konservasi tanah dan air',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'sopPembukaanLahanKonservasiKeterangan'
+      }
+    ]
+  },
+  {
+    id: '2.4',
+    title: '2.4 Bukti Pelaksanaan Prosedur',
+    items: [
+      {
+        key: 'buktiPelaksanaan23Keterangan',
+        label: 'Berikan Bukti Pelaksanaan prosedur point 2.3. diatas',
+        type: 'textarea'
+      },
+      {
+        key: 'penilaianNKT',
+        label: 'Apakah melakukan Penilaian Nilai Konservasi Tinggi?',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'penilaianNKTKeterangan'
+      },
+      {
+        key: 'laporanNKTKeInstansi',
+        label: 'Apakah Perusahaan menyampaikan Laporan Pengelolaan Area Bernilai Konservasi Tinggi Ke Instansi Terkait?',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanNKTKeInstansiKeterangan'
+      },
+      {
+        key: 'penilaianSKT',
+        label: 'Apakah Anda melakukan Penilaian SKT?',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'penilaianSKTKeterangan'
+      }
+    ]
+  },
+  {
+    id: '2.5',
+    title: '2.5 Penanaman di Area Gambut',
+    items: [
+      {
+        key: 'penanamanDiAreaGambut',
+        label: 'Apakah Penanaman dilakukan di area gambut?',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'penanamanDiAreaGambutKeterangan',
+        explanation: 'Jika Ya, Sebutkan Luasnya dan Tahun Pembukaanya'
+      },
+      {
+        key: 'penanamanDiAreaGambutLuas',
+        label: 'Luas Area (Ha)',
+        type: 'text',
+        explanation: 'Diisi jika penanaman dilakukan di area gambut'
+      },
+      {
+        key: 'penanamanDiAreaGambutTahun',
+        label: 'Tahun Pembukaan',
+        type: 'text',
+        explanation: 'Diisi jika penanaman dilakukan di area gambut'
+      }
+    ]
+  },
+  {
+    id: '2.6',
+    title: '2.6 SK Titik Penaatan Pemulihan Fungsi Hidrologis Gambut',
+    items: [
+      {
+        key: 'skTitikPenaatanGambut',
+        label: 'Apakah Perusahaan Memiliki SK Titik Penaatan Pemulihan Fungsi Hidrologis Gambut yang ditetapkan KLHK',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'skTitikPenaatanGambutKeterangan',
+        documentKey: 'skTitikPenaatanGambutDokumen',
+        explanation: '(Diisi Jika ada penanaman di lahan gambut)'
+      }
+    ]
+  }
+];
+
+// Bagian 3: Legal Compliance
 const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
   {
     id: '3.1',
@@ -102,6 +228,14 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         required: true,
         explanationKey: 'laporanLPUPKeterangan',
         documentKey: 'laporanLPUPDokumen'
+      },
+      {
+        key: 'petaBatasBlok',
+        label: 'Peta Batas Blok',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'petaBatasBlokKeterangan',
+        documentKey: 'petaBatasBlokDokumen'
       }
     ]
   },
@@ -254,6 +388,14 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         required: true,
         explanationKey: 'sopPenangananKeluhanKeterangan',
         documentKey: 'sopPenangananKeluhanDokumen'
+      },
+      {
+        key: 'laporanCSR',
+        label: 'Laporan CSR',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'laporanCSRKeterangan',
+        documentKey: 'laporanCSRDokumen'
       }
     ]
   },
@@ -293,9 +435,62 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
     title: '3.7 Bukti Implementasi Point 3.5',
     items: [
       {
-        key: 'buktiImplementasi',
-        label: 'Bukti Implementasi',
-        type: 'textarea'
+        key: 'buktiGRTT',
+        label: 'Bukti GRTT (Jika Ada)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'buktiGRTTKeterangan',
+        documentKey: 'buktiGRTTDokumen'
+      },
+      {
+        key: 'buktiFPIC',
+        label: 'Bukti FPIC (Jika Ada)',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'buktiFPICKeterangan',
+        documentKey: 'buktiFPICDokumen'
+      },
+      {
+        key: 'section-header-penanganan-informasi',
+        label: 'Penanganan Permintaan Informasi',
+        type: 'section-header'
+      },
+      {
+        key: 'penangananInformasiSuratMasuk',
+        label: 'Surat Masuk',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'penangananInformasiSuratMasukKeterangan',
+        documentKey: 'penangananInformasiSuratMasukDokumen'
+      },
+      {
+        key: 'penangananInformasiSuratKeluar',
+        label: 'Surat Keluar',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'penangananInformasiSuratKeluarKeterangan',
+        documentKey: 'penangananInformasiSuratKeluarDokumen'
+      },
+      {
+        key: 'section-header-penanganan-keluhan',
+        label: 'Penanganan Keluhan Stakeholder',
+        type: 'section-header'
+      },
+      {
+        key: 'penangananKeluhanSuratMasuk',
+        label: 'Surat Masuk',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'penangananKeluhanSuratMasukKeterangan',
+        documentKey: 'penangananKeluhanSuratMasukDokumen'
+      },
+      {
+        key: 'penangananKeluhanSuratKeluar',
+        label: 'Surat Keluar',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'penangananKeluhanSuratKeluarKeterangan',
+        documentKey: 'penangananKeluhanSuratKeluarDokumen'
       }
     ]
   },
@@ -331,8 +526,16 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
         documentKey: 'kebijakanBuruhHAMDokumen'
       },
       {
+        key: 'pkbPP',
+        label: 'b. PKB / PP',
+        type: 'yesNo',
+        required: true,
+        explanationKey: 'pkbPPKeterangan',
+        documentKey: 'pkbPPDokumen'
+      },
+      {
         key: 'sopKetenagakerjaan',
-        label: 'b. SOP/Mekanisme yang berhubungan dengan Ketenagakerjaan',
+        label: 'c. SOP/Mekanisme yang berhubungan dengan Ketenagakerjaan',
         type: 'yesNo',
         required: true,
         explanationKey: 'sopKetenagakerjaanKeterangan',
@@ -340,7 +543,7 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
       },
       {
         key: 'sopK3',
-        label: 'c. SOP/Mekanisme yang berhubungan dengan K3',
+        label: 'd. SOP/Mekanisme yang berhubungan dengan K3',
         type: 'yesNo',
         required: true,
         explanationKey: 'sopK3Keterangan',
@@ -353,7 +556,7 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
       },
       {
         key: 'buktiPencatatanDisnaker',
-        label: 'a. Bukti Pencatatan perjanjian kerja ke DISNAKER',
+        label: 'e. Bukti Pencatatan perjanjian kerja ke DISNAKER',
         type: 'yesNo',
         required: true,
         explanationKey: 'buktiPencatatanDisnakerKeterangan',
@@ -361,7 +564,7 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
       },
       {
         key: 'skUMRPenggajian',
-        label: 'b. SK UMR / Penggajian',
+        label: 'f. SK UMR / Penggajian',
         type: 'yesNo',
         required: true,
         explanationKey: 'skUMRPenggajianKeterangan',
@@ -369,7 +572,7 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
       },
       {
         key: 'skSerikatPekerja',
-        label: 'c. SK Pembentukan dan atau SK Pengesahan Serikat Pekerja / SK LKS Bipartit (Jika Tidak ada Serikat)',
+        label: 'g. SK Pembentukan dan atau SK Pengesahan Serikat Pekerja / SK LKS Bipartit (Jika Tidak ada Serikat)',
         type: 'yesNo',
         required: true,
         explanationKey: 'skSerikatPekerjaKeterangan',
@@ -377,7 +580,7 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
       },
       {
         key: 'buktiTerdaftarBPJS',
-        label: 'd. Bukti Terdaftar BPJS TK dan Kesehatan',
+        label: 'h. Bukti Terdaftar BPJS TK dan Kesehatan',
         type: 'yesNo',
         required: true,
         explanationKey: 'buktiTerdaftarBPJSKeterangan',
@@ -385,7 +588,7 @@ const LEGAL_COMPLIANCE_SECTIONS: Section[] = [
       },
       {
         key: 'laporanP2K3',
-        label: 'e. Laporan P2K3 / Serifikat SMK3',
+        label: 'i. Laporan P2K3 / Serifikat SMK3',
         type: 'yesNo',
         required: true,
         explanationKey: 'laporanP2K3Keterangan',
@@ -765,15 +968,15 @@ export default function LegalityCompliance() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Basic Company Information */}
+            {/* Bagian 1: Informasi Umum */}
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl">
                   <Shield className="w-5 h-5 text-blue-600" />
-                  Informasi Perusahaan
+                  Bagian 1 – Informasi Umum
                 </CardTitle>
                 <CardDescription>
-                  Informasi dasar perusahaan yang diperlukan untuk formulir kepatuhan hukum
+                  (General Information)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -1162,13 +1365,27 @@ export default function LegalityCompliance() {
               </CardContent>
             </Card>
 
-            {/* Legal Compliance Sections 3.1-3.7 */}
+            {/* Bagian 2: Perlindungan Hutan dan Gambut */}
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6" data-testid="text-legal-compliance-title">
-                Legal Compliance
+              <h2 className="text-2xl font-bold text-gray-900 mb-6" data-testid="text-forest-peatland-title">
+                Bagian 2 – Perlindungan Hutan dan Gambut
               </h2>
               <p className="text-gray-600 mb-6">
-                Berlaku Untuk Perusahaan Yang Belum Sertifikasi ISPO
+                (Forest and Peatland Protection)
+              </p>
+              
+              {FOREST_PEATLAND_PROTECTION_SECTIONS.map((section) => (
+                <SectionRenderer key={section.id} section={section} />
+              ))}
+            </div>
+
+            {/* Bagian 3: Legal Compliance */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6" data-testid="text-legal-compliance-title">
+                Bagian 3 – Legal Compliance
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Berlaku Untuk Perusahaan Yang Belum Sertifikasi ISPO / Applicable to Companies Not Yet ISPO-Certified
               </p>
               
               {LEGAL_COMPLIANCE_SECTIONS.map((section) => (

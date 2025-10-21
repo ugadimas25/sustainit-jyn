@@ -1649,6 +1649,43 @@ export const legalCompliance = pgTable("legal_compliance", {
   emailTimInternal: text("email_tim_internal"),
   nomorTelefonTimInternal: text("nomor_telepon_tim_internal"),
   
+  // Bagian 2: Perlindungan Hutan dan Gambut (Forest and Peatland Protection)
+  // 2.1 Kebijakan Perlindungan Hutan dan Gambut
+  kebijakanPerlindunganHutanGambut: yesNoEnum("kebijakan_perlindungan_hutan_gambut"),
+  kebijakanPerlindunganHutanGambutKeterangan: text("kebijakan_perlindungan_hutan_gambut_keterangan"),
+  kebijakanPerlindunganHutanGambutDokumen: text("kebijakan_perlindungan_hutan_gambut_dokumen"), // document URL
+  
+  // 2.2 Workshop NDPE
+  workshopNDPE: yesNoEnum("workshop_ndpe"),
+  workshopNDPEKeterangan: text("workshop_ndpe_keterangan"),
+  
+  // 2.3 Prosedur Perlindungan Hutan
+  sopPengelolaanAreaKonservasi: yesNoEnum("sop_pengelolaan_area_konservasi"),
+  sopPengelolaanAreaKonservasiKeterangan: text("sop_pengelolaan_area_konservasi_keterangan"),
+  sopPembukaanLahanKonservasi: yesNoEnum("sop_pembukaan_lahan_konservasi"),
+  sopPembukaanLahanKonservasiKeterangan: text("sop_pembukaan_lahan_konservasi_keterangan"),
+  
+  // 2.4 Bukti Pelaksanaan
+  buktiPelaksanaan23Keterangan: text("bukti_pelaksanaan_23_keterangan"),
+  penilaianNKT: yesNoEnum("penilaian_nkt"),
+  penilaianNKTKeterangan: text("penilaian_nkt_keterangan"),
+  laporanNKTKeInstansi: yesNoEnum("laporan_nkt_ke_instansi"),
+  laporanNKTKeInstansiKeterangan: text("laporan_nkt_ke_instansi_keterangan"),
+  penilaianSKT: yesNoEnum("penilaian_skt"),
+  penilaianSKTKeterangan: text("penilaian_skt_keterangan"),
+  
+  // 2.5 Penanaman di Area Gambut
+  penanamanDiAreaGambut: yesNoEnum("penanaman_di_area_gambut"),
+  penanamanDiAreaGambutKeterangan: text("penanaman_di_area_gambut_keterangan"),
+  penanamanDiAreaGambutLuas: text("penanaman_di_area_gambut_luas"), // Area in Ha
+  penanamanDiAreaGambutTahun: text("penanaman_di_area_gambut_tahun"), // Year
+  
+  // 2.6 SK Titik Penaatan Pemulihan Fungsi Hidrologis Gambut
+  skTitikPenaatanGambut: yesNoEnum("sk_titik_penaatan_gambut"),
+  skTitikPenaatanGambutKeterangan: text("sk_titik_penaatan_gambut_keterangan"),
+  skTitikPenaatanGambutDokumen: text("sk_titik_penaatan_gambut_dokumen"), // document URL
+  
+  // Bagian 3: Legal Compliance
   // 3.1 Hak Penggunaan Tanah
   historisPerolehanTanah: text("historis_perolehan_tanah"),
   historisPerolehanTanahKeterangan: text("historis_perolehan_tanah_keterangan"),
@@ -1674,6 +1711,9 @@ export const legalCompliance = pgTable("legal_compliance", {
   laporanLPUP: yesNoEnum("laporan_lpup"),
   laporanLPUPKeterangan: text("laporan_lpup_keterangan"),
   laporanLPUPDokumen: text("laporan_lpup_dokumen"), // document URL
+  petaBatasBlok: yesNoEnum("peta_batas_blok"),
+  petaBatasBlokKeterangan: text("peta_batas_blok_keterangan"),
+  petaBatasBlokDokumen: text("peta_batas_blok_dokumen"), // document URL
 
   // 3.2 Perlindungan Lingkungan Hidup
   izinLingkungan: yesNoEnum("izin_lingkungan"),
@@ -1730,6 +1770,9 @@ export const legalCompliance = pgTable("legal_compliance", {
   sopPenangananKeluhan: yesNoEnum("sop_penanganan_keluhan"),
   sopPenangananKeluhanKeterangan: text("sop_penanganan_keluhan_keterangan"),
   sopPenangananKeluhanDokumen: text("sop_penanganan_keluhan_dokumen"), // document URL
+  laporanCSR: yesNoEnum("laporan_csr"),
+  laporanCSRKeterangan: text("laporan_csr_keterangan"),
+  laporanCSRDokumen: text("laporan_csr_dokumen"), // document URL
 
   // 3.6 Kewajiban Pengembangan Plasma
   mouKerjaSama: yesNoEnum("mou_kerja_sama"),
@@ -1744,6 +1787,24 @@ export const legalCompliance = pgTable("legal_compliance", {
 
   // 3.7 Bukti Implementasi (for section 3.5)
   buktiImplementasi: text("bukti_implementasi"),
+  buktiGRTT: yesNoEnum("bukti_grtt"),
+  buktiGRTTKeterangan: text("bukti_grtt_keterangan"),
+  buktiGRTTDokumen: text("bukti_grtt_dokumen"), // document URL
+  buktiFPIC: yesNoEnum("bukti_fpic"),
+  buktiFPICKeterangan: text("bukti_fpic_keterangan"),
+  buktiFPICDokumen: text("bukti_fpic_dokumen"), // document URL
+  penangananInformasiSuratMasuk: yesNoEnum("penanganan_informasi_surat_masuk"),
+  penangananInformasiSuratMasukKeterangan: text("penanganan_informasi_surat_masuk_keterangan"),
+  penangananInformasiSuratMasukDokumen: text("penanganan_informasi_surat_masuk_dokumen"), // document URL
+  penangananInformasiSuratKeluar: yesNoEnum("penanganan_informasi_surat_keluar"),
+  penangananInformasiSuratKeluarKeterangan: text("penanganan_informasi_surat_keluar_keterangan"),
+  penangananInformasiSuratKeluarDokumen: text("penanganan_informasi_surat_keluar_dokumen"), // document URL
+  penangananKeluhanSuratMasuk: yesNoEnum("penanganan_keluhan_surat_masuk"),
+  penangananKeluhanSuratMasukKeterangan: text("penanganan_keluhan_surat_masuk_keterangan"),
+  penangananKeluhanSuratMasukDokumen: text("penanganan_keluhan_surat_masuk_dokumen"), // document URL
+  penangananKeluhanSuratKeluar: yesNoEnum("penanganan_keluhan_surat_keluar"),
+  penangananKeluhanSuratKeluarKeterangan: text("penanganan_keluhan_surat_keluar_keterangan"),
+  penangananKeluhanSuratKeluarDokumen: text("penanganan_keluhan_surat_keluar_dokumen"), // document URL
 
   // 3.8 Penanganan Keluhan Stakeholder
   laporanPenyelesaianSengketa: yesNoEnum("laporan_penyelesaian_sengketa"),
@@ -1754,6 +1815,9 @@ export const legalCompliance = pgTable("legal_compliance", {
   kebijakanBuruhHAM: yesNoEnum("kebijakan_buruh_ham"),
   kebijakanBuruhHAMKeterangan: text("kebijakan_buruh_ham_keterangan"),
   kebijakanBuruhHAMDokumen: text("kebijakan_buruh_ham_dokumen"), // document URL
+  pkbPP: yesNoEnum("pkb_pp"),
+  pkbPPKeterangan: text("pkb_pp_keterangan"),
+  pkbPPDokumen: text("pkb_pp_dokumen"), // document URL
   sopKetenagakerjaan: yesNoEnum("sop_ketenagakerjaan"),
   sopKetenagakerjaanKeterangan: text("sop_ketenagakerjaan_keterangan"),
   sopKetenagakerjaanDokumen: text("sop_ketenagakerjaan_dokumen"), // document URL
