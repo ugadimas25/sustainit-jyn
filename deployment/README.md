@@ -1,12 +1,12 @@
 # 🚀 Deployment Guide - EUDR Platform ke Tencent Lighthouse
 
-Panduan lengkap deploy aplikasi EUDR ke server Tencent Lighthouse dengan domain app.sustain.it
+Panduan lengkap deploy aplikasi EUDR ke server Tencent Lighthouse dengan domain app.sustainit.id
 
 ## 📋 Prerequisites
 
 - ✅ Server Tencent Lighthouse (Ubuntu 20.04/22.04)
 - ✅ Node.js 20 sudah terinstall
-- ✅ Domain sustain.it di Hostinger
+- ✅ Domain sustainit.id di Hostinger
 - ✅ Akses SSH ke server
 - ✅ Repository GitHub: https://github.com/ugadimas25/sustainit-jyn.git
 
@@ -97,7 +97,7 @@ bash setup-nginx.sh
 
 Login ke Hostinger DNS Management dan tambahkan A Record:
 
-**Untuk app.sustain.it:**
+**Untuk app.sustainit.id:**
 ```
 Type: A
 Hostname: app
@@ -105,7 +105,7 @@ Points to: [IP Server Tencent Anda]
 TTL: 14400
 ```
 
-**Untuk sustain.it (opsional):**
+**Untuk sustainit.id (opsional):**
 ```
 Type: A
 Hostname: @
@@ -122,7 +122,7 @@ curl ifconfig.me
 
 **Test DNS:**
 ```bash
-ping app.sustain.it
+ping app.sustainit.id
 ```
 
 ### Step 7: Setup SSL (HTTPS)
@@ -141,7 +141,7 @@ bash setup-ssl.sh
 
 ### Step 8: Company Profile (Opsional)
 
-Buat landing page sederhana untuk sustain.it:
+Buat landing page sederhana untuk sustainit.id:
 
 ```bash
 bash create-company-profile.sh
@@ -152,11 +152,11 @@ bash create-company-profile.sh
 Setelah semua selesai, test:
 
 1. **Aplikasi:**
-   - http://app.sustain.it (redirect ke https)
-   - https://app.sustain.it ✅
+   - http://app.sustainit.id (redirect ke https)
+   - https://app.sustainit.id ✅
 
 2. **Company Profile:**
-   - https://sustain.it ✅
+   - https://sustainit.id ✅
 
 3. **PM2 Status:**
 ```bash
@@ -241,8 +241,8 @@ sudo certbot renew
 
 ```bash
 # Test DNS
-nslookup app.sustain.it
-dig app.sustain.it
+nslookup app.sustainit.id
+dig app.sustainit.id
 
 # Flush DNS (di komputer)
 # Windows: ipconfig /flushdns
@@ -259,8 +259,8 @@ Jika ada masalah, cek:
 ## 🎉 Success!
 
 Aplikasi EUDR Anda sekarang live di:
-- **Application:** https://app.sustain.it
-- **Company Profile:** https://sustain.it
+- **Application:** https://app.sustainit.id
+- **Company Profile:** https://sustainit.id
 
 Login credentials:
 - Super Admin: `super_admin` / `password123`
