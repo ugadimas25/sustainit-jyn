@@ -1,0 +1,45 @@
+oot@VM-0-12-ubuntu:~/sustainit-jyn/sustainit-jyn# pm2 logs eudr-app --lines 20
+[TAILING] Tailing last 20 lines for [eudr-app] process (change the value with --lines option)
+/root/.pm2/logs/eudr-app-error.log last 20 lines:
+0|eudr-app | OpenAIError: The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).
+0|eudr-app |     at new OpenAI (file:///root/sustainit-jyn/sustainit-jyn/node_modules/openai/client.mjs:85:19)
+0|eudr-app |     at file:///root/sustainit-jyn/sustainit-jyn/dist/index.js:5290:14
+0|eudr-app |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|eudr-app |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|eudr-app |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|eudr-app | 
+0|eudr-app | Node.js v20.19.5
+0|eudr-app | file:///root/sustainit-jyn/sustainit-jyn/node_modules/openai/client.mjs:85
+0|eudr-app |             throw new Errors.OpenAIError("The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).");
+0|eudr-app |                   ^
+0|eudr-app | 
+0|eudr-app | OpenAIError: The OPENAI_API_KEY environment variable is missing or empty; either provide it, or instantiate the OpenAI client with an apiKey option, like new OpenAI({ apiKey: 'My API Key' }).
+0|eudr-app |     at new OpenAI (file:///root/sustainit-jyn/sustainit-jyn/node_modules/openai/client.mjs:85:19)
+0|eudr-app |     at file:///root/sustainit-jyn/sustainit-jyn/dist/index.js:5290:14
+0|eudr-app |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|eudr-app |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|eudr-app |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+0|eudr-app | 
+0|eudr-app | Node.js v20.19.5
+
+/root/.pm2/logs/eudr-app-out.log last 20 lines:
+0|eudr-app | 
+0|eudr-app | 
+0|eudr-app | > rest-express@1.0.0 start
+0|eudr-app | > NODE_ENV=production node dist/index.js
+0|eudr-app | 
+0|eudr-app | 
+0|eudr-app | > rest-express@1.0.0 start
+0|eudr-app | > NODE_ENV=production node dist/index.js
+0|eudr-app | 
+0|eudr-app | ✓ Default user 'kpncompliance2025' already exists
+0|eudr-app | ✓ Sample data seeded successfully
+0|eudr-app | 🔧 Seeding User Configuration data...
+0|eudr-app | ✓ Created/verified 56 system permissions
+0|eudr-app | ✓ Admin user already has Super Admin role
+0|eudr-app | ✓ ADMIN USER VERIFICATION: User kpneudr has 1 org(s), 2 role(s) in system org
+0|eudr-app | ✓ User Configuration seeding completed successfully
+0|eudr-app | ⚠️  Warning: Legacy role "system_admin" has users assigned - manual cleanup required
+0|eudr-app | ✓ Role system cleaned up - only 3 allowed roles remain
+0|eudr-app | 8:43:20 AM [express] serving on port 5000
+0|eudr-app | 8:43:20 AM [express] Production server accessible at https://undefined
