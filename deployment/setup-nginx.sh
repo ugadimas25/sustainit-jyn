@@ -4,14 +4,14 @@
 
 set -e
 
-echo "🌐 Setting up Nginx for app.sustain.it..."
+echo "🌐 Setting up Nginx for app.sustainit.id..."
 
-# Create Nginx configuration for app.sustain.it
+# Create Nginx configuration for app.sustainit.id
 echo "📝 Creating Nginx configuration..."
-sudo tee /etc/nginx/sites-available/app.sustain.it > /dev/null << 'EOF'
+sudo tee /etc/nginx/sites-available/app.sustainit.id > /dev/null << 'EOF'
 server {
     listen 80;
-    server_name app.sustain.it;
+    server_name app.sustainit.id;
 
     # Client max body size (for file uploads)
     client_max_body_size 100M;
@@ -44,7 +44,7 @@ EOF
 
 # Enable site
 echo "✅ Enabling Nginx site..."
-sudo ln -sf /etc/nginx/sites-available/app.sustain.it /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/app.sustainit.id /etc/nginx/sites-enabled/
 
 # Remove default site if exists
 sudo rm -f /etc/nginx/sites-enabled/default
@@ -67,5 +67,5 @@ echo "   - Points to: $(curl -s ifconfig.me)"
 echo "   - TTL: 14400"
 echo ""
 echo "2. Wait 5-10 minutes for DNS propagation"
-echo "3. Test: curl http://app.sustain.it"
+echo "3. Test: curl http://app.sustainit.id"
 echo "4. Install SSL: bash setup-ssl.sh"
